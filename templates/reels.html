@@ -1,0 +1,61 @@
+{% from "makrolar.html" import degisim, ag_etiketi %}<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Gümüş Reels</title>
+<style>{% include "ortak.css" %}</style>
+</head>
+<body>
+<div class="sahne" style="width: 1080px; height: 1920px; padding: 220px 170px 420px 96px">
+  <div class="ust">
+    <div class="ust-sol" style="gap: 20px">
+      <div class="etiket" style="gap: 14px; font-size: 28px"><span class="nokta" style="width: 14px; height: 14px"></span><span>GÜNCEL FİYAT</span></div>
+      <h1 style="font-size: 168px; letter-spacing: -4px">Gümüş</h1>
+      <div class="tarih mono" style="font-size: 34px">{{ tarih }} · {{ saat }}</div>
+    </div>
+    {{ ag_etiketi(150, 170, '14px 16px', 26, 58, 20) }}
+  </div>
+
+  <div class="kahraman" style="gap: 16px; padding-top: 56px">
+    <div class="kahraman-baslik" style="font-size: 36px">GRAM GÜMÜŞ</div>
+    <div class="kahraman-satir" style="gap: 20px">
+      <div class="kahraman-sayi-kolon" style="gap: 8px">
+        {{ degisim(gram_deg, 40, 28) }}
+        <span class="kahraman-sayi sayi" style="font-size: 156px; letter-spacing: -5px">{{ gram }}</span>
+      </div>
+      <span class="kahraman-birim" style="font-size: 64px; padding-bottom: 18px">₺</span>
+    </div>
+    <div class="soluk" style="font-size: 32px">Türk lirası · 1 gram · önceki güne göre</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column">
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 40px 0; border-top: 2px solid var(--cizgi)">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <b style="font-size: 42px">Altın / Gümüş paritesi</b>
+        <span class="soluk" style="font-size: 28px">1 ons altın kaç ons gümüş eder</span>
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 16px">
+        <span class="sayi vurgu" style="font-size: 80px; font-weight: 700">{{ parite }}</span>
+        {{ degisim(parite_deg, 30, 22) }}
+      </div>
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 40px 0; border-top: 2px solid var(--cizgi); border-bottom: 2px solid var(--cizgi)">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <b style="font-size: 42px">Dolar / TL</b>
+        <span class="soluk" style="font-size: 28px">1 USD</span>
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 12px">
+        <span class="sayi" style="font-size: 80px; font-weight: 700">{{ dolar }}</span>
+        <span class="vurgu" style="font-size: 46px; font-weight: 700">₺</span>
+        {{ degisim(dolar_deg, 30, 22) }}
+      </div>
+    </div>
+  </div>
+
+  <div class="alt">
+    <b style="font-size: 36px">{{ hesap }}</b>
+    <span class="soluk" style="font-size: 26px; text-align: right; max-width: 480px">Bilgi amaçlıdır, yatırım tavsiyesi değildir.</span>
+  </div>
+</div>
+</body>
+</html>

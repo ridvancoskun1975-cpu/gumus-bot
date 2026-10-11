@@ -1,0 +1,87 @@
+name: Gümüş paylaşımı
+
+on:
+  schedule:
+    # Saatler UTC'dir. Türkiye = UTC+3. GitHub zamanlı işleri genelde 5-15 dk gecikmeli başlatır.
+    - cron: '50 6 * * 1-5'    # 09:50 TR -> 1. Reels
+    - cron: '50 13 * * 1-5'   # 16:50 TR -> 2. Reels
+    - cron: '50 16 * * 1-5'   # 19:50 TR -> Günlük feed postu
+  workflow_dispatch:
+    inputs:
+      tur:
+        description: "Ne üretilsin?"
+        type: choice
+        options: [reels, post]
+        default: reels
+      deneme:
+        description: "Deneme: sadece üret, Instagram'a paylaşma"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: gumus-paylasim
+  cancel-in-progress: false
+
+jobs:
+  paylas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: github-pages
+      url: ${{ steps.yayin.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Gerekenleri kur
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+          pip install -q -r requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Türü belirle
+        id: tur
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tur=${{ inputs.tur }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.schedule }}" = "50 16 * * 1-5" ]; then
+            echo "tur=post" >> "$GITHUB_OUTPUT"
+          else
+            echo "tur=reels" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Görseli / videoyu üret
+        env:
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+          HESAP_ADI: ${{ vars.HESAP_ADI }}
+        run: python bot/main.py hazirla --tur "${{ steps.tur.outputs.tur }}" --cikti site
+
+      - name: Önizleme olarak sakla
+        uses: actions/upload-artifact@v4
+        with:
+          name: onizleme-${{ steps.tur.outputs.tur }}
+          path: site
+          retention-days: 7
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Dosyayı internete koy (GitHub Pages)
+        id: yayin
+        uses: actions/deploy-pages@v4
+
+      - name: Instagram'a paylaş
+        if: github.event_name == 'schedule' || inputs.deneme == false
+        env:
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+        run: python bot/main.py yayinla --cikti site --url "${{ steps.yayin.outputs.page_url }}"

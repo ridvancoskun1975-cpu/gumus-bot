@@ -1,0 +1,14 @@
+{% macro degisim(d, yazi, ok) -%}
+<span class="degisim {{ d.yon }}" style="font-size: {{ yazi }}px">
+  <svg width="{{ ok }}" height="{{ ok }}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 L22 20 H2 Z" fill="currentColor"></path></svg>
+  <span class="sayi">{{ d.metin }}</span>
+</span>
+{%- endmacro %}
+
+{% macro ag_etiketi(gen, yuk, pad, s1, s2, s3) -%}
+<div class="ag" style="width: {{ gen }}px; height: {{ yuk }}px; padding: {{ pad }}">
+  <span class="mono soluk" style="font-size: {{ s1 }}px">47</span>
+  <b style="font-size: {{ s2 }}px">Ag</b>
+  <span class="mono soluk" style="font-size: {{ s3 }}px">107,87</span>
+</div>
+{%- endmacro %}

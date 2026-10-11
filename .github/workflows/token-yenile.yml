@@ -1,0 +1,30 @@
+name: Instagram token yenile
+
+# Instagram erişim anahtarı 60 günde bir sona erer. Bu iş her pazartesi yeniler
+# ve yeni anahtarı IG_TOKEN gizli değişkenine yazar.
+on:
+  schedule:
+    - cron: '17 5 * * 1'   # Pazartesi 08:17 TR
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  yenile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -q requests
+      - name: Yenile ve kaydet
+        env:
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          YENI=$(python bot/main.py token-yenile)
+          echo "::add-mask::$YENI"
+          gh secret set IG_TOKEN --body "$YENI" --repo "${{ github.repository }}"
+          echo "Token yenilendi."
