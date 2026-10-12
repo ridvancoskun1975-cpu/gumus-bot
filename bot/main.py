@@ -275,16 +275,22 @@ def gorsel_uret(tur, veri, png_yolu):
         gecici.unlink(missing_ok=True)
 
 
+ZEMIN_RENGI = "0x121418"   # templates/ortak.css içindeki --zemin ile aynı
+
+
 def video_uret(png_yolu, mp4_yolu, sure=7):
+    """Görselden sesli dikey video üretir. 9:16 olmayan görseller zemin rengiyle 1080x1920'ye tamamlanır."""
     muzik = KOK / "assets" / "muzik.mp3"
     if muzik.exists():
         ses = ["-stream_loop", "-1", "-i", str(muzik)]
-        ses_filtre = ["-af", f"afade=t=in:d=0.5,afade=t=out:st={sure - 1}:d=1"]
+        ses_filtre = ["-af", f"loudnorm=I=-16:TP=-1.5:LRA=11,afade=t=in:d=0.5,afade=t=out:st={sure - 1.5}:d=1.5,aresample=44100"]
     else:
         ses = ["-f", "lavfi", "-i", "anullsrc=r=44100:cl=stereo"]
         ses_filtre = []
+    goruntu = (f"scale=1080:-2,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color={ZEMIN_RENGI},"
+               "fade=t=in:st=0:d=0.6,format=yuv420p")
     komut = [ffmpeg_yolu(), "-y", "-loglevel", "error", "-loop", "1", "-framerate", "30", "-i", str(png_yolu), *ses,
-             "-t", str(sure), "-vf", "fade=t=in:st=0:d=0.6,format=yuv420p", *ses_filtre,
+             "-t", str(sure), "-vf", goruntu, *ses_filtre,
              "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-r", "30",
              "-c:a", "aac", "-b:a", "128k", "-shortest", "-movflags", "+faststart", str(mp4_yolu)]
     subprocess.run(komut, check=True)
@@ -339,9 +345,10 @@ def yayinla(cikti, taban_url):
     medya_url = taban_url.rstrip("/") + "/" + meta["dosya"]
     _url_hazir_mi(medya_url)
     kullanici_id = hesap_bilgisi()["user_id"]
-    if meta["tur"] == "reels":
+    if meta["dosya"].endswith(".mp4"):
+        # thumb_offset: kapak, kararmadan açılış bittikten sonraki kareden alınsın
         k = _istek("POST", f"{kullanici_id}/media", media_type="REELS", video_url=medya_url,
-                   caption=meta["aciklama"], share_to_feed="true")
+                   caption=meta["aciklama"], share_to_feed="true", thumb_offset="1500")
     else:
         k = _istek("POST", f"{kullanici_id}/media", image_url=medya_url, caption=meta["aciklama"])
     _hazir_olmasini_bekle(k["id"])
@@ -380,15 +387,10 @@ def hazirla(tur, cikti, ornek):
     png = cikti / f"{tur}-{damga}.png"
     gorsel_uret(tur, veri, png)
     dosya = png.name
-    if tur == "reels":
-        mp4 = cikti / f"reels-{damga}.mp4"
-        video_uret(png, mp4)
-        dosya = mp4.name
-    if tur in ("post", "hafta"):
-        # Instagram feed görsellerinde JPEG istiyor
-        jpg = cikti / f"{tur}-{damga}.jpg"
-        subprocess.run([ffmpeg_yolu(), "-y", "-loglevel", "error", "-i", str(png), "-q:v", "2", str(jpg)], check=True)
-        dosya = jpg.name
+    # Her paylaşım sesli video (Reels) olarak gider; özetler okunabilsin diye biraz daha uzun.
+    mp4 = cikti / f"{tur}-{damga}.mp4"
+    video_uret(png, mp4, sure=7 if tur == "reels" else 10)
+    dosya = mp4.name
 
     aciklama = aciklama_yaz(veri, tur)
     (cikti / "meta.json").write_text(json.dumps({"tur": tur, "dosya": dosya, "aciklama": aciklama,
