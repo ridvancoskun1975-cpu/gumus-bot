@@ -43,10 +43,10 @@ jobs:
           cache: pip
 
       - name: Gerekenleri kur
+        timeout-minutes: 6
         run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
           pip install -q -r requirements.txt
-          python -m playwright install --with-deps chromium
+          python -m playwright install chromium
 
       - name: Türü belirle
         id: tur
@@ -60,6 +60,7 @@ jobs:
           fi
 
       - name: Görseli / videoyu üret
+        timeout-minutes: 5
         env:
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
           HESAP_ADI: ${{ vars.HESAP_ADI }}
@@ -81,6 +82,7 @@ jobs:
         uses: actions/deploy-pages@v4
 
       - name: Instagram'a paylaş
+        timeout-minutes: 8
         if: github.event_name == 'schedule' || inputs.deneme == false
         env:
           IG_TOKEN: ${{ secrets.IG_TOKEN }}

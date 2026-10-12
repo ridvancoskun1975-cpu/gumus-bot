@@ -18,6 +18,16 @@ from zoneinfo import ZoneInfo
 
 import requests
 
+
+def ffmpeg_yolu():
+    """Sistemde ffmpeg varsa onu, yoksa pip paketiyle gelen hazır ffmpeg'i kullanır."""
+    import shutil
+    yol = shutil.which("ffmpeg")
+    if yol:
+        return yol
+    import imageio_ffmpeg
+    return imageio_ffmpeg.get_ffmpeg_exe()
+
 KOK = Path(__file__).resolve().parent.parent
 SABLONLAR = KOK / "templates"
 ONS_GRAM = 31.1034768
@@ -153,7 +163,7 @@ def video_uret(png_yolu, mp4_yolu, sure=7):
     else:
         ses = ["-f", "lavfi", "-i", "anullsrc=r=44100:cl=stereo"]
         ses_filtre = []
-    komut = ["ffmpeg", "-y", "-loglevel", "error", "-loop", "1", "-framerate", "30", "-i", str(png_yolu), *ses,
+    komut = [ffmpeg_yolu(), "-y", "-loglevel", "error", "-loop", "1", "-framerate", "30", "-i", str(png_yolu), *ses,
              "-t", str(sure), "-vf", "fade=t=in:st=0:d=0.6,format=yuv420p", *ses_filtre,
              "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-r", "30",
              "-c:a", "aac", "-b:a", "128k", "-shortest", "-movflags", "+faststart", str(mp4_yolu)]
@@ -254,7 +264,7 @@ def hazirla(tur, cikti, ornek):
     if tur == "post":
         # Instagram feed görsellerinde JPEG istiyor
         jpg = cikti / f"post-{damga}.jpg"
-        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(png), "-q:v", "2", str(jpg)], check=True)
+        subprocess.run([ffmpeg_yolu(), "-y", "-loglevel", "error", "-i", str(png), "-q:v", "2", str(jpg)], check=True)
         dosya = jpg.name
 
     aciklama = aciklama_yaz(veri, tur)
