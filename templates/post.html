@@ -39,7 +39,7 @@
     </div>
     <div style="display: flex; flex-direction: column; gap: 6px">
       <b style="font-size: 32px">Dolar / TL</b>
-      <span class="soluk" style="font-size: 24px">1 USD</span>
+      <span class="soluk" style="font-size: 24px">TCMB döviz alış · {{ kur_tarihi }}</span>
       <div style="display: flex; align-items: baseline; gap: 10px; margin-top: 8px">
         <span class="sayi" style="font-size: 64px; font-weight: 700">{{ dolar }}</span>
         <span class="vurgu" style="font-size: 40px; font-weight: 700">₺</span>
@@ -50,7 +50,10 @@
 
   <div class="alt" style="border-top: 2px solid var(--cizgi); padding-top: 28px">
     <b style="font-size: 32px">{{ hesap }}</b>
-    <span class="soluk" style="font-size: 24px; text-align: right">Bilgi amaçlıdır, yatırım tavsiyesi değildir.</span>
+    <div class="alt-sag soluk" style="font-size: 22px">
+      <span>Bilgi amaçlıdır, yatırım tavsiyesi değildir.</span>
+      <span>Metal fiyatları: {{ kaynak_metal }}</span>
+    </div>
   </div>
 </div>
 </body>

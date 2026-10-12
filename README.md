@@ -7,13 +7,13 @@ Instagram'a otomatik paylaşım yapar:
 | ~10:00 | Reels (7 sn video) |
 | ~17:00 | Reels (7 sn video) |
 | ~20:00 | Günün özeti (10 sn video) |
-| Cumartesi ~10:00 | Haftalık özet (10 sn video: hafta kapanışı, günlük grafik, en yüksek/en düşük) |
+| Cumartesi ~10:00 | Haftalık özet (10 sn video: haftanın son değeri, günlük grafik, en yüksek/en düşük) |
 
 Hepsi müzikli Reels olarak paylaşılır ve profil ızgarasında da görünür.
 
-Her paylaşımda: **gram gümüş (₺)**, **altın/gümüş paritesi**, **dolar/TL** ve her birinin önceki gün kapanışına göre değişimi (ok ile).
+Her paylaşımda: **gram gümüş (₺)**, **altın/gümüş paritesi**, **dolar/TL** ve her birinin önceki iş gününe göre değişimi (ok ile).
 
-İlk üçü hafta içi her gün paylaşılır. Hafta sonu ons gümüş ve dolar/TL işlem görmediği için günlük paylaşım yapılmaz; onun yerine cumartesi haftalık özet gelir (değişimler önceki haftanın kapanışına göre). GitHub zamanlı işleri genelde 5-15 dakika gecikmeyle başlatır.
+İlk üçü hafta içi her gün paylaşılır. Hafta sonu ons gümüş ve dolar/TL işlem görmediği için günlük paylaşım yapılmaz; onun yerine cumartesi haftalık özet gelir (değişimler önceki haftanın son değerine göre). GitHub zamanlı işleri genelde 5-15 dakika gecikmeyle başlatır.
 
 ---
 
@@ -38,6 +38,8 @@ Bu depo **herkese açık (Public)** olmalı. Görseller ücretsiz GitHub Pages �
 2. **Settings → Secrets and variables → Actions → New repository secret:**
    - `IG_TOKEN` → 2. adımda aldığın anahtar
    - `GH_PAT` → token'ın otomatik yenilenmesi için (aşağıya bak)
+   - `METALCHARTS_KEY` → metalcharts.org ücretsiz hesabındaki API anahtarı (`mc_live_…`). Yoksa paylaşım yapılmaz, iş uyarı verip atlar.
+   - `MUZIK_ANAHTAR` → şifreli müzik dosyasını açan parola. Yoksa videolar müziksiz üretilir.
 3. (İsteğe bağlı) Aynı sayfada **Variables** sekmesi → `HESAP_ADI` → görsellerde yazacak kullanıcı adı. Boş bırakırsan bot hesabından otomatik alır.
 
 **GH_PAT nasıl alınır:** GitHub → sağ üstte profil → **Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token**. Repository access: sadece bu depo. Permissions → **Secrets: Read and write**. Süreyi en uzun seç, oluşan anahtarı `GH_PAT` olarak kaydet.
@@ -52,9 +54,33 @@ Bundan sonra bot kendi kendine çalışır.
 
 ---
 
+## Kaynaklar ve lisanslar
+
+Her kaynak herkese açık paylaşıma izin verir; şartları kaynağın gösterilmesidir. Kaynak satırları görselin altında ve Instagram açıklamasında otomatik yer alır.
+
+| Ne | Kaynak | Şart |
+|---|---|---|
+| Ons gümüş, ons altın (USD, spot) | [MetalCharts API](https://metalcharts.org/api-terms), ücretsiz plan | Herkese açık gösterimde metalcharts.org kaynağı görünür olmalı. Ayda 200 istek hakkı var; bot ayda ~70 kullanır. Ücretsiz planda geçmiş veri yok. |
+| Dolar/TL | [TCMB](https://www.tcmb.gov.tr) gösterge niteliğindeki döviz alış kuru (`kurlar/today.xml`) | Kaynak gösterilerek yayımlanabilir. **Ticari amaçla kullanımı TCMB'nin yazılı iznine tabidir**: hesaptan gelir elde etmeye başlarsan izin al ya da kuru başka bir kaynaktan al. |
+| Müzik | "Autumn Piano" – leberch, [Pixabay İçerik Lisansı](https://pixabay.com/tr/service/license/) | Videoda kullanmak serbest; müziği tek başına dağıtmak yasak. Bu yüzden depoda sadece şifreli hali (`assets/muzik.mp3.enc`) durur. |
+| Yazı tipleri | Archivo, JetBrains Mono — SIL Open Font License | Lisans metinleri `assets/fonts` içinde. |
+| Paylaşım | Instagram API (Instagram ile giriş), Standard Access | Uygulama yalnızca kendi hesabına paylaştığı için uygulama incelemesi gerekmez. |
+
+TCMB kuru her iş günü 15:30'da yayımlanır; sabah paylaşımında bir önceki iş gününün kuru kullanılır (görselde kurun tarihi yazar).
+
+**Günlük kayıtlar:** MetalCharts'ın ücretsiz planında geçmiş veri olmadığı için bot her hafta içi paylaşımda o anki değerleri `veri/gecmis.json` dosyasına yazar ve bu dosyayı GitHub Actions önbelleğinde saklar (depoya girmez). "Önceki gün" karşılaştırması ve cumartesi özeti bu kayıtlardan hesaplanır. Önceki haftaya ait kayıt yoksa (ilk hafta ya da bot bir hafta durduysa) haftalık özet o hafta atlanır. Önbellek 7 gün hiç kullanılmazsa GitHub siler; bot düzenli çalıştığı sürece sorun olmaz.
+
+**Müziği değiştirmek:** Yeni telifsiz mp3'ü şifreleyip eskisinin yerine koy, künyesini `assets/muzik-kunye.txt` dosyasına yaz:
+
+```
+MUZIK_ANAHTAR='parola' openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt \
+  -in yeni.mp3 -out assets/muzik.mp3.enc -pass env:MUZIK_ANAHTAR
+```
+
+Açık mp3'ü (`assets/muzik.mp3`) asla depoya ekleme; `.gitignore` bunu engeller.
+
 ## Notlar
-- **Veri kaynağı:** Yahoo Finance (ons gümüş `SI=F`, ons altın `GC=F`, dolar/TL `TRY=X`). Bunlar vadeli işlem fiyatlarıdır, spot fiyata çok yakındır. Gram gümüş TL fiyatı `ons gümüş × dolar/TL ÷ 31,1035` ile hesaplanır; Kapalıçarşı ya da banka alış-satış fiyatlarından biraz farklı olabilir.
-- **Müzik:** `assets/muzik.mp3` her videoya konur (şu an Pixabay'den telifsiz "Autumn Piano", leberch; ilk 30 sn). Değiştirmek için aynı adla başka bir telifsiz mp3 koy. Instagram'ın kendi müzik kütüphanesi otomatik paylaşımda ancak Facebook sayfası bağlı hesaplarda kullanılabiliyor.
+- **Hesaplama:** Gram gümüş TL fiyatı `ons gümüş × dolar/TL ÷ 31,1035` ile hesaplanır; Kapalıçarşı ya da banka alış-satış fiyatlarından biraz farklı olabilir.
+- **Müzik:** iş akışı `assets/muzik.mp3.enc` dosyasını `MUZIK_ANAHTAR` ile açıp her videoya koyar (şu an Pixabay'den "Autumn Piano", leberch; ilk 30 sn). Değiştirmek için yukarıdaki "Müziği değiştirmek" adımları. Instagram'ın kendi müzik kütüphanesi otomatik paylaşımda ancak Facebook sayfası bağlı hesaplarda kullanılabiliyor.
 - **Saatleri değiştirmek:** `.github/workflows/paylas.yml` içindeki `cron` satırları. Saatler UTC'dir (TR saati − 3). Post ya da haftalık özet saatini değiştirirsen aynı dosyadaki `"50 16 * * 1-5"` / `"50 6 * * 6"` kontrollerini de güncelle.
 - **Tasarım:** `templates/reels.html`, `templates/post.html` ve `templates/hafta.html`.
-- Yazı tipleri (Archivo, JetBrains Mono) SIL Open Font License ile dağıtılır, lisansları `assets/fonts` içinde.

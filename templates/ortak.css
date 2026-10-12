@@ -35,3 +35,4 @@ h1 { margin: 0; line-height: 0.9; font-weight: 800; }
 .degisim.dusus svg { transform: rotate(180deg); }
 .alt { display: flex; justify-content: space-between; align-items: flex-end; gap: 40px; }
 .alt b { font-weight: 700; }
+.alt-sag { display: flex; flex-direction: column; align-items: flex-end; text-align: right; gap: 6px; }

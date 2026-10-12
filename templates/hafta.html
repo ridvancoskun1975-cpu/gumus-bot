@@ -20,7 +20,7 @@
   </div>
 
   <div class="kahraman" style="gap: 10px; padding-top: 32px">
-    <div class="kahraman-baslik" style="font-size: 28px">GRAM GÜMÜŞ · HAFTA KAPANIŞI</div>
+    <div class="kahraman-baslik" style="font-size: 28px">GRAM GÜMÜŞ · <span style="text-transform: uppercase">{{ son_an }}</span></div>
     <div class="kahraman-satir" style="gap: 20px">
       <div class="kahraman-sayi-kolon" style="gap: 6px">
         {{ degisim(gram_deg, 36, 26) }}
@@ -28,7 +28,7 @@
       </div>
       <span class="kahraman-birim" style="font-size: 64px; padding-bottom: 18px">₺</span>
     </div>
-    <div class="soluk" style="font-size: 26px">Önceki haftanın kapanışına göre · en yüksek {{ en_yuksek }} ₺ · en düşük {{ en_dusuk }} ₺</div>
+    <div class="soluk" style="font-size: 26px">Önceki haftanın son değerine göre · en yüksek {{ en_yuksek }} ₺ · en düşük {{ en_dusuk }} ₺</div>
   </div>
 
   {% set gr = grafik %}
@@ -46,6 +46,7 @@
   <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; border-top: 2px solid var(--cizgi); padding-top: 28px">
     <div style="display: flex; flex-direction: column; gap: 6px">
       <b style="font-size: 30px">Altın / Gümüş paritesi</b>
+      <span class="soluk" style="font-size: 22px">1 ons altın = ? ons gümüş</span>
       <div style="display: flex; align-items: baseline; gap: 14px; margin-top: 6px">
         <span class="sayi vurgu" style="font-size: 58px; font-weight: 700">{{ parite }}</span>
         {{ degisim(parite_deg, 26, 18) }}
@@ -53,6 +54,7 @@
     </div>
     <div style="display: flex; flex-direction: column; gap: 6px">
       <b style="font-size: 30px">Dolar / TL</b>
+      <span class="soluk" style="font-size: 22px">TCMB döviz alış · {{ kur_tarihi }}</span>
       <div style="display: flex; align-items: baseline; gap: 10px; margin-top: 6px">
         <span class="sayi" style="font-size: 58px; font-weight: 700">{{ dolar }}</span>
         <span class="vurgu" style="font-size: 36px; font-weight: 700">₺</span>
@@ -63,7 +65,10 @@
 
   <div class="alt" style="border-top: 2px solid var(--cizgi); padding-top: 24px">
     <b style="font-size: 32px">{{ hesap }}</b>
-    <span class="soluk" style="font-size: 24px; text-align: right">Bilgi amaçlıdır, yatırım tavsiyesi değildir.</span>
+    <div class="alt-sag soluk" style="font-size: 22px">
+      <span>Bilgi amaçlıdır, yatırım tavsiyesi değildir.</span>
+      <span>Metal fiyatları: {{ kaynak_metal }}</span>
+    </div>
   </div>
 </div>
 </body>

@@ -4,6 +4,18 @@ Komutlar:
   python bot/main.py hazirla --tur reels|post|hafta --cikti site [--ornek]
   python bot/main.py yayinla --cikti site --url https://kullanici.github.io/repo/
   python bot/main.py token-yenile
+
+Veri kaynakları (ikisi de kaynak gösterilerek herkese açık yayımlanmaya izin veriyor):
+  - Ons gümüş ve ons altın (USD): MetalCharts API, ücretsiz plan.
+    Şartlar: https://metalcharts.org/api-terms — ücretsiz planda veri herkese açık
+    gösterildiğinde metalcharts.org kaynağı görünür olmalı.
+  - Dolar/TL: TCMB gösterge niteliğindeki döviz alış kuru.
+    Şartlar: https://www.tcmb.gov.tr (Kullanım Koşulları) — kaynak gösterilerek
+    yayımlanabilir; ticari amaçla kullanımı TCMB'nin yazılı iznine tabidir.
+
+MetalCharts'ın ücretsiz planında geçmiş veri olmadığı için her hafta içi paylaşımda o
+günün değerleri veri/gecmis.json dosyasına yazılır (iş akışı bu dosyayı GitHub önbelleğinde
+saklar). "Önceki gün" karşılaştırması ve haftalık özet bu kayıtlardan hesaplanır.
 """
 import argparse
 import json
@@ -12,7 +24,8 @@ import os
 import subprocess
 import sys
 import time
-from datetime import datetime
+import xml.etree.ElementTree as ET
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -34,120 +47,221 @@ ONS_GRAM = 31.1034768
 TR_SAAT = ZoneInfo("Europe/Istanbul")
 AYLAR = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz",
          "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"]
+GUNLER = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"]
 
 API_HOST = os.environ.get("IG_API_HOST", "https://graph.instagram.com").rstrip("/")
 API_SURUM = os.environ.get("IG_API_VERSION", "v23.0")
 API = f"{API_HOST}/{API_SURUM}"
 
+METALCHARTS_URL = "https://api.metalcharts.org/v1/prices"
+TCMB_URL = "https://www.tcmb.gov.tr/kurlar/{}.xml"
+TARAYICI = "gumus-bot/1.0 (+https://github.com/ridvancoskun1975-cpu/gumus-bot)"
+GECMIS_DOSYASI = KOK / "veri" / "gecmis.json"
+MUZIK_KUNYE = KOK / "assets" / "muzik-kunye.txt"
+
+# Görselde ve açıklamada görünen kaynak satırları (kaynak göstermek iki kaynağın da şartı)
+KAYNAK_METAL = "MetalCharts · metalcharts.org"
+KAYNAK_KUR = "TCMB döviz alış kuru"
+
+
+class VeriYok(Exception):
+    """Paylaşım için gereken veri (anahtar ya da kayıt) henüz yok; paylaşım atlanır."""
+
 
 # ---------------------------------------------------------------- fiyatlar
 
-def _son_ve_onceki(sembol):
-    """Bir sembolün son fiyatını ve önceki gün kapanışını döndürür."""
-    import yfinance as yf
+def _bekle(deneme):
+    time.sleep(5 * (deneme + 1))
+
+
+def metal_fiyatlari():
+    """MetalCharts'tan ons gümüş (XAG) ve ons altın (XAU) spot fiyatı, USD."""
+    anahtar = os.environ.get("METALCHARTS_KEY", "").strip()
+    if not anahtar:
+        raise VeriYok("METALCHARTS_KEY tanımlı değil (GitHub → Settings → Secrets and variables → Actions).")
 
     son_hata = None
     for deneme in range(3):
         try:
-            t = yf.Ticker(sembol)
-            gunluk = t.history(period="10d", interval="1d")["Close"].dropna()
-            gun_ici = t.history(period="2d", interval="15m")["Close"].dropna()
-            son = float(gun_ici.iloc[-1]) if not gun_ici.empty else float(gunluk.iloc[-1])
-            son_gun = (gun_ici.index[-1] if not gun_ici.empty else gunluk.index[-1]).date()
-            # Önceki gün kapanışı: son işlem gününden önceki son günlük kapanış
-            onceki_seri = gunluk[[d.date() < son_gun for d in gunluk.index]]
-            onceki = float(onceki_seri.iloc[-1]) if not onceki_seri.empty else float(gunluk.iloc[-2])
-            if not (son > 0 and onceki > 0 and math.isfinite(son) and math.isfinite(onceki)):
-                raise ValueError(f"{sembol} için geçersiz fiyat: {son}, {onceki}")
-            return son, onceki
-        except Exception as e:  # ağ hatası, boş veri vb.
+            r = requests.get(METALCHARTS_URL, timeout=30, headers={
+                "Authorization": f"Bearer {anahtar}", "Accept": "application/json", "User-Agent": TARAYICI})
+        except requests.RequestException as e:
             son_hata = e
-            time.sleep(5 * (deneme + 1))
-    raise RuntimeError(f"{sembol} fiyatı alınamadı: {son_hata}")
+            _bekle(deneme)
+            continue
+        if r.status_code in (401, 403):
+            raise RuntimeError(f"MetalCharts anahtarı geçersiz ya da yetkisiz (HTTP {r.status_code}).")
+        if r.status_code == 429:
+            bekleme = int(r.headers.get("Retry-After", "60") or 60)
+            if bekleme > 120:
+                raise RuntimeError("MetalCharts aylık kullanım hakkı dolmuş (HTTP 429); ayın 1'inde sıfırlanır.")
+            son_hata = RuntimeError("HTTP 429")
+            time.sleep(bekleme)
+            continue
+        if r.status_code >= 400:
+            son_hata = RuntimeError(f"HTTP {r.status_code}: {r.text[:200]}")
+            _bekle(deneme)
+            continue
+        try:
+            veri = r.json()["data"]
+            sonuc = {}
+            for sembol in ("XAG", "XAU"):
+                q = veri[sembol]
+                sonuc[sembol] = {
+                    "fiyat": float(q["price"]),
+                    "yuzde24": float(q.get("changePercent24h") or 0.0),   # yüzde cinsinden
+                    "eski": bool(q.get("stale")),
+                    "zaman": q.get("timestamp"),
+                }
+        except (ValueError, KeyError, TypeError) as e:
+            son_hata = RuntimeError(f"Beklenmeyen yanıt: {e}")
+            _bekle(deneme)
+            continue
+        gumus, altin = sonuc["XAG"]["fiyat"], sonuc["XAU"]["fiyat"]
+        # Saçma bir değerle paylaşım yapılmasın diye kaba bir akıl sağlığı kontrolü
+        if not (math.isfinite(gumus) and math.isfinite(altin) and 2 < gumus < 1000
+                and 200 < altin < 50000 and 10 < altin / gumus < 300):
+            raise RuntimeError(f"MetalCharts'tan geçersiz fiyat geldi: gümüş {gumus}, altın {altin}")
+        for sembol, q in sonuc.items():
+            if q["eski"]:
+                print(f"Uyarı: {sembol} fiyatı güncel değil (piyasa kapalı olabilir), zaman: {q['zaman']}",
+                      file=sys.stderr)
+        return sonuc
+    raise RuntimeError(f"Metal fiyatları alınamadı: {son_hata}")
 
 
-def fiyatlari_al():
-    gumus, gumus_once = _son_ve_onceki("SI=F")   # ons gümüş, USD
-    altin, altin_once = _son_ve_onceki("GC=F")   # ons altın, USD
-    dolar, dolar_once = _son_ve_onceki("TRY=X")  # USD/TRY
+def _tcmb_bulten(yol):
+    """TCMB kur bülteninden (tarih, USD döviz alış) döndürür; bülten yoksa (tatil) None."""
+    son_hata = None
+    for deneme in range(3):
+        try:
+            r = requests.get(TCMB_URL.format(yol), timeout=30, headers={"User-Agent": TARAYICI})
+            if r.status_code == 404:
+                return None
+            r.raise_for_status()
+            kok = ET.fromstring(r.content)
+            tarih = datetime.strptime(kok.attrib["Tarih"], "%d.%m.%Y").date()
+            for c in kok.iter("Currency"):
+                if c.get("CurrencyCode") == "USD":
+                    kur = float(c.findtext("ForexBuying"))
+                    if not (math.isfinite(kur) and kur > 0):
+                        raise ValueError(f"geçersiz kur {kur}")
+                    return tarih, kur
+            raise ValueError("bültende USD yok")
+        except (requests.RequestException, ET.ParseError, ValueError, KeyError, TypeError) as e:
+            son_hata = e
+            _bekle(deneme)
+    raise RuntimeError(f"TCMB kuru alınamadı ({yol}): {son_hata}")
+
+
+def tcmb_kurlari():
+    """Son yayımlanan TCMB bülteni ve ondan önceki bülten: ((tarih, kur), (tarih, kur)).
+
+    Bülten her iş günü 15:30'da yayımlanır; o saatten önce 'today.xml' bir önceki
+    iş gününün bültenini gösterir.
+    """
+    son = _tcmb_bulten("today")
+    if son is None:
+        raise RuntimeError("TCMB güncel bülteni bulunamadı")
+    for geri in range(1, 15):
+        g = son[0] - timedelta(days=geri)
+        onceki = _tcmb_bulten(f"{g:%Y%m}/{g:%d%m%Y}")
+        if onceki:
+            return son, onceki
+    raise RuntimeError("TCMB önceki bülteni bulunamadı")
+
+
+def gecmis_oku():
+    try:
+        return json.loads(GECMIS_DOSYASI.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return {}
+    except ValueError as e:
+        print(f"Uyarı: günlük kayıt dosyası okunamadı ({e}); boş başlanıyor", file=sys.stderr)
+        return {}
+
+
+def gecmis_yaz(gecmis, gun, kayit):
+    gecmis = dict(gecmis)
+    gecmis[gun.isoformat()] = kayit
+    sinir = (gun - timedelta(days=60)).isoformat()
+    gecmis = {k: gecmis[k] for k in sorted(gecmis) if k >= sinir}
+    GECMIS_DOSYASI.parent.mkdir(parents=True, exist_ok=True)
+    GECMIS_DOSYASI.write_text(json.dumps(gecmis, ensure_ascii=False, indent=1), encoding="utf-8")
+
+
+def fiyatlari_al(kaydet=True):
+    metal = metal_fiyatlari()
+    (kur_tarihi, dolar), (_, dolar_once) = tcmb_kurlari()
+    gumus, altin = metal["XAG"]["fiyat"], metal["XAU"]["fiyat"]
+    gram = gumus * dolar / ONS_GRAM
+
+    simdi = datetime.now(TR_SAAT)
+    bugun = simdi.date()
+    gecmis = gecmis_oku()
+    alt_sinir = (bugun - timedelta(days=6)).isoformat()
+    onceki_gunler = [k for k in gecmis if alt_sinir <= k < bugun.isoformat()]
+    if onceki_gunler:
+        # Önceki iş gününün son kaydı (normalde 20:00 paylaşımı)
+        o = gecmis[max(onceki_gunler)]
+        gram_once, parite_once = o["gram"], o["altin"] / o["gumus"]
+    else:
+        # İlk günlerde kayıt yok: MetalCharts'ın 24 saatlik değişiminden geri hesapla
+        gumus_once = gumus / (1 + metal["XAG"]["yuzde24"] / 100)
+        altin_once = altin / (1 + metal["XAU"]["yuzde24"] / 100)
+        gram_once = gumus_once * dolar_once / ONS_GRAM
+        parite_once = altin_once / gumus_once
+
+    if kaydet and bugun.weekday() < 5:
+        gecmis_yaz(gecmis, bugun, {"saat": simdi.strftime("%H:%M"), "gumus": gumus, "altin": altin,
+                                    "dolar": dolar, "kur_tarihi": kur_tarihi.isoformat(), "gram": gram})
     return {
-        "gram": gumus * dolar / ONS_GRAM,
-        "gram_once": gumus_once * dolar_once / ONS_GRAM,
-        "parite": altin / gumus,
-        "parite_once": altin_once / gumus_once,
-        "dolar": dolar,
-        "dolar_once": dolar_once,
+        "gram": gram, "gram_once": gram_once,
+        "parite": altin / gumus, "parite_once": parite_once,
+        "dolar": dolar, "dolar_once": dolar_once,
+        "kur_tarihi": kur_tarihi.isoformat(),
     }
 
 
-def _gunluk_kapanislar(sembol):
-    """Son ~1 ayın günlük kapanışlarını {tarih: fiyat} olarak döndürür."""
-    import yfinance as yf
-
-    son_hata = None
-    for deneme in range(3):
-        try:
-            seri = yf.Ticker(sembol).history(period="1mo", interval="1d")["Close"].dropna()
-            kapanis = {d.date(): float(v) for d, v in seri.items() if v > 0 and math.isfinite(v)}
-            if len(kapanis) < 5:
-                raise ValueError(f"{sembol} için yetersiz veri")
-            return kapanis
-        except Exception as e:
-            son_hata = e
-            time.sleep(5 * (deneme + 1))
-    raise RuntimeError(f"{sembol} günlük verisi alınamadı: {son_hata}")
-
-
-def _hafta_ayir(kapanis):
-    """Son tamamlanan haftanın kapanışlarını ve ondan önceki haftanın son kapanışını ayırır.
+def _hafta_ayir(tarihler):
+    """Son tamamlanan haftanın kayıtlı iş günlerini ve önceki haftanın son kayıtlı gününü döndürür.
 
     Hafta sonu çalışınca biten haftayı, hafta içi (elle) çalışınca yarım kalan bu
     haftayı değil bir önceki tam haftayı alır.
     """
-    from datetime import timedelta
     bugun = datetime.now(TR_SAAT).date()
     if bugun.weekday() < 5:
-        sinir = bugun - timedelta(days=bugun.weekday())   # bu haftanın pazartesi
+        sinir = bugun - timedelta(days=bugun.weekday())       # bu haftanın pazartesi
     else:
-        sinir = bugun + timedelta(days=7 - bugun.weekday())  # gelecek pazartesi
-    tarihler = sorted(d for d in kapanis if d < sinir)
-    son = tarihler[-1]
-    pazartesi = son - timedelta(days=son.weekday())
-    bu_hafta = [d for d in tarihler if d >= pazartesi]
-    onceki = [d for d in tarihler if d < pazartesi]
+        sinir = bugun + timedelta(days=7 - bugun.weekday())   # gelecek pazartesi
+    pazartesi = sinir - timedelta(days=7)
+    bu_hafta = sorted(d for d in tarihler if pazartesi <= d < sinir and d.weekday() < 5)
+    onceki = sorted(d for d in tarihler if pazartesi - timedelta(days=7) <= d < pazartesi)
+    if len(bu_hafta) < 2:
+        raise VeriYok(f"{pazartesi:%d.%m.%Y} haftası için yeterli günlük kayıt yok ({len(bu_hafta)} gün).")
     if not onceki:
-        raise RuntimeError("Önceki haftanın kapanışı bulunamadı")
+        raise VeriYok("Önceki haftaya ait kayıt yok; haftalık değişim hesaplanamıyor.")
     return bu_hafta, onceki[-1]
 
 
-def _o_gundeki(kapanis, gun):
-    """Verilen gündeki ya da ondan önceki en yakın kapanış (tatil farklarına karşı)."""
-    uygun = [d for d in kapanis if d <= gun]
-    return kapanis[max(uygun)] if uygun else kapanis[min(kapanis)]
-
-
 def haftalik_fiyatlari_al():
-    gumus = _gunluk_kapanislar("SI=F")
-    altin = _gunluk_kapanislar("GC=F")
-    dolar = _gunluk_kapanislar("TRY=X")
-    gunler, onceki_gun = _hafta_ayir(gumus)
-
-    def gram(g):
-        return _o_gundeki(gumus, g) * _o_gundeki(dolar, g) / ONS_GRAM
-
-    son = gunler[-1]
+    gecmis = {date.fromisoformat(k): v for k, v in gecmis_oku().items()}
+    gunler, onceki_gun = _hafta_ayir(gecmis)
+    son, once = gecmis[gunler[-1]], gecmis[onceki_gun]
     return {
-        "gram": gram(son), "gram_once": gram(onceki_gun),
-        "parite": _o_gundeki(altin, son) / gumus[son],
-        "parite_once": _o_gundeki(altin, onceki_gun) / gumus[onceki_gun],
-        "dolar": _o_gundeki(dolar, son), "dolar_once": _o_gundeki(dolar, onceki_gun),
-        "gunluk": [{"tarih": g.isoformat(), "gram": gram(g)} for g in gunler],
+        "gram": son["gram"], "gram_once": once["gram"],
+        "parite": son["altin"] / son["gumus"], "parite_once": once["altin"] / once["gumus"],
+        "dolar": son["dolar"], "dolar_once": once["dolar"],
+        "kur_tarihi": son["kur_tarihi"],
+        "son_saat": son["saat"],
+        "gunluk": [{"tarih": g.isoformat(), "gram": gecmis[g]["gram"]} for g in gunler],
     }
 
 
 def ornek_haftalik():
     f = ornek_fiyatlar()
     f["gram_once"] = 99.85
+    f["son_saat"] = "20:00"
     f["gunluk"] = [{"tarih": t, "gram": v} for t, v in
                    [("2026-10-05", 100.62), ("2026-10-06", 101.94), ("2026-10-07", 101.18),
                     ("2026-10-08", 102.49), ("2026-10-09", 103.79)]]
@@ -156,7 +270,7 @@ def ornek_haftalik():
 
 def ornek_fiyatlar():
     return {"gram": 103.79, "gram_once": 102.49, "parite": 66.2, "parite_once": 66.77,
-            "dolar": 48.48, "dolar_once": 48.46}
+            "dolar": 49.25, "dolar_once": 49.21, "kur_tarihi": "2026-10-12"}
 
 
 # ---------------------------------------------------------------- biçimlendirme
@@ -173,8 +287,16 @@ def degisim(simdi, once):
             "isaret": "▼" if yon == "dusus" else "▲"}
 
 
+def muzik_kunyesi():
+    try:
+        return MUZIK_KUNYE.read_text(encoding="utf-8").strip()
+    except FileNotFoundError:
+        return ""
+
+
 def veri_hazirla(f, hesap):
     simdi = datetime.now(TR_SAAT)
+    kur_gunu = date.fromisoformat(f["kur_tarihi"])
     return {
         "tarih": f"{simdi.day:02d} {AYLAR[simdi.month - 1]} {simdi.year}",
         "saat": simdi.strftime("%H:%M"),
@@ -184,6 +306,10 @@ def veri_hazirla(f, hesap):
         "parite_deg": degisim(f["parite"], f["parite_once"]),
         "dolar": tr_sayi(f["dolar"], 2),
         "dolar_deg": degisim(f["dolar"], f["dolar_once"]),
+        "kur_tarihi": f"{kur_gunu.day} {AYLAR[kur_gunu.month - 1]}",
+        "kur_tarihi_tam": f"{kur_gunu:%d.%m.%Y}",
+        "kaynak_metal": KAYNAK_METAL,
+        "kaynak_kur": KAYNAK_KUR,
         "hesap": hesap,
     }
 
@@ -192,7 +318,6 @@ GUN_KISA = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"]
 
 
 def haftalik_veri_hazirla(f, hesap):
-    from datetime import date
     v = veri_hazirla(f, hesap)
     gunler = [date.fromisoformat(g["tarih"]) for g in f["gunluk"]]
     degerler = [g["gram"] for g in f["gunluk"]]
@@ -201,10 +326,11 @@ def haftalik_veri_hazirla(f, hesap):
         v["aralik"] = f"{ilk.day:02d}–{son.day:02d} {AYLAR[son.month - 1]} {son.year}"
     else:
         v["aralik"] = f"{ilk.day:02d} {AYLAR[ilk.month - 1]} – {son.day:02d} {AYLAR[son.month - 1]} {son.year}"
+    v["son_an"] = f"{GUNLER[son.weekday()]} {f.get('son_saat', '')}".strip()
     v["en_yuksek"] = tr_sayi(max(degerler), 2)
     v["en_dusuk"] = tr_sayi(min(degerler), 2)
 
-    # Grafik: gram gümüşün günlük kapanışları, önceki hafta kapanışı kesikli çizgi
+    # Grafik: gram gümüşün günlük değerleri, önceki haftanın son değeri kesikli çizgi
     gen, yuk, kenar, yan = 904, 230, 30, 64
     tum = degerler + [f["gram_once"]]
     alt_s, ust_s = min(tum), max(tum)
@@ -222,6 +348,18 @@ def haftalik_veri_hazirla(f, hesap):
     return v
 
 
+def _kaynak_satirlari(v):
+    satirlar = [
+        "Gram fiyatı ons gümüş × dolar/TL ÷ 31,1035 ile hesaplanmıştır; kuyumcu ve banka fiyatlarından farklı olabilir.",
+        "Metal fiyatları: MetalCharts (metalcharts.org)",
+        f"Dolar/TL: TCMB gösterge niteliğindeki döviz alış kuru ({v['kur_tarihi_tam']} bülteni)",
+    ]
+    kunye = muzik_kunyesi()
+    if kunye:
+        satirlar.append(f"Müzik: {kunye}")
+    return "\n".join(satirlar)
+
+
 def aciklama_yaz(v, tur):
     if tur == "hafta":
         g, p, d = v["gram_deg"], v["parite_deg"], v["dolar_deg"]
@@ -231,8 +369,10 @@ def aciklama_yaz(v, tur):
             f"Haftanın en yükseği: {v['en_yuksek']} ₺ · en düşüğü: {v['en_dusuk']} ₺\n"
             f"Altın/Gümüş paritesi: {v['parite']} ({p['isaret']} {p['metin']})\n"
             f"Dolar/TL: {v['dolar']} ₺ ({d['isaret']} {d['metin']})\n\n"
-            "Değişimler önceki haftanın kapanışına, en yüksek/en düşük günlük kapanışlara göredir.\n"
+            "Günlük değerler iş günlerinin son paylaşımına (yaklaşık 20:00) aittir; "
+            "değişimler önceki haftanın son değerine göredir.\n"
             "Bilgi amaçlıdır, yatırım tavsiyesi değildir.\n\n"
+            f"{_kaynak_satirlari(v)}\n\n"
             "#gümüş #gramgümüş #gümüşfiyatları #haftalıközet #altın #dolar #piyasa #yatırım"
         )
     baslik = "Günün gümüş özeti" if tur == "post" else "Güncel gümüş fiyatları"
@@ -242,8 +382,9 @@ def aciklama_yaz(v, tur):
         f"Gram gümüş: {v['gram']} ₺ ({g['isaret']} {g['metin']})\n"
         f"Altın/Gümüş paritesi: {v['parite']} ({p['isaret']} {p['metin']})\n"
         f"Dolar/TL: {v['dolar']} ₺ ({d['isaret']} {d['metin']})\n\n"
-        "Değişimler önceki günün kapanışına göredir.\n"
+        "Değişimler önceki iş gününe göredir.\n"
         "Bilgi amaçlıdır, yatırım tavsiyesi değildir.\n\n"
+        f"{_kaynak_satirlari(v)}\n\n"
         "#gümüş #gramgümüş #gümüşfiyatları #altın #dolar #piyasa #yatırım"
     )
 
@@ -279,12 +420,17 @@ ZEMIN_RENGI = "0x121418"   # templates/ortak.css içindeki --zemin ile aynı
 
 
 def video_uret(png_yolu, mp4_yolu, sure=7):
-    """Görselden sesli dikey video üretir. 9:16 olmayan görseller zemin rengiyle 1080x1920'ye tamamlanır."""
+    """Görselden sesli dikey video üretir. 9:16 olmayan görseller zemin rengiyle 1080x1920'ye tamamlanır.
+
+    Müzik dosyası depoda şifreli durur (assets/muzik.mp3.enc); iş akışı MUZIK_ANAHTAR ile
+    assets/muzik.mp3 olarak açar. Dosya yoksa video sessiz üretilir.
+    """
     muzik = KOK / "assets" / "muzik.mp3"
     if muzik.exists():
         ses = ["-stream_loop", "-1", "-i", str(muzik)]
         ses_filtre = ["-af", f"loudnorm=I=-16:TP=-1.5:LRA=11,afade=t=in:d=0.5,afade=t=out:st={sure - 1.5}:d=1.5,aresample=44100"]
     else:
+        print("Uyarı: assets/muzik.mp3 yok, video müziksiz üretiliyor", file=sys.stderr)
         ses = ["-f", "lavfi", "-i", "anullsrc=r=44100:cl=stereo"]
         ses_filtre = []
     goruntu = (f"scale=1080:-2,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color={ZEMIN_RENGI},"
@@ -370,10 +516,16 @@ def token_yenile():
 
 def hazirla(tur, cikti, ornek):
     cikti.mkdir(parents=True, exist_ok=True)
-    if tur == "hafta":
-        fiyat = ornek_haftalik() if ornek else haftalik_fiyatlari_al()
-    else:
-        fiyat = ornek_fiyatlar() if ornek else fiyatlari_al()
+    (cikti / "meta.json").unlink(missing_ok=True)   # eski bir paylaşım yanlışlıkla tekrar gitmesin
+    try:
+        if tur == "hafta":
+            fiyat = ornek_haftalik() if ornek else haftalik_fiyatlari_al()
+        else:
+            fiyat = ornek_fiyatlar() if ornek else fiyatlari_al(kaydet=True)
+    except VeriYok as e:
+        # Hata değil: paylaşım bu sefer atlanır, iş akışı sonraki adımları çalıştırmaz.
+        print(f"::warning::Paylaşım atlandı: {e}")
+        return
     hesap = os.environ.get("HESAP_ADI", "").strip()
     if not hesap and os.environ.get("IG_TOKEN"):
         try:
@@ -386,7 +538,6 @@ def hazirla(tur, cikti, ornek):
     damga = datetime.now(TR_SAAT).strftime("%Y%m%d-%H%M")
     png = cikti / f"{tur}-{damga}.png"
     gorsel_uret(tur, veri, png)
-    dosya = png.name
     # Her paylaşım sesli video (Reels) olarak gider; özetler okunabilsin diye biraz daha uzun.
     mp4 = cikti / f"{tur}-{damga}.mp4"
     video_uret(png, mp4, sure=7 if tur == "reels" else 10)
@@ -397,7 +548,9 @@ def hazirla(tur, cikti, ornek):
                                                  "fiyatlar": fiyat}, ensure_ascii=False, indent=2),
                                      encoding="utf-8")
     (cikti / "index.html").write_text("<!doctype html><meta charset='utf-8'><title>Gümüş bot</title>"
-                                      f"<p>Son üretilen dosya: <a href='{dosya}'>{dosya}</a></p>", encoding="utf-8")
+                                      f"<p>Son üretilen dosya: <a href='{dosya}'>{dosya}</a></p>"
+                                      "<p>Metal fiyatları: <a href='https://metalcharts.org'>MetalCharts</a>"
+                                      " · Dolar/TL: TCMB</p>", encoding="utf-8")
     print(aciklama)
     print(f"\nÜretilen dosya: {cikti / dosya}")
 

@@ -1,3 +1,7 @@
 site/
 __pycache__/
 templates/_cikti_*.html
+# Müziğin açık hali depoya girmesin (lisans gereği); depoda sadece şifreli hali durur
+assets/muzik.mp3
+# Günlük fiyat kayıtları GitHub önbelleğinde saklanır, depoya girmez
+veri/
