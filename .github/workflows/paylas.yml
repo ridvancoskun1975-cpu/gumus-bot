@@ -12,7 +12,7 @@ on:
       tur:
         description: "Ne üretilsin?"
         type: choice
-        options: [reels, post, hafta]
+        options: [reels, post, hafta, yasal]
         default: reels
       deneme:
         description: "Deneme: sadece üret, Instagram'a paylaşma"

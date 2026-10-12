@@ -1,7 +1,7 @@
 """Gümüş fiyat botu.
 
 Komutlar:
-  python bot/main.py hazirla --tur reels|post|hafta --cikti site [--ornek]
+  python bot/main.py hazirla --tur reels|post|hafta|yasal --cikti site [--ornek]
   python bot/main.py yayinla --cikti site --url https://kullanici.github.io/repo/
   python bot/main.py token-yenile
 
@@ -399,7 +399,9 @@ def gorsel_uret(tur, veri, png_yolu):
     html = env.get_template(f"{tur}.html").render(**veri)
     gecici = SABLONLAR / f"_cikti_{tur}.html"   # fontlar göreli yolla yüklensin diye burada
     gecici.write_text(html, encoding="utf-8")
-    boyut = {"reels": (1080, 1920), "post": (1080, 1350), "hafta": (1080, 1350)}[tur]
+    boyut = {"reels": (1080, 1920), "post": (1080, 1350), "hafta": (1080, 1350), "yasal": (1080, 1350)}[tur]
+    # Instagram görsel gönderilerde yalnızca JPEG kabul ediyor; uzantı .jpg ise JPEG kaydedilir.
+    jpeg = {"quality": 92} if Path(png_yolu).suffix.lower() in (".jpg", ".jpeg") else {}
     try:
         with sync_playwright() as p:
             kwargs = {}
@@ -410,7 +412,7 @@ def gorsel_uret(tur, veri, png_yolu):
             sayfa.goto(gecici.as_uri())
             sayfa.evaluate("document.fonts.ready")
             sayfa.wait_for_timeout(300)
-            sayfa.screenshot(path=str(png_yolu), clip={"x": 0, "y": 0, "width": boyut[0], "height": boyut[1]})
+            sayfa.screenshot(path=str(png_yolu), clip={"x": 0, "y": 0, "width": boyut[0], "height": boyut[1]}, **jpeg)
             tarayici.close()
     finally:
         gecici.unlink(missing_ok=True)
@@ -486,8 +488,33 @@ def _url_hazir_mi(url, sure_sn=180):
     raise RuntimeError(f"Dosya yayına çıkmadı: {url}")
 
 
+def _kaydirmali_konteyner(kullanici_id, urller, aciklama):
+    """Kaydırmalı (carousel) gönderi: her görsel için bir alt konteyner, sonra bunları toplayan ana konteyner."""
+    cocuklar = []
+    for url in urller:
+        c = _istek("POST", f"{kullanici_id}/media", image_url=url, is_carousel_item="true")
+        _hazir_olmasini_bekle(c["id"])
+        cocuklar.append(c["id"])
+    return _istek("POST", f"{kullanici_id}/media", media_type="CAROUSEL",
+                  children=",".join(cocuklar), caption=aciklama)
+
+
 def yayinla(cikti, taban_url):
     meta = json.loads((cikti / "meta.json").read_text(encoding="utf-8"))
+    if "dosyalar" in meta:
+        urller = [taban_url.rstrip("/") + "/" + d for d in meta["dosyalar"]]
+        for url in urller:
+            _url_hazir_mi(url)
+        kullanici_id = hesap_bilgisi()["user_id"]
+        k = _kaydirmali_konteyner(kullanici_id, urller, meta["aciklama"])
+        _hazir_olmasini_bekle(k["id"])
+        sonuc = _istek("POST", f"{kullanici_id}/media_publish", creation_id=k["id"])
+        print(f"Paylaşıldı: {meta['tur']} (medya id {sonuc.get('id')})")
+        try:
+            print("Bağlantı:", _istek("GET", sonuc["id"], fields="permalink").get("permalink"))
+        except Exception as e:
+            print(f"Uyarı: bağlantı alınamadı ({e})", file=sys.stderr)
+        return
     medya_url = taban_url.rstrip("/") + "/" + meta["dosya"]
     _url_hazir_mi(medya_url)
     kullanici_id = hesap_bilgisi()["user_id"]
@@ -514,9 +541,44 @@ def token_yenile():
 
 # ---------------------------------------------------------------- giriş
 
+def hesap_adi():
+    hesap = os.environ.get("HESAP_ADI", "").strip()
+    if not hesap and os.environ.get("IG_TOKEN"):
+        try:
+            hesap = hesap_bilgisi().get("username", "")
+        except Exception as e:
+            print(f"Uyarı: kullanıcı adı alınamadı ({e})", file=sys.stderr)
+    return ("@" + hesap.lstrip("@")) if hesap else ""
+
+
+def yasal_hazirla(cikti):
+    """Profilde sabitlenecek yasal bilgilendirme: kapak + 4 sayfa, kaydırmalı görsel gönderi."""
+    import yasal
+    hesap = hesap_adi()
+    damga = datetime.now(TR_SAAT).strftime("%Y%m%d-%H%M")
+    toplam = len(yasal.SAYFALAR) + 1
+    dosyalar = []
+    for sayfa in range(toplam):
+        jpg = cikti / f"yasal-{damga}-{sayfa + 1}.jpg"
+        gorsel_uret("yasal", {"sayfa": sayfa, "toplam": toplam, "sayfalar": yasal.SAYFALAR,
+                              "hesap": hesap, "guncelleme": yasal.GUNCELLEME}, jpg)
+        dosyalar.append(jpg.name)
+    if len(yasal.ACIKLAMA) > 2200:
+        raise RuntimeError(f"Açıklama Instagram sınırını aşıyor ({len(yasal.ACIKLAMA)} > 2200 karakter)")
+    (cikti / "meta.json").write_text(json.dumps({"tur": "yasal", "dosyalar": dosyalar, "aciklama": yasal.ACIKLAMA},
+                                                ensure_ascii=False, indent=2), encoding="utf-8")
+    (cikti / "index.html").write_text("<!doctype html><meta charset='utf-8'><title>Gümüş bot</title>"
+                                      + "".join(f"<p><a href='{d}'>{d}</a></p>" for d in dosyalar), encoding="utf-8")
+    print(yasal.ACIKLAMA)
+    print(f"\nÜretilen dosyalar ({len(yasal.ACIKLAMA)} karakter açıklama):", *dosyalar, sep="\n")
+
+
 def hazirla(tur, cikti, ornek):
     cikti.mkdir(parents=True, exist_ok=True)
     (cikti / "meta.json").unlink(missing_ok=True)   # eski bir paylaşım yanlışlıkla tekrar gitmesin
+    if tur == "yasal":
+        yasal_hazirla(cikti)
+        return
     try:
         if tur == "hafta":
             fiyat = ornek_haftalik() if ornek else haftalik_fiyatlari_al()
@@ -526,13 +588,7 @@ def hazirla(tur, cikti, ornek):
         # Hata değil: paylaşım bu sefer atlanır, iş akışı sonraki adımları çalıştırmaz.
         print(f"::warning::Paylaşım atlandı: {e}")
         return
-    hesap = os.environ.get("HESAP_ADI", "").strip()
-    if not hesap and os.environ.get("IG_TOKEN"):
-        try:
-            hesap = hesap_bilgisi().get("username", "")
-        except Exception as e:
-            print(f"Uyarı: kullanıcı adı alınamadı ({e})", file=sys.stderr)
-    hesap = ("@" + hesap.lstrip("@")) if hesap else ""
+    hesap = hesap_adi()
     veri = haftalik_veri_hazirla(fiyat, hesap) if tur == "hafta" else veri_hazirla(fiyat, hesap)
 
     damga = datetime.now(TR_SAAT).strftime("%Y%m%d-%H%M")
@@ -559,7 +615,7 @@ def main():
     ap = argparse.ArgumentParser()
     alt = ap.add_subparsers(dest="komut", required=True)
     h = alt.add_parser("hazirla")
-    h.add_argument("--tur", choices=["reels", "post", "hafta"], required=True)
+    h.add_argument("--tur", choices=["reels", "post", "hafta", "yasal"], required=True)
     h.add_argument("--cikti", default="site")
     h.add_argument("--ornek", action="store_true", help="Gerçek fiyat yerine örnek veri kullan")
     y = alt.add_parser("yayinla")
