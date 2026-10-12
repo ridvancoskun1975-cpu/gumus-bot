@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   yenile:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04   # sabit sürüm: ubuntu-latest 19 Ekim 2026 itibarıyla Ubuntu 26e geçiyor
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

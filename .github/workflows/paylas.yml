@@ -28,7 +28,7 @@ concurrency:
 
 jobs:
   uret:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04   # sabit sürüm: ubuntu-latest 19 Ekim 2026 itibarıyla Ubuntu 26e geçiyor
     timeout-minutes: 15
     outputs:
       devam: ${{ steps.uret.outputs.devam }}
@@ -118,7 +118,7 @@ jobs:
   yayinla:
     needs: uret
     if: needs.uret.outputs.devam == 'true' && (github.event_name == 'schedule' || inputs.deneme == false)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04   # sabit sürüm: ubuntu-latest 19 Ekim 2026 itibarıyla Ubuntu 26e geçiyor
     timeout-minutes: 12
     permissions:
       contents: read
