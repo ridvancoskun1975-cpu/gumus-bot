@@ -1,16 +1,17 @@
 # Gümüş Fiyat Botu
 
-Hafta içi her gün Instagram'a otomatik paylaşım yapar:
+Instagram'a otomatik paylaşım yapar:
 
 | Saat (TR) | Paylaşım |
 |---|---|
 | ~10:00 | Reels (7 sn video) |
 | ~17:00 | Reels (7 sn video) |
 | ~20:00 | Feed postu (günün özeti) |
+| Cumartesi ~10:00 | Feed postu (haftalık özet: hafta kapanışı, günlük grafik, en yüksek/en düşük) |
 
 Her paylaşımda: **gram gümüş (₺)**, **altın/gümüş paritesi**, **dolar/TL** ve her birinin önceki gün kapanışına göre değişimi (ok ile).
 
-Hafta sonu ons gümüş işlem görmediği için paylaşım yapılmaz. GitHub zamanlı işleri genelde 5-15 dakika gecikmeyle başlatır.
+İlk üçü hafta içi her gün paylaşılır. Hafta sonu ons gümüş ve dolar/TL işlem görmediği için günlük paylaşım yapılmaz; onun yerine cumartesi haftalık özet gelir (değişimler önceki haftanın kapanışına göre). GitHub zamanlı işleri genelde 5-15 dakika gecikmeyle başlatır.
 
 ---
 
@@ -52,6 +53,6 @@ Bundan sonra bot kendi kendine çalışır.
 ## Notlar
 - **Veri kaynağı:** Yahoo Finance (ons gümüş `SI=F`, ons altın `GC=F`, dolar/TL `TRY=X`). Bunlar vadeli işlem fiyatlarıdır, spot fiyata çok yakındır. Gram gümüş TL fiyatı `ons gümüş × dolar/TL ÷ 31,1035` ile hesaplanır; Kapalıçarşı ya da banka alış-satış fiyatlarından biraz farklı olabilir.
 - **Müzik:** Otomatik paylaşımda Instagram'ın müzik kütüphanesi kullanılamaz. Telifsiz bir müziği `assets/muzik.mp3` adıyla eklersen videolara otomatik konur.
-- **Saatleri değiştirmek:** `.github/workflows/paylas.yml` içindeki `cron` satırları. Saatler UTC'dir (TR saati − 3). Post saatini değiştirirsen aynı dosyadaki `"50 16 * * 1-5"` kontrolünü de güncelle.
-- **Tasarım:** `templates/reels.html` ve `templates/post.html`.
+- **Saatleri değiştirmek:** `.github/workflows/paylas.yml` içindeki `cron` satırları. Saatler UTC'dir (TR saati − 3). Post ya da haftalık özet saatini değiştirirsen aynı dosyadaki `"50 16 * * 1-5"` / `"50 6 * * 6"` kontrollerini de güncelle.
+- **Tasarım:** `templates/reels.html`, `templates/post.html` ve `templates/hafta.html`.
 - Yazı tipleri (Archivo, JetBrains Mono) SIL Open Font License ile dağıtılır, lisansları `assets/fonts` içinde.

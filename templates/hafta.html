@@ -1,0 +1,70 @@
+{% from "makrolar.html" import degisim, ag_etiketi %}<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Gümüş Haftalık Özet</title>
+<style>{% include "ortak.css" %}
+.grafik-etiket { font-size: 22px; fill: var(--soluk); font-family: 'Archivo', sans-serif; }
+.grafik-deger { font-size: 22px; fill: var(--yazi); font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="sahne" style="width: 1080px; height: 1350px; padding: 80px 88px">
+  <div class="ust">
+    <div class="ust-sol" style="gap: 16px">
+      <div class="etiket" style="gap: 12px; font-size: 26px"><span class="nokta" style="width: 12px; height: 12px"></span><span>HAFTALIK ÖZET</span></div>
+      <h1 style="font-size: 120px; letter-spacing: -3px">Gümüş</h1>
+      <div class="tarih mono" style="font-size: 30px">{{ aralik }}</div>
+    </div>
+    {{ ag_etiketi(128, 146, '12px 14px', 22, 48, 18) }}
+  </div>
+
+  <div class="kahraman" style="gap: 10px; padding-top: 32px">
+    <div class="kahraman-baslik" style="font-size: 28px">GRAM GÜMÜŞ · HAFTA KAPANIŞI</div>
+    <div class="kahraman-satir" style="gap: 20px">
+      <div class="kahraman-sayi-kolon" style="gap: 6px">
+        {{ degisim(gram_deg, 36, 26) }}
+        <span class="kahraman-sayi sayi" style="font-size: 150px; letter-spacing: -5px">{{ gram }}</span>
+      </div>
+      <span class="kahraman-birim" style="font-size: 64px; padding-bottom: 18px">₺</span>
+    </div>
+    <div class="soluk" style="font-size: 26px">Önceki haftanın kapanışına göre · en yüksek {{ en_yuksek }} ₺ · en düşük {{ en_dusuk }} ₺</div>
+  </div>
+
+  {% set gr = grafik %}
+  <svg width="{{ gr.gen }}" height="{{ gr.yuk + 70 }}" viewBox="0 -34 {{ gr.gen }} {{ gr.yuk + 70 }}" style="display: block">
+    <line x1="0" x2="{{ gr.gen }}" y1="{{ gr.onceki_y }}" y2="{{ gr.onceki_y }}" stroke="var(--cizgi)" stroke-width="3" stroke-dasharray="10 10"></line>
+    <text x="{{ gr.gen }}" y="{{ gr.onceki_y - 10 }}" text-anchor="end" class="grafik-etiket">geçen hafta</text>
+    <polyline points="{{ gr.cizgi }}" fill="none" stroke="var(--{{ gr.yon }})" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"></polyline>
+    {% for n in gr.noktalar %}
+    <circle cx="{{ n.x }}" cy="{{ n.y }}" r="9" fill="var(--zemin)" stroke="var(--{{ gr.yon }})" stroke-width="5"></circle>
+    <text x="{{ n.x }}" y="{{ n.y - 22 }}" text-anchor="middle" class="grafik-deger">{{ n.deger }}</text>
+    <text x="{{ n.x }}" y="{{ gr.yuk + 30 }}" text-anchor="middle" class="grafik-etiket">{{ n.gun }}</text>
+    {% endfor %}
+  </svg>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; border-top: 2px solid var(--cizgi); padding-top: 28px">
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <b style="font-size: 30px">Altın / Gümüş paritesi</b>
+      <div style="display: flex; align-items: baseline; gap: 14px; margin-top: 6px">
+        <span class="sayi vurgu" style="font-size: 58px; font-weight: 700">{{ parite }}</span>
+        {{ degisim(parite_deg, 26, 18) }}
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <b style="font-size: 30px">Dolar / TL</b>
+      <div style="display: flex; align-items: baseline; gap: 10px; margin-top: 6px">
+        <span class="sayi" style="font-size: 58px; font-weight: 700">{{ dolar }}</span>
+        <span class="vurgu" style="font-size: 36px; font-weight: 700">₺</span>
+        {{ degisim(dolar_deg, 26, 18) }}
+      </div>
+    </div>
+  </div>
+
+  <div class="alt" style="border-top: 2px solid var(--cizgi); padding-top: 24px">
+    <b style="font-size: 32px">{{ hesap }}</b>
+    <span class="soluk" style="font-size: 24px; text-align: right">Bilgi amaçlıdır, yatırım tavsiyesi değildir.</span>
+  </div>
+</div>
+</body>
+</html>

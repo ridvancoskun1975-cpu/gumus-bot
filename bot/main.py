@@ -1,7 +1,7 @@
 """Gümüş fiyat botu.
 
 Komutlar:
-  python bot/main.py hazirla --tur reels|post --cikti site [--ornek]
+  python bot/main.py hazirla --tur reels|post|hafta --cikti site [--ornek]
   python bot/main.py yayinla --cikti site --url https://kullanici.github.io/repo/
   python bot/main.py token-yenile
 """
@@ -80,6 +80,71 @@ def fiyatlari_al():
     }
 
 
+def _gunluk_kapanislar(sembol):
+    """Son ~1 ayın günlük kapanışlarını {tarih: fiyat} olarak döndürür."""
+    import yfinance as yf
+
+    son_hata = None
+    for deneme in range(3):
+        try:
+            seri = yf.Ticker(sembol).history(period="1mo", interval="1d")["Close"].dropna()
+            kapanis = {d.date(): float(v) for d, v in seri.items() if v > 0 and math.isfinite(v)}
+            if len(kapanis) < 5:
+                raise ValueError(f"{sembol} için yetersiz veri")
+            return kapanis
+        except Exception as e:
+            son_hata = e
+            time.sleep(5 * (deneme + 1))
+    raise RuntimeError(f"{sembol} günlük verisi alınamadı: {son_hata}")
+
+
+def _hafta_ayir(kapanis):
+    """Son işlem gününün haftasındaki kapanışları ve bir önceki haftanın son kapanışını ayırır."""
+    from datetime import timedelta
+    tarihler = sorted(kapanis)
+    son = tarihler[-1]
+    pazartesi = son - timedelta(days=son.weekday())
+    bu_hafta = [d for d in tarihler if d >= pazartesi]
+    onceki = [d for d in tarihler if d < pazartesi]
+    if not onceki:
+        raise RuntimeError("Önceki haftanın kapanışı bulunamadı")
+    return bu_hafta, onceki[-1]
+
+
+def _o_gundeki(kapanis, gun):
+    """Verilen gündeki ya da ondan önceki en yakın kapanış (tatil farklarına karşı)."""
+    uygun = [d for d in kapanis if d <= gun]
+    return kapanis[max(uygun)] if uygun else kapanis[min(kapanis)]
+
+
+def haftalik_fiyatlari_al():
+    gumus = _gunluk_kapanislar("SI=F")
+    altin = _gunluk_kapanislar("GC=F")
+    dolar = _gunluk_kapanislar("TRY=X")
+    gunler, onceki_gun = _hafta_ayir(gumus)
+
+    def gram(g):
+        return _o_gundeki(gumus, g) * _o_gundeki(dolar, g) / ONS_GRAM
+
+    son = gunler[-1]
+    return {
+        "gram": gram(son), "gram_once": gram(onceki_gun),
+        "parite": _o_gundeki(altin, son) / gumus[son],
+        "parite_once": _o_gundeki(altin, onceki_gun) / gumus[onceki_gun],
+        "dolar": _o_gundeki(dolar, son), "dolar_once": _o_gundeki(dolar, onceki_gun),
+        "gunluk": [{"tarih": g.isoformat(), "gram": gram(g)} for g in gunler],
+    }
+
+
+def ornek_haftalik():
+    f = ornek_fiyatlar()
+    f["gram_once"] = 99.85
+    f["gunluk"] = [{"tarih": t, "gram": v} for t, v in
+                   [("2026-10-05", 100.62), ("2026-10-06", 101.94), ("2026-10-07", 101.18),
+                    ("2026-10-08", 102.49), ("2026-10-09", 103.79)]]
+    return f
+
+
 def ornek_fiyatlar():
     return {"gram": 103.79, "gram_once": 102.49, "parite": 66.2, "parite_once": 66.77,
             "dolar": 48.48, "dolar_once": 48.46}
@@ -114,7 +179,53 @@ def veri_hazirla(f, hesap):
     }
 
 
+GUN_KISA = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"]
+
+
+def haftalik_veri_hazirla(f, hesap):
+    from datetime import date
+    v = veri_hazirla(f, hesap)
+    gunler = [date.fromisoformat(g["tarih"]) for g in f["gunluk"]]
+    degerler = [g["gram"] for g in f["gunluk"]]
+    ilk, son = gunler[0], gunler[-1]
+    if ilk.month == son.month:
+        v["aralik"] = f"{ilk.day:02d}–{son.day:02d} {AYLAR[son.month - 1]} {son.year}"
+    else:
+        v["aralik"] = f"{ilk.day:02d} {AYLAR[ilk.month - 1]} – {son.day:02d} {AYLAR[son.month - 1]} {son.year}"
+    v["en_yuksek"] = tr_sayi(max(degerler), 2)
+    v["en_dusuk"] = tr_sayi(min(degerler), 2)
+
+    # Grafik: gram gümüşün günlük kapanışları, önceki hafta kapanışı kesikli çizgi
+    gen, yuk, kenar, yan = 904, 230, 30, 64
+    tum = degerler + [f["gram_once"]]
+    alt_s, ust_s = min(tum), max(tum)
+    aralik = (ust_s - alt_s) or 1
+    adim = (gen - 2 * yan) / max(len(degerler) - 1, 1)
+
+    def y(x):
+        return round(kenar + (ust_s - x) / aralik * (yuk - 2 * kenar), 1)
+
+    noktalar = [{"x": round(yan + i * adim, 1), "y": y(d), "gun": GUN_KISA[g.weekday()],
+                 "deger": tr_sayi(d, 2)} for i, (g, d) in enumerate(zip(gunler, degerler))]
+    v["grafik"] = {"gen": gen, "yuk": yuk, "noktalar": noktalar,
+                   "cizgi": " ".join(f"{n['x']},{n['y']}" for n in noktalar),
+                   "onceki_y": y(f["gram_once"]), "yon": v["gram_deg"]["yon"]}
+    return v
+
+
 def aciklama_yaz(v, tur):
+    if tur == "hafta":
+        g, p, d = v["gram_deg"], v["parite_deg"], v["dolar_deg"]
+        return (
+            f"Haftalık gümüş özeti | {v['aralik']}\n\n"
+            f"Gram gümüş: {v['gram']} ₺ ({g['isaret']} {g['metin']})\n"
+            f"Haftanın en yükseği: {v['en_yuksek']} ₺ · en düşüğü: {v['en_dusuk']} ₺\n"
+            f"Altın/Gümüş paritesi: {v['parite']} ({p['isaret']} {p['metin']})\n"
+            f"Dolar/TL: {v['dolar']} ₺ ({d['isaret']} {d['metin']})\n\n"
+            "Değişimler önceki haftanın kapanışına, en yüksek/en düşük günlük kapanışlara göredir.\n"
+            "Bilgi amaçlıdır, yatırım tavsiyesi değildir.\n\n"
+            "#gümüş #gramgümüş #gümüşfiyatları #haftalıközet #altın #dolar #piyasa #yatırım"
+        )
     baslik = "Günün gümüş özeti" if tur == "post" else "Güncel gümüş fiyatları"
     g, p, d = v["gram_deg"], v["parite_deg"], v["dolar_deg"]
     return (
@@ -138,7 +249,7 @@ def gorsel_uret(tur, veri, png_yolu):
     html = env.get_template(f"{tur}.html").render(**veri)
     gecici = SABLONLAR / f"_cikti_{tur}.html"   # fontlar göreli yolla yüklensin diye burada
     gecici.write_text(html, encoding="utf-8")
-    boyut = {"reels": (1080, 1920), "post": (1080, 1350)}[tur]
+    boyut = {"reels": (1080, 1920), "post": (1080, 1350), "hafta": (1080, 1350)}[tur]
     try:
         with sync_playwright() as p:
             kwargs = {}
@@ -243,7 +354,10 @@ def token_yenile():
 
 def hazirla(tur, cikti, ornek):
     cikti.mkdir(parents=True, exist_ok=True)
-    fiyat = ornek_fiyatlar() if ornek else fiyatlari_al()
+    if tur == "hafta":
+        fiyat = ornek_haftalik() if ornek else haftalik_fiyatlari_al()
+    else:
+        fiyat = ornek_fiyatlar() if ornek else fiyatlari_al()
     hesap = os.environ.get("HESAP_ADI", "").strip()
     if not hesap and os.environ.get("IG_TOKEN"):
         try:
@@ -251,7 +365,7 @@ def hazirla(tur, cikti, ornek):
         except Exception as e:
             print(f"Uyarı: kullanıcı adı alınamadı ({e})", file=sys.stderr)
     hesap = ("@" + hesap.lstrip("@")) if hesap else ""
-    veri = veri_hazirla(fiyat, hesap)
+    veri = haftalik_veri_hazirla(fiyat, hesap) if tur == "hafta" else veri_hazirla(fiyat, hesap)
 
     damga = datetime.now(TR_SAAT).strftime("%Y%m%d-%H%M")
     png = cikti / f"{tur}-{damga}.png"
@@ -261,9 +375,9 @@ def hazirla(tur, cikti, ornek):
         mp4 = cikti / f"reels-{damga}.mp4"
         video_uret(png, mp4)
         dosya = mp4.name
-    if tur == "post":
+    if tur in ("post", "hafta"):
         # Instagram feed görsellerinde JPEG istiyor
-        jpg = cikti / f"post-{damga}.jpg"
+        jpg = cikti / f"{tur}-{damga}.jpg"
         subprocess.run([ffmpeg_yolu(), "-y", "-loglevel", "error", "-i", str(png), "-q:v", "2", str(jpg)], check=True)
         dosya = jpg.name
 
@@ -281,7 +395,7 @@ def main():
     ap = argparse.ArgumentParser()
     alt = ap.add_subparsers(dest="komut", required=True)
     h = alt.add_parser("hazirla")
-    h.add_argument("--tur", choices=["reels", "post"], required=True)
+    h.add_argument("--tur", choices=["reels", "post", "hafta"], required=True)
     h.add_argument("--cikti", default="site")
     h.add_argument("--ornek", action="store_true", help="Gerçek fiyat yerine örnek veri kullan")
     y = alt.add_parser("yayinla")
