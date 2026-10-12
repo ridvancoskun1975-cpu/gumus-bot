@@ -99,9 +99,18 @@ def _gunluk_kapanislar(sembol):
 
 
 def _hafta_ayir(kapanis):
-    """Son işlem gününün haftasındaki kapanışları ve bir önceki haftanın son kapanışını ayırır."""
+    """Son tamamlanan haftanın kapanışlarını ve ondan önceki haftanın son kapanışını ayırır.
+
+    Hafta sonu çalışınca biten haftayı, hafta içi (elle) çalışınca yarım kalan bu
+    haftayı değil bir önceki tam haftayı alır.
+    """
     from datetime import timedelta
-    tarihler = sorted(kapanis)
+    bugun = datetime.now(TR_SAAT).date()
+    if bugun.weekday() < 5:
+        sinir = bugun - timedelta(days=bugun.weekday())   # bu haftanın pazartesi
+    else:
+        sinir = bugun + timedelta(days=7 - bugun.weekday())  # gelecek pazartesi
+    tarihler = sorted(d for d in kapanis if d < sinir)
     son = tarihler[-1]
     pazartesi = son - timedelta(days=son.weekday())
     bu_hafta = [d for d in tarihler if d >= pazartesi]
