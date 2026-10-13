@@ -1,0 +1,107 @@
+{% from "makrolar.html" import ag_etiketi %}<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Gümüş Rehberi Kısa Reels</title>
+<style>{% include "ortak.css" %}
+/* Rehber bölümünden kısa Reels (1080×1920): soru → büyük cevap → tek cümle → profile çağrı.
+   Profil ızgarası ortadaki 3:4 alanı (y 240–1680) gösterir; soru ve büyük cevap bu alanın içinde. */
+.kisa { position: relative; width: 1080px; height: 1920px; box-sizing: border-box; background: var(--zemin);
+  color: var(--yazi); font-family: 'Archivo', sans-serif; overflow: hidden; }
+.kisa .kenar { position: absolute; left: 96px; right: 96px; display: flex; justify-content: space-between; align-items: center; }
+.kisa .seri { gap: 14px; font-size: 30px; }
+.kisa .blok { position: absolute; left: 96px; right: 96px; }
+.kisa h1 { font-weight: 800; letter-spacing: -4px; line-height: 0.95; text-wrap: balance; }
+.kisa .alt-baslik { margin-top: 26px; font-size: 42px; line-height: 1.25; color: var(--soluk); }
+.kisa .cevap { border-top: 3px solid var(--cizgi); border-bottom: 3px solid var(--cizgi); padding: 40px 0 44px; transform-origin: 0 50%; }
+.kisa .dev { font-weight: 700; line-height: 1; color: var(--vurgu); letter-spacing: -6px; white-space: nowrap; }
+.kisa .dev-alt { margin-top: 22px; font-size: 40px; color: var(--soluk); line-height: 1.25; }
+.kisa .cumle { font-size: 50px; line-height: 1.32; font-weight: 600; text-wrap: pretty; }
+.kisa .formul { display: inline-block; border: 3px solid var(--vurgu); border-radius: 10px; padding: 20px 26px; margin-bottom: 30px;
+  font-size: 34px; color: var(--vurgu); white-space: nowrap; }
+.kisa .cagri { display: inline-flex; align-items: center; gap: 18px; font-size: 44px; font-weight: 800;
+  padding: 22px 34px; border-radius: 999px; background: var(--yazi); color: var(--zemin); transform-origin: 0 50%; }
+</style>
+</head>
+<body>
+<div class="kisa">
+  <div class="isik" aria-hidden="true"></div>
+  <div class="kenar" style="top: 110px">
+    <div class="etiket seri"><span id="nokta" class="nokta" style="width: 14px; height: 14px"></span><span>{{ seri }} · {{ '%02d' % no }}</span></div>
+    {{ ag_etiketi(110, 124, '10px 12px', 18, 40, 14) }}
+  </div>
+
+  {% set uz = b.baslik | length %}
+  {% set h1_boy = 150 if uz <= 14 else (120 if uz <= 26 else 100) %}
+  <div class="blok" id="soru" style="top: 300px">
+    <h1 style="font-size: {{ h1_boy }}px">{{ b.baslik }}</h1>
+    <div class="alt-baslik">{{ b.alt }}</div>
+  </div>
+
+  {% set dev_boy = [260, (880 / (b.buyuk | length * 0.6)) | int] | min %}
+  <div class="blok cevap" id="cevap" style="top: 790px">
+    <div class="dev mono" id="dev" style="font-size: {{ dev_boy }}px" data-sayi="{{ sayi or '' }}">{{ b.buyuk }}</div>
+    <div class="dev-alt">{{ b.buyuk_alt }}</div>
+  </div>
+
+  <div class="blok" id="aciklama" style="top: {{ 1230 if not formul else 1190 }}px">
+    {% if formul %}<div class="formul mono">{{ formul }}</div>{% endif %}
+    <div class="cumle">{{ cumle }}</div>
+  </div>
+
+  <div class="blok" id="cagri" style="top: 1610px">
+    <span class="cagri">Rehberin tamamı profilde <span aria-hidden="true">→</span></span>
+  </div>
+
+  <div class="kenar" style="bottom: 110px">
+    <b style="font-size: 36px">{{ hesap }}</b>
+    <span class="soluk" style="font-size: 26px">Kaydedin, lazım olunca bakarsınız.</span>
+  </div>
+</div>
+<script>
+// Hareket: bot her kare için window.kare(t) çağırır; çağrılmazsa sayfa son hâlde kalır (kapak).
+(function () {
+  const $ = id => document.getElementById(id);
+  const soru = $('soru'), cevap = $('cevap'), aciklama = $('aciklama'), cagri = $('cagri'), dev = $('dev');
+  const nokta = $('nokta'), isik = document.querySelector('.isik');
+  const metin = dev.textContent, sayi = dev.dataset.sayi;
+  // Büyük cevap sayıysa (ör. "31,1035 g", "%50+", "999") sıfırdan sayar; değilse yalnızca belirir.
+  let sayac = null;
+  if (sayi) {
+    const [bas, govde, son] = JSON.parse(sayi);
+    const ondalik = (govde.split(',')[1] || '').length;
+    const hedef = parseFloat(govde.replace(/\./g, '').replace(',', '.'));
+    const bicim = x => {
+      const [tam, kesir] = x.toFixed(ondalik).split('.');
+      return tam.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + (kesir ? ',' + kesir : '');
+    };
+    sayac = p => bas + bicim(hedef * p) + son;
+  }
+  const yumusak = p => 1 - Math.pow(1 - Math.min(Math.max(p, 0), 1), 3);
+  const ara = (t, a, b) => yumusak((t - a) / (b - a));
+  const goster = (el, q, dy) => { el.style.opacity = q; el.style.transform = `translateY(${(1 - q) * dy}px)`; };
+
+  window.kare = function (t) {
+    // Soru ilk kareden görünür (hafif kayarak yerine oturur)
+    soru.style.transform = `translateY(${(1 - ara(t, 0, 0.6)) * 24}px)`;
+    // Büyük cevap 1,6 sn'de gelir; sayıysa 1,6–2,8 sn sayar
+    const c = ara(t, 1.6, 2.1);
+    cevap.style.opacity = c;
+    cevap.style.transform = `scale(${0.92 + 0.08 * c})`;
+    if (sayac) dev.textContent = t >= 2.8 ? metin : sayac(ara(t, 1.6, 2.8));
+    // Açıklama cümlesi 3,6 sn'de
+    goster(aciklama, ara(t, 3.6, 4.2), 40);
+    // Profile çağrı 8 sn'de gelir ve hafifçe atar
+    const g = ara(t, 8, 8.5);
+    cagri.style.opacity = g;
+    cagri.firstElementChild.style.transform = `scale(${(0.9 + 0.1 * g) * (1 + (t > 8.5 ? 0.03 * (0.5 - 0.5 * Math.cos(2 * Math.PI * (t - 8.5) / 1.2)) : 0))})`;
+    if (nokta) nokta.style.opacity = 0.35 + 0.65 * (0.5 + 0.5 * Math.cos(2 * Math.PI * t / 1.2));
+    if (isik) {
+      const r = (t - 6.2) / 1.3;
+      isik.style.transform = r >= 0 && r <= 1 ? `translateX(${-140 + 280 * r}%)` : 'translateX(-140%)';
+    }
+  };
+})();
+</script>
+</body>
+</html>

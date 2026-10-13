@@ -660,7 +660,7 @@ def gorsel_uret(tur, veri, png_yolu):
     gecici = SABLONLAR / f"_cikti_{tur}.html"   # fontlar göreli yolla yüklensin diye burada
     gecici.write_text(html, encoding="utf-8")
     boyut = {"reels": (1080, 1920), "kapak": (1080, 1920), "post": (1080, 1350), "hafta": (1080, 1350), "yasal": (1080, 1350),
-             "bilgi": (1080, 1350), "yorum": (1080, 1350), "ay": (1080, 1350), "sayfa-og": (1200, 630)}[tur]
+             "bilgi": (1080, 1350), "yorum": (1080, 1350), "ay": (1080, 1350), "kisa": (1080, 1920), "sayfa-og": (1200, 630)}[tur]
     # Instagram görsel gönderilerde yalnızca JPEG kabul ediyor; uzantı .jpg ise JPEG kaydedilir.
     jpeg = {"quality": 92} if Path(png_yolu).suffix.lower() in (".jpg", ".jpeg") else {}
     try:
@@ -744,7 +744,7 @@ def hareketli_video_uret(tur, veri, mp4_yolu, sure=7):
              "-t", str(sure), "-vf", goruntu, *ses_filtre,
              "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-r", str(VIDEO_FPS),
              "-c:a", "aac", "-b:a", "128k", "-shortest", "-movflags", "+faststart", str(mp4_yolu)]
-    boyut = {"reels": (1080, 1920)}.get(tur, (1080, 1350))
+    boyut = {"reels": (1080, 1920), "kisa": (1080, 1920)}.get(tur, (1080, 1350))
     try:
         with sync_playwright() as p:
             kwargs = {"executable_path": os.environ["CHROME_YOLU"]} if os.environ.get("CHROME_YOLU") else {}
@@ -992,6 +992,54 @@ def bilgi_hazirla(cikti, konu=None):
     print(f"\nÜretilen dosyalar ({len(metin)} karakter açıklama):", *dosyalar, sep="\n")
 
 
+def _sayilabilir(metin):
+    """Kısa Reels'te sayarak gelecek büyük cevap: ("önek", "31,1035", " g") ya da None."""
+    import re
+    m = re.match(r"^([%~]?)(\d{1,3}(?:\.\d{3})*(?:,\d+)?)([^\d/]*)$", metin.strip())
+    return [m.group(1), m.group(2), m.group(3)] if m else None
+
+
+def kisa_hazirla(cikti, konu):
+    """Gümüş rehberi bölümünden kısa Reels (~12 sn): soru → büyük cevap → tek cümle → profile çağrı.
+
+    Metin bölümün kendisinden gelir (başlık, alt başlık, büyük rakam, ilk sayfanın formülü ve ilk
+    maddesi); ayrıca yazılmaz. Açıklama bölümün tam metnini taşır.
+    """
+    import bilgi
+    if not 1 <= konu <= len(bilgi.BOLUMLER):
+        raise RuntimeError(f"Konu 1-{len(bilgi.BOLUMLER)} arasında olmalı (verilen: {konu})")
+    b = bilgi.BOLUMLER[konu - 1]
+    ilk_sayfa = b["sayfalar"][0]
+    sayi = _sayilabilir(b["buyuk"])
+    veri = {"b": b, "no": konu, "seri": bilgi.SERI, "hesap": hesap_adi(),
+            "sayi": json.dumps(sayi, ensure_ascii=False) if sayi else "",
+            "formul": ilk_sayfa.get("formul"), "cumle": (ilk_sayfa.get("maddeler") or [b["alt"]])[0]}
+    damga = datetime.now(TR_SAAT).strftime("%Y%m%d-%H%M")
+    mp4 = cikti / f"kisa{konu}-{damga}.mp4"
+    sure = 12
+    if not hareketli_video_uret("kisa", veri, mp4, sure=sure):
+        raise RuntimeError("Kısa Reels üretilemedi (şablonda hareket yok)")
+    kapak = cikti / f"kapak-kisa{konu}-{damga}.jpg"
+    gorsel_uret("kisa", veri, kapak)
+
+    parcalar = [f"{b['baslik']} Kısa cevap: {b['buyuk']}, {b['buyuk_alt']} | Gümüş rehberi #{konu}", b["alt"]]
+    parcalar += [bilgi._sayfa_metni(s) for s in b["sayfalar"]]
+    parcalar += ["Bölümün kaydırmalı hâli profilde; kaydedin, lazım olunca bakarsınız.",
+                 "Bilgi amaçlıdır, yatırım tavsiyesi değildir."]
+    kunye = muzik_kunyesi()
+    if kunye:
+        parcalar.append(f"Müzik: {kunye}")
+    parcalar.append(b["hashtag"])
+    metin = "\n\n".join(parcalar)
+    if len(metin) > 2200:
+        raise RuntimeError(f"Açıklama Instagram sınırını aşıyor ({len(metin)} > 2200 karakter)")
+    (cikti / "meta.json").write_text(json.dumps({"tur": "kisa", "konu": konu, "dosya": mp4.name, "aciklama": metin,
+                                                 "kapak_ms": int((sure - 0.5) * 1000), "kapak": kapak.name},
+                                                ensure_ascii=False, indent=2), encoding="utf-8")
+    print(metin)
+    print(f"\nÜretilen dosya: {mp4}")
+
+
 def _zaman_coz(zaman):
     """MetalCharts zaman damgası (ISO metin ya da epoch sn/ms) → UTC datetime; çözülemezse None."""
     from datetime import timezone
@@ -1153,6 +1201,9 @@ def hazirla(tur, cikti, ornek, konu=None):
     if tur == "bilgi":
         bilgi_hazirla(cikti, konu)
         return
+    if tur == "kisa":
+        kisa_hazirla(cikti, konu or 1)
+        return
     if tur == "yorum":
         try:
             yorum_hazirla(cikti, ornek)
@@ -1203,7 +1254,7 @@ def main():
     ap = argparse.ArgumentParser()
     alt = ap.add_subparsers(dest="komut", required=True)
     h = alt.add_parser("hazirla")
-    h.add_argument("--tur", choices=["reels", "post", "hafta", "ay", "yasal", "bilgi", "yorum"], required=True)
+    h.add_argument("--tur", choices=["reels", "post", "hafta", "ay", "yasal", "bilgi", "kisa", "yorum"], required=True)
     h.add_argument("--cikti", default="site")
     h.add_argument("--ornek", action="store_true", help="Gerçek fiyat yerine örnek veri kullan")
     h.add_argument("--konu", type=int, default=None,
