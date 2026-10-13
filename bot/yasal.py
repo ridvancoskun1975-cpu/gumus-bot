@@ -25,12 +25,14 @@ SAYFALAR = [
         "baslik": "Fiyatlar nasıl hesaplanır",
         "formul": "Gram gümüş = ons gümüş × dolar/TL ÷ 31,1035",
         "maddeler": [
-            "Bu bir gösterge fiyattır; kuyumcu, banka ve borsa fiyatlarından farklıdır. İşçilik, "
-            "makas ve vergiler dahil değildir.",
-            "Dolar/TL, Avrupa Merkez Bankası'nın (ECB) günlük referans kurlarından hesaplanır "
-            "(her iş günü ~17:00). Bu saatten önceki paylaşımlarda önceki iş gününün kuru kullanılır.",
-            "Oklar önceki iş gününe, haftalık özette önceki haftaya göre değişimi gösterir.",
-            "Veriler gecikmeli, eksik ya da hatalı olabilir; doğruluğu garanti edilmez.",
+            "Gösterge fiyattır; kuyumcu, banka ve borsa fiyatlarından farklıdır. İşçilik, makas "
+            "ve vergiler dahil değildir.",
+            "Dolar/TL, Avrupa Merkez Bankası'nın (ECB) orta kurudur. TCMB ve bankaların alış "
+            "kurundan genelde biraz (binde birkaç) yüksektir; gram fiyat da aynı oranda farklı çıkar.",
+            "ECB kuru iş günleri ~17:00'de yenilenir: ~10:00 ve ~17:00 paylaşımları önceki iş "
+            "gününün, ~20:00 özeti o günün kurunu kullanır.",
+            "Oklar önceki iş gününe, haftalık özette önceki haftaya göredir. Veriler gecikmeli ya "
+            "da hatalı olabilir.",
         ],
     },
     {
@@ -64,7 +66,7 @@ ACIKLAMA = f"""Yasal bilgilendirme | Son güncelleme: {GUNCELLEME}
 Bu hesaptaki tüm paylaşımlar yalnızca bilgi amaçlıdır ve alım-satım önerisi içermez. Hiçbir paylaşım yatırım danışmanlığı kapsamında değildir; yatırım danışmanlığı, SPK'dan yetki almış kuruluşlarla imzalanan yatırım danışmanlığı sözleşmesi çerçevesinde sunulur. Paylaşılan değerler mali durumunuza, risk ve getiri tercihlerinize uygun olmayabilir; yalnızca bu bilgilere dayanarak yatırım kararı vermeyin. Bu hesap DM üzerinden tavsiye vermez, para ya da yatırım talep etmez; hesap adına size ulaşan kişilere itibar etmeyin.
 
 2) Fiyatlar nasıl hesaplanır
-Gram gümüş = ons gümüş (USD) × dolar/TL ÷ 31,1035. Bu bir gösterge fiyattır; kuyumcu, banka ve borsa alış-satış fiyatlarından farklıdır, işçilik, makas ve vergiler dahil değildir. Dolar/TL, Avrupa Merkez Bankası'nın (ECB) her iş günü yaklaşık 17:00'de yayımladığı euro referans kurlarından EUR çaprazıyla hesaplanır; bu saatten önceki paylaşımlarda önceki iş gününün kuru kullanılır. Değişimler önceki iş gününe, haftalık özette önceki haftaya göredir. Veriler gecikmeli, eksik ya da hatalı olabilir; doğruluğu garanti edilmez.
+Gram gümüş = ons gümüş (USD) × dolar/TL ÷ 31,1035. Bu bir gösterge fiyattır; kuyumcu, banka ve borsa alış-satış fiyatlarından farklıdır, işçilik, makas ve vergiler dahil değildir. Dolar/TL, Avrupa Merkez Bankası'nın (ECB) euro referans kurlarından EUR çaprazıyla hesaplanan orta kurdur; TCMB'nin ve bankaların döviz alış kurundan genelde biraz (binde birkaç) yüksektir, gram gümüş de aynı oranda farklı çıkar. ECB kuru her iş günü yaklaşık 17:00'de yenilenir: 10:00 ve 17:00 paylaşımlarında önceki iş gününün, 20:00 özetinde o günün kuru kullanılır. Değişimler önceki iş gününe, haftalık özette önceki haftaya göredir. Veriler gecikmeli, eksik ya da hatalı olabilir; doğruluğu garanti edilmez.
 
 3) Kaynaklar
 Metal fiyatları: MetalCharts (metalcharts.org)
