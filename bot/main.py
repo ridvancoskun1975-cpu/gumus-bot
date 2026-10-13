@@ -351,7 +351,8 @@ def _kaynak_satirlari(v):
 # Etiket havuzu paylaşımlara dağıtılır: her paylaşım 5 etiket alır, hepsi kullanılmış olur.
 HASHTAG_REELS = "#gümüş #gramgümüş #gümüşfiyatları #külçegümüş #silver"        # hafta içi ~10:00
 HASHTAG_POST = "#gümüş #gümüşyatırımı #değerlimetaller #emtia #gumus"           # hafta içi ~20:00 özet
-# Haftalık özet iki set arasında hafta hafta döner (ISO hafta numarası çiftse 1., tekse 2. set).
+# Haftalık özet iki set arasında hafta hafta döner (ISO hafta numarası tekse 1., çiftse 2. set;
+# ilk gerçek haftalık özet 24 Ekim 2026 = 43. hafta, 1. setle başlar).
 HASHTAG_HAFTA = (
     "#gümüş #gramgümüş #gümüşyatırımı #gümüşfiyatları #değerlimetaller",
     "#gümüş #gramgümüş #külçegümüş #gumus #silver",
@@ -361,7 +362,7 @@ HASHTAG_HAFTA = (
 def hashtag_sec(tur, tarih=None):
     if tur == "hafta":
         hafta_no = (tarih or datetime.now(TR_SAAT).date()).isocalendar()[1]
-        return HASHTAG_HAFTA[hafta_no % 2]
+        return HASHTAG_HAFTA[(hafta_no + 1) % 2]
     return HASHTAG_POST if tur == "post" else HASHTAG_REELS
 
 # Bu türler Reels'in yanında hikâyeye de paylaşılır (aynı video, 9:16).
