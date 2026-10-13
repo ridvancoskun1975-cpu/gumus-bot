@@ -614,12 +614,18 @@ def yayim_listesi():
 # Cumartesi n → bölüm n; bölüm o tarihte rehberde yayımlanmış olmalı (her zaman öyle: rehber
 # haftada en az 2 bölüm ilerler). Bölümler bitince kısa Reels de durur.
 KISA_BASLANGIC = date(2026, 10, 17)
+# Takvim dışında elle paylaşılan kısa Reels: {bölüm no: TR tarihi}. 13 Ekim 2026 akşamı rehber 1-2
+# ile birlikte paylaşıldı; cumartesi takvimi bunlardan sonraki bölümle başlar.
+ONCEDEN_KISA = {
+    1: "2026-10-13",
+    2: "2026-10-13",
+}
 
 
 def kisa_takvim():
     """{"YYYY-AA-GG": bölüm no} — kısa Reels günleri (cumartesi)."""
     yayim = {no: gun for gun, no in yayim_listesi()}
-    t, gun, no = {}, KISA_BASLANGIC, 1
+    t, gun, no = {}, KISA_BASLANGIC, max(ONCEDEN_KISA, default=0) + 1
     while no <= len(BOLUMLER):
         if no in yayim and yayim[no] < gun:
             t[gun.isoformat()] = no
