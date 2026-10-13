@@ -6,6 +6,7 @@ on:
     - cron: '50 6 * * 1-5'    # 09:50 TR -> Reels
     - cron: '50 16 * * 1-5'   # 19:50 TR -> Günlük özet
     - cron: '50 6 * * 6'      # Cumartesi 09:50 TR -> Haftalık özet
+    - cron: '50 7 * * 0'      # Pazar 10:50 TR -> Yapay zekâ yorumu (kısa/orta/uzun vade, kaydırmalı 4 görsel)
     # Hafta içi 13:50 TR -> Gümüş rehberi (bilgi). Hangi gün hangi bölüm: bot/bilgi.py → takvim()
     # (ilk hafta her gün, sonra salı ve perşembe). Takvimde olmayan günlerde "kontrol" işi birkaç saniyede biter.
     - cron: '50 10 * * 1-5'
@@ -14,7 +15,7 @@ on:
       tur:
         description: "Ne üretilsin?"
         type: choice
-        options: [reels, post, hafta, yasal, bilgi]
+        options: [reels, post, hafta, yasal, bilgi, yorum]
         default: reels
       konu:
         description: "Yalnızca bilgi türü: bölüm no (1-6). Boşsa bugünün takvim bölümü."
@@ -56,6 +57,8 @@ jobs:
             tur=post
           elif [ "${{ github.event.schedule }}" = "50 6 * * 6" ]; then
             tur=hafta
+          elif [ "${{ github.event.schedule }}" = "50 7 * * 0" ]; then
+            tur=yorum
           elif [ "${{ github.event.schedule }}" = "50 10 * * 1-5" ]; then
             tur=bilgi
           else
@@ -123,6 +126,8 @@ jobs:
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
           HESAP_ADI: ${{ vars.HESAP_ADI }}
           METALCHARTS_KEY: ${{ secrets.METALCHARTS_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}   # yalnızca pazar yorumu kullanır
+          YZ_MODEL: ${{ vars.YZ_MODEL }}                         # boşsa claude-sonnet-5-5
           KONU: ${{ inputs.konu }}
         run: |
           ek=()

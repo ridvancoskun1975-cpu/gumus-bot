@@ -49,10 +49,10 @@ SAYFALAR = [
     {
         "baslik": "Otomatik paylaşım",
         "maddeler": [
-            "Paylaşımlar otomatik üretilir: hafta içi ~10:00 ve ~20:00; cumartesi ~10:00 "
-            "haftalık özet. Saatler birkaç dakika kayabilir.",
-            "Hafta sonu günlük paylaşım yapılmaz. Kur yayımlanmayan günlerde dolar/TL son "
-            "yayımlanan ECB kurudur.",
+            "Paylaşımlar otomatik üretilir: hafta içi ~10:00 ve ~20:00, cumartesi ~10:00 "
+            "haftalık özet, pazar ~11:00 yapay zekâ yorumu.",
+            "Pazar yorumları fiyat ve kur verilerinden yapay zekâ ile üretilir; tahmindir, hata "
+            "içerebilir ve uzman incelemesinden geçmez.",
             "Reklam ya da iş birliği içeren paylaşımlar #reklam etiketiyle açıkça belirtilir; "
             "fiyat verileri reklamdan etkilenmez.",
             "Hatalı bir değer görürseniz DM ile bildirebilirsiniz.",
@@ -75,6 +75,6 @@ Müzik: Pixabay İçerik Lisansı; künye her paylaşımın açıklamasında.
 Bu hesabın bu kuruluşlarla bir bağı yoktur.
 
 4) Otomatik paylaşım
-Paylaşımlar otomatik olarak üretilir: hafta içi yaklaşık 10:00 ve 20:00'de, cumartesi 10:00'da haftalık özet. Saatler birkaç dakika kayabilir. Reklam ya da iş birliği içeren paylaşımlar #reklam etiketiyle açıkça belirtilir; fiyat verileri ve hesaplama yöntemi reklamdan etkilenmez. Hatalı bir değer görürseniz DM ile bildirebilirsiniz.
+Paylaşımlar otomatik olarak üretilir: hafta içi yaklaşık 10:00 ve 20:00'de, cumartesi 10:00'da haftalık özet, pazar 11:00'de yapay zekâ yorumu. Saatler birkaç dakika kayabilir. Pazar yorumları fiyat ve kur verilerinden yapay zekâ ile üretilir; tahmin niteliğindedir, hata içerebilir ve yayından önce uzman incelemesinden geçmez. Reklam ya da iş birliği içeren paylaşımlar #reklam etiketiyle açıkça belirtilir; fiyat verileri ve hesaplama yöntemi reklamdan etkilenmez. Hatalı bir değer görürseniz DM ile bildirebilirsiniz.
 
 #gümüş #gramgümüş #gümüşfiyatları"""

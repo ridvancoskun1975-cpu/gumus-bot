@@ -7,6 +7,7 @@ Instagram'a otomatik paylaşım yapar:
 | ~10:00 | Reels (7 sn video) |
 | ~20:00 | Günün özeti (10 sn video) |
 | Cumartesi ~10:00 | Haftalık özet (10 sn video: haftanın son değeri, günlük grafik, en yüksek/en düşük) |
+| Pazar ~11:00 | Yapay zekâ yorumu: kısa, orta ve uzun vade (kaydırmalı 4 görsel, müziksiz) |
 
 Hepsi müzikli Reels olarak paylaşılır ve profil ızgarasında da görünür. Günün özeti ve haftalık özet aynı videoyla hikâyeye de konur (hikâye başarısız olursa Reels etkilenmez). Açıklamalarda en fazla 5 hashtag var (Instagram sınırı). Etiketler paylaşımlara dağıtılır: Reels, günün özeti ve haftalık özet farklı set kullanır; haftalık özet iki set arasında hafta hafta döner. Değiştirmek için bot/main.py → HASHTAG_REELS / HASHTAG_POST / HASHTAG_HAFTA.
 
@@ -39,7 +40,10 @@ Bu depo **herkese açık (Public)** olmalı. Görseller ücretsiz GitHub Pages �
    - `GH_PAT` → token'ın otomatik yenilenmesi için (aşağıya bak)
    - `METALCHARTS_KEY` → metalcharts.org ücretsiz hesabındaki API anahtarı (`mc_live_…`). Yoksa paylaşım yapılmaz, iş uyarı verip atlar.
    - `MUZIK_ANAHTAR` → şifreli müzik dosyasını açan parola. Yoksa videolar müziksiz üretilir.
+   - `ANTHROPIC_API_KEY` → pazar yapay zekâ yorumu için Claude API anahtarı (`sk-ant-…`, aşağıya bak). Yoksa pazar paylaşımı uyarıyla atlanır.
 3. (İsteğe bağlı) Aynı sayfada **Variables** sekmesi → `HESAP_ADI` → görsellerde yazacak kullanıcı adı. Boş bırakırsan bot hesabından otomatik alır.
+
+**ANTHROPIC_API_KEY nasıl alınır:** **platform.claude.com** (Claude Console) → hesap aç → **Billing** bölümünden kredi yükle (en düşük tutar yeterli) → **API keys → Create key** → anahtarı `ANTHROPIC_API_KEY` olarak kaydet. Haftada tek çağrı yapılır; maliyeti ayda birkaç sente denk gelir. İstersen Console'da aylık harcama sınırı koy. Model varsayılanı `claude-sonnet-5-5`; değiştirmek için **Variables** sekmesinde `YZ_MODEL`.
 
 **GH_PAT nasıl alınır:** GitHub → sağ üstte profil → **Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token**. Repository access: sadece bu depo. Permissions → **Secrets: Read and write**. Süreyi en uzun seç, oluşan anahtarı `GH_PAT` olarak kaydet.
 
@@ -62,6 +66,7 @@ Her kaynak herkese açık paylaşıma izin verir; şartları kaynağın gösteri
 | Ons gümüş, ons altın (USD, spot) | [MetalCharts API](https://metalcharts.org/api-terms), ücretsiz plan | Herkese açık gösterimde metalcharts.org kaynağı görünür olmalı. Ayda 200 istek hakkı var; bot ayda ~50 kullanır. Ücretsiz planda geçmiş veri yok. |
 | Dolar/TL | [Avrupa Merkez Bankası (ECB)](https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html) euro referans kurları, [Frankfurter](https://frankfurter.dev) üzerinden (`/v2/providers/ecb/rates`, anahtarsız) | [ECB yeniden kullanım şartları](https://www.ecb.europa.eu/services/disclaimer/html/index.en.html): ücretsiz, ticari kullanım dahil; ECB kaynak gösterilmeli ve USD/TRY'nin EUR çaprazından hesaplandığı belirtilmeli (açıklamada otomatik yazılır). TCMB kuru Ekim 2026'da bırakıldı (ticari kullanımı yazılı izne bağlı). |
 | Müzik | "Autumn Piano" – leberch, [Pixabay İçerik Lisansı](https://pixabay.com/tr/service/license/) | Videoda kullanmak serbest; müziği tek başına dağıtmak yasak. Bu yüzden depoda sadece şifreli hali (`assets/muzik.mp3.enc`) durur. |
+| Pazar yorumu metni | Anthropic Claude API (`claude-sonnet-5-5`) | Yorum kişiye özel değildir ve al/sat/tut önerisi içermez; bu yüzden [Anthropic kullanım politikasındaki](https://www.anthropic.com/legal/aup) yüksek riskli finans tavsiyesi kapsamına girmez. Yapay zekâyla üretildiği görselde ve açıklamada yazılır. Model internete çıkmaz, yalnızca yukarıdaki fiyat ve kur verilerini görür. |
 | Yazı tipleri | Archivo, JetBrains Mono — SIL Open Font License | Lisans metinleri `assets/fonts` içinde. |
 | Paylaşım | Instagram API (Instagram ile giriş), Standard Access | Uygulama yalnızca kendi hesabına paylaştığı için uygulama incelemesi gerekmez. |
 
@@ -84,4 +89,9 @@ Açık mp3'ü (`assets/muzik.mp3`) asla depoya ekleme; `.gitignore` bunu engelle
 - **Saatleri değiştirmek:** `.github/workflows/paylas.yml` içindeki `cron` satırları. Saatler UTC'dir (TR saati − 3). Post ya da haftalık özet saatini değiştirirsen aynı dosyadaki `"50 16 * * 1-5"` / `"50 6 * * 6"` kontrollerini de güncelle.
 - **Tasarım:** `templates/reels.html`, `templates/post.html` ve `templates/hafta.html`.
 - **Gümüş rehberi (bilgi gönderileri):** fiyat verisi kullanmayan, sürekli devam eden kaydırmalı seri (kapak + 3 sayfa, müziksiz). Metinler `bot/bilgi.py` → `BOLUMLER`, tasarım `templates/bilgi.html`. Takvim `bot/bilgi.py` → `takvim()`: ilk 6 bölüm 14–21 Ekim 2026 her iş günü, sonrası salı ve perşembe (`DUZENLI_GUNLER`; haftada 1 için `{1}`). Yeni bölümü `BOLUMLER`'in sonuna eklemek yeter, sıradaki salı/perşembeye kendiliğinden yerleşir; `python bot/bilgi.py takvim` tarihleri gösterir. Zamanlı çalışma hafta içi 13:50 TR'de başlar; o gün bölüm yoksa "kontrol" işi birkaç saniyede biter. Elle göndermek ya da önizlemek için **Run workflow → tür: bilgi, konu: <no>**.
+- **Pazar yapay zekâ yorumu:** her pazar ~11:00 (cron `50 7 * * 0`) kapak + kısa (1–4 hafta), orta (1–6 ay), uzun (1 yıl+) vade sayfası. Rakamlar (değişim yüzdeleri) koddan, yorum metni Claude'dan gelir. Kod `bot/yorum.py`, tasarım `templates/yorum.html`.
+  - **Yasal çerçeve:** SPK III-37.1 Tebliğ'in medya ve elektronik ortamdaki yorumlara uygulanan ilkeleri (md. 78-80) esas alındı: yönlendirici değil (al/sat/tut, hedef fiyat, destek/direnç yok), tahminler koşullu ve iki yönlü, varsayımlar, veri tarihi, kaynaklar ve güncelleme sıklığı açıklamada, standart "yatırım danışmanlığı kapsamında değildir" uyarısı açıklamada, "yapay zekâ ile üretilmiştir" ibaresi görselde.
+  - **Denetim:** model çıktısı yayımlanmadan önce kodla denetlenir: rakam, yüzde, al/sat/tut, fırsat, hedef, kesin/garanti, güncel olay (Fed, TCMB, seçim, savaş…) ve kelime sınırı. Kurala uymazsa hatalar gösterilerek 2 kez yeniden istenir; yine uymazsa iş hata verir ve **paylaşım yapılmaz**. Yasak ifadeler `bot/yorum.py → YASAK`.
+  - **Veri:** botun kendi günlük kayıtları (`veri/gecmis.json`, ~2 yıl tutulur) + 13 aylık ECB dolar/TL. MetalCharts ücretli plana (Starter, 1 yıl geçmiş) geçilirse bot geçmişi kendiliğinden kullanır; ücretsiz planda geçmiş isteği 403 döner ve hakka sayılmaz. Kayıtlar 12 Ekim 2026'da başladığı için orta ve uzun vadede gram/ons değişimi bir süre "—" görünür; yorum bunu açıkça söyler.
+  - **Deneme:** Run workflow → tür: yorum, deneme işaretli. Önizleme `onizleme-yorum` içinde; `meta.json` modelin ham yanıtını ve hesaplanan değerleri de içerir.
 - **Yasal bilgilendirme (profilde sabit gönderi):** metni `bot/yasal.py`, tasarımı `templates/yasal.html`. Kaydırmalı 5 görsel olarak paylaşılır (Instagram API kaydırmalı gönderiye müzik eklemeye izin vermiyor). Metni değiştirirsen `GUNCELLEME` tarihini de güncelle, sonra **Actions → Gümüş paylaşımı → Run workflow → tür: yasal** ile yeniden paylaş; eski gönderinin sabitlemesini kaldırıp yenisini Instagram uygulamasından sabitle (API sabitlemeyi desteklemiyor).

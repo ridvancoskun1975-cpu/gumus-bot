@@ -1,7 +1,7 @@
 """Gümüş fiyat botu.
 
 Komutlar:
-  python bot/main.py hazirla --tur reels|post|hafta|yasal|bilgi --cikti site [--ornek] [--konu 1-6]
+  python bot/main.py hazirla --tur reels|post|hafta|yasal|bilgi|yorum --cikti site [--ornek] [--konu 1-6]
   python bot/main.py yayinla --cikti site --url https://kullanici.github.io/repo/
   python bot/main.py token-yenile
 
@@ -158,6 +158,56 @@ def kurlar():
     raise RuntimeError(f"Dolar/TL kuru alınamadı (ECB / Frankfurter): {son_hata}")
 
 
+def ecb_gecmisi(gun_sayisi=400):
+    """Son ~13 ayın ECB USD/TRY referans kurları: {tarih: kur}. Tek istek, anahtarsız."""
+    baslangic = (datetime.now(TR_SAAT).date() - timedelta(days=gun_sayisi)).isoformat()
+    son_hata = None
+    for deneme in range(3):
+        try:
+            r = requests.get(KUR_URL, timeout=60, headers={"User-Agent": TARAYICI, "Accept": "application/json"},
+                             params={"base": "USD", "quotes": "TRY", "from": baslangic})
+            r.raise_for_status()
+            kurlar_ = {date.fromisoformat(x["date"]): float(x["rate"]) for x in r.json() if x.get("quote") == "TRY"}
+            if len(kurlar_) < 100 or not all(1 < k < 1000 for k in kurlar_.values()):
+                raise ValueError(f"beklenmeyen kur serisi ({len(kurlar_)} gün)")
+            return kurlar_
+        except (requests.RequestException, ValueError, KeyError, TypeError) as e:
+            son_hata = e
+            _bekle(deneme)
+    raise RuntimeError(f"Dolar/TL kur geçmişi alınamadı (ECB / Frankfurter): {son_hata}")
+
+
+def metal_gecmisi():
+    """MetalCharts günlük geçmişi (1 yıl). Yalnızca ücretli planlarda var; ücretsiz planda 403 döner
+    (MetalCharts'a göre reddedilen istekler aylık hakka sayılmaz) ve None döndürülür."""
+    anahtar = os.environ.get("METALCHARTS_KEY", "").strip()
+    if not anahtar:
+        return None
+    sonuc = {}
+    for sembol in ("XAG", "XAU"):
+        try:
+            r = requests.get(f"https://api.metalcharts.org/v1/history/{sembol}", timeout=60,
+                             params={"range": "1Y", "interval": "1d"},
+                             headers={"Authorization": f"Bearer {anahtar}", "Accept": "application/json",
+                                      "User-Agent": TARAYICI})
+        except requests.RequestException as e:
+            print(f"Uyarı: MetalCharts geçmişi alınamadı ({e}); botun kendi kayıtları kullanılacak", file=sys.stderr)
+            return None
+        if r.status_code == 403:
+            print("Bilgi: MetalCharts planında geçmiş veri yok; botun kendi günlük kayıtları kullanılacak.")
+            return None
+        if r.status_code >= 400:
+            print(f"Uyarı: MetalCharts geçmişi alınamadı (HTTP {r.status_code}); kendi kayıtlar kullanılacak",
+                  file=sys.stderr)
+            return None
+        try:
+            sonuc[sembol] = {date.fromisoformat(x["timestamp"][:10]): float(x["close"]) for x in r.json()["data"]}
+        except (ValueError, KeyError, TypeError) as e:
+            print(f"Uyarı: MetalCharts geçmişi okunamadı ({e}); kendi kayıtlar kullanılacak", file=sys.stderr)
+            return None
+    return sonuc
+
+
 def gecmis_oku():
     try:
         return json.loads(GECMIS_DOSYASI.read_text(encoding="utf-8"))
@@ -171,7 +221,8 @@ def gecmis_oku():
 def gecmis_yaz(gecmis, gun, kayit):
     gecmis = dict(gecmis)
     gecmis[gun.isoformat()] = kayit
-    sinir = (gun - timedelta(days=60)).isoformat()
+    # Pazar yorumunun orta/uzun vadesi için kayıtlar ~2 yıl tutulur (dosya yine de birkaç yüz KB'yi geçmez).
+    sinir = (gun - timedelta(days=800)).isoformat()
     gecmis = {k: gecmis[k] for k in sorted(gecmis) if k >= sinir}
     GECMIS_DOSYASI.parent.mkdir(parents=True, exist_ok=True)
     GECMIS_DOSYASI.write_text(json.dumps(gecmis, ensure_ascii=False, indent=1), encoding="utf-8")
@@ -410,7 +461,7 @@ def gorsel_uret(tur, veri, png_yolu):
     gecici = SABLONLAR / f"_cikti_{tur}.html"   # fontlar göreli yolla yüklensin diye burada
     gecici.write_text(html, encoding="utf-8")
     boyut = {"reels": (1080, 1920), "post": (1080, 1350), "hafta": (1080, 1350), "yasal": (1080, 1350),
-             "bilgi": (1080, 1350)}[tur]
+             "bilgi": (1080, 1350), "yorum": (1080, 1350)}[tur]
     # Instagram görsel gönderilerde yalnızca JPEG kabul ediyor; uzantı .jpg ise JPEG kaydedilir.
     jpeg = {"quality": 92} if Path(png_yolu).suffix.lower() in (".jpg", ".jpeg") else {}
     try:
@@ -635,6 +686,87 @@ def bilgi_hazirla(cikti, konu=None):
     print(f"\nÜretilen dosyalar ({len(metin)} karakter açıklama):", *dosyalar, sep="\n")
 
 
+def yorum_hazirla(cikti, ornek):
+    """Pazar yapay zekâ yorumu: kapak + kısa/orta/uzun vade, kaydırmalı 4 görsel. Ayrıntı: bot/yorum.py"""
+    import yorum
+    bugun = datetime.now(TR_SAAT).date()
+    if ornek:
+        bugun += timedelta(days=(6 - bugun.weekday()) % 7)   # örnekte bu haftanın pazarı gibi
+        kayitlar, ecb = yorum.ornek_veri(bugun)
+        metal, kaynak_notu = None, "yalnızca botun kendi günlük kayıtları"
+    else:
+        kayitlar = {date.fromisoformat(k): v for k, v in gecmis_oku().items()}
+        son_hafta = [d for d in kayitlar if d >= bugun - timedelta(days=10)]
+        if len(son_hafta) < 2:
+            raise VeriYok(f"Son 10 günde yeterli günlük kayıt yok ({len(son_hafta)} gün); yorum yazılamaz.")
+        ecb = ecb_gecmisi()
+        metal = metal_gecmisi()
+        kaynak_notu = ("MetalCharts 1 yıllık günlük geçmiş + botun günlük kayıtları" if metal
+                       else "yalnızca botun kendi günlük kayıtları (geçmiş kısa olabilir)")
+    seri = yorum.seri_kur(kayitlar, ecb, metal)
+    ist = yorum.vade_istatistikleri(seri, ecb)
+
+    if ornek:
+        yz = yorum.ORNEK_YORUM
+    else:
+        yz = yorum.yz_yorum(yorum.model_girdisi(seri, ecb, ist, bugun, kaynak_notu))
+        if yz is None:
+            raise VeriYok("ANTHROPIC_API_KEY tanımlı değil (GitHub → Settings → Secrets and variables → Actions).")
+
+    son_gun = max(seri)
+    son = seri[son_gun]
+    _, hafta_once = yorum._deger_once(seri, son_gun - timedelta(days=7))
+    if hafta_once is None:
+        hafta_once = seri[min(seri)]
+    ilk = min(seri)
+    hesap = hesap_adi()
+    saat = son.get("saat")
+    veri_ani = f"{son_gun.day} {AYLAR[son_gun.month - 1]} {GUNLER[son_gun.weekday()]}" + (f" {saat}" if saat else "")
+
+    def hucre(ad, yuzde):
+        return {"ad": ad, "deg": None if yuzde is None else degisim(1 + yuzde / 100, 1)}
+
+    vadeler = []
+    for v in yorum.VADELER:
+        x = ist[v["anahtar"]]
+        not_ = ""
+        if not x["veri_yeterli"]:
+            not_ = (f"Gram ve ons için {v['etiket'].lower()} kayıt henüz yok · kayıtlar "
+                    f"{ilk.day} {AYLAR[ilk.month - 1]} {ilk.year}'de başladı")
+        elif x["kisa_kayit"]:
+            not_ = f"Kayıtlar {ilk.day} {AYLAR[ilk.month - 1]}'de başladığı için {x['etiket'].lower()}"
+        vadeler.append({**v, "etiket": x["etiket"], "not": not_, "yorum": yz[v["anahtar"]],
+                        "hucreler": [hucre("Gram gümüş", x["gram"]), hucre("Ons gümüş", x["ons"]),
+                                     hucre("Dolar/TL", x["dolar"])]})
+    veri = {
+        "tarih": f"{bugun.day} {AYLAR[bugun.month - 1]} {bugun.year}",
+        "gun": GUNLER[bugun.weekday()],
+        "gram": tr_sayi(son["gram"], 2),
+        "gram_deg": degisim(son["gram"], hafta_once["gram"]),
+        "veri_ani": veri_ani,
+        "veri_tarihi": f"{son_gun:%d.%m.%Y}",
+        "kur_tarihi_tam": f"{max(d for d in ecb if d <= son_gun):%d.%m.%Y}",
+        "vadeler": vadeler,
+        "hesap": hesap,
+    }
+
+    damga = datetime.now(TR_SAAT).strftime("%Y%m%d-%H%M")
+    dosyalar = []
+    for sayfa in range(len(vadeler) + 1):
+        jpg = cikti / f"yorum-{damga}-{sayfa + 1}.jpg"
+        gorsel_uret("yorum", {**veri, "sayfa": sayfa, "toplam": len(vadeler) + 1}, jpg)
+        dosyalar.append(jpg.name)
+    kaynaklar = _kaynak_satirlari(veri).replace(f"\nMüzik: {muzik_kunyesi()}", "")
+    metin = yorum.aciklama(veri, yz, kaynaklar)
+    (cikti / "meta.json").write_text(json.dumps({"tur": "yorum", "dosyalar": dosyalar, "aciklama": metin,
+                                                 "yorum": yz, "istatistik": ist}, ensure_ascii=False, indent=2,
+                                                default=str), encoding="utf-8")
+    (cikti / "index.html").write_text("<!doctype html><meta charset='utf-8'><title>Gümüş bot</title>"
+                                      + "".join(f"<p><a href='{d}'>{d}</a></p>" for d in dosyalar), encoding="utf-8")
+    print(metin)
+    print(f"\nÜretilen dosyalar ({len(metin)} karakter açıklama):", *dosyalar, sep="\n")
+
+
 def hazirla(tur, cikti, ornek, konu=None):
     cikti.mkdir(parents=True, exist_ok=True)
     (cikti / "meta.json").unlink(missing_ok=True)   # eski bir paylaşım yanlışlıkla tekrar gitmesin
@@ -643,6 +775,12 @@ def hazirla(tur, cikti, ornek, konu=None):
         return
     if tur == "bilgi":
         bilgi_hazirla(cikti, konu)
+        return
+    if tur == "yorum":
+        try:
+            yorum_hazirla(cikti, ornek)
+        except VeriYok as e:
+            print(f"::warning::Paylaşım atlandı: {e}")
         return
     try:
         if tur == "hafta":
@@ -680,7 +818,7 @@ def main():
     ap = argparse.ArgumentParser()
     alt = ap.add_subparsers(dest="komut", required=True)
     h = alt.add_parser("hazirla")
-    h.add_argument("--tur", choices=["reels", "post", "hafta", "yasal", "bilgi"], required=True)
+    h.add_argument("--tur", choices=["reels", "post", "hafta", "yasal", "bilgi", "yorum"], required=True)
     h.add_argument("--cikti", default="site")
     h.add_argument("--ornek", action="store_true", help="Gerçek fiyat yerine örnek veri kullan")
     h.add_argument("--konu", type=int, default=None,
