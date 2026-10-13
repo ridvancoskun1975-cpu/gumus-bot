@@ -686,30 +686,93 @@ def bilgi_hazirla(cikti, konu=None):
     print(f"\nÜretilen dosyalar ({len(metin)} karakter açıklama):", *dosyalar, sep="\n")
 
 
+def _zaman_coz(zaman):
+    """MetalCharts zaman damgası (ISO metin ya da epoch sn/ms) → UTC datetime; çözülemezse None."""
+    from datetime import timezone
+    try:
+        if isinstance(zaman, (int, float)) or (isinstance(zaman, str) and zaman.strip().isdigit()):
+            sayi = float(zaman)
+            return datetime.fromtimestamp(sayi / 1000 if sayi > 1e11 else sayi, tz=timezone.utc)
+        if isinstance(zaman, str) and zaman.strip():
+            z = datetime.fromisoformat(zaman.strip().replace("Z", "+00:00"))
+            return z if z.tzinfo else z.replace(tzinfo=timezone.utc)
+    except (ValueError, OverflowError, OSError):
+        pass
+    return None
+
+
+def kapanis_fiyati(ecb):
+    """Pazar yorumu için o anki son fiyat (1 MetalCharts isteği): (tarih, kayıt) ya da None.
+
+    Hafta sonu piyasa kapalı olduğu için bu, haftanın kapanış fiyatıdır (cuma New York kapanışı ≈
+    cumartesi 00:00 TR); cuma 20:00 kaydından sonraki saatleri de kapsar. Kayıt dosyasına yazılmaz,
+    yalnızca yorumda kullanılır (günlük ve haftalık paylaşımlar 20:00 kayıtlarıyla tutarlı kalsın).
+    """
+    try:
+        metal = metal_fiyatlari()
+    except Exception as e:
+        print(f"::warning::Kapanış fiyatı alınamadı ({e}); botun son kaydı kullanılacak")
+        return None
+    simdi = datetime.now(TR_SAAT)
+    zaman = _zaman_coz(metal["XAG"].get("zaman"))
+    gun = zaman.date() if zaman else simdi.date()        # UTC tarihi: cuma 21:00 UTC kapanışı cumaya düşer
+    gun = min(gun, simdi.date())
+    while gun.weekday() >= 5:
+        gun -= timedelta(days=1)
+    if (simdi.date() - gun).days > 4:
+        print(f"::warning::MetalCharts fiyatı eski ({zaman}); botun son kaydı kullanılacak")
+        return None
+    kur_gunu = max(d for d in ecb if d <= gun)
+    gumus, altin, dolar = metal["XAG"]["fiyat"], metal["XAU"]["fiyat"], ecb[kur_gunu]
+    saat = "kapanış" if simdi.weekday() >= 5 else simdi.strftime("%H:%M")
+    print(f"Son fiyat alındı ({gun:%d.%m.%Y} {saat}): ons gümüş {gumus} $, ons altın {altin} $")
+    return gun, {"saat": saat, "gumus": gumus, "altin": altin, "dolar": dolar,
+                 "kur_tarihi": kur_gunu.isoformat(), "gram": gumus * dolar / ONS_GRAM}
+
+
 def yorum_hazirla(cikti, ornek):
-    """Pazar yapay zekâ yorumu: kapak + kısa/orta/uzun vade, kaydırmalı 4 görsel. Ayrıntı: bot/yorum.py"""
+    """Pazar yapay zekâ yorumu: kapak + kısa/orta/uzun vade, kaydırmalı 4 görsel. Ayrıntı: bot/yorum.py
+
+    Pazar sabahı bütün verilerle şekillenir: botun günlük kayıtları, o anki (haftanın kapanış)
+    fiyatı, 13 aylık dolar/TL, varsa MetalCharts geçmişi ve web aramasıyla derlenen haftanın haberleri.
+    """
     import yorum
     bugun = datetime.now(TR_SAAT).date()
+    kapanis = None
     if ornek:
         bugun += timedelta(days=(6 - bugun.weekday()) % 7)   # örnekte bu haftanın pazarı gibi
         kayitlar, ecb = yorum.ornek_veri(bugun)
+        kayitlar[max(kayitlar)]["saat"] = "kapanış"
+        kapanis = max(kayitlar)
         metal, kaynak_notu = None, "yalnızca botun kendi günlük kayıtları"
     else:
+        if not os.environ.get("ANTHROPIC_API_KEY", "").strip():
+            raise VeriYok("ANTHROPIC_API_KEY tanımlı değil (GitHub → Settings → Secrets and variables → Actions).")
         kayitlar = {date.fromisoformat(k): v for k, v in gecmis_oku().items()}
         son_hafta = [d for d in kayitlar if d >= bugun - timedelta(days=10)]
         if len(son_hafta) < 2:
             raise VeriYok(f"Son 10 günde yeterli günlük kayıt yok ({len(son_hafta)} gün); yorum yazılamaz.")
         ecb = ecb_gecmisi()
+        son = kapanis_fiyati(ecb)
+        if son:
+            kapanis, kayitlar[son[0]] = son[0], son[1]
         metal = metal_gecmisi()
         kaynak_notu = ("MetalCharts 1 yıllık günlük geçmiş + botun günlük kayıtları" if metal
                        else "yalnızca botun kendi günlük kayıtları (geçmiş kısa olabilir)")
+        if kapanis:
+            kaynak_notu += "; son değer pazar günü alınan güncel fiyat"
     seri = yorum.seri_kur(kayitlar, ecb, metal)
     ist = yorum.vade_istatistikleri(seri, ecb)
 
     if ornek:
-        yz = yorum.ORNEK_YORUM
+        gelismeler, yz = yorum.ORNEK_GELISMELER, yorum.ORNEK_YORUM
+        hatalar = yorum.denetle(yz, gelismeler)
+        if hatalar:
+            raise RuntimeError(f"Örnek yorum denetimden geçmedi: {hatalar}")
     else:
-        yz = yorum.yz_yorum(yorum.model_girdisi(seri, ecb, ist, bugun, kaynak_notu))
+        gelismeler = yorum.haftanin_gelismeleri(bugun)
+        yz = yorum.yz_yorum(yorum.model_girdisi(seri, ecb, ist, bugun, kaynak_notu, gelismeler,
+                                                kapanis=kapanis == max(seri)), gelismeler)
         if yz is None:
             raise VeriYok("ANTHROPIC_API_KEY tanımlı değil (GitHub → Settings → Secrets and variables → Actions).")
 
@@ -721,7 +784,11 @@ def yorum_hazirla(cikti, ornek):
     ilk = min(seri)
     hesap = hesap_adi()
     saat = son.get("saat")
-    veri_ani = f"{son_gun.day} {AYLAR[son_gun.month - 1]} {GUNLER[son_gun.weekday()]}" + (f" {saat}" if saat else "")
+    veri_ani = f"{son_gun.day} {AYLAR[son_gun.month - 1]} {GUNLER[son_gun.weekday()]}"
+    if saat == "kapanış":
+        veri_ani += " kapanışı"
+    elif saat:
+        veri_ani += f" {saat}"
 
     def hucre(ad, yuzde):
         return {"ad": ad, "deg": None if yuzde is None else degisim(1 + yuzde / 100, 1)}
@@ -748,6 +815,7 @@ def yorum_hazirla(cikti, ornek):
         "kur_tarihi_tam": f"{max(d for d in ecb if d <= son_gun):%d.%m.%Y}",
         "vadeler": vadeler,
         "hesap": hesap,
+        "dayanak": "Fiyat ve kur verileri + haftanın haberleri" if gelismeler else "Fiyat ve kur verileri",
     }
 
     damga = datetime.now(TR_SAAT).strftime("%Y%m%d-%H%M")
@@ -757,10 +825,13 @@ def yorum_hazirla(cikti, ornek):
         gorsel_uret("yorum", {**veri, "sayfa": sayfa, "toplam": len(vadeler) + 1}, jpg)
         dosyalar.append(jpg.name)
     kaynaklar = _kaynak_satirlari(veri).replace(f"\nMüzik: {muzik_kunyesi()}", "")
-    metin = yorum.aciklama(veri, yz, kaynaklar)
+    metin = yorum.aciklama(veri, yz, kaynaklar, gelismeler)
     (cikti / "meta.json").write_text(json.dumps({"tur": "yorum", "dosyalar": dosyalar, "aciklama": metin,
-                                                 "yorum": yz, "istatistik": ist}, ensure_ascii=False, indent=2,
-                                                default=str), encoding="utf-8")
+                                                 "yorum": yz, "istatistik": ist, "gelismeler": gelismeler,
+                                                 "son_veri": {"tarih": son_gun, **son}},
+                                                ensure_ascii=False, indent=2, default=str), encoding="utf-8")
+    if gelismeler:
+        print("Haftanın gelişmeleri (yapay zekâ özeti, web araması):\n" + gelismeler["metin"] + "\n")
     (cikti / "index.html").write_text("<!doctype html><meta charset='utf-8'><title>Gümüş bot</title>"
                                       + "".join(f"<p><a href='{d}'>{d}</a></p>" for d in dosyalar), encoding="utf-8")
     print(metin)

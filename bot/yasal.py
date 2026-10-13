@@ -41,6 +41,7 @@ SAYFALAR = [
             ("Ons gümüş ve ons altın (USD)", "MetalCharts · metalcharts.org"),
             ("Dolar/TL", "Avrupa Merkez Bankası (ECB) referans kurları · frankfurter.dev"),
             ("Müzik", "Pixabay İçerik Lisansı · künye her paylaşımın açıklamasında"),
+            ("Pazar yorumundaki haberler", "Web araması · kaynaklar her yorumun açıklamasında"),
         ],
         "maddeler": [
             "Bu hesabın bu kuruluşlarla bir bağı yoktur; veriler kaynak gösterilerek kullanılır.",
@@ -51,8 +52,8 @@ SAYFALAR = [
         "maddeler": [
             "Paylaşımlar otomatik üretilir: hafta içi ~10:00 ve ~20:00, cumartesi ~10:00 "
             "haftalık özet, pazar ~11:00 yapay zekâ yorumu.",
-            "Pazar yorumları fiyat ve kur verilerinden yapay zekâ ile üretilir; tahmindir, hata "
-            "içerebilir ve uzman incelemesinden geçmez.",
+            "Pazar yorumları fiyat ve kur verileri ile haftanın haberlerinden yapay zekâ ile "
+            "üretilir; tahmindir, hata içerebilir ve uzman incelemesinden geçmez.",
             "Reklam ya da iş birliği içeren paylaşımlar #reklam etiketiyle açıkça belirtilir; "
             "fiyat verileri reklamdan etkilenmez.",
             "Hatalı bir değer görürseniz DM ile bildirebilirsiniz.",
@@ -66,7 +67,7 @@ ACIKLAMA = f"""Yasal bilgilendirme | Son güncelleme: {GUNCELLEME}
 Bu hesaptaki tüm paylaşımlar yalnızca bilgi amaçlıdır ve alım-satım önerisi içermez. Hiçbir paylaşım yatırım danışmanlığı kapsamında değildir; yatırım danışmanlığı, SPK'dan yetki almış kuruluşlarla imzalanan yatırım danışmanlığı sözleşmesi çerçevesinde sunulur. Paylaşılan değerler mali durumunuza, risk ve getiri tercihlerinize uygun olmayabilir; yalnızca bu bilgilere dayanarak yatırım kararı vermeyin. Bu hesap DM üzerinden tavsiye vermez, para ya da yatırım talep etmez; hesap adına size ulaşan kişilere itibar etmeyin.
 
 2) Fiyatlar nasıl hesaplanır
-Gram gümüş = ons gümüş (USD) × dolar/TL ÷ 31,1035. Bu bir gösterge fiyattır; kuyumcu, banka ve borsa alış-satış fiyatlarından farklıdır, işçilik, makas ve vergiler dahil değildir. Dolar/TL, Avrupa Merkez Bankası'nın (ECB) euro referans kurlarından EUR çaprazıyla hesaplanan orta kurdur; TCMB'nin ve bankaların döviz alış kurundan genelde biraz (binde birkaç) yüksektir, gram gümüş de aynı oranda farklı çıkar. ECB kuru her iş günü yaklaşık 17:00'de yenilenir: 10:00 paylaşımında önceki iş gününün, 20:00 özetinde o günün kuru kullanılır. Değişimler önceki iş gününe, haftalık özette önceki haftaya göredir. Veriler gecikmeli, eksik ya da hatalı olabilir; doğruluğu garanti edilmez.
+Gram gümüş = ons gümüş (USD) × dolar/TL ÷ 31,1035. Bu bir gösterge fiyattır; kuyumcu, banka ve borsa alış-satış fiyatlarından farklıdır, işçilik, makas ve vergiler dahil değildir. Dolar/TL, Avrupa Merkez Bankası'nın (ECB) euro referans kurlarından EUR çaprazıyla hesaplanan orta kurdur; TCMB'nin ve bankaların alış kurundan genelde biraz (binde birkaç) yüksektir, gram gümüş de aynı oranda farklı çıkar. ECB kuru her iş günü yaklaşık 17:00'de yenilenir: 10:00 paylaşımında önceki iş gününün, 20:00 özetinde o günün kuru kullanılır. Değişimler önceki iş gününe, haftalık özette önceki haftaya göredir. Veriler gecikmeli, eksik ya da hatalı olabilir.
 
 3) Kaynaklar
 Metal fiyatları: MetalCharts (metalcharts.org)
@@ -75,6 +76,6 @@ Müzik: Pixabay İçerik Lisansı; künye her paylaşımın açıklamasında.
 Bu hesabın bu kuruluşlarla bir bağı yoktur.
 
 4) Otomatik paylaşım
-Paylaşımlar otomatik olarak üretilir: hafta içi yaklaşık 10:00 ve 20:00'de, cumartesi 10:00'da haftalık özet, pazar 11:00'de yapay zekâ yorumu. Saatler birkaç dakika kayabilir. Pazar yorumları fiyat ve kur verilerinden yapay zekâ ile üretilir; tahmin niteliğindedir, hata içerebilir ve yayından önce uzman incelemesinden geçmez. Reklam ya da iş birliği içeren paylaşımlar #reklam etiketiyle açıkça belirtilir; fiyat verileri ve hesaplama yöntemi reklamdan etkilenmez. Hatalı bir değer görürseniz DM ile bildirebilirsiniz.
+Paylaşımlar otomatik olarak üretilir: hafta içi yaklaşık 10:00 ve 20:00'de, cumartesi 10:00'da haftalık özet, pazar 11:00'de yapay zekâ yorumu. Pazar yorumları fiyat ve kur verileri ile web aramasıyla derlenen haftanın haberlerinden yapay zekâ ile üretilir (kaynaklar yorumun açıklamasında); tahmin niteliğindedir, hata içerebilir ve yayından önce uzman incelemesinden geçmez. Reklam ya da iş birliği içeren paylaşımlar #reklam etiketiyle açıkça belirtilir; fiyat verileri ve hesaplama yöntemi reklamdan etkilenmez. Hatalı bir değer görürseniz DM ile bildirebilirsiniz.
 
 #gümüş #gramgümüş #gümüşfiyatları"""

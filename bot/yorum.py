@@ -1,16 +1,26 @@
 """Pazar yapay zekâ yorumu: gram gümüş için kısa, orta ve uzun vadeli görünüm (kaydırmalı, 4 görsel).
 
+Yorum pazar sabahı, o anki bütün verilerle şekillenir. İki adımda üretilir:
+  1. Haftanın gelişmeleri: Claude, web aramasıyla haftanın gümüş, dolar, faiz, sanayi talebi ve
+     Türkiye (dolar/TL, TCMB) haberlerini ve daha uzun dönem bağlamını kaynaklı olarak özetler.
+     Bu adım yorum yazmaz; yalnızca kaynaklarda yazanları derler. Başarısız olursa yorum yalnızca
+     fiyat ve kur verileriyle yazılır, açıklamada da öyle belirtilir.
+  2. Yorum: botun günlük kayıtları, pazar günü alınan haftalık kapanış fiyatı, 13 aylık dolar/TL
+     ve 1. adımdaki özet birlikte verilir; Claude kısa/orta/uzun vade yorumunu yazar.
+
 Yasal çerçeve — SPK III-37.1 Tebliğ'in medya ve elektronik ortamdaki yorumlara uygulanan
 78-80. maddeleri esas alınarak:
   - Yönlendirici değildir: al/sat/tut, hedef fiyat, seviye yok; kişiye ya da gruba özel değildir.
   - Tahminler koşullu yazılır, iki yön de anılır; varsayımları açıklamada yazılıdır.
-  - Kullanılan verilerin tarihi, kaynakları ve güncelleme sıklığı belirtilir.
+  - Kullanılan verilerin tarihi, kaynakları (haber kaynakları dahil) ve güncelleme sıklığı belirtilir.
   - Yapay zekâyla üretildiği görselde ve açıklamada açıkça yazılır.
   - Açıklamada "yatırım danışmanlığı kapsamında değildir" standart uyarısı yer alır.
-Model yalnızca verilen fiyat ve kur verilerini görür, internete çıkmaz; rakamları görsel kod
-tarafından yazılır, model metninde rakam bulunmasına izin verilmez (uydurma seviye/hedef çıkmasın).
+Rakamları görsel kod tarafından yazılır, yorum metninde rakam bulunmasına izin verilmez (uydurma
+seviye/hedef çıkmasın). Kurum ve olay adları (Fed, TCMB, seçim, gümrük vergisi…) yalnızca haftanın
+gelişmeleri özetinde geçiyorsa kullanılabilir; özet yoksa hiç kullanılamaz.
 
-Yapay zekâ: Anthropic Claude API (ANTHROPIC_API_KEY). Haftada 1 çağrı, birkaç kuruş.
+Yapay zekâ: Anthropic Claude API (ANTHROPIC_API_KEY). Haftada 2 çağrı + birkaç web araması;
+ayda yaklaşık 1 dolar.
 """
 import json
 import os
@@ -18,6 +28,7 @@ import re
 import sys
 import time
 from datetime import date, timedelta
+from urllib.parse import urlparse
 
 import requests
 
@@ -39,7 +50,7 @@ VADELER = [
 SINIR = {"ozet": 5, "durum": 18, "seyir": 26, "izlenecek": 8}
 PAY = {"ozet": 1, "durum": 4, "seyir": 5, "izlenecek": 3}
 
-# Yönlendirici, kesinlik bildiren, abartılı ya da modelin bilemeyeceği güncel olaylara değinen ifadeler.
+# Yönlendirici, kesinlik bildiren ya da abartılı ifadeler; rakamlar.
 YASAK = [
     (r"\b(al|alın|alınız|almalı|almak|sat|satın|satınız|satmalı|satmak|tut|tutun|tutmalı|tutmak)\b", "al/sat/tut"),
     (r"\b(ekleyin|azaltın|biriktirin|değerlendirin|bekleyin|kaçırmayın|girin|çıkın)\b", "okura emir"),
@@ -48,25 +59,40 @@ YASAK = [
     (r"kaçırma", "kaçırma"), (r"tavsiye", "tavsiye"), (r"öneri|öner", "öneri"), (r"portföy", "portföy"),
     (r"pozisyon", "pozisyon"), (r"kazandır|kazanç", "kazanç vaadi"), (r"yatırım yap", "yatırım çağrısı"),
     (r"patla|uçuş|roket|çakıl|çöküş|çöker", "abartı"),
-    (r"\bfed|merkez bankası|tcmb|ecb|seçim|savaş|gümrük vergisi", "güncel olay"),
-    (r"\d", "rakam"), (r"%", "yüzde işareti"),
+    (r"\d", "rakam"), (r"%", "yüzde işareti"), (r"\byüzde", "yüzde"), (r"baz puan", "baz puan"),
 ]
+
+# Güncel olay ve kurum adları: yorumda ancak haftanın gelişmeleri özetinde (aynı gruptan bir ifade)
+# geçiyorsa kullanılabilir. Özet yoksa hiçbiri kullanılamaz (model bunları bilemez, uydurmasın).
+# (Faiz beklentisi, enflasyon, istihdam, sanayi talebi gibi genel etkenler serbest; bunlar olay değil.)
+OLAY_GRUPLARI = {
+    "merkez bankası": [r"\bfed\b", r"powell", r"federal rezerv", r"merkez bankas", r"\btcmb\b", r"\becb\b"],
+    "seçim": [r"seçim"],
+    "savaş / çatışma": [r"savaş", r"ateşkes", r"çatışma", r"saldırı"],
+    "ticaret / yaptırım": [r"gümrük", r"tarife", r"yaptırım"],
+}
 
 SISTEM = """Sen bir Instagram hesabı için her pazar gram gümüşün kısa, orta ve uzun vadeli görünümünü yazan bir yapay zekâsın. Yazdıkların görselde büyük puntoyla gösterilecek ve "yapay zekâ yorumudur, yatırım tavsiyesi değildir" uyarısıyla yayımlanacak.
 
+Dayanakların iki tanedir ve ikisini birlikte kullan:
+- Fiyat ve kur verileri (JSON): botun günlük kayıtları, pazar günü alınan haftalık kapanış, haftalık kapanışlar, aylık dolar/TL.
+- "haftanin_gelismeleri": bu sabah web aramasıyla derlenmiş, kaynaklı haber özeti (haftanın gelişmeleri, önümüzdeki haftanın takvimi, uzun dönem bağlam).
+
 Kurallar (hepsine uy):
-1. Yalnızca kullanıcının verdiği verilere dayan. Verilerde olmayan güncel olaylardan, haberlerden, kurum ya da kişi adlarından, faiz kararlarından, seçim, savaş gibi gelişmelerden söz etme. Bunları bilmiyorsun.
-2. Dolar, faiz beklentileri, sanayi talebi, küresel büyüme, dolar/TL gibi genel bilinen etkenleri yalnızca "izlenecek etken" ya da koşul olarak anabilirsin; şu an ne durumda olduklarını iddia etme.
-3. Yönlendirme yapma: al, sat, tut, ekle, azalt, bekle, fırsat, hedef fiyat, destek/direnç seviyesi, stop, portföy, pozisyon gibi ifadeler kullanma. Okura ne yapması gerektiğini söyleme, emir kipi kullanma, okura hitap etme.
-4. Kesinlik bildirme: "kesin, garanti, mutlaka, kesinlikle" yok. Olası seyri koşullu yaz ("... sürerse", "... durumunda") ve her zaman iki yönü de an.
-5. Hiç rakam, yüzde, tarih yazma. Sayılar görselde ayrıca gösteriliyor. "Üç ay", "bir yıl" gibi süreleri yazıyla yazabilirsin.
-6. Abartılı, heyecanlı dil yok (patlama, uçuş, çöküş, roket gibi). Sakin, sade, günlük Türkçe; Türkçe karakterleri doğru kullan.
-7. Bir vade için veri yetersizse (veri_yeterli: false) "durum" alanında bunu açıkça söyle; o vadeyi genel etkenler üzerinden ve daha temkinli yaz.
+1. Yalnızca bu iki dayanakta yazanlara dayan. Özette geçmeyen olay, kurum, kişi, karar ya da veriden söz etme. Özet yoksa güncel olaylardan, kurum adlarından hiç söz etme.
+2. Fiyat verileri ile haber özeti çelişirse fiyat verilerini esas al (görselde onlar gösteriliyor).
+3. Haberleri kendi cümlelerinle, çok kısa an; alıntı yapma, kaynak adı yazma. Bir gelişmenin fiyata etkisini kesin bir neden gibi değil, "etkili olmuş olabilir" gibi temkinli yaz.
+4. Yönlendirme yapma: al, sat, tut, ekle, azalt, bekle, fırsat, hedef fiyat, destek/direnç seviyesi, stop, portföy, pozisyon gibi ifadeler kullanma. Okura ne yapması gerektiğini söyleme, emir kipi kullanma, okura hitap etme.
+5. Kesinlik bildirme: "kesin, garanti, mutlaka, kesinlikle" yok. Olası seyri koşullu yaz ("... sürerse", "... durumunda") ve her zaman iki yönü de an.
+6. Hiç rakam, yüzde, baz puan, tarih yazma; sayıları yazıyla da yazma. Sayılar görselde ayrıca gösteriliyor. "Üç ay", "bir yıl", "önümüzdeki hafta" gibi süreleri yazıyla yazabilirsin.
+7. Abartılı, heyecanlı dil yok (patlama, uçuş, çöküş, roket gibi). Sakin, sade, günlük Türkçe; Türkçe karakterleri doğru kullan.
 8. Gram gümüşün TL fiyatı ons gümüş (dolar) ile dolar/TL'nin çarpımından gelir; hareketin onstan mı kurdan mı geldiğini ayırt etmeye çalış.
+9. Vadelere göre ağırlık: kısa vadede bu haftanın fiyat hareketi, haftanın gelişmeleri ve önümüzdeki haftanın takvimi; orta vadede son aylardaki eğilim, faiz beklentileri ve kur; uzun vadede yıllık eğilim ve arz-talep gibi yapısal etkenler.
+10. Bir vade için fiyat kaydı yetersizse (veri_yeterli: false) "durum" alanında kendi kayıtlarımızın kısa olduğunu belirt; o vadeyi özetteki uzun dönem bağlam ve kur verisiyle, daha temkinli yaz.
 
 Her vade için alanlar:
 - ozet: kapakta görünen çok kısa başlık, en fazla 5 kelime.
-- durum: verilerde ne görülüyor, en fazla 18 kelime, tek cümle.
+- durum: verilerde ve haberlerde ne görülüyor, en fazla 18 kelime, tek cümle.
 - seyir: koşullu olası seyir, iki yönü de anarak, en fazla 26 kelime.
 - izlenecek: izlenecek etkenler, en fazla 8 kelime, cümle değil."""
 
@@ -82,12 +108,133 @@ SEMA = {"type": "object", "additionalProperties": False,
         "required": [v["anahtar"] for v in VADELER]}
 
 
+# ---------------------------------------------------------------- haftanın gelişmeleri (web araması)
+
+ARAMA_SINIRI = 6   # haftada en fazla 6 arama (~6 sent)
+# Forum ve sosyal medya sonuçları dışarıda kalsın; kalan sonuçlarda model haber ajanslarını ve
+# resmi kurumları tercih eder.
+ENGELLI_SITELER = ["reddit.com", "x.com", "twitter.com", "facebook.com", "instagram.com", "tiktok.com",
+                   "youtube.com", "eksisozluk.com", "quora.com", "pinterest.com", "telegram.org", "t.me"]
+
+ARASTIRMA_SISTEM = """Sen bir piyasa haberleri araştırmacısısın. Bugün pazar; bir Instagram hesabında yayımlanacak gram gümüş yorumuna dayanak olacak haftanın gelişmelerini web aramasıyla derliyorsun.
+
+Kurallar:
+- Yorum yazma, tahmin yapma, tavsiye verme. Yalnızca kaynaklarda yazanları kendi cümlelerinle, kısaca özetle; alıntı yapma.
+- Haber ajanslarını, resmi kurumların sitelerini ve tanınmış ekonomi basınını tercih et. Forum, sosyal medya, reklam ve "al-sat sinyali" sitelerini kullanma.
+- Her madde tek cümle olsun ve olayın tarihini gün.ay olarak içersin. Rakamları kaynakta yazdığı gibi verebilirsin.
+- Emin olamadığın ya da kaynağını bulamadığın hiçbir şeyi yazma; bir başlıkta bir şey bulamazsan "bulunamadı" yaz.
+- Toplam en fazla 300 kelime. Türkçe yaz."""
+
+
+def _arastirma_istegi(bugun):
+    pazartesi = bugun - timedelta(days=bugun.weekday())
+    if bugun.weekday() >= 5:
+        hafta = f"{pazartesi:%d.%m.%Y}–{pazartesi + timedelta(days=4):%d.%m.%Y}"
+    else:                                   # hafta içi elle çalıştırılırsa son 7 gün
+        hafta = f"{bugun - timedelta(days=7):%d.%m.%Y}–{bugun:%d.%m.%Y}"
+    return f"""Bugün {bugun:%d.%m.%Y}. Değerlendirilecek hafta: {hafta}.
+
+En fazla {ARAMA_SINIRI} aramayla şu başlıklarda bilgi derle ve aynı başlıklarla yaz:
+
+## 1. Gümüş bu hafta
+Ons gümüşün (XAG/USD) bu haftaki seyri ve haberlerde gösterilen nedenler; altın ve altın/gümüş paritesi.
+## 2. Dolar ve faiz
+ABD doları, Fed ve faiz beklentileri, bu hafta açıklanan önemli ABD verileri (enflasyon, istihdam).
+## 3. Talep ve arz
+Sanayi talebi (güneş paneli, elektronik, elektrikli araç), madencilik arzı, ETF ve stok hareketleri, Çin.
+## 4. Türkiye
+Dolar/TL'nin bu haftaki seyri; TCMB kararı ya da açıklaması, enflasyon verisi gibi kuru etkileyen gelişmeler.
+## 5. Daha uzun dönem
+Gümüşün son üç ay ve son bir yıldaki genel eğilimi; kurumların (ör. The Silver Institute) arz-talep görünümü.
+## 6. Önümüzdeki hafta
+Gümüşü ve doları etkileyebilecek, takvimde olan veri açıklamaları ve toplantılar.
+
+1–4. başlıklarda yalnızca bu haftaya ait, 5. başlıkta son üç ay içinde yayımlanmış kaynakları kullan."""
+
+
+def _alan_adi(url):
+    alan = (urlparse(url).hostname or "").lower()
+    return alan[4:] if alan.startswith("www.") else alan
+
+
+def haftanin_gelismeleri(bugun, anahtar=None):
+    """Web aramasıyla haftanın gelişmeleri özeti: {"metin", "kaynaklar", "arama", "model"} ya da None.
+
+    Metinde her kaynaklı cümlenin sonuna "(kaynak: alan.com)" eklenir; kaynaklar yorum açıklamasında
+    listelenir (Claude API web araması şartı: kullanıcıya gösterilen çıktıda kaynak gösterilmeli).
+    Hiç kaynak yoksa özet kullanılmaz. Hata olursa uyarı yazılır, None döner; yorum yine yazılır.
+    """
+    anahtar = anahtar or os.environ.get("ANTHROPIC_API_KEY", "").strip()
+    if not anahtar:
+        return None
+    govde = {
+        "model": MODEL,
+        "max_tokens": 3000,
+        "system": ARASTIRMA_SISTEM,
+        "tools": [{"type": "web_search_20250305", "name": "web_search", "max_uses": ARAMA_SINIRI,
+                   "blocked_domains": ENGELLI_SITELER,
+                   "user_location": {"type": "approximate", "country": "TR", "timezone": "Europe/Istanbul"}}],
+        "messages": [{"role": "user", "content": _arastirma_istegi(bugun)}],
+    }
+    try:
+        bloklar, arama = [], 0
+        for _ in range(4):
+            cevap = _api(anahtar, govde, zaman_asimi=300)
+            bloklar += cevap.get("content", [])
+            arama += (cevap.get("usage", {}).get("server_tool_use") or {}).get("web_search_requests") or 0
+            if cevap.get("stop_reason") != "pause_turn":
+                break
+            # Uzun süren arama turu duraklatıldı: yanıtı olduğu gibi geri gönderip devam ettir.
+            govde["messages"] = govde["messages"] + [{"role": "assistant", "content": cevap["content"]}]
+        else:
+            raise RuntimeError("arama turu tamamlanmadı (pause_turn)")
+        if cevap.get("stop_reason") not in ("end_turn", "stop_sequence"):
+            raise RuntimeError(f"yanıt tamamlanmadı (stop_reason: {cevap.get('stop_reason')})")
+
+        parcalar, kaynaklar = [], {}
+        for b in bloklar:
+            if b.get("type") != "text":
+                continue
+            metin = b.get("text", "")
+            alanlar = []
+            for c in b.get("citations") or []:
+                url = c.get("url")
+                if not url:
+                    continue
+                alan = _alan_adi(url)
+                kaynaklar.setdefault(url, {"url": url, "baslik": c.get("title") or alan, "alan": alan})
+                if alan not in alanlar:
+                    alanlar.append(alan)
+            if alanlar and metin.strip():
+                metin = metin.rstrip() + f" (kaynak: {', '.join(alanlar)})" + metin[len(metin.rstrip()):]
+            parcalar.append(metin)
+        ozet = "".join(parcalar).strip()
+        if not kaynaklar:
+            raise RuntimeError("özette kaynak gösterilen bilgi yok")
+        print(f"Haftanın gelişmeleri derlendi ({arama} arama, {len(kaynaklar)} kaynak, {len(ozet)} karakter)")
+        return {"metin": ozet, "kaynaklar": list(kaynaklar.values()), "arama": arama, "model": MODEL}
+    except Exception as e:
+        print(f"::warning::Haftanın gelişmeleri alınamadı ({e}); yorum yalnızca fiyat ve kur verileriyle yazılacak")
+        return None
+
+
+def kaynak_alanlari(gelismeler, en_fazla=None):
+    """Açıklamada listelenecek haber kaynaklarının alan adları, en çok kullanılandan başlayarak."""
+    if not gelismeler:
+        return []
+    sayac = {}
+    for k in gelismeler["kaynaklar"]:
+        sayac[k["alan"]] = sayac.get(k["alan"], 0) + 1
+    alanlar = sorted(sayac, key=lambda a: (-sayac[a], a))
+    return alanlar[:en_fazla] if en_fazla else alanlar
+
+
 # ---------------------------------------------------------------- seriler ve istatistik
 
 def seri_kur(kayitlar, ecb, metal_gecmis=None):
     """Günlük seri: tarih -> {gumus, altin, dolar, gram}.
 
-    kayitlar: botun günlük kayıtları (veri/gecmis.json), ecb: tarih -> USD/TRY,
+    kayitlar: botun günlük kayıtları (veri/gecmis.json; pazar günü alınan kapanış dahil), ecb: tarih -> USD/TRY,
     metal_gecmis: (varsa) MetalCharts geçmişi {"XAG": {tarih: kapanış}, "XAU": {...}}.
     Kendi kayıtlarımız aynı gün için geçmişin önüne geçer (paylaşılan değerlerle tutarlı olsun).
     """
@@ -154,28 +301,35 @@ def vade_istatistikleri(seri, ecb):
     return sonuc
 
 
-def model_girdisi(seri, ecb, ist, bugun, kaynak_notu):
+def model_girdisi(seri, ecb, ist, bugun, kaynak_notu, gelismeler=None, kapanis=False):
     son_gun = max(seri)
     son = seri[son_gun]
     yuv = lambda x, n=2: None if x is None else round(x, n)
+    parite = lambda x: yuv(x["altin"] / x["gumus"], 1) if x.get("altin") else None
 
     haftalik = {}
     for g, x in seri.items():
         haftalik[g.isocalendar()[:2]] = (g, x)            # her haftanın son kaydı
     haftalik = [{"hafta_son_gunu": g.isoformat(), "gram_tl": yuv(x["gram"]), "ons_usd": yuv(x["gumus"]),
-                 "dolar_tl": yuv(x["dolar"], 3)} for g, x in list(haftalik.values())[-13:]]
+                 "altin_gumus_paritesi": parite(x), "dolar_tl": yuv(x["dolar"], 3)}
+                for g, x in list(haftalik.values())[-13:]]
     aylik_dolar = {}
     for g in sorted(ecb):
         aylik_dolar[g.strftime("%Y-%m")] = ecb[g]
     gunluk = list(seri.values())[-21:]
     oynaklik = [abs(b["gram"] / a["gram"] - 1) * 100 for a, b in zip(gunluk, gunluk[1:])]
+    son_10_gun = [{"tarih": g.isoformat(), "saat": x.get("saat"), "gram_tl": yuv(x["gram"]),
+                   "ons_usd": yuv(x["gumus"]), "altin_gumus_paritesi": parite(x), "dolar_tl": yuv(x["dolar"], 3)}
+                  for g, x in seri.items() if g > son_gun - timedelta(days=10)]
     return {
         "bugun": bugun.isoformat(),
-        "son_veri": {"tarih": son_gun.isoformat(), "saat": son.get("saat"), "gram_tl": yuv(son["gram"]),
-                     "ons_usd": yuv(son["gumus"]), "dolar_tl": yuv(son["dolar"], 3),
-                     "altin_gumus_paritesi": yuv(son["altin"] / son["gumus"], 1) if son.get("altin") else None},
+        "son_veri": {"tarih": son_gun.isoformat(), "saat": son.get("saat"),
+                     "not": "haftanın kapanış fiyatı (pazar günü alındı)" if kapanis else "botun son kaydı",
+                     "gram_tl": yuv(son["gram"]), "ons_usd": yuv(son["gumus"]), "dolar_tl": yuv(son["dolar"], 3),
+                     "altin_gumus_paritesi": parite(son)},
         "metal_verisi": kaynak_notu,
         "metal_kayit_baslangici": min(seri).isoformat(),
+        "son_10_gun": son_10_gun,
         "vadeler": {k: {"pencere": x["etiket"], "veri_yeterli": x["veri_yeterli"],
                         "gram_degisim_yuzde": yuv(x["gram"]), "ons_degisim_yuzde": yuv(x["ons"]),
                         "parite_degisim_yuzde": yuv(x["parite"]), "dolar_tl_degisim_yuzde": yuv(x["dolar"]),
@@ -184,6 +338,9 @@ def model_girdisi(seri, ecb, ist, bugun, kaynak_notu):
         "haftalik_kapanislar": haftalik,
         "aylik_dolar_tl": [{"ay": a, "dolar_tl": yuv(d, 3)} for a, d in list(aylik_dolar.items())[-13:]],
         "gram_ortalama_gunluk_hareket_yuzde": yuv(sum(oynaklik) / len(oynaklik)) if oynaklik else None,
+        "haftanin_gelismeleri": (gelismeler["metin"] if gelismeler else
+                                 "YOK — bu hafta haber taraması yapılamadı. Güncel olaylardan, kurum adlarından "
+                                 "söz etme; yalnızca fiyat ve kur verilerine dayan."),
     }
 
 
@@ -193,8 +350,12 @@ def _kucuk(s):
     return s.replace("I", "ı").replace("İ", "i").lower()
 
 
-def denetle(yorum):
-    """Kurallara uymayan alanların listesi (boşsa yorum yayımlanabilir)."""
+def denetle(yorum, gelismeler=None):
+    """Kurallara uymayan alanların listesi (boşsa yorum yayımlanabilir).
+
+    gelismeler: haftanın gelişmeleri özeti; yorumdaki kurum/olay adları bu metinde geçmeli.
+    """
+    ozet = _kucuk(gelismeler["metin"]) if gelismeler else ""
     hatalar = []
     for v in VADELER:
         alanlar = yorum.get(v["anahtar"]) or {}
@@ -212,23 +373,22 @@ def denetle(yorum):
                 if re.search(desen, kucuk):
                     hatalar.append(f"{yer}: yasak ifade ({ad}): {metin!r}")
                     break
+            for grup, desenler in OLAY_GRUPLARI.items():
+                bulunan = next((m.group(0) for d in desenler for m in [re.search(d, kucuk)] if m), None)
+                if bulunan and not any(re.search(d, ozet) for d in desenler):
+                    neden = "haber özetinde geçmiyor" if ozet else "bu hafta haber özeti yok"
+                    hatalar.append(f"{yer}: güncel olay/kurum ({grup}: {bulunan!r}) — {neden}, kullanma")
     return hatalar
 
 
 # ---------------------------------------------------------------- yapay zekâ çağrısı
 
-def _cagir(anahtar, mesajlar):
-    govde = {
-        "model": MODEL,
-        "max_tokens": 1500,
-        "system": SISTEM,
-        "messages": mesajlar,
-        "output_config": {"format": {"type": "json_schema", "schema": SEMA}},
-    }
+def _api(anahtar, govde, zaman_asimi=120):
+    """Claude Messages API'ye istek; geçici hatalarda bekleyip yeniden dener. Yanıt JSON'u döndürür."""
     son_hata = None
     for deneme in range(4):
         try:
-            r = requests.post(API_URL, json=govde, timeout=120, headers={
+            r = requests.post(API_URL, json=govde, timeout=zaman_asimi, headers={
                 "x-api-key": anahtar, "anthropic-version": "2023-06-01", "content-type": "application/json"})
         except requests.RequestException as e:
             son_hata = e
@@ -242,22 +402,32 @@ def _cagir(anahtar, mesajlar):
             continue
         if r.status_code >= 400:
             raise RuntimeError(f"Claude API hatası (HTTP {r.status_code}): {r.text[:500]}")
-        cevap = r.json()
-        if cevap.get("stop_reason") not in ("end_turn", "stop_sequence"):
-            raise RuntimeError(f"Claude yanıtı tamamlanmadı (stop_reason: {cevap.get('stop_reason')})")
-        metin = "".join(b.get("text", "") for b in cevap.get("content", []) if b.get("type") == "text")
-        return metin, cevap
+        return r.json()
     raise RuntimeError(f"Claude API'ye ulaşılamadı: {son_hata}")
 
 
-def yz_yorum(girdi):
+def _cagir(anahtar, mesajlar):
+    cevap = _api(anahtar, {
+        "model": MODEL,
+        "max_tokens": 1500,
+        "system": SISTEM,
+        "messages": mesajlar,
+        "output_config": {"format": {"type": "json_schema", "schema": SEMA}},
+    })
+    if cevap.get("stop_reason") not in ("end_turn", "stop_sequence"):
+        raise RuntimeError(f"Claude yanıtı tamamlanmadı (stop_reason: {cevap.get('stop_reason')})")
+    metin = "".join(b.get("text", "") for b in cevap.get("content", []) if b.get("type") == "text")
+    return metin, cevap
+
+
+def yz_yorum(girdi, gelismeler=None):
     """Claude'dan yorum alır; kurallara uymazsa hataları göstererek en fazla 2 kez yeniden ister."""
     anahtar = os.environ.get("ANTHROPIC_API_KEY", "").strip()
     if not anahtar:
         return None
     mesajlar = [{"role": "user", "content":
-                 "Bu haftanın gram gümüş verileri aşağıda (JSON). Kısa, orta ve uzun vade için yorumu yaz.\n\n"
-                 + json.dumps(girdi, ensure_ascii=False, indent=1)}]
+                 "Bu haftanın gram gümüş verileri ve haftanın gelişmeleri aşağıda (JSON). Kısa, orta ve uzun "
+                 "vade için yorumu yaz.\n\n" + json.dumps(girdi, ensure_ascii=False, indent=1)}]
     for tur in range(3):
         metin, cevap = _cagir(anahtar, mesajlar)
         try:
@@ -265,7 +435,7 @@ def yz_yorum(girdi):
         except ValueError:
             hatalar = ["yanıt geçerli JSON değil"]
         else:
-            hatalar = denetle(yorum)
+            hatalar = denetle(yorum, gelismeler)
             if not hatalar:
                 kullanim = cevap.get("usage", {})
                 print(f"Yapay zekâ yorumu alındı ({MODEL}, {kullanim.get('input_tokens')} girdi / "
@@ -279,28 +449,49 @@ def yz_yorum(girdi):
 
 
 # ---------------------------------------------------------------- örnek (yerel önizleme)
+# Örnekteki haberler uydurmadır; yalnızca görsel ve açıklama düzenini denemek içindir.
+
+ORNEK_GELISMELER = {
+    "metin": (
+        "## 1. Gümüş bu hafta\nOns gümüş hafta başındaki gerilemenin ardından cuma günü haftayı yükselişle "
+        "kapattı; altın da yükseldi (16.10). (kaynak: ornek-haber.com)\n"
+        "## 2. Dolar ve faiz\nFed yetkilileri faiz indirimlerinde acele edilmeyeceğini söyledi; dolar haftayı "
+        "yatay kapattı (15.10). (kaynak: ornek-ajans.com)\n"
+        "## 3. Talep ve arz\nGüneş paneli üreticilerinden gelen talebin güçlü kaldığı bildirildi (14.10). "
+        "(kaynak: ornek-haber.com)\n"
+        "## 4. Türkiye\nDolar/TL hafta boyunca kademeli yükselişini sürdürdü (16.10). (kaynak: ornek-ajans.com)\n"
+        "## 5. Daha uzun dönem\nGümüş son bir yılda belirgin yükseldi; arz açığının sürdüğü tahmin ediliyor. "
+        "(kaynak: ornek-kurum.org)\n"
+        "## 6. Önümüzdeki hafta\nABD enflasyon verisi ve TCMB faiz kararı takvimde. (kaynak: ornek-ajans.com)"),
+    "kaynaklar": [{"url": "https://ornek-haber.com/a", "baslik": "Örnek haber", "alan": "ornek-haber.com"},
+                  {"url": "https://ornek-ajans.com/b", "baslik": "Örnek ajans", "alan": "ornek-ajans.com"},
+                  {"url": "https://ornek-ajans.com/c", "baslik": "Örnek ajans", "alan": "ornek-ajans.com"},
+                  {"url": "https://ornek-kurum.org/d", "baslik": "Örnek kurum", "alan": "ornek-kurum.org"}],
+    "arama": 5,
+    "model": MODEL,
+}
 
 ORNEK_YORUM = {
     "kisa": {
-        "ozet": "Kur destekli, ons dalgalı",
-        "durum": "Son günlerde gram gümüşteki artışın bir kısmı dolar/TL'den geldi; ons dar bir aralıkta dalgalandı.",
-        "seyir": "Kur artışı aynı hızda sürerse gram fiyat desteklenebilir; onsta satış baskısı artarsa bu destek "
-                 "zayıflayabilir ve oynaklık yükselebilir.",
-        "izlenecek": "Haftalık ons hareketi ve kurun hızı",
+        "ozet": "Cuma toparlanması, kur desteği",
+        "durum": "Hafta başında gerileyen ons cuma günü toparlandı; gram fiyattaki artışa dolar/TL de katkı verdi.",
+        "seyir": "Ons toparlanmayı sürdürürse gram fiyat desteklenebilir; enflasyon verisi faiz beklentilerini "
+                 "sertleştirirse dalgalanma artabilir.",
+        "izlenecek": "ABD enflasyon verisi, TCMB kararı, ons",
     },
     "orta": {
-        "ozet": "Belirleyici olan kur",
-        "durum": "Üç aylık dönemde dolar/TL istikrarlı yükseldi; ons için bu süreyi kapsayan kayıt henüz yok.",
-        "seyir": "Kurdaki eğilim korunursa onstaki düşüşler gram fiyata daha az yansıyabilir; kur yatay kalırsa "
-                 "yön büyük ölçüde onsa bağlı olur.",
-        "izlenecek": "Dolar endeksi, faiz beklentileri, sanayi talebi",
+        "ozet": "Faiz beklentisi ve kur belirleyici",
+        "durum": "Kendi kayıtlarımız kısa; dolar/TL üç ayda istikrarlı yükseldi, Fed temkinli bir dil kullanıyor.",
+        "seyir": "Kurdaki eğilim korunursa onstaki düşüşler gram fiyata daha az yansıyabilir; faiz indirimleri "
+                 "gecikirse ons baskı altında kalabilir.",
+        "izlenecek": "Fed faiz beklentileri, dolar/TL, sanayi talebi",
     },
     "uzun": {
-        "ozet": "Veri birikiyor, temkinli bakış",
-        "durum": "Bir yılda dolar/TL belirgin yükseldi; ons için bir yıllık kayıt olmadığından değerlendirme sınırlı.",
-        "seyir": "Uzun vadede gram fiyatı ons ile kurun ortak seyri belirler; sanayi talebi güçlü kalırsa ons "
-                 "desteklenebilir, küresel talep zayıflarsa baskı artabilir.",
-        "izlenecek": "Sanayi talebi, küresel büyüme, kur eğilimi",
+        "ozet": "Yapısal talep güçlü görünüyor",
+        "durum": "Gümüş son bir yılda belirgin yükseldi; güneş paneli talebi ve arz açığı öne çıkıyor.",
+        "seyir": "Sanayi talebi güçlü kalırsa ons desteklenebilir; küresel büyüme yavaşlarsa talep zayıflayabilir "
+                 "ve fiyat geri çekilebilir.",
+        "izlenecek": "Sanayi talebi, arz açığı, kur eğilimi",
     },
 }
 
@@ -335,26 +526,44 @@ UYARI = ("Burada yer alan yatırım bilgi, yorum ve tavsiyeleri yatırım danı�
          "beklentilerinize uygun sonuçlar doğurmayabilir.")
 
 
-def aciklama(v, yorum, kaynak_satirlari):
+def _nasil_hazirlandi(gelismeler):
+    if gelismeler:
+        dayanak = ("Yorumlar aşağıdaki fiyat ve kur verileri ile yapay zekânın pazar sabahı web aramasıyla "
+                   f"derlediği haftanın haberlerinden ({MODEL_ADI}) otomatik üretilir; haber özetleri ayrıca "
+                   "doğrulanmaz ve yayından önce bir uzman tarafından incelenmez.")
+    else:
+        dayanak = (f"Yorumlar aşağıdaki fiyat ve kur verilerinden yapay zekâ ({MODEL_ADI}) ile otomatik üretilir; "
+                   "yayından önce bir uzman tarafından incelenmez. Bu hafta haber taraması yapılamadığı için "
+                   "yalnızca geçmiş fiyat ve kur hareketlerine dayanır.")
+    return (f"Nasıl hazırlandı: {dayanak} Tahmin niteliğindedir; geçmiş hareketler gelecek için güvence "
+            "değildir. Her pazar güncellenir. Bu yorum için hiçbir kurumdan ücret ya da menfaat alınmamıştır.")
+
+
+def aciklama(v, yorum, kaynak_satirlari, gelismeler=None):
     vade_satirlari = [f"{x['ad']} ({x['ufuk']}): {yorum[x['anahtar']]['ozet']}" for x in v["vadeler"]]
-    parcalar = [
-        f"Haftalık gümüş görünümü | Yapay zekâ yorumu · {v['tarih']}",
-        f"Gram gümüş: {v['gram']} ₺ (haftalık {v['gram_deg']['isaret']} {v['gram_deg']['metin']}) · {v['veri_ani']}",
-        "\n".join(vade_satirlari) + "\nAyrıntılar görsellerde, kaydırın →",
-        "Sizce gümüş önümüzdeki haftalarda ne yöne gider? Yorumlara yazın 👇",
-        "Nasıl hazırlandı: Yorumlar aşağıdaki fiyat ve kur verilerinden yapay zekâ "
-        f"({MODEL_ADI}) ile otomatik üretilir; yayından önce bir uzman tarafından incelenmez. Tahmin "
-        "niteliğindedir ve yalnızca geçmiş fiyat ve kur hareketlerine dayanır; haberler, faiz kararları ve "
-        "diğer gelişmeler değerlendirmeye alınmaz. Geçmiş hareketler gelecek için güvence değildir. "
-        "Her pazar güncellenir. Bu yorum için hiçbir kurumdan ücret ya da menfaat alınmamıştır.",
-        "Uyarı: " + UYARI,
-        f"Veriler: {v['veri_ani']} itibarıyla.\n{kaynak_satirlari}",
-        HASHTAG,
-    ]
-    metin = "\n\n".join(parcalar)
-    if len(metin) > 2200:   # Instagram sınırı: önce soru satırı düşer
-        parcalar.pop(3)
-        metin = "\n\n".join(parcalar)
-    if len(metin) > 2200:
-        raise RuntimeError(f"Açıklama Instagram sınırını aşıyor ({len(metin)} > 2200 karakter)")
-    return metin
+    alanlar = kaynak_alanlari(gelismeler)
+
+    def kur(soru=True, kaynak_sayisi=None):
+        satirlar = kaynak_satirlari
+        if alanlar:
+            secili = alanlar[:kaynak_sayisi] if kaynak_sayisi else alanlar
+            ek = f" ve {len(alanlar) - len(secili)} kaynak daha" if len(secili) < len(alanlar) else ""
+            satirlar += f"\nHaber kaynakları (web araması): {', '.join(secili)}{ek}"
+        parcalar = [
+            f"Haftalık gümüş görünümü | Yapay zekâ yorumu · {v['tarih']}",
+            f"Gram gümüş: {v['gram']} ₺ (haftalık {v['gram_deg']['isaret']} {v['gram_deg']['metin']}) · {v['veri_ani']}",
+            "\n".join(vade_satirlari) + "\nAyrıntılar görsellerde, kaydırın →",
+            "Sizce gümüş önümüzdeki haftalarda ne yöne gider? Yorumlara yazın 👇" if soru else None,
+            _nasil_hazirlandi(gelismeler),
+            "Uyarı: " + UYARI,
+            f"Veriler: {v['veri_ani']} itibarıyla.\n{satirlar}",
+            HASHTAG,
+        ]
+        return "\n\n".join(p for p in parcalar if p)
+
+    # Instagram sınırı 2200 karakter: önce haber kaynakları kısaltılır, sonra soru satırı düşer.
+    for soru, sayi in [(True, None), (True, 6), (True, 4), (False, 4), (False, 3)]:
+        metin = kur(soru, sayi)
+        if len(metin) <= 2200:
+            return metin
+    raise RuntimeError(f"Açıklama Instagram sınırını aşıyor ({len(metin)} > 2200 karakter)")
