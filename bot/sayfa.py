@@ -103,8 +103,7 @@ def _rehber(simdi):
     yayimlanan, siradaki = [], None
     bugun = simdi.date()
     saat_gecti = (simdi.hour, simdi.minute) >= REHBER_SAATI
-    for gun_metni, no in sorted(bilgi.takvim().items()):
-        gun = date.fromisoformat(gun_metni)
+    for gun, no in bilgi.yayim_listesi():
         if gun < bugun or (gun == bugun and saat_gecti):
             b = bilgi.BOLUMLER[no - 1]
             yayimlanan.append({"no": no, "tarih": _kisa_tarih(gun), "baslik": b["baslik"], "alt": b["alt"],
