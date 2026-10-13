@@ -421,11 +421,13 @@ HIKAYE_TURLERI = {"post", "hafta"}
 
 
 def aciklama_yaz(v, tur):
+    # İlk satır aranan kelimeyle ("gram gümüş fiyatı") ve rakamla başlar: Instagram araması ve
+    # Google ilk satıra en çok ağırlığı verir, akışta da "devamı"ndan önce yalnızca o görünür.
     if tur == "hafta":
         g, p, d = v["gram_deg"], v["parite_deg"], v["dolar_deg"]
         return (
-            f"Haftalık gümüş özeti | {v['aralik']}\n\n"
-            f"Gram gümüş: {v['gram']} ₺ ({g['isaret']} {g['metin']})\n"
+            f"Gram gümüş fiyatı bu hafta: {v['gram']} ₺ ({g['isaret']} {g['metin']})\n"
+            f"Haftalık gümüş özeti · {v['aralik']}\n\n"
             f"Haftanın en yükseği: {v['en_yuksek']} ₺ · en düşüğü: {v['en_dusuk']} ₺\n"
             f"Altın/Gümüş paritesi: {v['parite']} ({p['isaret']} {p['metin']})\n"
             f"Dolar/TL: {v['dolar']} ₺ ({d['isaret']} {d['metin']})\n\n"
@@ -439,8 +441,8 @@ def aciklama_yaz(v, tur):
     baslik = "Günün gümüş özeti" if tur == "post" else "Güncel gümüş fiyatları"
     g, p, d = v["gram_deg"], v["parite_deg"], v["dolar_deg"]
     return (
-        f"{baslik} | {v['tarih']} · {v['saat']}\n\n"
-        f"Gram gümüş: {v['gram']} ₺ ({g['isaret']} {g['metin']})\n"
+        f"Gram gümüş fiyatı bugün: {v['gram']} ₺ ({g['isaret']} {g['metin']})\n"
+        f"{baslik} · {v['tarih']} · {v['saat']}\n\n"
         f"Altın/Gümüş paritesi: {v['parite']} ({p['isaret']} {p['metin']})\n"
         f"Dolar/TL: {v['dolar']} ₺ ({d['isaret']} {d['metin']})\n\n"
         "Değişimler önceki iş gününe göredir.\n"
@@ -498,7 +500,7 @@ def video_uret(png_yolu, mp4_yolu, sure=7):
         ses = ["-f", "lavfi", "-i", "anullsrc=r=44100:cl=stereo"]
         ses_filtre = []
     goruntu = (f"scale=1080:-2,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color={ZEMIN_RENGI},"
-               "fade=t=in:st=0:d=0.6,format=yuv420p")
+               "format=yuv420p")   # kararmadan açılış yok: fiyat ilk karede görünsün
     komut = [ffmpeg_yolu(), "-y", "-loglevel", "error", "-loop", "1", "-framerate", "30", "-i", str(png_yolu), *ses,
              "-t", str(sure), "-vf", goruntu, *ses_filtre,
              "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-r", "30",
@@ -581,9 +583,8 @@ def yayinla(cikti, taban_url):
     _url_hazir_mi(medya_url)
     kullanici_id = hesap_bilgisi()["user_id"]
     if meta["dosya"].endswith(".mp4"):
-        # thumb_offset: kapak, kararmadan açılış bittikten sonraki kareden alınsın
         k = _istek("POST", f"{kullanici_id}/media", media_type="REELS", video_url=medya_url,
-                   caption=meta["aciklama"], share_to_feed="true", thumb_offset="1500")
+                   caption=meta["aciklama"], share_to_feed="true")
     else:
         k = _istek("POST", f"{kullanici_id}/media", image_url=medya_url, caption=meta["aciklama"])
     _hazir_olmasini_bekle(k["id"])
