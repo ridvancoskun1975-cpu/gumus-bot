@@ -1,8 +1,8 @@
 """Gümüş rehberi: profili çeşitlendiren, fiyat verisi kullanmayan bilgi gönderileri (kaydırmalı).
 
 Her bölüm kapak + 3 sayfa olarak paylaşılır, hafta içi ~14:00'te otomatik gider.
-Takvim: ilk 6 bölüm 14-21 Ekim 2026'da her iş günü (BASLANGIC); sonrası DUZENLI_GUNLER'de
-(salı, perşembe) sıradaki bölüm. Yeni bölüm eklemek için BOLUMLER'in sonuna ekle; takvime
+Takvim: 1-3. bölümler 13 Ekim 2026 akşamı elle paylaşıldı (ONCEDEN_YAYIMLANAN); 4-9. bölümler
+14-21 Ekim'de her iş günü (BASLANGIC); sonrası DUZENLI_GUNLER'de (salı, perşembe) sıradaki bölüm. Yeni bölüm eklemek için BOLUMLER'in sonuna ekle; takvime
 kendiliğinden girer. Bölümler bitince zamanlı çalışma bir şey paylaşmaz.
 Elle göndermek için Actions → Run workflow → tür: bilgi, konu: <no>.
 Rakamlar örnek ya da sabit değerlerdir (güncel fiyat içermez), bu yüzden MetalCharts hakkı harcanmaz.
@@ -19,14 +19,21 @@ from zoneinfo import ZoneInfo
 SERI = "GÜMÜŞ REHBERİ"
 GUNLER = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"]
 
+# Takvim dışında elle paylaşılan bölümler: {bölüm no: TR tarihi}. 13 Ekim 2026 akşamı profil boş
+# görünmesin diye 1-3. bölümler Run workflow ile paylaşıldı; zamanlı takvim 4. bölümden devam eder.
+ONCEDEN_YAYIMLANAN = {
+    1: "2026-10-13",
+    2: "2026-10-13",
+    3: "2026-10-13",
+}
 # İlk hafta her iş günü bir bölüm (TR tarihi)
 BASLANGIC = {
-    "2026-10-14": 1,
-    "2026-10-15": 2,
-    "2026-10-16": 3,
-    "2026-10-19": 4,
-    "2026-10-20": 5,
-    "2026-10-21": 6,
+    "2026-10-14": 4,
+    "2026-10-15": 5,
+    "2026-10-16": 6,
+    "2026-10-19": 7,
+    "2026-10-20": 8,
+    "2026-10-21": 9,
 }
 # Sonrasında haftada 2 bölüm: salı ve perşembe (Pazartesi = 0). Haftada 1 için {1} yeter.
 DUZENLI_BASLANGIC = date(2026, 10, 26)
@@ -597,6 +604,13 @@ def takvim():
     return t
 
 
+def yayim_listesi():
+    """[(tarih, bölüm no)] — elle paylaşılanlar + zamanlı takvim, tarihe ve numaraya göre sıralı."""
+    liste = [(date.fromisoformat(g), no) for no, g in ONCEDEN_YAYIMLANAN.items()]
+    liste += [(date.fromisoformat(g), no) for g, no in takvim().items()]
+    return sorted(liste)
+
+
 # Kısa Reels (rehber bölümünden 12 sn'lik video): her cumartesi ~14:00, bölüm sırasıyla.
 # Cumartesi n → bölüm n; bölüm o tarihte rehberde yayımlanmış olmalı (her zaman öyle: rehber
 # haftada en az 2 bölüm ilerler). Bölümler bitince kısa Reels de durur.
@@ -605,7 +619,7 @@ KISA_BASLANGIC = date(2026, 10, 17)
 
 def kisa_takvim():
     """{"YYYY-AA-GG": bölüm no} — kısa Reels günleri (cumartesi)."""
-    yayim = {no: date.fromisoformat(g) for g, no in takvim().items()}
+    yayim = {no: gun for gun, no in yayim_listesi()}
     t, gun, no = {}, KISA_BASLANGIC, 1
     while no <= len(BOLUMLER):
         if no in yayim and yayim[no] < gun:
@@ -639,8 +653,10 @@ def aciklama(no):
 if __name__ == "__main__":
     komut = sys.argv[1] if len(sys.argv) > 1 else "bugun"
     if komut == "takvim":
-        for g, n in takvim().items():
-            print(g, GUNLER[date.fromisoformat(g).weekday()], n, BOLUMLER[n - 1]["baslik"])
+        zamanli = takvim()
+        for g, n in yayim_listesi():
+            elle = "" if zamanli.get(g.isoformat()) == n else "  (elle)"
+            print(g, GUNLER[g.weekday()], n, BOLUMLER[n - 1]["baslik"] + elle)
     elif komut == "kisa-takvim":
         for g, n in kisa_takvim().items():
             print(g, GUNLER[date.fromisoformat(g).weekday()], n, BOLUMLER[n - 1]["baslik"])
