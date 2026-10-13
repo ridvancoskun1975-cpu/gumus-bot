@@ -1202,7 +1202,12 @@ def hazirla(tur, cikti, ornek, konu=None):
         bilgi_hazirla(cikti, konu)
         return
     if tur == "kisa":
-        kisa_hazirla(cikti, konu or 1)
+        import bilgi
+        konu = konu or bilgi.bugunun_kisa_bolumu()
+        if not konu:
+            print("::warning::Paylaşım atlandı: bugün kısa Reels takviminde bölüm yok")
+            return
+        kisa_hazirla(cikti, konu)
         return
     if tur == "yorum":
         try:

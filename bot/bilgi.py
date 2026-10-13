@@ -9,6 +9,8 @@ Rakamlar örnek ya da sabit değerlerdir (güncel fiyat içermez), bu yüzden Me
 
 Komut satırı: python bot/bilgi.py bugun  → bugünün bölüm numarasını yazar (yoksa boş)
               python bot/bilgi.py takvim → bütün takvimi yazar
+              python bot/bilgi.py kisa   → bugün (cumartesi) kısa Reels'i yapılacak bölüm (yoksa boş)
+              python bot/bilgi.py kisa-takvim → kısa Reels takvimi
 """
 import sys
 from datetime import date, datetime, timedelta
@@ -595,6 +597,29 @@ def takvim():
     return t
 
 
+# Kısa Reels (rehber bölümünden 12 sn'lik video): her cumartesi ~14:00, bölüm sırasıyla.
+# Cumartesi n → bölüm n; bölüm o tarihte rehberde yayımlanmış olmalı (her zaman öyle: rehber
+# haftada en az 2 bölüm ilerler). Bölümler bitince kısa Reels de durur.
+KISA_BASLANGIC = date(2026, 10, 17)
+
+
+def kisa_takvim():
+    """{"YYYY-AA-GG": bölüm no} — kısa Reels günleri (cumartesi)."""
+    yayim = {no: date.fromisoformat(g) for g, no in takvim().items()}
+    t, gun, no = {}, KISA_BASLANGIC, 1
+    while no <= len(BOLUMLER):
+        if no in yayim and yayim[no] < gun:
+            t[gun.isoformat()] = no
+            no += 1
+        gun += timedelta(days=7)
+    return t
+
+
+def bugunun_kisa_bolumu(gun=None):
+    gun = gun or datetime.now(ZoneInfo("Europe/Istanbul")).date()
+    return kisa_takvim().get(gun.isoformat())
+
+
 def bugunun_bolumu(gun=None):
     gun = gun or datetime.now(ZoneInfo("Europe/Istanbul")).date()
     return takvim().get(gun.isoformat())
@@ -616,5 +641,10 @@ if __name__ == "__main__":
     if komut == "takvim":
         for g, n in takvim().items():
             print(g, GUNLER[date.fromisoformat(g).weekday()], n, BOLUMLER[n - 1]["baslik"])
+    elif komut == "kisa-takvim":
+        for g, n in kisa_takvim().items():
+            print(g, GUNLER[date.fromisoformat(g).weekday()], n, BOLUMLER[n - 1]["baslik"])
+    elif komut == "kisa":
+        print(bugunun_kisa_bolumu() or "")
     else:
         print(bugunun_bolumu() or "")

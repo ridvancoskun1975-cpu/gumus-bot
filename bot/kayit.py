@@ -1,7 +1,7 @@
 """Takipçi kaydı: her paylaşımda takipçi sayısını sana özel gumus-kayit deposuna yazar.
 
 Kullanım (iş akışı çağırır):
-  python bot/kayit.py --tur reels|post|hafta|ay|bilgi|yorum
+  python bot/kayit.py --tur reels|post|hafta|ay|bilgi|kisa|yorum
 
 Bot deposu herkese açık ve iş akışı günlüklerini herkes okuyabilir. Bu yüzden bu betik
 takipçi sayısını hiçbir zaman günlüğe yazmaz; sayılar yalnızca özel depodaki takipci.md
@@ -29,7 +29,7 @@ DEPO = (os.environ.get("KAYIT_DEPO", "").strip()
         or os.environ.get("GITHUB_REPOSITORY_OWNER", "ridvancoskun1975-cpu") + "/gumus-kayit")
 DOSYA = "takipci.md"
 ETIKET = {"reels": "Reels", "post": "Günlük özet", "hafta": "Haftalık özet", "ay": "Aylık özet",
-          "bilgi": "Rehber", "yorum": "Pazar yorumu"}
+          "bilgi": "Rehber", "kisa": "Rehber Reels", "yorum": "Pazar yorumu"}
 SATIR = re.compile(r"^\|\s*(\d{4}-\d{2}-\d{2})\s*\|\s*(\d{2}:\d{2})\s*\|\s*([^|]*?)\s*\|\s*(\d+)\s*\|")
 
 
