@@ -1,7 +1,7 @@
 """Gümüş rehberi: profili çeşitlendiren, fiyat verisi kullanmayan bilgi gönderileri (kaydırmalı).
 
 Her bölüm kapak + 3 sayfa olarak paylaşılır, hafta içi ~14:00'te otomatik gider.
-Takvim: 1-3. bölümler 13 Ekim 2026 akşamı elle paylaşıldı (ONCEDEN_YAYIMLANAN); 4-9. bölümler
+Takvim: 1-2. bölümler 13 Ekim 2026 akşamı elle paylaşıldı (ONCEDEN_YAYIMLANAN); 3-8. bölümler
 14-21 Ekim'de her iş günü (BASLANGIC); sonrası DUZENLI_GUNLER'de (salı, perşembe) sıradaki bölüm. Yeni bölüm eklemek için BOLUMLER'in sonuna ekle; takvime
 kendiliğinden girer. Bölümler bitince zamanlı çalışma bir şey paylaşmaz.
 Elle göndermek için Actions → Run workflow → tür: bilgi, konu: <no>.
@@ -20,20 +20,19 @@ SERI = "GÜMÜŞ REHBERİ"
 GUNLER = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"]
 
 # Takvim dışında elle paylaşılan bölümler: {bölüm no: TR tarihi}. 13 Ekim 2026 akşamı profil boş
-# görünmesin diye 1-3. bölümler Run workflow ile paylaşıldı; zamanlı takvim 4. bölümden devam eder.
+# görünmesin diye 1-2. bölümler Run workflow ile paylaşıldı; zamanlı takvim 3. bölümden devam eder.
 ONCEDEN_YAYIMLANAN = {
     1: "2026-10-13",
     2: "2026-10-13",
-    3: "2026-10-13",
 }
 # İlk hafta her iş günü bir bölüm (TR tarihi)
 BASLANGIC = {
-    "2026-10-14": 4,
-    "2026-10-15": 5,
-    "2026-10-16": 6,
-    "2026-10-19": 7,
-    "2026-10-20": 8,
-    "2026-10-21": 9,
+    "2026-10-14": 3,
+    "2026-10-15": 4,
+    "2026-10-16": 5,
+    "2026-10-19": 6,
+    "2026-10-20": 7,
+    "2026-10-21": 8,
 }
 # Sonrasında haftada 2 bölüm: salı ve perşembe (Pazartesi = 0). Haftada 1 için {1} yeter.
 DUZENLI_BASLANGIC = date(2026, 10, 26)
