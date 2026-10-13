@@ -40,3 +40,10 @@ h1 { margin: 0; line-height: 0.9; font-weight: 800; }
 /* Video parıltısı (yalnızca hareketli videoda geçer; durağan görselde ekran dışında) */
 .isik { position: absolute; inset: -20% 0; pointer-events: none; transform: translateX(-140%);
   background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.10) 50%, transparent 65%); }
+
+/* Büyük hareket manşeti (günlük değişim eşiği aşınca "GRAM GÜMÜŞ" başlığının yerine) */
+.manset { align-self: flex-start; display: inline-flex; align-items: center; gap: 0.35em; font-weight: 800;
+  padding: 0.22em 0.55em; border-radius: 14px; border: 3px solid currentColor; transform-origin: 0 50%; }
+.manset.artis { color: var(--artis); background: rgba(91, 201, 140, 0.14); }
+.manset.dusus { color: var(--dusus); background: rgba(240, 122, 106, 0.14); }
+.manset.dusus svg { transform: rotate(180deg); }

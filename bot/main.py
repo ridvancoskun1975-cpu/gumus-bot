@@ -318,6 +318,20 @@ def tr_sayi(x, basamak=2):
     return s.replace(",", "§").replace(".", ",").replace("§", ".")
 
 
+# Büyük hareket manşeti: değişim bu eşiği (yüzde, mutlak) aşınca görselde "GRAM GÜMÜŞ" başlığının
+# yerine ve açıklamanın ilk satırında "Gümüş bugün %3,1 yükseldi" gibi manşet çıkar.
+BUYUK_HAREKET_GUNLUK = 2.0   # günlük paylaşımlar: önceki iş gününe göre
+BUYUK_HAREKET_HAFTALIK = 5.0  # haftalık özet: önceki haftanın son değerine göre
+
+
+def buyuk_hareket(d, zaman, esik):
+    """d = degisim() sonucu. Eşik aşılmadıysa None."""
+    if abs(d["yuzde"]) < esik:
+        return None
+    fiil = "yükseldi" if d["yon"] == "artis" else "düştü"
+    return {"yon": d["yon"], "metin": f"Gümüş {zaman} %{tr_sayi(abs(d['yuzde']), 1)} {fiil}"}
+
+
 def degisim(simdi, once):
     yuzde = (simdi / once - 1) * 100
     yon = "dusus" if yuzde < 0 else "artis"
@@ -342,6 +356,7 @@ def veri_hazirla(f, hesap):
         "gram_sayi": round(f["gram"], 2),            # hareketli videoda sayım için (dünden bugüne)
         "gram_once_sayi": round(f["gram_once"], 2),
         "gram_deg": degisim(f["gram"], f["gram_once"]),
+        "buyuk_hareket": buyuk_hareket(degisim(f["gram"], f["gram_once"]), "bugün", BUYUK_HAREKET_GUNLUK),
         "parite": tr_sayi(f["parite"], 1),
         "parite_deg": degisim(f["parite"], f["parite_once"]),
         "dolar": tr_sayi(f["dolar"], 2),
@@ -367,6 +382,7 @@ def haftalik_veri_hazirla(f, hesap):
     else:
         v["aralik"] = f"{ilk.day:02d} {AYLAR[ilk.month - 1]} – {son.day:02d} {AYLAR[son.month - 1]} {son.year}"
     v["son_an"] = f"{GUNLER[son.weekday()]} {f.get('son_saat', '')}".strip()
+    v["buyuk_hareket"] = buyuk_hareket(v["gram_deg"], "bu hafta", BUYUK_HAREKET_HAFTALIK)
     v["en_yuksek"] = tr_sayi(max(degerler), 2)
     v["en_dusuk"] = tr_sayi(min(degerler), 2)
 
@@ -424,13 +440,20 @@ def hashtag_sec(tur, tarih=None):
 HIKAYE_TURLERI = {"post", "hafta"}
 
 
+def _ilk_satir(v, zaman):
+    g = v["gram_deg"]
+    if v.get("buyuk_hareket"):
+        return f"{v['buyuk_hareket']['metin']}: gram gümüş fiyatı {v['gram']} ₺"
+    return f"Gram gümüş fiyatı {zaman}: {v['gram']} ₺ ({g['isaret']} {g['metin']})"
+
+
 def aciklama_yaz(v, tur):
     # İlk satır aranan kelimeyle ("gram gümüş fiyatı") ve rakamla başlar: Instagram araması ve
     # Google ilk satıra en çok ağırlığı verir, akışta da "devamı"ndan önce yalnızca o görünür.
     if tur == "hafta":
         g, p, d = v["gram_deg"], v["parite_deg"], v["dolar_deg"]
         return (
-            f"Gram gümüş fiyatı bu hafta: {v['gram']} ₺ ({g['isaret']} {g['metin']})\n"
+            f"{_ilk_satir(v, 'bu hafta')}\n"
             f"Haftalık gümüş özeti · {v['aralik']}\n\n"
             f"Haftanın en yükseği: {v['en_yuksek']} ₺ · en düşüğü: {v['en_dusuk']} ₺\n"
             f"Altın/Gümüş paritesi: {v['parite']} ({p['isaret']} {p['metin']})\n"
@@ -445,7 +468,7 @@ def aciklama_yaz(v, tur):
     baslik = "Günün gümüş özeti" if tur == "post" else "Güncel gümüş fiyatları"
     g, p, d = v["gram_deg"], v["parite_deg"], v["dolar_deg"]
     return (
-        f"Gram gümüş fiyatı bugün: {v['gram']} ₺ ({g['isaret']} {g['metin']})\n"
+        f"{_ilk_satir(v, 'bugün')}\n"
         f"{baslik} · {v['tarih']} · {v['saat']}\n\n"
         f"Altın/Gümüş paritesi: {v['parite']} ({p['isaret']} {p['metin']})\n"
         f"Dolar/TL: {v['dolar']} ₺ ({d['isaret']} {d['metin']})\n\n"

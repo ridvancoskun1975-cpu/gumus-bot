@@ -9,6 +9,7 @@
   if (!isFinite(hedef) || !isFinite(once)) return;   // veri yoksa hareket yok, durağan video
   const deg = document.getElementById('fiyat-deg');
   const nokta = document.getElementById('nokta');
+  const manset = document.getElementById('manset');
   const isik = document.querySelector('.isik');
   const satirlar = Array.from(document.querySelectorAll('.satir'));
   const cizgi = document.getElementById('grafik-cizgi');
@@ -43,6 +44,8 @@
         n.style.opacity = Math.min(Math.max((c - o) / 0.08 + 1, 0), 1);
       });
     }
+    // 5a) Büyük hareket manşeti ilk kareden görünür, dikkat çekmek için hafifçe atar
+    if (manset) manset.style.transform = `scale(${1 + 0.035 * (0.5 - 0.5 * Math.cos(2 * Math.PI * t / 1.2))})`;
     // 5) Başlıktaki nokta canlı yayın gibi atar
     if (nokta) nokta.style.opacity = 0.35 + 0.65 * (0.5 + 0.5 * Math.cos(2 * Math.PI * t / 1.2));
     // 6) Gümüş parıltısı ekranı iki kez çapraz geçer

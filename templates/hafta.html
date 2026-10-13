@@ -1,4 +1,4 @@
-{% from "makrolar.html" import degisim, ag_etiketi %}<!doctype html>
+{% from "makrolar.html" import degisim, ag_etiketi, manset %}<!doctype html>
 <html lang="tr">
 <head>
 <meta charset="utf-8">
@@ -21,7 +21,9 @@
   </div>
 
   <div class="kahraman" style="gap: 10px; padding-top: 32px">
+    {% if buyuk_hareket %}{{ manset(buyuk_hareket, 38, 28) }}{% else %}
     <div class="kahraman-baslik" style="font-size: 28px">GRAM GÜMÜŞ · <span style="text-transform: uppercase">{{ son_an }}</span></div>
+    {% endif %}
     <div class="kahraman-satir" style="gap: 20px">
       <div class="kahraman-sayi-kolon" style="gap: 6px">
         <span id="fiyat-deg" style="display: inline-flex; transform-origin: 100% 100%">{{ degisim(gram_deg, 36, 26) }}</span>

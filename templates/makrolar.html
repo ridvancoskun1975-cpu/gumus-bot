@@ -12,3 +12,10 @@
   <span class="mono soluk" style="font-size: {{ s3 }}px">107,87</span>
 </div>
 {%- endmacro %}
+
+{% macro manset(m, yazi, ok) -%}
+<div id="manset" class="manset {{ m.yon }}" style="font-size: {{ yazi }}px">
+  <svg width="{{ ok }}" height="{{ ok }}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 L22 20 H2 Z" fill="currentColor"></path></svg>
+  <span>{{ m.metin }}</span>
+</div>
+{%- endmacro %}
