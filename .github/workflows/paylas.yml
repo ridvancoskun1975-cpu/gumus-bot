@@ -204,11 +204,16 @@ jobs:
         with:
           path: site
 
+  # Instagram geçici engel verirse ("API access blocked", istek sınırı, sunucu hatası) paylaşım adımı
+  # 150 dakikaya kadar her 10 dakikada bir yeniden dener (bot/main.py → yayinla, --bekle-dk). Süre, bir
+  # sonraki zamanlı paylaşıma yetişmeyecek şekilde seçildi (10:00 → 13:50 ve 13:50 → 19:50 arası > 150 dk);
+  # concurrency grubu yüzünden bekleyen çalıştırma sıradakini de bekletir. Süre dolarsa iş hata verir,
+  # engel kalkınca "Re-run failed jobs" aynı videoyu paylaşır (uret artifact'ı 7 gün durur).
   yayinla:
     needs: uret
     if: needs.uret.outputs.devam == 'true' && (github.event_name == 'schedule' || inputs.deneme == false)
     runs-on: ubuntu-24.04   # sabit sürüm: ubuntu-latest 19 Ekim 2026 itibarıyla Ubuntu 26e geçiyor
-    timeout-minutes: 12
+    timeout-minutes: 175
     permissions:
       contents: read
       pages: write
@@ -235,7 +240,7 @@ jobs:
           path: site
 
       - name: Instagram'a paylaş
-        timeout-minutes: 8
+        timeout-minutes: 165
         env:
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
-        run: python bot/main.py yayinla --cikti site --url "${{ steps.yayin.outputs.page_url }}"
+        run: python bot/main.py yayinla --cikti site --url "${{ steps.yayin.outputs.page_url }}" --bekle-dk 150

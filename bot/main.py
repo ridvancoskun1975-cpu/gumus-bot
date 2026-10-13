@@ -797,6 +797,29 @@ def video_uret(png_yolu, mp4_yolu, sure=7):
 
 # ---------------------------------------------------------------- instagram
 
+class ErisimEngeli(RuntimeError):
+    """Instagram'ın geçici olarak reddettiği istek: hesap/uygulama engeli ("API access blocked"), istek sınırı
+    ya da Meta tarafında geçici arıza. Paylaşım (media_publish) henüz yapılmadıysa bir süre sonra yeniden
+    denemek güvenlidir; yayinla() bunu yapar."""
+
+
+# Meta'nın geçici hata kodları: 1 bilinmeyen hata, 2 hizmet geçici olarak kullanılamıyor,
+# 4 / 17 / 32 / 613 istek sınırı (uygulama, kullanıcı, sayfa, saatlik). Kalıcı hatalar (geçersiz anahtar 190,
+# izin 10, bozuk medya 36xx) bu listede değil; onlar beklemekle geçmez.
+GECICI_HATA_KODLARI = {1, 2, 4, 17, 32, 613}
+
+
+def _gecici_mi(durum, hata):
+    if durum >= 500:
+        return True
+    if isinstance(hata, dict):
+        if "API access blocked" in str(hata.get("message", "")):
+            return True
+        if hata.get("code") in GECICI_HATA_KODLARI:
+            return True
+    return False
+
+
 def _istek(yontem, yol, **params):
     params["access_token"] = os.environ["IG_TOKEN"]
     r = requests.request(yontem, f"{API}/{yol}", data=params if yontem == "POST" else None,
@@ -807,7 +830,10 @@ def _istek(yontem, yol, **params):
         cevap = {"ham": r.text[:500]}
     if r.status_code >= 400 or "error" in cevap:
         hata = cevap.get("error", cevap)
-        raise RuntimeError(f"Instagram API hatası ({r.status_code}): {hata}")
+        ileti = f"Instagram API hatası ({r.status_code}): {hata}"
+        if _gecici_mi(r.status_code, hata):
+            raise ErisimEngeli(ileti)
+        raise RuntimeError(ileti)
     return cevap
 
 
@@ -862,6 +888,8 @@ def _reels_konteyneri(kullanici_id, medya_url, meta, taban_url):
             k = _istek("POST", f"{kullanici_id}/media", cover_url=kapak_url, **ortak)
             _hazir_olmasini_bekle(k["id"])
             return k
+        except ErisimEngeli:
+            raise   # geçici engel: kapaksız denemek işe yaramaz, yayinla() bir süre sonra baştan dener
         except RuntimeError as e:
             print(f"::warning::Kapakla paylaşılamadı, son kareyle yeniden deneniyor: {e}")
     k = _istek("POST", f"{kullanici_id}/media", thumb_offset=str(meta.get("kapak_ms", 0)), **ortak)
@@ -869,7 +897,37 @@ def _reels_konteyneri(kullanici_id, medya_url, meta, taban_url):
     return k
 
 
-def yayinla(cikti, taban_url):
+YENIDEN_DENEME_SN = int(os.environ.get("YENIDEN_DENEME_SN", "600"))   # geçici engelde iki deneme arası
+
+
+def yayinla(cikti, taban_url, bekle_dk=0):
+    """Paylaşır. Instagram geçici olarak reddederse (ErisimEngeli: "API access blocked", istek sınırı,
+    sunucu hatası) bekle_dk dakika boyunca her YENIDEN_DENEME_SN saniyede bir baştan dener; süre bitince
+    hata verir. Yalnızca paylaşım (media_publish) başarılı olmadan önceki hatalar yeniden denenir; sonrası
+    (hikâye, bağlantı) zaten uyarıyla geçer, böylece aynı şey iki kez paylaşılmaz. 13 Ekim 2026'da
+    Instagram ~1,5 saat boyunca her isteği "API access blocked" ile reddetmiş, 20:00 özeti elle yeniden
+    çalıştırılmıştı; bu bekleme onun için."""
+    bitis = time.time() + bekle_dk * 60
+    deneme = 0
+    while True:
+        deneme += 1
+        try:
+            return _yayinla(cikti, taban_url)
+        except ErisimEngeli as e:
+            kalan = bitis - time.time()
+            if kalan <= 0:
+                if bekle_dk:
+                    print(f"::error::Instagram {bekle_dk} dakikadır geçici engel veriyor, vazgeçildi "
+                          f"({deneme} deneme). Engel kalkınca bu çalıştırmada \"Re-run failed jobs\" yeterli.")
+                raise
+            ara = min(YENIDEN_DENEME_SN, kalan)
+            print(f"::warning::Instagram geçici olarak reddetti; {ara / 60:.0f} dk sonra yeniden denenecek "
+                  f"(deneme {deneme}, en çok {kalan / 60:.0f} dk daha). Hata: {e}")
+            sys.stdout.flush()
+            time.sleep(ara)
+
+
+def _yayinla(cikti, taban_url):
     meta = json.loads((cikti / "meta.json").read_text(encoding="utf-8"))
     if "dosyalar" in meta:
         urller = [taban_url.rstrip("/") + "/" + d for d in meta["dosyalar"]]
@@ -922,13 +980,20 @@ def token_yenile():
 
 # ---------------------------------------------------------------- giriş
 
+HESAP_VARSAYILAN = "gumusagtr"   # Instagram kullanıcı adı okunamazsa görselde bu yazar
+
+
 def hesap_adi():
     hesap = os.environ.get("HESAP_ADI", "").strip()
     if not hesap and os.environ.get("IG_TOKEN"):
         try:
             hesap = hesap_bilgisi().get("username", "")
         except Exception as e:
-            print(f"Uyarı: kullanıcı adı alınamadı ({e})", file=sys.stderr)
+            # Instagram geçici olarak yanıt vermezse görsel hesap adı olmadan üretilmesin
+            # Bağlantı hatalarının metninde istek adresi (ve anahtar) geçebilir; yalnızca hata türü yazılır
+            ileti = str(e) if isinstance(e, RuntimeError) else type(e).__name__
+            print(f"::warning::Kullanıcı adı Instagram'dan alınamadı, varsayılan kullanılıyor ({ileti})")
+            hesap = HESAP_VARSAYILAN
     return ("@" + hesap.lstrip("@")) if hesap else ""
 
 
@@ -1267,13 +1332,15 @@ def main():
     y = alt.add_parser("yayinla")
     y.add_argument("--cikti", default="site")
     y.add_argument("--url", required=True)
+    y.add_argument("--bekle-dk", type=int, default=0,
+                   help="Instagram geçici engel verirse en çok bu kadar dakika bekleyip yeniden dene (0: deneme)")
     alt.add_parser("token-yenile")
     a = ap.parse_args()
 
     if a.komut == "hazirla":
         hazirla(a.tur, KOK / a.cikti if not os.path.isabs(a.cikti) else Path(a.cikti), a.ornek, a.konu)
     elif a.komut == "yayinla":
-        yayinla(KOK / a.cikti if not os.path.isabs(a.cikti) else Path(a.cikti), a.url)
+        yayinla(KOK / a.cikti if not os.path.isabs(a.cikti) else Path(a.cikti), a.url, a.bekle_dk)
     else:
         token_yenile()
 
