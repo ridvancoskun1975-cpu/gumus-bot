@@ -47,3 +47,11 @@ h1 { margin: 0; line-height: 0.9; font-weight: 800; }
 .manset.artis { color: var(--artis); background: rgba(91, 201, 140, 0.14); }
 .manset.dusus { color: var(--dusus); background: rgba(240, 122, 106, 0.14); }
 .manset.dusus svg { transform: rotate(180deg); }
+
+/* Günlük başlık (bot/baslik.py): "GRAM GÜMÜŞ" başlığının yerine, o günün verisinden kurallı başlık.
+   Büyük hareket manşetinden sakin: yazı beyaz, yalnızca ok renkli; atmaz. */
+.gun-baslik { align-self: flex-start; display: inline-flex; align-items: center; gap: 0.42em; font-weight: 700;
+  color: var(--yazi); padding: 0.24em 0.62em 0.24em 0.5em; border-radius: 12px; border: 2px solid var(--cizgi);
+  background: rgba(201, 209, 218, 0.07); white-space: nowrap; }
+.gun-baslik svg { flex: none; color: var(--artis); }
+.gun-baslik.dusus svg { color: var(--dusus); transform: rotate(180deg); }

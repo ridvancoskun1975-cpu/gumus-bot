@@ -19,3 +19,10 @@
   <span>{{ m.metin }}</span>
 </div>
 {%- endmacro %}
+
+{% macro gun_basligi(b, yazi, ok) -%}
+<div id="gun-baslik" class="gun-baslik {{ b.yon }}" style="font-size: {{ yazi }}px">
+  <svg width="{{ ok }}" height="{{ ok }}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 L22 20 H2 Z" fill="currentColor"></path></svg>
+  <span>{{ b.metin }}</span>
+</div>
+{%- endmacro %}

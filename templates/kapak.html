@@ -1,4 +1,4 @@
-{% from "makrolar.html" import degisim, ag_etiketi %}<!doctype html>
+{% from "makrolar.html" import degisim, ag_etiketi, gun_basligi %}<!doctype html>
 <html lang="tr">
 <head>
 <meta charset="utf-8">
@@ -45,6 +45,21 @@
         <span class="fiyat sayi">{{ gram }}</span><span class="birim">₺</span>
       </div>
     </div>
+    {% if ozel or gun_baslik %}
+    <!-- Özel gün ya da günlük başlık: başlık üstte, değişim ve hesap adı altında -->
+    <div style="display: flex; flex-direction: column; gap: 30px">
+      {% if ozel %}
+      <div class="manset artis" style="font-size: 50px">
+        <svg width="36" height="36" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 L22 20 H2 Z" fill="currentColor"></path></svg>
+        <span>{{ ozel.kisa }}</span>
+      </div>
+      {% else %}{{ gun_basligi(gun_baslik, 46, 32) }}{% endif %}
+      <div class="alt-satir">
+        {{ degisim(gram_deg, 60, 44) }}
+        <span class="hesap">{{ hesap }}</span>
+      </div>
+    </div>
+    {% else %}
     <div class="alt-satir">
       {% if buyuk_hareket %}
       <div class="manset {{ buyuk_hareket.yon }}" style="font-size: 48px">
@@ -56,10 +71,11 @@
       {% endif %}
       {% if not buyuk_hareket %}<span class="hesap">{{ hesap }}</span>{% endif %}
     </div>
+    {% endif %}
   </div>
 
   <div class="alt-kenar">
-    <span>{% if buyuk_hareket %}{{ hesap }}{% endif %}</span>
+    <span>{% if buyuk_hareket and not ozel %}{{ hesap }}{% endif %}</span>
     <span>Bilgi amaçlıdır, yatırım tavsiyesi değildir.</span>
   </div>
 </div>

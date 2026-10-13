@@ -1,7 +1,7 @@
 """Gümüş fiyat botu.
 
 Komutlar:
-  python bot/main.py hazirla --tur reels|post|hafta|ay|yasal|bilgi|yorum --cikti site [--ornek] [--konu 1-6]
+  python bot/main.py hazirla --tur reels|post|hafta|ay|yasal|bilgi|kisa|yorum --cikti site [--ornek] [--konu no]
   python bot/main.py yayinla --cikti site --url https://kullanici.github.io/repo/
   python bot/main.py token-yenile
 
@@ -258,6 +258,8 @@ def fiyatlari_al(kaydet=True):
         "parite": altin / gumus, "parite_once": parite_once,
         "dolar": dolar, "dolar_once": dolar_once,
         "kur_tarihi": kur_tarihi.isoformat(),
+        # Günlük başlık ve özel gün kuralları (bot/baslik.py) için önceki günlerin gram değerleri
+        "gecmis_gram": {k: v["gram"] for k, v in gecmis.items() if k < bugun.isoformat()},
     }
 
 
@@ -356,8 +358,39 @@ def ornek_haftalik():
 
 
 def ornek_fiyatlar():
-    return {"gram": 103.79, "gram_once": 102.49, "parite": 66.2, "parite_once": 66.77,
-            "dolar": 49.25, "dolar_once": 49.21, "kur_tarihi": "2026-10-12"}
+    f = {"gram": 103.79, "gram_once": 102.49, "parite": 66.2, "parite_once": 66.77,
+         "dolar": 49.25, "dolar_once": 49.21, "kur_tarihi": "2026-10-12"}
+    senaryo = os.environ.get("ORNEK_SENARYO", "").strip()
+    if senaryo:
+        f.update(ornek_senaryo(senaryo))
+    return f
+
+
+# Yerel deneme için günlük başlık ve özel gün örnekleri:
+#   ORNEK_SENARYO=seri python bot/main.py hazirla --tur reels --cikti <klasör> --ornek
+# Değerler eskiden yeniye önceki iş günlerinin kayıtlarıdır; sonuncusu bugünkü değerdir.
+_DUZ = [95.0, 95.4, 95.1, 95.3, 95.2]
+ORNEK_SENARYOLAR = {
+    "seri": [97.6, 97.2, 95.1, 95.6, 96.0, 96.42],                       # Üst üste 3. gün yükseliş
+    "donus": [97.0, 94.2, 94.7, 95.3, 95.9, 95.48],                      # 3 günlük yükseliş sona erdi
+    "yuksek": [99.0] + _DUZ * 3 + [96.04],                               # Son 3 haftanın en yükseği
+    "dusuk": [90.0, 95.0, 95.4, 95.1, 95.3, 95.6, 94.71],                # Son 1 haftanın en düşüğü
+    "esik-alti": [101.0, 100.6, 100.9, 100.2, 100.3, 99.58],             # 100 liranın altına indi
+    "esik": [96.1, 96.9, 97.4, 96.8, 97.9, 98.6, 98.2, 99.12, 100.42],   # özel: 100 lirayı aştı
+    "zirve": [99.0] + [round(v + 0.9 * math.sin(i / 2.1), 2) for i, v in enumerate(_DUZ * 5)] + [96.84],   # özel: son 1 ayın en yükseği
+}
+
+
+def ornek_senaryo(ad):
+    import baslik
+    if ad not in ORNEK_SENARYOLAR:
+        raise RuntimeError(f"ORNEK_SENARYO şunlardan biri olmalı: {', '.join(ORNEK_SENARYOLAR)}")
+    *onceki, bugunku = ORNEK_SENARYOLAR[ad]
+    seri, gun = {}, datetime.now(TR_SAAT).date()
+    for v in reversed(onceki):
+        gun = baslik.onceki_is_gunu(gun)
+        seri[gun.isoformat()] = v
+    return {"gram": bugunku, "gram_once": onceki[-1], "gecmis_gram": seri}
 
 
 # ---------------------------------------------------------------- biçimlendirme
@@ -415,7 +448,57 @@ def veri_hazirla(f, hesap):
         "kaynak_metal": KAYNAK_METAL,
         "kaynak_kur": KAYNAK_KUR,
         "hesap": hesap,
+        **gun_durumu(f, simdi.date()),
     }
+
+
+def gun_durumu(f, gun):
+    """Günlük başlık ve özel gün (bot/baslik.py). Yalnızca hafta içi fiyat paylaşımlarında
+    (f içinde önceki günlerin kayıtları varsa) hesaplanır; bir hata paylaşımı durdurmaz."""
+    bos = {"ozel": None, "gun_baslik": None, "baslik_notu": None}
+    if "gecmis_gram" not in f:
+        return bos
+    try:
+        import baslik
+        seri = {date.fromisoformat(k): v for k, v in f["gecmis_gram"].items()}
+        d = baslik.degerlendir(seri, gun, f["gram"])
+        ozel = d["ozel"]
+        if ozel:
+            ozel["grafik"] = ozel_grafik(ozel, min(seri))
+        buyuk = buyuk_hareket(degisim(f["gram"], f["gram_once"]), "bugün", BUYUK_HAREKET_GUNLUK)
+        # Öncelik: özel gün > büyük hareket manşeti > günlük başlık
+        return {"ozel": ozel, "gun_baslik": None if (ozel or buyuk) else d["baslik"],
+                "baslik_notu": d["not"] if (ozel or (d["baslik"] and not buyuk)) else None}
+    except Exception as e:
+        print(f"::warning::Günlük başlık hesaplanamadı, başlıksız devam ediliyor: {type(e).__name__}: {e}")
+        return bos
+
+
+def ozel_grafik(ozel, ilk_kayit):
+    """Özel görseldeki grafik: son günlerin kayıtları, bugünün noktası ve kesikli karşılaştırma
+    çizgisi (aşılan eşik ya da önceki en yüksek)."""
+    veri = ozel["grafik"]                      # [(tarih, gram)], sonuncusu bugün
+    gen, yuk, ust, alt, yan = 814, 300, 64, 52, 14
+    degerler = [v for _, v in veri]
+    alt_s, ust_s = min(degerler + [ozel["cizgi"]]), max(degerler + [ozel["cizgi"]])
+    aralik = (ust_s - alt_s) or 1
+    adim = (gen - 2 * yan) / max(len(veri) - 1, 1)
+
+    def y(x):
+        return round(ust + (ust_s - x) / aralik * (yuk - ust - alt), 1)
+
+    noktalar = [(round(yan + i * adim, 1), y(v)) for i, v in enumerate(degerler)]
+    ilk_gun = veri[0][0]
+    return {"gen": gen, "yuk": yuk,
+            "cizgi": " ".join(f"{x},{yy}" for x, yy in noktalar),
+            "alan": f"{noktalar[0][0]},{yuk - alt} " + " ".join(f"{x},{yy}" for x, yy in noktalar)
+                    + f" {noktalar[-1][0]},{yuk - alt}",
+            "taban": yuk - alt,
+            "ref_y": y(ozel["cizgi"]), "ref_etiket": ozel["cizgi_etiket"],
+            "son": {"x": noktalar[-1][0], "y": noktalar[-1][1], "deger": tr_sayi(degerler[-1], 2)},
+            "ilk_gun": f"{ilk_gun.day} {AYLAR[ilk_gun.month - 1]}",
+            "kayit_notu": ("Günlük kayıtlar: iş günlerinin son paylaşımı (~20:00) · başlangıç "
+                           f"{ilk_kayit.day} {AYLAR[ilk_kayit.month - 1]} {ilk_kayit.year}")}
 
 
 GUN_KISA = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"]
@@ -581,16 +664,29 @@ def _cagri_satirlari(v, tur, gun=None):
     satirlar = []
     if tur == "post" and SORU_ACIK:
         satirlar.append(f"{SORULAR_OZET[gun.toordinal() % len(SORULAR_OZET)]} Yorumlara yazın 👇")
-    if v.get("buyuk_hareket") or (tur == "post" and gun.weekday() in PAYLASIM_GUNLERI):
+    if v.get("buyuk_hareket") or v.get("ozel") or (tur == "post" and gun.weekday() in PAYLASIM_GUNLERI):
         satirlar.append(PAYLASIM_SATIRI)
     return ("\n" + "".join(s + "\n" for s in satirlar) + "\n") if satirlar else ""
 
 
 def _ilk_satir(v, zaman):
     g = v["gram_deg"]
+    if v.get("ozel"):
+        return f"{v['ozel']['manset']}: {v['gram']} ₺ ({g['isaret']} {g['metin']})"
     if v.get("buyuk_hareket"):
         return f"{v['buyuk_hareket']['metin']}: gram gümüş fiyatı {v['gram']} ₺"
+    if v.get("gun_baslik"):
+        return f"{v['gun_baslik']['metin']}: gram gümüş fiyatı {zaman} {v['gram']} ₺ ({g['isaret']} {g['metin']})"
     return f"Gram gümüş fiyatı {zaman}: {v['gram']} ₺ ({g['isaret']} {g['metin']})"
+
+
+def _ozel_satiri(v):
+    """Özel günde açıklamaya eklenen ayrıntı satırı (boş olabilir)."""
+    o = v.get("ozel")
+    if not o:
+        return ""
+    parcalar = [f"Önceki iş günü: {tr_sayi(v['gram_once_sayi'], 2)} ₺"] + ([o["alt"]] if o.get("alt") else [])
+    return " · ".join(parcalar) + "\n\n"
 
 
 def aciklama_yaz(v, tur):
@@ -641,7 +737,8 @@ def aciklama_yaz(v, tur):
         f"{baslik} · {v['tarih']} · {v['saat']}\n\n"
         f"Altın/Gümüş paritesi: {v['parite']} ({p['isaret']} {p['metin']})\n"
         f"Dolar/TL: {v['dolar']} ₺ ({d['isaret']} {d['metin']})\n\n"
-        "Değişimler önceki iş gününe göredir.\n"
+        f"{_ozel_satiri(v)}"
+        f"Değişimler önceki iş gününe göredir.{' ' + v['baslik_notu'] if v.get('baslik_notu') else ''}\n"
         f"{_cagri_satirlari(v, tur)}"
         "Bilgi amaçlıdır, yatırım tavsiyesi değildir.\n\n"
         f"{_kaynak_satirlari(v)}\n\n"
@@ -660,7 +757,8 @@ def gorsel_uret(tur, veri, png_yolu):
     gecici = SABLONLAR / f"_cikti_{tur}.html"   # fontlar göreli yolla yüklensin diye burada
     gecici.write_text(html, encoding="utf-8")
     boyut = {"reels": (1080, 1920), "kapak": (1080, 1920), "post": (1080, 1350), "hafta": (1080, 1350), "yasal": (1080, 1350),
-             "bilgi": (1080, 1350), "yorum": (1080, 1350), "ay": (1080, 1350), "kisa": (1080, 1920), "sayfa-og": (1200, 630)}[tur]
+             "bilgi": (1080, 1350), "yorum": (1080, 1350), "ay": (1080, 1350), "kisa": (1080, 1920), "ozel": (1080, 1920),
+             "sayfa-og": (1200, 630)}[tur]
     # Instagram görsel gönderilerde yalnızca JPEG kabul ediyor; uzantı .jpg ise JPEG kaydedilir.
     jpeg = {"quality": 92} if Path(png_yolu).suffix.lower() in (".jpg", ".jpeg") else {}
     try:
@@ -744,7 +842,7 @@ def hareketli_video_uret(tur, veri, mp4_yolu, sure=7):
              "-t", str(sure), "-vf", goruntu, *ses_filtre,
              "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-r", str(VIDEO_FPS),
              "-c:a", "aac", "-b:a", "128k", "-shortest", "-movflags", "+faststart", str(mp4_yolu)]
-    boyut = {"reels": (1080, 1920), "kisa": (1080, 1920)}.get(tur, (1080, 1350))
+    boyut = {"reels": (1080, 1920), "kisa": (1080, 1920), "ozel": (1080, 1920)}.get(tur, (1080, 1350))
     try:
         with sync_playwright() as p:
             kwargs = {"executable_path": os.environ["CHROME_YOLU"]} if os.environ.get("CHROME_YOLU") else {}
@@ -1192,6 +1290,17 @@ def yorum_hazirla(cikti, ornek):
     print(f"\nÜretilen dosyalar ({len(metin)} karakter açıklama):", *dosyalar, sep="\n")
 
 
+def _baslik_ozeti(veri):
+    """meta.json ve iş akışı günlüğü için: o gün hangi başlık kuralı tuttu."""
+    if veri.get("ozel"):
+        return {"tur": "ozel-" + veri["ozel"]["tur"], "metin": veri["ozel"]["manset"]}
+    if veri.get("buyuk_hareket"):
+        return {"tur": "buyuk-hareket", "metin": veri["buyuk_hareket"]["metin"]}
+    if veri.get("gun_baslik"):
+        return {"tur": "gunluk-" + veri["gun_baslik"]["kural"], "metin": veri["gun_baslik"]["metin"]}
+    return None
+
+
 def hazirla(tur, cikti, ornek, konu=None):
     cikti.mkdir(parents=True, exist_ok=True)
     (cikti / "meta.json").unlink(missing_ok=True)   # eski bir paylaşım yanlışlıkla tekrar gitmesin
@@ -1231,12 +1340,29 @@ def hazirla(tur, cikti, ornek, konu=None):
     veri = hazirlayici(fiyat, hesap)
 
     damga = datetime.now(TR_SAAT).strftime("%Y%m%d-%H%M")
+    # Özel günde (eşik aşıldı / en az bir aylık en yüksek) aynı paylaşım özel görselle gider.
+    # Özel görsel üretilemezse paylaşım olağan görselle yapılır.
+    sablon = "ozel" if veri.get("ozel") else tur
     png = cikti / f"{tur}-{damga}.png"
-    gorsel_uret(tur, veri, png)
+    try:
+        gorsel_uret(sablon, veri, png)
+    except Exception as e:
+        if sablon != "ozel":
+            raise
+        print(f"::warning::Özel gün görseli üretilemedi, olağan görselle devam ediliyor: {type(e).__name__}: {e}")
+        veri["ozel"], veri["baslik_notu"], sablon = None, None, tur
+        gorsel_uret(sablon, veri, png)
     # Her paylaşım sesli video (Reels) olarak gider; özetler okunabilsin diye biraz daha uzun.
     mp4 = cikti / f"{tur}-{damga}.mp4"
-    sure = 7 if tur == "reels" else 10
-    if not hareketli_video_uret(tur, veri, mp4, sure=sure):
+    sure = 10 if (sablon == "ozel" or tur != "reels") else 7
+    try:
+        hareketli = hareketli_video_uret(sablon, veri, mp4, sure=sure)
+    except Exception as e:
+        if sablon != "ozel":
+            raise
+        print(f"::warning::Özel gün videosu hareketli üretilemedi, durağan video kullanılıyor: {type(e).__name__}: {e}")
+        hareketli = False
+    if not hareketli:
         video_uret(png, mp4, sure=sure)
     dosya = mp4.name
     kapak = kapak_uret(tur, veri, cikti / f"kapak-{tur}-{damga}.jpg")
@@ -1245,14 +1371,18 @@ def hazirla(tur, cikti, ornek, konu=None):
     (cikti / "meta.json").write_text(json.dumps({"tur": tur, "dosya": dosya, "aciklama": aciklama,
                                                  "kapak_ms": int((sure - 0.5) * 1000),
                                                  "kapak": kapak,
-                                                 "fiyatlar": fiyat}, ensure_ascii=False, indent=2),
+                                                 "baslik": _baslik_ozeti(veri),
+                                                 "fiyatlar": {k: v for k, v in fiyat.items() if k != "gecmis_gram"}},
+                                                ensure_ascii=False, indent=2),
                                      encoding="utf-8")
     (cikti / "index.html").write_text("<!doctype html><meta charset='utf-8'><title>Gümüş bot</title>"
                                       f"<p>Son üretilen dosya: <a href='{dosya}'>{dosya}</a></p>"
                                       "<p>Metal fiyatları: <a href='https://metalcharts.org'>MetalCharts</a>"
                                       " · Dolar/TL: ECB referans kurları (<a href='https://frankfurter.dev'>Frankfurter</a>)</p>", encoding="utf-8")
     print(aciklama)
-    print(f"\nÜretilen dosya: {cikti / dosya}")
+    ozet = _baslik_ozeti(veri)
+    print(f"\nBaşlık: {ozet['metin']} ({ozet['tur']})" if ozet else "\nBaşlık: yok (olağan gün)")
+    print(f"Üretilen dosya: {cikti / dosya}")
 
 
 def main():

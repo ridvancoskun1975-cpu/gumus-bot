@@ -1,4 +1,4 @@
-{% from "makrolar.html" import degisim, ag_etiketi, manset %}<!doctype html>
+{% from "makrolar.html" import degisim, ag_etiketi, manset, gun_basligi %}<!doctype html>
 <html lang="tr">
 <head>
 <meta charset="utf-8">
@@ -18,7 +18,7 @@
   </div>
 
   <div class="kahraman" style="gap: 16px; padding-top: 56px">
-    {% if buyuk_hareket %}{{ manset(buyuk_hareket, 46, 34) }}{% else %}
+    {% if buyuk_hareket %}{{ manset(buyuk_hareket, 46, 34) }}{% elif gun_baslik %}{{ gun_basligi(gun_baslik, 42, 28) }}{% else %}
     <div class="kahraman-baslik" style="font-size: 36px">GRAM GÜMÜŞ</div>
     {% endif %}
     <div class="kahraman-satir" style="gap: 20px">
@@ -29,7 +29,7 @@
       </div>
       <span class="kahraman-birim" style="font-size: 64px; padding-bottom: 18px">₺</span>
     </div>
-    <div class="soluk" style="font-size: 32px">Türk lirası · 1 gram · önceki güne göre</div>
+    <div class="soluk" style="font-size: 32px">{% if gun_baslik and not buyuk_hareket %}Gram gümüş · Türk lirası · önceki güne göre{% else %}Türk lirası · 1 gram · önceki güne göre{% endif %}</div>
   </div>
 
   <div style="display: flex; flex-direction: column">
