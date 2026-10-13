@@ -455,14 +455,18 @@ SORULAR_OZET = [
     "Gümüş külçeyi hiç elinize alıp gördünüz mü?",
 ]
 PAYLASIM_SATIRI = "Gümüşü takip eden bir tanıdığınıza gönderebilirsiniz."
-PAYLASIM_GUNLERI = {1, 3}   # salı, perşembe (20:00 özeti); büyük hareket günlerinde her paylaşımda
+# Rıdvan (13 Ekim 2026): takipçi yokken sorular erken. Takipçi artınca SORU_ACIK = True ve
+# PAYLASIM_GUNLERI = {1, 3} (salı, perşembe) yapılır. Büyük hareket günlerinde paylaşım satırı
+# her zaman çıkar: o paylaşımlar takip etmeyenlere de gösterilir.
+SORU_ACIK = False
+PAYLASIM_GUNLERI = set()
 
 
 def _cagri_satirlari(v, tur, gun=None):
     """Açıklamaya eklenecek soru ve paylaşım satırları (boş olabilir)."""
     gun = gun or datetime.now(TR_SAAT).date()
     satirlar = []
-    if tur == "post":
+    if tur == "post" and SORU_ACIK:
         satirlar.append(f"{SORULAR_OZET[gun.toordinal() % len(SORULAR_OZET)]} Yorumlara yazın 👇")
     if v.get("buyuk_hareket") or (tur == "post" and gun.weekday() in PAYLASIM_GUNLERI):
         satirlar.append(PAYLASIM_SATIRI)
