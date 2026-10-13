@@ -28,7 +28,7 @@ SAYFALAR = [
             "Bu bir gösterge fiyattır; kuyumcu, banka ve borsa fiyatlarından farklıdır. İşçilik, "
             "makas ve vergiler dahil değildir.",
             "Dolar/TL, Avrupa Merkez Bankası'nın (ECB) günlük referans kurlarından hesaplanır "
-            "(her iş günü ~17:00). Daha önceki paylaşımlarda önceki iş gününün kuru kullanılır.",
+            "(her iş günü ~17:00). Bu saatten önceki paylaşımlarda önceki iş gününün kuru kullanılır.",
             "Oklar önceki iş gününe, haftalık özette önceki haftaya göre değişimi gösterir.",
             "Veriler gecikmeli, eksik ya da hatalı olabilir; doğruluğu garanti edilmez.",
         ],
