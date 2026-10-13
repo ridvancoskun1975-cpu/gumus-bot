@@ -1,0 +1,111 @@
+{% from "makrolar.html" import ag_etiketi %}<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Gümüş Rehberi</title>
+<style>{% include "ortak.css" %}
+.govde { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+.seri { gap: 12px; font-size: 24px; }
+.bolum-no { font-size: 34px; font-weight: 600; color: var(--vurgu); letter-spacing: 2px; }
+h1 { letter-spacing: -3px; line-height: 0.96; text-wrap: balance; }
+h2 { margin: 8px 0 0; font-size: 78px; line-height: 0.98; font-weight: 800; letter-spacing: -2px; text-wrap: balance; }
+.kapak-sayi { border-top: 2px solid var(--cizgi); border-bottom: 2px solid var(--cizgi); padding: 36px 0 40px; }
+.dev { font-weight: 700; line-height: 1; color: var(--vurgu); letter-spacing: -4px; white-space: nowrap; }
+.dev-alt { margin-top: 18px; font-size: 32px; color: var(--soluk); }
+.blok { margin-top: 36px; }
+.blok .dev-alt { margin-top: 10px; font-size: 30px; }
+.formul { margin-top: 36px; border: 3px solid var(--vurgu); border-radius: 8px; padding: 24px 28px;
+  font-size: 30px; white-space: nowrap; line-height: 1.3; color: var(--vurgu); }
+.tablo { margin-top: 40px; display: flex; flex-direction: column; }
+.satir { display: flex; justify-content: space-between; align-items: baseline; gap: 30px; padding: 24px 0; border-top: 2px solid var(--cizgi); }
+.satir:last-child { border-bottom: 2px solid var(--cizgi); }
+.satir span { font-size: 32px; color: var(--soluk); }
+.satir b { font-size: 40px; font-weight: 700; color: var(--yazi); text-align: right; white-space: nowrap; }
+.maddeler { margin-top: 40px; display: flex; flex-direction: column; }
+.tablo + .maddeler { margin-top: 0; }
+.tablo + .maddeler .madde:first-child { border-top: none; }
+.madde { display: grid; grid-template-columns: 34px 1fr; gap: 18px; padding: 22px 0; border-top: 2px solid var(--cizgi);
+  font-size: 34px; line-height: 1.34; text-wrap: pretty; }
+.madde:last-child { border-bottom: 2px solid var(--cizgi); }
+.isaret { width: 12px; height: 12px; margin-top: 18px; background: var(--vurgu); }
+.not { margin-top: 22px; font-size: 24px; color: var(--soluk); }
+</style>
+</head>
+<body>
+<div class="sahne" style="width: 1080px; height: 1350px; padding: 88px">
+{% if sayfa == 0 %}
+  {% set uz = b.baslik | length %}
+  {% set h1_boy = 128 if uz <= 14 else (108 if uz <= 32 else 92) %}
+  {% set dev_boy = [250, (880 / (b.buyuk | length * 0.6)) | int] | min %}
+  <div class="ust" style="align-items: center">
+    <div class="etiket seri"><span class="nokta" style="width: 12px; height: 12px"></span><span>{{ seri }} · {{ '%02d' % no }} / {{ '%02d' % toplam_bolum }}</span></div>
+    {{ ag_etiketi(104, 118, '10px 12px', 18, 40, 15) }}
+  </div>
+
+  <div class="govde" style="justify-content: space-evenly">
+    <div>
+      <h1 style="font-size: {{ h1_boy }}px">{{ b.baslik }}</h1>
+      <div class="soluk" style="margin-top: 30px; font-size: 36px; line-height: 1.3">{{ b.alt }}</div>
+    </div>
+    <div class="kapak-sayi">
+      <div class="dev mono" style="font-size: {{ dev_boy }}px">{{ b.buyuk }}</div>
+      <div class="dev-alt">{{ b.buyuk_alt }}</div>
+    </div>
+  </div>
+
+  <div class="alt" style="padding-top: 28px">
+    <b style="font-size: 32px">{{ hesap }}</b>
+    <div class="alt-sag">
+      <span class="soluk" style="font-size: 24px">Kaydedin, lazım olunca bakarsınız.</span>
+      <span class="vurgu" style="font-size: 28px; font-weight: 700">Kaydırın →</span>
+    </div>
+  </div>
+{% else %}
+  {% set s = b.sayfalar[sayfa - 1] %}
+  <div class="ust" style="align-items: center">
+    <div class="etiket seri"><span class="nokta" style="width: 12px; height: 12px"></span><span>{{ seri }} · {{ '%02d' % no }}</span></div>
+    <span class="mono soluk" style="font-size: 26px">{{ '%02d' % (sayfa + 1) }} / {{ '%02d' % toplam_sayfa }}</span>
+  </div>
+
+  <div class="govde">
+    <div class="bolum-no mono">{{ '%02d' % sayfa }}</div>
+    <h2>{{ s.baslik }}</h2>
+    {% if s.buyuk %}
+    {% set dev_boy = [200, (880 / (s.buyuk | length * 0.6)) | int] | min %}
+    <div class="blok">
+      <div class="dev mono" style="font-size: {{ dev_boy }}px">{{ s.buyuk }}</div>
+      <div class="dev-alt">{{ s.buyuk_alt }}</div>
+    </div>
+    {% endif %}
+    {% if s.formul %}<div class="formul mono">{{ s.formul }}</div>{% endif %}
+    {% if s.tablo %}
+    <div class="tablo">
+      {% for etiket, deger in s.tablo %}
+      <div class="satir"><span>{{ etiket }}</span><b class="sayi">{{ deger }}</b></div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% if s.maddeler %}
+    <div class="maddeler">
+      {% for m in s.maddeler %}
+      <div class="madde"><span class="isaret"></span><span>{{ m }}</span></div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% if s.kaynak %}<div class="not">{{ s.kaynak }}</div>{% endif %}
+  </div>
+
+  <div class="alt" style="padding-top: 28px">
+    <b style="font-size: 30px">{{ hesap }}</b>
+    <div class="alt-sag soluk" style="font-size: 22px">
+      <span>Bilgi amaçlıdır, yatırım tavsiyesi değildir.</span>
+      {% if sayfa == toplam_sayfa - 1 %}
+        {% if sonraki %}<span class="vurgu" style="font-size: 26px; font-weight: 700">Sıradaki: {{ sonraki }}</span>
+        {% else %}<span class="vurgu" style="font-size: 26px; font-weight: 700">Serinin tamamı profilde</span>{% endif %}
+      {% endif %}
+    </div>
+  </div>
+{% endif %}
+</div>
+</body>
+</html>

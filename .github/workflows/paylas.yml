@@ -6,13 +6,20 @@ on:
     - cron: '50 6 * * 1-5'    # 09:50 TR -> Reels
     - cron: '50 16 * * 1-5'   # 19:50 TR -> Günlük özet
     - cron: '50 6 * * 6'      # Cumartesi 09:50 TR -> Haftalık özet
+    # 14-21 Ekim her gün 13:50 TR -> Gümüş rehberi (bilgi). Hangi gün hangi bölüm: bot/bilgi.py → TAKVIM;
+    # takvimde olmayan günlerde (hafta sonu) paylaşım atlanır. Seri bitince bu satır silinebilir.
+    - cron: '50 10 14-21 10 *'
   workflow_dispatch:
     inputs:
       tur:
         description: "Ne üretilsin?"
         type: choice
-        options: [reels, post, hafta, yasal]
+        options: [reels, post, hafta, yasal, bilgi]
         default: reels
+      konu:
+        description: "Yalnızca bilgi türü: bölüm no (1-6). Boşsa bugünün takvim bölümü."
+        type: string
+        default: ""
       deneme:
         description: "Deneme: sadece üret, Instagram'a paylaşma"
         type: boolean
@@ -55,6 +62,8 @@ jobs:
             echo "tur=post" >> "$GITHUB_OUTPUT"
           elif [ "${{ github.event.schedule }}" = "50 6 * * 6" ]; then
             echo "tur=hafta" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.schedule }}" = "50 10 14-21 10 *" ]; then
+            echo "tur=bilgi" >> "$GITHUB_OUTPUT"
           else
             echo "tur=reels" >> "$GITHUB_OUTPUT"
           fi
@@ -86,8 +95,11 @@ jobs:
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
           HESAP_ADI: ${{ vars.HESAP_ADI }}
           METALCHARTS_KEY: ${{ secrets.METALCHARTS_KEY }}
+          KONU: ${{ inputs.konu }}
         run: |
-          python bot/main.py hazirla --tur "${{ steps.tur.outputs.tur }}" --cikti site
+          ek=()
+          if [ "${{ steps.tur.outputs.tur }}" = "bilgi" ] && [ -n "$KONU" ]; then ek=(--konu "$KONU"); fi
+          python bot/main.py hazirla --tur "${{ steps.tur.outputs.tur }}" --cikti site "${ek[@]}"
           if [ -f site/meta.json ]; then
             echo "devam=true" >> "$GITHUB_OUTPUT"
           else

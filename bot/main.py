@@ -1,7 +1,7 @@
 """Gümüş fiyat botu.
 
 Komutlar:
-  python bot/main.py hazirla --tur reels|post|hafta|yasal --cikti site [--ornek]
+  python bot/main.py hazirla --tur reels|post|hafta|yasal|bilgi --cikti site [--ornek] [--konu 1-6]
   python bot/main.py yayinla --cikti site --url https://kullanici.github.io/repo/
   python bot/main.py token-yenile
 
@@ -409,7 +409,8 @@ def gorsel_uret(tur, veri, png_yolu):
     html = env.get_template(f"{tur}.html").render(**veri)
     gecici = SABLONLAR / f"_cikti_{tur}.html"   # fontlar göreli yolla yüklensin diye burada
     gecici.write_text(html, encoding="utf-8")
-    boyut = {"reels": (1080, 1920), "post": (1080, 1350), "hafta": (1080, 1350), "yasal": (1080, 1350)}[tur]
+    boyut = {"reels": (1080, 1920), "post": (1080, 1350), "hafta": (1080, 1350), "yasal": (1080, 1350),
+             "bilgi": (1080, 1350)}[tur]
     # Instagram görsel gönderilerde yalnızca JPEG kabul ediyor; uzantı .jpg ise JPEG kaydedilir.
     jpeg = {"quality": 92} if Path(png_yolu).suffix.lower() in (".jpg", ".jpeg") else {}
     try:
@@ -596,11 +597,52 @@ def yasal_hazirla(cikti):
     print(f"\nÜretilen dosyalar ({len(yasal.ACIKLAMA)} karakter açıklama):", *dosyalar, sep="\n")
 
 
-def hazirla(tur, cikti, ornek):
+def bilgi_hazirla(cikti, konu=None):
+    """Gümüş rehberi bölümü: kapak + 3 sayfa, kaydırmalı görsel gönderi. Fiyat verisi kullanmaz.
+
+    konu verilmezse bugünün bölümü bilgi.TAKVIM'den seçilir; takvimde yoksa paylaşım atlanır.
+    """
+    import bilgi
+    if not konu:
+        bugun = datetime.now(TR_SAAT).date().isoformat()
+        konu = bilgi.TAKVIM.get(bugun)
+        if not konu:
+            print(f"::warning::Paylaşım atlandı: {bugun} için takvimde bilgi gönderisi yok")
+            return
+    if not 1 <= konu <= len(bilgi.BOLUMLER):
+        raise RuntimeError(f"Konu 1-{len(bilgi.BOLUMLER)} arasında olmalı (verilen: {konu})")
+    b = bilgi.BOLUMLER[konu - 1]
+    sonraki = bilgi.BOLUMLER[konu]["baslik"] if konu < len(bilgi.BOLUMLER) else None
+    hesap = hesap_adi()
+    damga = datetime.now(TR_SAAT).strftime("%Y%m%d-%H%M")
+    toplam = len(b["sayfalar"]) + 1
+    dosyalar = []
+    for sayfa in range(toplam):
+        jpg = cikti / f"bilgi{konu}-{damga}-{sayfa + 1}.jpg"
+        gorsel_uret("bilgi", {"b": b, "no": konu, "toplam_bolum": len(bilgi.BOLUMLER), "sayfa": sayfa,
+                              "toplam_sayfa": toplam, "sonraki": sonraki, "seri": bilgi.SERI,
+                              "hesap": hesap}, jpg)
+        dosyalar.append(jpg.name)
+    metin = bilgi.aciklama(konu)
+    if len(metin) > 2200:
+        raise RuntimeError(f"Açıklama Instagram sınırını aşıyor ({len(metin)} > 2200 karakter)")
+    (cikti / "meta.json").write_text(json.dumps({"tur": "bilgi", "konu": konu, "dosyalar": dosyalar,
+                                                 "aciklama": metin}, ensure_ascii=False, indent=2),
+                                     encoding="utf-8")
+    (cikti / "index.html").write_text("<!doctype html><meta charset='utf-8'><title>Gümüş bot</title>"
+                                      + "".join(f"<p><a href='{d}'>{d}</a></p>" for d in dosyalar), encoding="utf-8")
+    print(metin)
+    print(f"\nÜretilen dosyalar ({len(metin)} karakter açıklama):", *dosyalar, sep="\n")
+
+
+def hazirla(tur, cikti, ornek, konu=None):
     cikti.mkdir(parents=True, exist_ok=True)
     (cikti / "meta.json").unlink(missing_ok=True)   # eski bir paylaşım yanlışlıkla tekrar gitmesin
     if tur == "yasal":
         yasal_hazirla(cikti)
+        return
+    if tur == "bilgi":
+        bilgi_hazirla(cikti, konu)
         return
     try:
         if tur == "hafta":
@@ -638,9 +680,11 @@ def main():
     ap = argparse.ArgumentParser()
     alt = ap.add_subparsers(dest="komut", required=True)
     h = alt.add_parser("hazirla")
-    h.add_argument("--tur", choices=["reels", "post", "hafta", "yasal"], required=True)
+    h.add_argument("--tur", choices=["reels", "post", "hafta", "yasal", "bilgi"], required=True)
     h.add_argument("--cikti", default="site")
     h.add_argument("--ornek", action="store_true", help="Gerçek fiyat yerine örnek veri kullan")
+    h.add_argument("--konu", type=int, default=None,
+                   help="bilgi türünde bölüm numarası (boşsa bugünün takvim bölümü)")
     y = alt.add_parser("yayinla")
     y.add_argument("--cikti", default="site")
     y.add_argument("--url", required=True)
@@ -648,7 +692,7 @@ def main():
     a = ap.parse_args()
 
     if a.komut == "hazirla":
-        hazirla(a.tur, KOK / a.cikti if not os.path.isabs(a.cikti) else Path(a.cikti), a.ornek)
+        hazirla(a.tur, KOK / a.cikti if not os.path.isabs(a.cikti) else Path(a.cikti), a.ornek, a.konu)
     elif a.komut == "yayinla":
         yayinla(KOK / a.cikti if not os.path.isabs(a.cikti) else Path(a.cikti), a.url)
     else:
