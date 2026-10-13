@@ -381,7 +381,9 @@ def haftalik_veri_hazirla(f, hesap):
         return round(kenar + (ust_s - x) / aralik * (yuk - 2 * kenar), 1)
 
     noktalar = [{"x": round(yan + i * adim, 1), "y": y(d), "gun": GUN_KISA[g.weekday()],
-                 "deger": tr_sayi(d, 2)} for i, (g, d) in enumerate(zip(gunler, degerler))]
+                 "deger": tr_sayi(d, 2),
+                 "oran": round((i * adim) / max(gen - 2 * yan, 1), 3)}   # hareketli videoda belirme sırası
+                for i, (g, d) in enumerate(zip(gunler, degerler))]
     v["grafik"] = {"gen": gen, "yuk": yuk, "noktalar": noktalar,
                    "cizgi": " ".join(f"{n['x']},{n['y']}" for n in noktalar),
                    "onceki_y": y(f["gram_once"]), "yon": v["gram_deg"]["yon"]}

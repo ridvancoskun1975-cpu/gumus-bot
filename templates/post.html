@@ -6,10 +6,11 @@
 <style>{% include "ortak.css" %}</style>
 </head>
 <body>
-<div class="sahne" style="width: 1080px; height: 1350px; padding: 88px">
+<div class="sahne" style="position: relative; width: 1080px; height: 1350px; padding: 88px">
+  <div class="isik" aria-hidden="true"></div>
   <div class="ust">
     <div class="ust-sol" style="gap: 18px">
-      <div class="etiket" style="gap: 12px; font-size: 26px"><span class="nokta" style="width: 12px; height: 12px"></span><span>GÜNLÜK ÖZET</span></div>
+      <div class="etiket" style="gap: 12px; font-size: 26px"><span id="nokta" class="nokta" style="width: 12px; height: 12px"></span><span>GÜNLÜK ÖZET</span></div>
       <h1 style="font-size: 132px; letter-spacing: -3px">Gümüş</h1>
       <div class="tarih mono" style="font-size: 30px">{{ tarih }} · {{ saat }}</div>
     </div>
@@ -20,8 +21,9 @@
     <div class="kahraman-baslik" style="font-size: 30px">GRAM GÜMÜŞ</div>
     <div class="kahraman-satir" style="gap: 20px">
       <div class="kahraman-sayi-kolon" style="gap: 6px">
-        {{ degisim(gram_deg, 36, 26) }}
-        <span class="kahraman-sayi sayi" style="font-size: 170px; letter-spacing: -5px">{{ gram }}</span>
+        <span id="fiyat-deg" style="display: inline-flex; transform-origin: 100% 100%">{{ degisim(gram_deg, 36, 26) }}</span>
+        <span id="fiyat" class="kahraman-sayi sayi" style="font-size: 170px; letter-spacing: -5px"
+              data-hedef="{{ gram_sayi }}" data-once="{{ gram_once_sayi }}">{{ gram }}</span>
       </div>
       <span class="kahraman-birim" style="font-size: 72px; padding-bottom: 20px">₺</span>
     </div>
@@ -29,7 +31,7 @@
   </div>
 
   <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; border-top: 2px solid var(--cizgi); padding-top: 32px">
-    <div style="display: flex; flex-direction: column; gap: 6px">
+    <div class="satir" style="display: flex; flex-direction: column; gap: 6px">
       <b style="font-size: 32px">Altın / Gümüş paritesi</b>
       <span class="soluk" style="font-size: 24px">1 ons altın = ? ons gümüş</span>
       <div style="display: flex; align-items: baseline; gap: 14px; margin-top: 8px">
@@ -37,7 +39,7 @@
         {{ degisim(parite_deg, 28, 20) }}
       </div>
     </div>
-    <div style="display: flex; flex-direction: column; gap: 6px">
+    <div class="satir" style="display: flex; flex-direction: column; gap: 6px">
       <b style="font-size: 32px">Dolar / TL</b>
       <span class="soluk" style="font-size: 24px">ECB referans kuru · {{ kur_tarihi }}</span>
       <div style="display: flex; align-items: baseline; gap: 10px; margin-top: 8px">
@@ -56,5 +58,6 @@
     </div>
   </div>
 </div>
+<script>{% include "hareket.js" %}</script>
 </body>
 </html>

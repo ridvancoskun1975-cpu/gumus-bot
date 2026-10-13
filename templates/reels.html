@@ -62,42 +62,6 @@
     </div>
   </div>
 </div>
-<script>
-// Video için hareket: bot her kare için window.kare(t) çağırır (t saniye). Çağrılmazsa sayfa
-// son hâlinde kalır; kapak ve PNG bu son hâlden alınır. Gösterilen her sayı gerçek veridir:
-// fiyat önceki iş gününün değerinden bugünkü değere sayar.
-(function () {
-  const fiyat = document.getElementById('fiyat');
-  const hedef = parseFloat(fiyat.dataset.hedef), once = parseFloat(fiyat.dataset.once);
-  if (!isFinite(hedef) || !isFinite(once)) return;
-  const deg = document.getElementById('fiyat-deg');
-  const nokta = document.getElementById('nokta');
-  const isik = document.querySelector('.isik');
-  const satirlar = Array.from(document.querySelectorAll('.satir'));
-  const bicim = x => x.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-  const yumusak = p => 1 - Math.pow(1 - Math.min(Math.max(p, 0), 1), 3);
-  const ara = (t, a, b) => yumusak((t - a) / (b - a));
-  window.kare = function (t) {
-    // 1) Fiyat dünden bugüne sayar
-    fiyat.textContent = bicim(once + (hedef - once) * ara(t, 0.15, 1.35));
-    // 2) Değişim rozeti sayım bitince belirir
-    const d = ara(t, 1.25, 1.6);
-    deg.style.opacity = d;
-    deg.style.transform = `scale(${0.6 + 0.4 * d})`;
-    // 3) Parite ve dolar satırları sırayla kayarak gelir
-    satirlar.forEach((s, i) => {
-      const q = ara(t, 0.35 + 0.2 * i, 0.9 + 0.2 * i);
-      s.style.opacity = q;
-      s.style.transform = `translateY(${(1 - q) * 48}px)`;
-    });
-    // 4) "Güncel fiyat" noktası canlı yayın gibi atar
-    nokta.style.opacity = 0.35 + 0.65 * (0.5 + 0.5 * Math.cos(2 * Math.PI * t / 1.2));
-    // 5) Gümüş parıltısı ekranı iki kez çapraz geçer
-    const gecis = a => { const r = (t - a) / 1.3; return r >= 0 && r <= 1 ? r : null; };
-    const r = gecis(1.8) ?? gecis(4.6);
-    isik.style.transform = r === null ? 'translateX(-140%)' : `translateX(${-140 + 280 * r}%)`;
-  };
-})();
-</script>
+<script>{% include "hareket.js" %}</script>
 </body>
 </html>
