@@ -111,7 +111,7 @@ BOLUMLER = [
         "buyuk": "999",
         "buyuk_alt": "binde 999 saf gümüş",
         "hashtag": "#gümüş #külçegümüş #gümüşyatırımı #değerlimetaller #silver",
-        "soru": "Sizce külçe mi, gram hesabı mı daha pratik? Yorumlarda konuşalım.",
+        "soru": "Gümüşü siz hangi biçimde tercih ediyorsunuz: külçe mi, takı mı? Yorumlarda konuşalım.",
         "sayfalar": [
             {
                 "baslik": "Binde kaç saf?",
