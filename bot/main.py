@@ -348,8 +348,21 @@ def _kaynak_satirlari(v):
 
 
 # Instagram Aralık 2025'ten beri gönderi başına en fazla 5 hashtag'e izin veriyor.
-HASHTAG_GUNLUK = "#gümüş #gramgümüş #gümüşfiyatları #altın #dolar"
-HASHTAG_HAFTA = "#gümüş #gramgümüş #gümüşfiyatları #haftalıközet #altın"
+# Etiket havuzu paylaşımlara dağıtılır: her paylaşım 5 etiket alır, hepsi kullanılmış olur.
+HASHTAG_REELS = "#gümüş #gramgümüş #gümüşfiyatları #külçegümüş #silver"        # hafta içi ~10:00
+HASHTAG_POST = "#gümüş #gümüşyatırımı #değerlimetaller #emtia #gumus"           # hafta içi ~20:00 özet
+# Haftalık özet iki set arasında hafta hafta döner (ISO hafta numarası çiftse 1., tekse 2. set).
+HASHTAG_HAFTA = (
+    "#gümüş #gramgümüş #gümüşyatırımı #gümüşfiyatları #değerlimetaller",
+    "#gümüş #gramgümüş #külçegümüş #gumus #silver",
+)
+
+
+def hashtag_sec(tur, tarih=None):
+    if tur == "hafta":
+        hafta_no = (tarih or datetime.now(TR_SAAT).date()).isocalendar()[1]
+        return HASHTAG_HAFTA[hafta_no % 2]
+    return HASHTAG_POST if tur == "post" else HASHTAG_REELS
 
 # Bu türler Reels'in yanında hikâyeye de paylaşılır (aynı video, 9:16).
 HIKAYE_TURLERI = {"post", "hafta"}
@@ -369,7 +382,7 @@ def aciklama_yaz(v, tur):
             "Sizce gümüş gelecek hafta ne yöne gider? Yorumlara yazın 👇\n\n"
             "Bilgi amaçlıdır, yatırım tavsiyesi değildir.\n\n"
             f"{_kaynak_satirlari(v)}\n\n"
-            f"{HASHTAG_HAFTA}"
+            f"{hashtag_sec(tur)}"
         )
     baslik = "Günün gümüş özeti" if tur == "post" else "Güncel gümüş fiyatları"
     g, p, d = v["gram_deg"], v["parite_deg"], v["dolar_deg"]
@@ -381,7 +394,7 @@ def aciklama_yaz(v, tur):
         "Değişimler önceki iş gününe göredir.\n"
         "Bilgi amaçlıdır, yatırım tavsiyesi değildir.\n\n"
         f"{_kaynak_satirlari(v)}\n\n"
-        f"{HASHTAG_GUNLUK}"
+        f"{hashtag_sec(tur)}"
     )
 
 

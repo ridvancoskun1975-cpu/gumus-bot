@@ -3,8 +3,7 @@ name: Gümüş paylaşımı
 on:
   schedule:
     # Saatler UTC'dir. Türkiye = UTC+3. GitHub zamanlı işleri genelde 5-15 dk gecikmeli başlatır.
-    - cron: '50 6 * * 1-5'    # 09:50 TR -> 1. Reels
-    - cron: '50 13 * * 1-5'   # 16:50 TR -> 2. Reels
+    - cron: '50 6 * * 1-5'    # 09:50 TR -> Reels
     - cron: '50 16 * * 1-5'   # 19:50 TR -> Günlük özet
     - cron: '50 6 * * 6'      # Cumartesi 09:50 TR -> Haftalık özet
   workflow_dispatch:
