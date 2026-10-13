@@ -9,9 +9,11 @@ Veri kaynakları (ikisi de kaynak gösterilerek herkese açık yayımlanmaya izi
   - Ons gümüş ve ons altın (USD): MetalCharts API, ücretsiz plan.
     Şartlar: https://metalcharts.org/api-terms — ücretsiz planda veri herkese açık
     gösterildiğinde metalcharts.org kaynağı görünür olmalı.
-  - Dolar/TL: TCMB gösterge niteliğindeki döviz alış kuru.
-    Şartlar: https://www.tcmb.gov.tr (Kullanım Koşulları) — kaynak gösterilerek
-    yayımlanabilir; ticari amaçla kullanımı TCMB'nin yazılı iznine tabidir.
+  - Dolar/TL: Avrupa Merkez Bankası (ECB) euro referans kurları, Frankfurter API üzerinden
+    (USD/TRY, EUR çaprazından hesaplanır). Şartlar: ECB verisi ücretsiz yeniden kullanılabilir,
+    ticari kullanım dahil; ECB kaynak olarak gösterilmeli ve verinin değiştirildiği (çapraz
+    hesaplandığı) belirtilmeli. https://www.ecb.europa.eu/services/disclaimer/html/index.en.html
+    (TCMB kuru Ekim 2026'ya kadar kullanıldı; ticari kullanımı yazılı izne bağlı olduğu için bırakıldı.)
 
 MetalCharts'ın ücretsiz planında geçmiş veri olmadığı için her hafta içi paylaşımda o
 günün değerleri veri/gecmis.json dosyasına yazılır (iş akışı bu dosyayı GitHub önbelleğinde
@@ -24,7 +26,6 @@ import os
 import subprocess
 import sys
 import time
-import xml.etree.ElementTree as ET
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -54,14 +55,15 @@ API_SURUM = os.environ.get("IG_API_VERSION", "v23.0")
 API = f"{API_HOST}/{API_SURUM}"
 
 METALCHARTS_URL = "https://api.metalcharts.org/v1/prices"
-TCMB_URL = "https://www.tcmb.gov.tr/kurlar/{}.xml"
+# ECB kurları her iş günü ~16:00 CET (≈17:00 TR) yayımlanır; günde bir değer.
+KUR_URL = "https://api.frankfurter.dev/v2/providers/ecb/rates"
 TARAYICI = "gumus-bot/1.0 (+https://github.com/ridvancoskun1975-cpu/gumus-bot)"
 GECMIS_DOSYASI = KOK / "veri" / "gecmis.json"
 MUZIK_KUNYE = KOK / "assets" / "muzik-kunye.txt"
 
 # Görselde ve açıklamada görünen kaynak satırları (kaynak göstermek iki kaynağın da şartı)
 KAYNAK_METAL = "MetalCharts · metalcharts.org"
-KAYNAK_KUR = "TCMB döviz alış kuru"
+KAYNAK_KUR = "ECB referans kuru"
 
 
 class VeriYok(Exception):
@@ -130,45 +132,30 @@ def metal_fiyatlari():
     raise RuntimeError(f"Metal fiyatları alınamadı: {son_hata}")
 
 
-def _tcmb_bulten(yol):
-    """TCMB kur bülteninden (tarih, USD döviz alış) döndürür; bülten yoksa (tatil) None."""
+def kurlar():
+    """ECB'nin son yayımlanan iki USD/TRY referans kuru: ((tarih, kur), (önceki tarih, kur)).
+
+    ECB her iş günü ~17:00 (TR) yayımlar; o saatten önce son kur bir önceki iş gününündür.
+    """
+    baslangic = (datetime.now(TR_SAAT).date() - timedelta(days=14)).isoformat()
     son_hata = None
     for deneme in range(3):
         try:
-            r = requests.get(TCMB_URL.format(yol), timeout=30, headers={"User-Agent": TARAYICI})
-            if r.status_code == 404:
-                return None
+            r = requests.get(KUR_URL, timeout=30, headers={"User-Agent": TARAYICI, "Accept": "application/json"},
+                             params={"base": "USD", "quotes": "TRY", "from": baslangic})
             r.raise_for_status()
-            kok = ET.fromstring(r.content)
-            tarih = datetime.strptime(kok.attrib["Tarih"], "%d.%m.%Y").date()
-            for c in kok.iter("Currency"):
-                if c.get("CurrencyCode") == "USD":
-                    kur = float(c.findtext("ForexBuying"))
-                    if not (math.isfinite(kur) and kur > 0):
-                        raise ValueError(f"geçersiz kur {kur}")
-                    return tarih, kur
-            raise ValueError("bültende USD yok")
-        except (requests.RequestException, ET.ParseError, ValueError, KeyError, TypeError) as e:
+            satirlar = sorted((date.fromisoformat(x["date"]), float(x["rate"]))
+                              for x in r.json() if x.get("quote") == "TRY")
+            if len(satirlar) < 2:
+                raise ValueError(f"yeterli kur yok ({len(satirlar)})")
+            for _, kur in satirlar[-2:]:
+                if not (math.isfinite(kur) and 1 < kur < 1000):
+                    raise ValueError(f"geçersiz kur {kur}")
+            return satirlar[-1], satirlar[-2]
+        except (requests.RequestException, ValueError, KeyError, TypeError) as e:
             son_hata = e
             _bekle(deneme)
-    raise RuntimeError(f"TCMB kuru alınamadı ({yol}): {son_hata}")
-
-
-def tcmb_kurlari():
-    """Son yayımlanan TCMB bülteni ve ondan önceki bülten: ((tarih, kur), (tarih, kur)).
-
-    Bülten her iş günü 15:30'da yayımlanır; o saatten önce 'today.xml' bir önceki
-    iş gününün bültenini gösterir.
-    """
-    son = _tcmb_bulten("today")
-    if son is None:
-        raise RuntimeError("TCMB güncel bülteni bulunamadı")
-    for geri in range(1, 15):
-        g = son[0] - timedelta(days=geri)
-        onceki = _tcmb_bulten(f"{g:%Y%m}/{g:%d%m%Y}")
-        if onceki:
-            return son, onceki
-    raise RuntimeError("TCMB önceki bülteni bulunamadı")
+    raise RuntimeError(f"Dolar/TL kuru alınamadı (ECB / Frankfurter): {son_hata}")
 
 
 def gecmis_oku():
@@ -192,7 +179,7 @@ def gecmis_yaz(gecmis, gun, kayit):
 
 def fiyatlari_al(kaydet=True):
     metal = metal_fiyatlari()
-    (kur_tarihi, dolar), (_, dolar_once) = tcmb_kurlari()
+    (kur_tarihi, dolar), (_, dolar_once) = kurlar()
     gumus, altin = metal["XAG"]["fiyat"], metal["XAU"]["fiyat"]
     gram = gumus * dolar / ONS_GRAM
 
@@ -352,7 +339,7 @@ def _kaynak_satirlari(v):
     satirlar = [
         "Gram fiyatı ons gümüş × dolar/TL ÷ 31,1035 ile hesaplanmıştır; kuyumcu ve banka fiyatlarından farklı olabilir.",
         "Metal fiyatları: MetalCharts (metalcharts.org)",
-        f"Dolar/TL: TCMB gösterge niteliğindeki döviz alış kuru ({v['kur_tarihi_tam']} bülteni)",
+        f"Dolar/TL: Avrupa Merkez Bankası (ECB) referans kurlarından EUR çaprazıyla hesaplanmıştır, Frankfurter (frankfurter.dev) üzerinden ({v['kur_tarihi_tam']} kuru)",
     ]
     kunye = muzik_kunyesi()
     if kunye:
@@ -628,7 +615,7 @@ def hazirla(tur, cikti, ornek):
     (cikti / "index.html").write_text("<!doctype html><meta charset='utf-8'><title>Gümüş bot</title>"
                                       f"<p>Son üretilen dosya: <a href='{dosya}'>{dosya}</a></p>"
                                       "<p>Metal fiyatları: <a href='https://metalcharts.org'>MetalCharts</a>"
-                                      " · Dolar/TL: TCMB</p>", encoding="utf-8")
+                                      " · Dolar/TL: ECB referans kurları (<a href='https://frankfurter.dev'>Frankfurter</a>)</p>", encoding="utf-8")
     print(aciklama)
     print(f"\nÜretilen dosya: {cikti / dosya}")
 

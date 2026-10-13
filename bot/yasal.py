@@ -27,8 +27,8 @@ SAYFALAR = [
         "maddeler": [
             "Bu bir gösterge fiyattır; kuyumcu, banka ve borsa fiyatlarından farklıdır. İşçilik, "
             "makas ve vergiler dahil değildir.",
-            "Dolar/TL, TCMB'nin günlük bülteninden alınır (her iş günü 15:30). Sabah "
-            "paylaşımlarında önceki iş gününün kuru kullanılır.",
+            "Dolar/TL, Avrupa Merkez Bankası'nın (ECB) günlük referans kurlarından hesaplanır "
+            "(her iş günü ~17:00). Daha önceki paylaşımlarda önceki iş gününün kuru kullanılır.",
             "Oklar önceki iş gününe, haftalık özette önceki haftaya göre değişimi gösterir.",
             "Veriler gecikmeli, eksik ya da hatalı olabilir; doğruluğu garanti edilmez.",
         ],
@@ -37,7 +37,7 @@ SAYFALAR = [
         "baslik": "Kaynaklar",
         "kaynaklar": [
             ("Ons gümüş ve ons altın (USD)", "MetalCharts · metalcharts.org"),
-            ("Dolar/TL", "T.C. Merkez Bankası gösterge niteliğindeki döviz alış kuru"),
+            ("Dolar/TL", "Avrupa Merkez Bankası (ECB) referans kurları · frankfurter.dev"),
             ("Müzik", "Pixabay İçerik Lisansı · künye her paylaşımın açıklamasında"),
         ],
         "maddeler": [
@@ -49,8 +49,8 @@ SAYFALAR = [
         "maddeler": [
             "Paylaşımlar otomatik üretilir: hafta içi ~10:00, ~17:00 ve ~20:00; cumartesi ~10:00 "
             "haftalık özet. Saatler birkaç dakika kayabilir.",
-            "Hafta sonu günlük paylaşım yapılmaz. Resmî tatillerde dolar/TL son yayımlanan "
-            "TCMB bülteninden alınır.",
+            "Hafta sonu günlük paylaşım yapılmaz. Kur yayımlanmayan günlerde dolar/TL son "
+            "yayımlanan ECB kurudur.",
             "Reklam ya da iş birliği içeren paylaşımlar #reklam etiketiyle açıkça belirtilir; "
             "fiyat verileri reklamdan etkilenmez.",
             "Hatalı bir değer görürseniz DM ile bildirebilirsiniz.",
@@ -64,11 +64,11 @@ ACIKLAMA = f"""Yasal bilgilendirme | Son güncelleme: {GUNCELLEME}
 Bu hesaptaki tüm paylaşımlar yalnızca bilgi amaçlıdır ve alım-satım önerisi içermez. Hiçbir paylaşım yatırım danışmanlığı kapsamında değildir; yatırım danışmanlığı, SPK'dan yetki almış kuruluşlarla imzalanan yatırım danışmanlığı sözleşmesi çerçevesinde sunulur. Paylaşılan değerler mali durumunuza, risk ve getiri tercihlerinize uygun olmayabilir; yalnızca bu bilgilere dayanarak yatırım kararı vermeyin. Bu hesap DM üzerinden tavsiye vermez, para ya da yatırım talep etmez; hesap adına size ulaşan kişilere itibar etmeyin.
 
 2) Fiyatlar nasıl hesaplanır
-Gram gümüş = ons gümüş (USD) × dolar/TL ÷ 31,1035. Bu bir gösterge fiyattır; kuyumcu, banka ve borsa alış-satış fiyatlarından farklıdır, işçilik, makas ve vergiler dahil değildir. Dolar/TL, TCMB'nin her iş günü 15:30'da yayımladığı bültenden alınır; sabah paylaşımlarında önceki iş gününün kuru kullanılır. Değişimler önceki iş gününe, haftalık özette önceki haftaya göredir. Veriler gecikmeli, eksik ya da hatalı olabilir; doğruluğu garanti edilmez.
+Gram gümüş = ons gümüş (USD) × dolar/TL ÷ 31,1035. Bu bir gösterge fiyattır; kuyumcu, banka ve borsa alış-satış fiyatlarından farklıdır, işçilik, makas ve vergiler dahil değildir. Dolar/TL, Avrupa Merkez Bankası'nın (ECB) her iş günü yaklaşık 17:00'de yayımladığı euro referans kurlarından EUR çaprazıyla hesaplanır; bu saatten önceki paylaşımlarda önceki iş gününün kuru kullanılır. Değişimler önceki iş gününe, haftalık özette önceki haftaya göredir. Veriler gecikmeli, eksik ya da hatalı olabilir; doğruluğu garanti edilmez.
 
 3) Kaynaklar
 Metal fiyatları: MetalCharts (metalcharts.org)
-Dolar/TL: T.C. Merkez Bankası gösterge niteliğindeki döviz alış kuru
+Dolar/TL: Avrupa Merkez Bankası (ECB) euro referans kurları, Frankfurter (frankfurter.dev) üzerinden
 Müzik: Pixabay İçerik Lisansı; künye her paylaşımın açıklamasında.
 Bu hesabın bu kuruluşlarla bir bağı yoktur.
 
