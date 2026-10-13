@@ -1020,13 +1020,20 @@ def token_yenile():
 
 # ---------------------------------------------------------------- giriş
 
+HESAP_VARSAYILAN = "gumusagtr"   # Instagram kullanıcı adı okunamazsa görselde bu yazar
+
+
 def hesap_adi():
     hesap = os.environ.get("HESAP_ADI", "").strip()
     if not hesap and os.environ.get("IG_TOKEN"):
         try:
             hesap = hesap_bilgisi().get("username", "")
         except Exception as e:
-            print(f"Uyarı: kullanıcı adı alınamadı ({e})", file=sys.stderr)
+            # Instagram geçici olarak yanıt vermezse görsel hesap adı olmadan üretilmesin
+            # Bağlantı hatalarının metninde istek adresi (ve anahtar) geçebilir; yalnızca hata türü yazılır
+            ileti = str(e) if isinstance(e, RuntimeError) else type(e).__name__
+            print(f"::warning::Kullanıcı adı Instagram'dan alınamadı, varsayılan kullanılıyor ({ileti})")
+            hesap = HESAP_VARSAYILAN
     return ("@" + hesap.lstrip("@")) if hesap else ""
 
 
