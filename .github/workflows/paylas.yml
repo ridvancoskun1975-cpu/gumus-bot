@@ -139,6 +139,17 @@ jobs:
             echo "devam=false" >> "$GITHUB_OUTPUT"
           fi
 
+      # Bilgi sayfası (Instagram biyografisindeki bağlantı): site/index.html'i son kayıtlarla yeniden
+      # üretir (fiyat, hesap makinesi, son günler, rehber, kaynaklar) ve bağlantı önizlemesi og.png'yi
+      # çizer. Hata verirse yalnızca uyarı çıkar; paylaşım etkilenmez.
+      - name: Bilgi sayfası
+        if: steps.uret.outputs.devam == 'true'
+        continue-on-error: true
+        timeout-minutes: 2
+        env:
+          HESAP_ADI: ${{ vars.HESAP_ADI }}
+        run: python bot/sayfa.py --cikti site
+
       # Takipçi sayısı yalnızca sana özel gumus-kayit deposuna (takipci.md) yazılır.
       # Bu depo ve günlükleri herkese açık olduğu için sayı günlüğe hiç yazdırılmaz.
       # Kayıt başarısız olursa yalnızca uyarı çıkar; paylaşım etkilenmez.

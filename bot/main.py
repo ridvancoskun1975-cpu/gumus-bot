@@ -525,7 +525,7 @@ def gorsel_uret(tur, veri, png_yolu):
     gecici = SABLONLAR / f"_cikti_{tur}.html"   # fontlar göreli yolla yüklensin diye burada
     gecici.write_text(html, encoding="utf-8")
     boyut = {"reels": (1080, 1920), "kapak": (1080, 1920), "post": (1080, 1350), "hafta": (1080, 1350), "yasal": (1080, 1350),
-             "bilgi": (1080, 1350), "yorum": (1080, 1350)}[tur]
+             "bilgi": (1080, 1350), "yorum": (1080, 1350), "sayfa-og": (1200, 630)}[tur]
     # Instagram görsel gönderilerde yalnızca JPEG kabul ediyor; uzantı .jpg ise JPEG kaydedilir.
     jpeg = {"quality": 92} if Path(png_yolu).suffix.lower() in (".jpg", ".jpeg") else {}
     try:
