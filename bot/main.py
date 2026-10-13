@@ -600,12 +600,12 @@ def yasal_hazirla(cikti):
 def bilgi_hazirla(cikti, konu=None):
     """Gümüş rehberi bölümü: kapak + 3 sayfa, kaydırmalı görsel gönderi. Fiyat verisi kullanmaz.
 
-    konu verilmezse bugünün bölümü bilgi.TAKVIM'den seçilir; takvimde yoksa paylaşım atlanır.
+    konu verilmezse bugünün bölümü bilgi.takvim()'den seçilir; takvimde yoksa paylaşım atlanır.
     """
     import bilgi
     if not konu:
         bugun = datetime.now(TR_SAAT).date().isoformat()
-        konu = bilgi.TAKVIM.get(bugun)
+        konu = bilgi.bugunun_bolumu()
         if not konu:
             print(f"::warning::Paylaşım atlandı: {bugun} için takvimde bilgi gönderisi yok")
             return
@@ -619,7 +619,7 @@ def bilgi_hazirla(cikti, konu=None):
     dosyalar = []
     for sayfa in range(toplam):
         jpg = cikti / f"bilgi{konu}-{damga}-{sayfa + 1}.jpg"
-        gorsel_uret("bilgi", {"b": b, "no": konu, "toplam_bolum": len(bilgi.BOLUMLER), "sayfa": sayfa,
+        gorsel_uret("bilgi", {"b": b, "no": konu, "sayfa": sayfa,
                               "toplam_sayfa": toplam, "sonraki": sonraki, "seri": bilgi.SERI,
                               "hesap": hesap}, jpg)
         dosyalar.append(jpg.name)

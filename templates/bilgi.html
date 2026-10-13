@@ -10,7 +10,7 @@
 h1 { letter-spacing: -3px; line-height: 0.96; text-wrap: balance; }
 h2 { margin: 8px 0 0; font-size: 78px; line-height: 0.98; font-weight: 800; letter-spacing: -2px; text-wrap: balance; }
 .kapak-sayi { border-top: 2px solid var(--cizgi); border-bottom: 2px solid var(--cizgi); padding: 36px 0 40px; }
-.dev { font-weight: 700; line-height: 1; color: var(--vurgu); letter-spacing: -4px; white-space: nowrap; }
+.dev { font-weight: 700; line-height: 1; padding-bottom: 0.1em; color: var(--vurgu); letter-spacing: -4px; white-space: nowrap; }
 .dev-alt { margin-top: 18px; font-size: 32px; color: var(--soluk); }
 .blok { margin-top: 36px; }
 .blok .dev-alt { margin-top: 10px; font-size: 30px; }
@@ -38,7 +38,7 @@ h2 { margin: 8px 0 0; font-size: 78px; line-height: 0.98; font-weight: 800; lett
   {% set h1_boy = 128 if uz <= 14 else (108 if uz <= 32 else 92) %}
   {% set dev_boy = [250, (880 / (b.buyuk | length * 0.6)) | int] | min %}
   <div class="ust" style="align-items: center">
-    <div class="etiket seri"><span class="nokta" style="width: 12px; height: 12px"></span><span>{{ seri }} · {{ '%02d' % no }} / {{ '%02d' % toplam_bolum }}</span></div>
+    <div class="etiket seri"><span class="nokta" style="width: 12px; height: 12px"></span><span>{{ seri }} · {{ '%02d' % no }}</span></div>
     {{ ag_etiketi(104, 118, '10px 12px', 18, 40, 15) }}
   </div>
 
@@ -101,7 +101,7 @@ h2 { margin: 8px 0 0; font-size: 78px; line-height: 0.98; font-weight: 800; lett
       <span>Bilgi amaçlıdır, yatırım tavsiyesi değildir.</span>
       {% if sayfa == toplam_sayfa - 1 %}
         {% if sonraki %}<span class="vurgu" style="font-size: 26px; font-weight: 700">Sıradaki: {{ sonraki }}</span>
-        {% else %}<span class="vurgu" style="font-size: 26px; font-weight: 700">Serinin tamamı profilde</span>{% endif %}
+        {% else %}<span class="vurgu" style="font-size: 26px; font-weight: 700">Önceki bölümler profilde</span>{% endif %}
       {% endif %}
     </div>
   </div>

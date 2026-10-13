@@ -6,9 +6,9 @@ on:
     - cron: '50 6 * * 1-5'    # 09:50 TR -> Reels
     - cron: '50 16 * * 1-5'   # 19:50 TR -> Günlük özet
     - cron: '50 6 * * 6'      # Cumartesi 09:50 TR -> Haftalık özet
-    # 14-21 Ekim her gün 13:50 TR -> Gümüş rehberi (bilgi). Hangi gün hangi bölüm: bot/bilgi.py → TAKVIM;
-    # takvimde olmayan günlerde (hafta sonu) paylaşım atlanır. Seri bitince bu satır silinebilir.
-    - cron: '50 10 14-21 10 *'
+    # Hafta içi 13:50 TR -> Gümüş rehberi (bilgi). Hangi gün hangi bölüm: bot/bilgi.py → takvim()
+    # (ilk hafta her gün, sonra salı ve perşembe). Takvimde olmayan günlerde "kontrol" işi birkaç saniyede biter.
+    - cron: '50 10 * * 1-5'
   workflow_dispatch:
     inputs:
       tur:
@@ -33,12 +33,55 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Türü belirler; bilgi gününde değilse kurulum yapmadan bitirir (zamanlı bilgi çalışması her iş günü başlar).
+  kontrol:
+    runs-on: ubuntu-24.04   # sabit sürüm: ubuntu-latest 19 Ekim 2026 itibarıyla Ubuntu 26e geçiyor
+    timeout-minutes: 3
+    outputs:
+      tur: ${{ steps.tur.outputs.tur }}
+      calis: ${{ steps.tur.outputs.calis }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: bot
+
+      - name: Türü belirle
+        id: tur
+        env:
+          KONU: ${{ inputs.konu }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            tur="${{ inputs.tur }}"
+          elif [ "${{ github.event.schedule }}" = "50 16 * * 1-5" ]; then
+            tur=post
+          elif [ "${{ github.event.schedule }}" = "50 6 * * 6" ]; then
+            tur=hafta
+          elif [ "${{ github.event.schedule }}" = "50 10 * * 1-5" ]; then
+            tur=bilgi
+          else
+            tur=reels
+          fi
+          calis=true
+          if [ "$tur" = "bilgi" ] && [ -z "$KONU" ]; then
+            bolum=$(python3 bot/bilgi.py bugun)   # hata verirse adım başarısız olur (bash -e)
+            if [ -z "$bolum" ]; then
+              calis=false
+              echo "Bugün takvimde bilgi gönderisi yok; çalışma atlandı."
+            else
+              echo "Bugünün rehber bölümü: $bolum"
+            fi
+          fi
+          echo "tur=$tur" >> "$GITHUB_OUTPUT"
+          echo "calis=$calis" >> "$GITHUB_OUTPUT"
+
   uret:
+    needs: kontrol
+    if: needs.kontrol.outputs.calis == 'true'
     runs-on: ubuntu-24.04   # sabit sürüm: ubuntu-latest 19 Ekim 2026 itibarıyla Ubuntu 26e geçiyor
     timeout-minutes: 15
     outputs:
       devam: ${{ steps.uret.outputs.devam }}
-      tur: ${{ steps.tur.outputs.tur }}
+      tur: ${{ needs.kontrol.outputs.tur }}
     steps:
       - uses: actions/checkout@v4
 
@@ -52,21 +95,6 @@ jobs:
         run: |
           pip install -q -r requirements.txt
           python -m playwright install chromium
-
-      - name: Türü belirle
-        id: tur
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "tur=${{ inputs.tur }}" >> "$GITHUB_OUTPUT"
-          elif [ "${{ github.event.schedule }}" = "50 16 * * 1-5" ]; then
-            echo "tur=post" >> "$GITHUB_OUTPUT"
-          elif [ "${{ github.event.schedule }}" = "50 6 * * 6" ]; then
-            echo "tur=hafta" >> "$GITHUB_OUTPUT"
-          elif [ "${{ github.event.schedule }}" = "50 10 14-21 10 *" ]; then
-            echo "tur=bilgi" >> "$GITHUB_OUTPUT"
-          else
-            echo "tur=reels" >> "$GITHUB_OUTPUT"
-          fi
 
       # Müzik depoda şifreli durur (Pixabay lisansı müziğin tek başına dağıtılmasına izin vermiyor).
       - name: Müziği aç
@@ -98,8 +126,8 @@ jobs:
           KONU: ${{ inputs.konu }}
         run: |
           ek=()
-          if [ "${{ steps.tur.outputs.tur }}" = "bilgi" ] && [ -n "$KONU" ]; then ek=(--konu "$KONU"); fi
-          python bot/main.py hazirla --tur "${{ steps.tur.outputs.tur }}" --cikti site "${ek[@]}"
+          if [ "${{ needs.kontrol.outputs.tur }}" = "bilgi" ] && [ -n "$KONU" ]; then ek=(--konu "$KONU"); fi
+          python bot/main.py hazirla --tur "${{ needs.kontrol.outputs.tur }}" --cikti site "${ek[@]}"
           if [ -f site/meta.json ]; then
             echo "devam=true" >> "$GITHUB_OUTPUT"
           else
@@ -117,7 +145,7 @@ jobs:
         if: steps.uret.outputs.devam == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: onizleme-${{ steps.tur.outputs.tur }}
+          name: onizleme-${{ needs.kontrol.outputs.tur }}
           path: site
           retention-days: 7
 

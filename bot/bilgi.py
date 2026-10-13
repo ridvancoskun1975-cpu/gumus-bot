@@ -1,14 +1,24 @@
 """Gümüş rehberi: profili çeşitlendiren, fiyat verisi kullanmayan bilgi gönderileri (kaydırmalı).
 
-Her bölüm kapak + 3 sayfa olarak paylaşılır. TAKVIM'deki günlerde hafta içi ~14:00'te
-otomatik gider; elle göndermek için Actions → Run workflow → tür: bilgi, konu: 1-6.
+Her bölüm kapak + 3 sayfa olarak paylaşılır, hafta içi ~14:00'te otomatik gider.
+Takvim: ilk 6 bölüm 14-21 Ekim 2026'da her iş günü (BASLANGIC); sonrası DUZENLI_GUNLER'de
+(salı, perşembe) sıradaki bölüm. Yeni bölüm eklemek için BOLUMLER'in sonuna ekle; takvime
+kendiliğinden girer. Bölümler bitince zamanlı çalışma bir şey paylaşmaz.
+Elle göndermek için Actions → Run workflow → tür: bilgi, konu: <no>.
 Rakamlar örnek ya da sabit değerlerdir (güncel fiyat içermez), bu yüzden MetalCharts hakkı harcanmaz.
+
+Komut satırı: python bot/bilgi.py bugun  → bugünün bölüm numarasını yazar (yoksa boş)
+              python bot/bilgi.py takvim → bütün takvimi yazar
 """
+import sys
+from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo
 
 SERI = "GÜMÜŞ REHBERİ"
+GUNLER = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"]
 
-# Hangi gün hangi bölüm gider (TR tarihi). Listede olmayan günlerde zamanlı çalışma bir şey paylaşmaz.
-TAKVIM = {
+# İlk hafta her iş günü bir bölüm (TR tarihi)
+BASLANGIC = {
     "2026-10-14": 1,
     "2026-10-15": 2,
     "2026-10-16": 3,
@@ -16,6 +26,9 @@ TAKVIM = {
     "2026-10-20": 5,
     "2026-10-21": 6,
 }
+# Sonrasında haftada 2 bölüm: salı ve perşembe (Pazartesi = 0). Haftada 1 için {1} yeter.
+DUZENLI_BASLANGIC = date(2026, 10, 26)
+DUZENLI_GUNLER = {1, 3}
 
 # Her sayfada isteğe bağlı alanlar: buyuk + buyuk_alt (büyük rakam), formul, tablo [(etiket, değer)],
 # maddeler (görselde ayrı satırlar; kısa tut), kaynak (küçük not).
@@ -261,6 +274,298 @@ BOLUMLER = [
             },
         ],
     },
+    {
+        "baslik": "Gümüş nerede kullanılır?",
+        "alt": "Takıdan güneş paneline: gümüşün iş başındaki hali.",
+        "buyuk": "#1",
+        "buyuk_alt": "elektriği ve ısıyı en iyi ileten metal",
+        "hashtag": "#gümüş #değerlimetaller #emtia #gümüşyatırımı #silver",
+        "soru": "Bu kullanım alanlarından hangisini biliyordunuz?",
+        "sayfalar": [
+            {
+                "baslik": "Elektrik ve elektronik",
+                "buyuk": "#1",
+                "buyuk_alt": "elektrik ve ısı iletkenliğinde",
+                "maddeler": [
+                    "Gümüş, elektriği ve ısıyı bütün metallerden daha iyi iletir.",
+                    "Anahtar, devre kartı ve bağlantı noktalarında kullanılır; telefonlarda ve "
+                    "arabalarda az miktarda bulunur.",
+                ],
+            },
+            {
+                "baslik": "Güneş enerjisi",
+                "maddeler": [
+                    "Güneş panellerinde elektriği toplayan ince iletken çizgiler gümüşlü macunla basılır.",
+                    "Güneş paneli kurulumları son yıllarda gümüşün en hızlı büyüyen kullanım "
+                    "alanlarından biri oldu.",
+                ],
+                "kaynak": "Kaynak: The Silver Institute; ABD Jeoloji Araştırmaları Kurumu (USGS)",
+            },
+            {
+                "baslik": "Sağlık, takı ve külçe",
+                "maddeler": [
+                    "Gümüş iyonları mikrop öldürücü olduğu için bazı yara örtülerinde ve tıbbi "
+                    "malzemelerde kullanılır.",
+                    "Takı, gümüş eşya, madeni para ve külçe talebin diğer büyük kısmını oluşturur.",
+                    "Bir zamanlar en büyük kullanım alanlarından biri film fotoğrafçılığıydı.",
+                ],
+            },
+        ],
+    },
+    {
+        "baslik": "Gümüş nereden gelir?",
+        "alt": "Madenler, yan ürünler ve geri dönüşüm.",
+        "buyuk": "Meksika",
+        "buyuk_alt": "dünyanın en büyük gümüş üreticisi",
+        "hashtag": "#gümüş #değerlimetaller #emtia #külçegümüş #gumus",
+        "soru": "Türkiye'deki gümüş madenlerini biliyor muydunuz?",
+        "sayfalar": [
+            {
+                "baslik": "Çoğu yan ürün",
+                "maddeler": [
+                    "Gümüşün büyük kısmı kurşun-çinko, bakır ve altın madenlerinden yan ürün olarak çıkar.",
+                    "Bu yüzden gümüş fiyatı yükselse bile üretim hemen artmayabilir; arzı başka "
+                    "metallerin madenciliği de belirler.",
+                ],
+                "kaynak": "Kaynak: ABD Jeoloji Araştırmaları Kurumu (USGS)",
+            },
+            {
+                "baslik": "Başlıca üreticiler",
+                "tablo": [
+                    ("1. Meksika", "6.300 ton"),
+                    ("2. Peru", "3.600 ton"),
+                    ("3. Çin", "3.400 ton"),
+                ],
+                "maddeler": [
+                    "Bolivya, Şili, Polonya, Rusya, ABD ve Avustralya da büyük üreticiler arasında.",
+                ],
+                "kaynak": "2025 maden üretimi tahmini · USGS Mineral Commodity Summaries 2026",
+            },
+            {
+                "baslik": "Geri dönüşüm ve Türkiye",
+                "maddeler": [
+                    "Dünya arzının yaklaşık beşte biri eski takı, gümüş eşya ve sanayi atıklarının "
+                    "geri dönüşümünden gelir.",
+                    "Türkiye'de gümüş denince akla gelen yerlerden biri Kütahya Gümüşköy'deki maden "
+                    "işletmesidir.",
+                ],
+                "kaynak": "Kaynak: The Silver Institute (2024: 1.014 milyon ons arzın 194 milyonu geri dönüşüm)",
+            },
+        ],
+    },
+    {
+        "baslik": "Gümüş fiyatı nerede belirlenir?",
+        "alt": "Londra, New York, Şanghay ve hafta sonu boşluğu.",
+        "buyuk": "24/5",
+        "buyuk_alt": "hafta içi neredeyse kesintisiz işlem",
+        "hashtag": "#gümüş #gümüşfiyatları #emtia #değerlimetaller #silver",
+        "soru": "Gümüş fiyatını en çok nereden takip ediyorsunuz?",
+        "sayfalar": [
+            {
+                "baslik": "Tek bir borsa yok",
+                "maddeler": [
+                    "Gümüş, dünya genelinde bankalar ve borsalar arasında hafta içi neredeyse 24 "
+                    "saat alınıp satılır.",
+                    "Ekranlarda görülen ons fiyatı bu işlemlerden oluşan anlık (spot) fiyattır.",
+                ],
+            },
+            {
+                "baslik": "Büyük merkezler",
+                "tablo": [
+                    ("Londra", "fiziki piyasa"),
+                    ("New York", "vadeli işlemler"),
+                    ("Şanghay", "Asya borsası"),
+                ],
+                "maddeler": [
+                    "Londra'da her iş günü belirlenen LBMA gümüş fiyatı birçok sözleşmede referans alınır.",
+                ],
+            },
+            {
+                "baslik": "Hafta sonu",
+                "maddeler": [
+                    "Cumartesi ve pazar küresel piyasa kapalıdır, ons fiyatı oluşmaz.",
+                    "Pazartesi açılışında fiyat, hafta sonu gelişmelerine göre cuma kapanışından "
+                    "farklı başlayabilir.",
+                    "Bu yüzden hafta sonu günlük fiyat paylaşımı yapmıyoruz.",
+                ],
+            },
+        ],
+    },
+    {
+        "baslik": "Gümüş neden kararır?",
+        "alt": "Kararmanın nedeni ve saklama.",
+        "buyuk": "kükürt",
+        "buyuk_alt": "kararmanın asıl sebebi",
+        "hashtag": "#gümüş #külçegümüş #gümüşyatırımı #değerlimetaller #gumus",
+        "soru": "Gümüşlerinizi nasıl saklıyorsunuz?",
+        "sayfalar": [
+            {
+                "baslik": "Paslanma değil",
+                "maddeler": [
+                    "Gümüş havadaki kükürtlü gazlarla tepkimeye girer; yüzeyde ince bir gümüş "
+                    "sülfür tabakası oluşur.",
+                    "Nem, lastik ve kauçuk, yumurta ve soğan gibi kükürtlü maddeler kararmayı hızlandırır.",
+                ],
+            },
+            {
+                "baslik": "Değeri değişir mi?",
+                "maddeler": [
+                    "Kararma yalnızca yüzeydedir; külçenin saflığı ve ağırlığı değişmez.",
+                    "Koleksiyon paralarında sert parlatma çizik bırakıp koleksiyon değerini düşürebilir.",
+                ],
+            },
+            {
+                "baslik": "Saklama",
+                "maddeler": [
+                    "Kuru ve hava almayan bir kap, mümkünse orijinal ambalaj kararmayı yavaşlatır.",
+                    "Kararma önleyici bez ve poşetler de yardımcı olur.",
+                    "Takılarda yumuşak bir bezle silmek çoğu zaman yeterlidir.",
+                ],
+            },
+        ],
+    },
+    {
+        "baslik": "Külçe gümüş hangi boylarda olur?",
+        "alt": "1 onstan 30 kiloya: boy, prim ve pratiklik.",
+        "buyuk": "~31 kg",
+        "buyuk_alt": "uluslararası piyasanın standart külçesi (yaklaşık 1.000 ons)",
+        "hashtag": "#gümüş #külçegümüş #gramgümüş #gümüşyatırımı #silver",
+        "soru": "Sizce en pratik boy hangisi?",
+        "sayfalar": [
+            {
+                "baslik": "Yaygın boylar",
+                "tablo": [
+                    ("1 ons", "31,1 g"),
+                    ("100 g", "3,2 ons"),
+                    ("1 kg", "32,15 ons"),
+                    ("1.000 ons", "yaklaşık 31 kg"),
+                ],
+                "maddeler": [
+                    "Bireysel alımlarda genelde 1 ons ile 1 kg arası boylar görülür.",
+                ],
+            },
+            {
+                "baslik": "Büyük külçe",
+                "maddeler": [
+                    "Uluslararası piyasada el değiştiren standart külçe 750–1.100 ons (yaklaşık "
+                    "23–34 kg) ağırlığında ve en az 999 saflıktadır.",
+                    "Bu külçeler genelde bankalar, rafineriler ve fonlar arasında el değiştirir.",
+                ],
+                "kaynak": "Kaynak: LBMA Good Delivery kuralları",
+            },
+            {
+                "baslik": "Küçük boy, yüksek prim",
+                "maddeler": [
+                    "Küçük külçelerde üretim ve ambalaj maliyeti gram başına daha yüksektir; gram "
+                    "fiyatı büyük külçeden yüksek olur.",
+                    "Büyük külçe gram başına daha ucuzdur ama bölünemez; satarken tamamı satılır.",
+                ],
+            },
+        ],
+    },
+    {
+        "baslik": "Aynı değerde altın ve gümüş",
+        "alt": "Parite 80 iken gümüş ne kadar yer kaplar?",
+        "buyuk": "147×",
+        "buyuk_alt": "aynı değerdeki gümüşün hacmi, altına göre (parite 80 iken)",
+        "hashtag": "#gümüş #değerlimetaller #gümüşyatırımı #emtia #gumus",
+        "soru": "Bu farkı tahmin etmiş miydiniz?",
+        "sayfalar": [
+            {
+                "baslik": "Ağırlık",
+                "formul": "Parite 80 → 1 ons altın = 80 ons gümüş",
+                "maddeler": [
+                    "Aynı değer için gümüş, altından parite kadar kat ağırdır.",
+                    "Örnek: parite 80 iken 100 gram altın değerindeki gümüş 8 kilogram eder.",
+                ],
+            },
+            {
+                "baslik": "Hacim",
+                "tablo": [
+                    ("Altın yoğunluğu", "19,3 g/cm³"),
+                    ("Gümüş yoğunluğu", "10,5 g/cm³"),
+                    ("Aynı değerde hacim", "~147 kat"),
+                ],
+                "maddeler": [
+                    "Gümüş hem daha ucuz hem daha hafif bir metaldir; aynı değer çok daha büyük yer kaplar.",
+                ],
+            },
+            {
+                "baslik": "Pratikte ne demek?",
+                "maddeler": [
+                    "Taşıma ve saklama, gümüşte değere oranla daha fazla yer ister.",
+                    "Öte yandan gümüş, küçük tutarlar için daha küçük birimlere bölünebilir.",
+                    "Hangisinin uygun olduğu kişinin amacına göre değişir; bu bir tercih önerisi değildir.",
+                ],
+            },
+        ],
+    },
+    {
+        "baslik": "Akçeden kuruşa: gümüş para",
+        "alt": "Osmanlı'dan bugüne paranın gümüşle hikâyesi.",
+        "buyuk": "akçe",
+        "buyuk_alt": "Osmanlı'nın gümüş sikkesi",
+        "hashtag": "#gümüş #değerlimetaller #gramgümüş #külçegümüş #gumus",
+        "soru": "Evinizde eski bir gümüş sikke var mı?",
+        "sayfalar": [
+            {
+                "baslik": "Akçe",
+                "maddeler": [
+                    "Osmanlı'nın temel sikkesi akçe gümüştendi; ilk akçeler Orhan Gazi döneminde basıldı.",
+                    "Adı “ak” (beyaz) kelimesinden gelir, gümüşün rengine işaret eder.",
+                    "Devlet zaman zaman akçedeki gümüş oranını düşürdü; buna tağşiş denir.",
+                ],
+            },
+            {
+                "baslik": "Kuruş",
+                "maddeler": [
+                    "Kuruş, 17. yüzyılın sonunda basılmaya başlanan iri bir gümüş sikkeydi.",
+                    "Zamanla kâğıt para ve ucuz metal alaşımları gümüşün yerini aldı.",
+                ],
+            },
+            {
+                "baslik": "Dünyada",
+                "maddeler": [
+                    "İngiliz sterlini adını “sterling” gümüşten alır; başlangıçta bir pound "
+                    "ağırlığındaki gümüşe dayanıyordu.",
+                    "Bugün dolaşımdaki paralarda gümüş neredeyse hiç kullanılmıyor.",
+                ],
+            },
+        ],
+    },
+    {
+        "baslik": "Gerçek gümüş nasıl anlaşılır?",
+        "alt": "Basit ipuçları ve kesin yol.",
+        "buyuk": "999 · 925",
+        "buyuk_alt": "damga ilk ipucu, kesin kanıt değil",
+        "hashtag": "#gümüş #külçegümüş #gramgümüş #gümüşyatırımı #silver",
+        "soru": "Siz hiç sahte gümüşle karşılaştınız mı?",
+        "sayfalar": [
+            {
+                "baslik": "Damga",
+                "maddeler": [
+                    "Gerçek gümüş ürünlerde genelde 925 ya da 999 gibi bir saflık damgası bulunur.",
+                    "Damga tek başına kanıt değildir; sahte üründe de damga olabilir.",
+                ],
+            },
+            {
+                "baslik": "Basit ipuçları",
+                "maddeler": [
+                    "Gümüş mıknatısa yapışmaz; yapışıyorsa içinde demir ya da nikel vardır.",
+                    "Gümüş ısıyı çok iyi iletir; üzerine konan buz başka metallere göre hızlı erir.",
+                    "Bu yöntemler yalnızca fikir verir; bazı sahteler bu testleri de geçer.",
+                ],
+            },
+            {
+                "baslik": "Kesin yol",
+                "maddeler": [
+                    "Saflık, kuyumcuda ya da bir ayar laboratuvarında yapılan ölçümle kesinleşir.",
+                    "Külçede tanınmış üretici, seri numarası ve fatura güven sağlar.",
+                    "Fiyatı piyasanın çok altında olan ürünlere dikkat edin.",
+                ],
+            },
+        ],
+    },
 ]
 
 
@@ -277,13 +582,39 @@ def _sayfa_metni(s):
     return "\n".join(satirlar)
 
 
+def takvim():
+    """{"YYYY-AA-GG": bölüm no} — ilk hafta BASLANGIC, sonrası DUZENLI_GUNLER'de sıradaki bölüm."""
+    t = dict(BASLANGIC)
+    no = max(BASLANGIC.values()) + 1
+    gun = DUZENLI_BASLANGIC
+    while no <= len(BOLUMLER):
+        if gun.weekday() in DUZENLI_GUNLER:
+            t[gun.isoformat()] = no
+            no += 1
+        gun += timedelta(days=1)
+    return t
+
+
+def bugunun_bolumu(gun=None):
+    gun = gun or datetime.now(ZoneInfo("Europe/Istanbul")).date()
+    return takvim().get(gun.isoformat())
+
+
 def aciklama(no):
     b = BOLUMLER[no - 1]
-    toplam = len(BOLUMLER)
-    parcalar = [f"{b['baslik']} | Gümüş rehberi {no}/{toplam}", b["alt"]]
+    parcalar = [f"{b['baslik']} | Gümüş rehberi #{no}", b["alt"]]
     parcalar += [_sayfa_metni(s) for s in b["sayfalar"]]
     son = "Kaydedin, lazım olunca bakarsınız."
-    if no < toplam:
+    if no < len(BOLUMLER):
         son += f" Sıradaki bölüm: {BOLUMLER[no]['baslik']}"
     parcalar += [son, b["soru"], "Bilgi amaçlıdır, yatırım tavsiyesi değildir.", b["hashtag"]]
     return "\n\n".join(parcalar)
+
+
+if __name__ == "__main__":
+    komut = sys.argv[1] if len(sys.argv) > 1 else "bugun"
+    if komut == "takvim":
+        for g, n in takvim().items():
+            print(g, GUNLER[date.fromisoformat(g).weekday()], n, BOLUMLER[n - 1]["baslik"])
+    else:
+        print(bugunun_bolumu() or "")
