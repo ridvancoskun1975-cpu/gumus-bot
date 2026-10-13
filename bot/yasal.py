@@ -51,7 +51,8 @@ SAYFALAR = [
             "haftalık özet. Saatler birkaç dakika kayabilir.",
             "Hafta sonu günlük paylaşım yapılmaz. Resmî tatillerde dolar/TL son yayımlanan "
             "TCMB bülteninden alınır.",
-            "Sponsorlu içerik ya da reklam yoktur.",
+            "Reklam ya da iş birliği içeren paylaşımlar #reklam etiketiyle açıkça belirtilir; "
+            "fiyat verileri reklamdan etkilenmez.",
             "Hatalı bir değer görürseniz DM ile bildirebilirsiniz.",
         ],
     },
@@ -72,6 +73,6 @@ Müzik: Pixabay İçerik Lisansı; künye her paylaşımın açıklamasında.
 Bu hesabın bu kuruluşlarla bir bağı yoktur.
 
 4) Otomatik paylaşım
-Paylaşımlar otomatik olarak üretilir: hafta içi yaklaşık 10:00, 17:00 ve 20:00'de, cumartesi 10:00'da haftalık özet. Saatler birkaç dakika kayabilir. Sponsorlu içerik ya da reklam yoktur. Hatalı bir değer görürseniz DM ile bildirebilirsiniz.
+Paylaşımlar otomatik olarak üretilir: hafta içi yaklaşık 10:00, 17:00 ve 20:00'de, cumartesi 10:00'da haftalık özet. Saatler birkaç dakika kayabilir. Reklam ya da iş birliği içeren paylaşımlar #reklam etiketiyle açıkça belirtilir; fiyat verileri ve hesaplama yöntemi reklamdan etkilenmez. Hatalı bir değer görürseniz DM ile bildirebilirsiniz.
 
 #gümüş #gramgümüş #gümüşfiyatları"""
