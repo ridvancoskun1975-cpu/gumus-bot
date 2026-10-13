@@ -29,7 +29,8 @@ DEPO = (os.environ.get("KAYIT_DEPO", "").strip()
         or os.environ.get("GITHUB_REPOSITORY_OWNER", "ridvancoskun1975-cpu") + "/gumus-kayit")
 DOSYA = "takipci.md"
 ETIKET = {"reels": "Reels", "post": "Günlük özet", "hafta": "Haftalık özet", "ay": "Aylık özet",
-          "bilgi": "Rehber", "kisa": "Rehber Reels", "yorum": "Pazar yorumu"}
+          "bilgi": "Rehber", "kisa": "Rehber Reels", "yorum": "Pazar yorumu",
+          "hikaye": "Rehber hikâyesi"}
 SATIR = re.compile(r"^\|\s*(\d{4}-\d{2}-\d{2})\s*\|\s*(\d{2}:\d{2})\s*\|\s*([^|]*?)\s*\|\s*(\d+)\s*\|")
 
 

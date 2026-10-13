@@ -1027,6 +1027,13 @@ def yayinla(cikti, taban_url, bekle_dk=0):
 
 def _yayinla(cikti, taban_url):
     meta = json.loads((cikti / "meta.json").read_text(encoding="utf-8"))
+    if meta["tur"] == "hikaye":
+        urller = [taban_url.rstrip("/") + "/" + h for h in meta["hikayeler"]]
+        kullanici_id = hesap_bilgisi()["user_id"]
+        gorsel_hikayeler(kullanici_id, urller, _PAYLASILAN_HIKAYELER)
+        print(f"Rehber #{meta['konu']} hikâyeleri paylaşıldı ({len(urller)} kare). "
+              "Profilde Öne çıkanlar › Rehber'e eklemeyi unutma.")
+        return
     if "dosyalar" in meta:
         urller = [taban_url.rstrip("/") + "/" + d for d in meta["dosyalar"]]
         for url in urller:
@@ -1040,6 +1047,8 @@ def _yayinla(cikti, taban_url):
             print("Bağlantı:", _istek("GET", sonuc["id"], fields="permalink").get("permalink"))
         except Exception as e:
             print(f"Uyarı: bağlantı alınamadı ({e})", file=sys.stderr)
+        if meta.get("hikayeler"):
+            rehber_hikayeleri(kullanici_id, meta, taban_url)
         return
     medya_url = taban_url.rstrip("/") + "/" + meta["dosya"]
     _url_hazir_mi(medya_url)
@@ -1053,6 +1062,40 @@ def _yayinla(cikti, taban_url):
     print(f"Paylaşıldı: {meta['tur']} (medya id {sonuc.get('id')})")
     if meta["tur"] in HIKAYE_TURLERI and meta["dosya"].endswith(".mp4"):
         hikaye_paylas(kullanici_id, medya_url)
+
+
+HIKAYE_ARA_SN = int(os.environ.get("HIKAYE_ARA_SN", "20"))   # iki hikâye karesi arası (art arda istek yağmasın)
+_PAYLASILAN_HIKAYELER = set()   # yeniden denemede (geçici engel) aynı kare iki kez gitmesin
+
+
+def gorsel_hikayeler(kullanici_id, urller, paylasilan):
+    """Görselleri sırayla hikâyeye koyar. paylasilan kümesindeki adresler atlanır, paylaşılan eklenir."""
+    for i, url in enumerate(urller, 1):
+        if url in paylasilan:
+            continue
+        if paylasilan:
+            time.sleep(HIKAYE_ARA_SN)
+        _url_hazir_mi(url)
+        k = _istek("POST", f"{kullanici_id}/media", media_type="STORIES", image_url=url)
+        _hazir_olmasini_bekle(k["id"])
+        sonuc = _istek("POST", f"{kullanici_id}/media_publish", creation_id=k["id"])
+        paylasilan.add(url)
+        print(f"Hikâye {i}/{len(urller)} paylaşıldı (medya id {sonuc.get('id')})")
+
+
+def rehber_hikayeleri(kullanici_id, meta, taban_url):
+    """Rehber gönderisinden sonra aynı bölüm hikâyeye. Gönderi zaten paylaşıldığı için hata yalnızca
+    uyarı verir (yeniden deneme gönderiyi ikinci kez paylaşmasın)."""
+    urller = [taban_url.rstrip("/") + "/" + h for h in meta["hikayeler"]]
+    paylasilan = set()
+    try:
+        gorsel_hikayeler(kullanici_id, urller, paylasilan)
+        print(f"Rehber #{meta['konu']} hikâyeye de paylaşıldı ({len(urller)} kare). "
+              "Profilde Öne çıkanlar › Rehber'e eklemeyi unutma.")
+    except Exception as e:
+        print(f"::warning::Rehber hikâyesi yarıda kaldı: {len(paylasilan)}/{len(urller)} kare paylaşıldı ({e}). "
+              f"Tamamlamak için paylaşılan kareleri hikâyeden silip Run workflow → tür: hikaye, "
+              f"konu: {meta['konu']}, deneme kapalı.")
 
 
 def hikaye_paylas(kullanici_id, video_url):
@@ -1146,13 +1189,47 @@ def bilgi_hazirla(cikti, konu=None):
     metin = bilgi.aciklama(konu)
     if len(metin) > 2200:
         raise RuntimeError(f"Açıklama Instagram sınırını aşıyor ({len(metin)} > 2200 karakter)")
+    # Aynı bölümün 9:16 hikâye kareleri: gönderiden sonra hikâyeye konur, "Rehber" öne çıkanında toplanır.
+    # Üretilemezse gönderi yine gider (yalnızca uyarı).
+    try:
+        hikayeler = rehber_hikaye_uret(cikti, konu, hesap, damga)
+    except Exception as e:
+        print(f"::warning::Rehber hikâye kareleri üretilemedi, gönderi hikâyesiz gidecek: {e}")
+        hikayeler = []
     (cikti / "meta.json").write_text(json.dumps({"tur": "bilgi", "konu": konu, "dosyalar": dosyalar,
-                                                 "aciklama": metin}, ensure_ascii=False, indent=2),
+                                                 "hikayeler": hikayeler, "aciklama": metin},
+                                                ensure_ascii=False, indent=2),
                                      encoding="utf-8")
     (cikti / "index.html").write_text("<!doctype html><meta charset='utf-8'><title>Gümüş bot</title>"
                                       + "".join(f"<p><a href='{d}'>{d}</a></p>" for d in dosyalar), encoding="utf-8")
     print(metin)
     print(f"\nÜretilen dosyalar ({len(metin)} karakter açıklama):", *dosyalar, sep="\n")
+    if hikayeler:
+        print(f"Hikâye kareleri ({len(hikayeler)}):", *hikayeler, sep="\n")
+
+
+def rehber_hikaye_uret(cikti, konu, hesap, damga):
+    """Rehber bölümünün hikâye karelerini üretir (bot/rehber_hikaye.py); dosya adlarını döndürür."""
+    import bilgi
+    import rehber_hikaye
+    b = bilgi.BOLUMLER[konu - 1]
+    sonraki = bilgi.BOLUMLER[konu]["baslik"] if konu < len(bilgi.BOLUMLER) else None
+    return rehber_hikaye.uret(b, konu, sonraki, bilgi.SERI, hesap, cikti, damga)
+
+
+def hikaye_hazirla(cikti, konu):
+    """Yalnızca rehber bölümünün hikâye kareleri (gönderi yok). Gönderisi önceden paylaşılmış bölümler
+    için (1-2. bölüm 13 Ekim'de) ya da gönderiden sonraki hikâye paylaşımı yarıda kaldıysa."""
+    import bilgi
+    if not konu or not 1 <= konu <= len(bilgi.BOLUMLER):
+        raise RuntimeError(f"hikaye türünde konu (bölüm no 1-{len(bilgi.BOLUMLER)}) verilmeli (verilen: {konu})")
+    damga = datetime.now(TR_SAAT).strftime("%Y%m%d-%H%M")
+    hikayeler = rehber_hikaye_uret(cikti, konu, hesap_adi(), damga)
+    (cikti / "meta.json").write_text(json.dumps({"tur": "hikaye", "konu": konu, "hikayeler": hikayeler},
+                                                ensure_ascii=False, indent=2), encoding="utf-8")
+    (cikti / "index.html").write_text("<!doctype html><meta charset='utf-8'><title>Gümüş bot</title>"
+                                      + "".join(f"<p><a href='{d}'>{d}</a></p>" for d in hikayeler), encoding="utf-8")
+    print(f"Rehber #{konu} hikâye kareleri ({len(hikayeler)}):", *hikayeler, sep="\n")
 
 
 def _sayilabilir(metin):
@@ -1375,6 +1452,9 @@ def hazirla(tur, cikti, ornek, konu=None):
     if tur == "bilgi":
         bilgi_hazirla(cikti, konu)
         return
+    if tur == "hikaye":
+        hikaye_hazirla(cikti, konu)
+        return
     if tur == "kisa":
         import bilgi
         konu = konu or bilgi.bugunun_kisa_bolumu()
@@ -1454,11 +1534,12 @@ def main():
     ap = argparse.ArgumentParser()
     alt = ap.add_subparsers(dest="komut", required=True)
     h = alt.add_parser("hazirla")
-    h.add_argument("--tur", choices=["reels", "post", "hafta", "ay", "yasal", "bilgi", "kisa", "yorum"], required=True)
+    h.add_argument("--tur", choices=["reels", "post", "hafta", "ay", "yasal", "bilgi", "kisa", "yorum", "hikaye"],
+                   required=True)
     h.add_argument("--cikti", default="site")
     h.add_argument("--ornek", action="store_true", help="Gerçek fiyat yerine örnek veri kullan")
     h.add_argument("--konu", type=int, default=None,
-                   help="bilgi türünde bölüm numarası (boşsa bugünün takvim bölümü)")
+                   help="bilgi/kisa/hikaye türünde bölüm numarası (bilgi ve kisa için boşsa bugünün takvim bölümü)")
     y = alt.add_parser("yayinla")
     y.add_argument("--cikti", default="site")
     y.add_argument("--url", required=True)

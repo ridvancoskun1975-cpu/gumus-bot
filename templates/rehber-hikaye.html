@@ -1,0 +1,112 @@
+{% from "makrolar.html" import ag_etiketi %}<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Gümüş Rehberi · hikâye</title>
+<style>{% include "ortak.css" %}
+/* Rehber bölümünün 9:16 hikâye kareleri ("Rehber" öne çıkanında toplanır).
+   Gönderiden (templates/bilgi.html) daha büyük yazı: hikâye tam ekran okunur, sayfa kaydırılmaz.
+   Üstteki 260 px ve alttaki 290 px Instagram hikâye arayüzünün (ilerleme çubuğu, hesap adı,
+   yanıt kutusu) altında kalır; yazı orada durmaz. Bir sayfa sığmazsa bot/rehber_hikaye.py onu
+   birden çok kareye böler, kısa sayfaları aynı karede birleştirir. */
+.sahne { width: 1080px; height: 1920px; padding: 260px 80px 290px; }
+.seri { gap: 14px; font-size: 28px; }
+.kare-no { font-size: 30px; }
+.govde { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: safe center; overflow: hidden; }
+.icerik { display: flex; flex-direction: column; }
+
+/* kapak */
+h1 { letter-spacing: -3px; line-height: 0.98; text-wrap: balance; }
+.kapak-alt { margin-top: 34px; font-size: 50px; line-height: 1.3; color: var(--soluk); text-wrap: pretty; }
+.kapak-sayi { margin-top: 90px; border-top: 2px solid var(--cizgi); border-bottom: 2px solid var(--cizgi); padding: 44px 0 50px; }
+.dev { font-weight: 700; line-height: 1; padding-bottom: 0.1em; color: var(--vurgu); letter-spacing: -4px; white-space: nowrap; }
+.dev-alt { margin-top: 16px; font-size: 44px; line-height: 1.3; color: var(--soluk); }
+
+/* içerik öğeleri */
+.bas .no { font-size: 38px; font-weight: 600; color: var(--vurgu); letter-spacing: 2px; }
+.bas h2 { margin: 8px 0 0; font-size: 100px; line-height: 1; font-weight: 800; letter-spacing: -2px; text-wrap: balance; }
+.devam { font-size: 32px; font-weight: 500; letter-spacing: 3px; color: var(--soluk); text-transform: uppercase; }
+.devam b { color: var(--vurgu); font-weight: 600; }
+.formul { border: 3px solid var(--vurgu); border-radius: 10px; padding: 26px 30px; font-size: 46px; line-height: 1.32;
+  color: var(--vurgu); text-wrap: balance; }
+.satir { display: flex; justify-content: space-between; align-items: baseline; gap: 32px; padding: 28px 0;
+  border-top: 2px solid var(--cizgi); }
+.satir span { font-size: 44px; line-height: 1.25; color: var(--soluk); }
+.satir b { font-size: 54px; font-weight: 700; color: var(--yazi); text-align: right; white-space: nowrap; }
+.madde { display: grid; grid-template-columns: 40px 1fr; gap: 20px; padding: 30px 0; border-top: 2px solid var(--cizgi);
+  font-size: 52px; line-height: 1.36; text-wrap: pretty; }
+.isaret { width: 16px; height: 16px; margin-top: 27px; background: var(--vurgu); }
+.satir:not(:has(+ .satir, + .madde)), .madde:not(:has(+ .madde)) { border-bottom: 2px solid var(--cizgi); }
+.not { font-size: 36px; line-height: 1.35; color: var(--soluk); }
+
+/* aralar */
+.icerik > .bas:not(:first-child), .icerik > .devam:not(:first-child) { margin-top: 84px; }
+.bas + *, .buyuk + *, .formul + * { margin-top: 40px; }
+.devam + * { margin-top: 30px; }
+.satir + .not, .madde + .not { margin-top: 26px; }
+
+.alt { min-height: 96px; padding-top: 30px; }
+</style>
+</head>
+<body>
+<div class="sahne">
+  <div class="ust" style="align-items: center">
+    <div class="etiket seri"><span class="nokta" style="width: 14px; height: 14px"></span><span>{{ seri }} · {{ '%02d' % no }}</span></div>
+    {% if kapak %}{{ ag_etiketi(112, 126, '10px 13px', 19, 44, 16) }}
+    {% else %}<span class="mono soluk kare-no">{{ '%02d' % k }} / {{ '%02d' % n }}</span>{% endif %}
+  </div>
+
+  <div class="govde">
+    <div class="icerik">
+{% if kapak %}
+  {% set uz = b.baslik | length %}
+  {% set h1_boy = 136 if uz <= 14 else (116 if uz <= 32 else 100) %}
+  {% set dev_boy = [260, (900 / (b.buyuk | length * 0.6)) | int] | min %}
+      <h1 style="font-size: {{ h1_boy }}px">{{ b.baslik }}</h1>
+      <div class="kapak-alt">{{ b.alt }}</div>
+      <div class="kapak-sayi">
+        <div class="dev mono" style="font-size: {{ dev_boy }}px">{{ b.buyuk }}</div>
+        <div class="dev-alt">{{ b.buyuk_alt }}</div>
+      </div>
+{% else %}
+  {% for o in ogeler %}
+    {% if o.tip == "bas" %}
+      <div class="bas"><div class="no mono">{{ '%02d' % o.sayfa }}</div><h2>{{ o.baslik }}</h2></div>
+    {% elif o.tip == "devam" %}
+      <div class="devam"><b class="mono">{{ '%02d' % o.sayfa }}</b> · {{ o.baslik }} (devam)</div>
+    {% elif o.tip == "buyuk" %}
+      {% set dev_boy = [210, (900 / (o.buyuk | length * 0.6)) | int] | min %}
+      <div class="buyuk"><div class="dev mono" style="font-size: {{ dev_boy }}px">{{ o.buyuk }}</div>
+        {% if o.buyuk_alt %}<div class="dev-alt">{{ o.buyuk_alt }}</div>{% endif %}</div>
+    {% elif o.tip == "formul" %}
+      <div class="formul mono">{{ o.metin }}</div>
+    {% elif o.tip == "satir" %}
+      <div class="satir"><span>{{ o.etiket }}</span><b class="sayi">{{ o.deger }}</b></div>
+    {% elif o.tip == "madde" %}
+      <div class="madde"><span class="isaret"></span><span>{{ o.metin }}</span></div>
+    {% elif o.tip == "not" %}
+      <div class="not">{{ o.metin }}</div>
+    {% endif %}
+  {% endfor %}
+{% endif %}
+    </div>
+  </div>
+
+  <div class="alt">
+    <b style="font-size: 34px">{{ hesap }}</b>
+    <div class="alt-sag">
+      {% if kapak %}
+      <span class="soluk" style="font-size: 28px">Bütün bölümler: Öne çıkanlar › Rehber</span>
+      <span class="vurgu" style="font-size: 32px; font-weight: 700">Dokunun →</span>
+      {% else %}
+      <span class="soluk" style="font-size: 28px">Bilgi amaçlıdır, yatırım tavsiyesi değildir.</span>
+        {% if son %}
+          {% if sonraki %}<span class="vurgu" style="font-size: 32px; font-weight: 700">Sıradaki: {{ sonraki }}</span>
+          {% else %}<span class="vurgu" style="font-size: 32px; font-weight: 700">Önceki bölümler: Öne çıkanlar › Rehber</span>{% endif %}
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+</body>
+</html>

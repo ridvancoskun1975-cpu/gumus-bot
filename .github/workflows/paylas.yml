@@ -17,10 +17,10 @@ on:
       tur:
         description: "Ne üretilsin?"
         type: choice
-        options: [reels, post, hafta, ay, yasal, bilgi, kisa, yorum]
+        options: [reels, post, hafta, ay, yasal, bilgi, kisa, yorum, hikaye]
         default: reels
       konu:
-        description: "Yalnızca bilgi ve kisa türü: rehber bölüm no. Boşsa bugünün takvim bölümü."
+        description: "Yalnızca bilgi, kisa ve hikaye türü: rehber bölüm no. bilgi/kisa için boşsa bugünün takvim bölümü; hikaye için zorunlu."
         type: string
         default: ""
       deneme:
@@ -84,6 +84,11 @@ jobs:
             else
               echo "Bugünün rehber bölümü: $bolum"
             fi
+          fi
+          # hikaye: yalnızca rehber bölümünün hikâye kareleri (gönderisi önceden paylaşılmış bölüm için)
+          if [ "$tur" = "hikaye" ] && [ -z "$KONU" ]; then
+            echo "::error::hikaye türünde konu (rehber bölüm no) verilmeli."
+            exit 1
           fi
           if [ "$tur" = "kisa" ] && [ -z "$KONU" ]; then
             bolum=$(python3 bot/bilgi.py kisa)
@@ -151,7 +156,7 @@ jobs:
           KONU: ${{ inputs.konu }}
         run: |
           ek=()
-          case "${{ needs.kontrol.outputs.tur }}" in bilgi|kisa) if [ -n "$KONU" ]; then ek=(--konu "$KONU"); fi ;; esac
+          case "${{ needs.kontrol.outputs.tur }}" in bilgi|kisa|hikaye) if [ -n "$KONU" ]; then ek=(--konu "$KONU"); fi ;; esac
           python bot/main.py hazirla --tur "${{ needs.kontrol.outputs.tur }}" --cikti site "${ek[@]}"
           if [ -f site/meta.json ]; then
             echo "devam=true" >> "$GITHUB_OUTPUT"
