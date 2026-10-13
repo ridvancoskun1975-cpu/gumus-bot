@@ -41,11 +41,14 @@ Bu depo **herkese açık (Public)** olmalı. Görseller ücretsiz GitHub Pages �
    - `METALCHARTS_KEY` → metalcharts.org ücretsiz hesabındaki API anahtarı (`mc_live_…`). Yoksa paylaşım yapılmaz, iş uyarı verip atlar.
    - `MUZIK_ANAHTAR` → şifreli müzik dosyasını açan parola. Yoksa videolar müziksiz üretilir.
    - `ANTHROPIC_API_KEY` → pazar yapay zekâ yorumu için Claude API anahtarı (`sk-ant-…`, aşağıya bak). Yoksa pazar paylaşımı uyarıyla atlanır.
+   - `KAYIT_PAT` → takipçi kaydı için (aşağıya bak). Yoksa kayıt atlanır, paylaşım etkilenmez.
 3. (İsteğe bağlı) Aynı sayfada **Variables** sekmesi → `HESAP_ADI` → görsellerde yazacak kullanıcı adı. Boş bırakırsan bot hesabından otomatik alır.
 
 **ANTHROPIC_API_KEY nasıl alınır:** **platform.claude.com** (Claude Console) → hesap aç → **Billing** bölümünden kredi yükle (en düşük tutar yeterli) → **API keys → Create key** → anahtarı `ANTHROPIC_API_KEY` olarak kaydet. Haftada tek çağrı yapılır; maliyeti ayda birkaç sente denk gelir. İstersen Console'da aylık harcama sınırı koy. Model varsayılanı `claude-sonnet-5-5`; değiştirmek için **Variables** sekmesinde `YZ_MODEL`.
 
 **GH_PAT nasıl alınır:** GitHub → sağ üstte profil → **Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token**. Repository access: sadece bu depo. Permissions → **Secrets: Read and write**. Süreyi en uzun seç, oluşan anahtarı `GH_PAT` olarak kaydet.
+
+**Takipçi kaydı (KAYIT_PAT):** Bot her paylaşımda takipçi sayısını sana özel (private) `gumus-kayit` deposundaki `takipci.md` dosyasına yazar: son 7 ve 30 günün değişimi ve her kaydın tablosu. Bu depo ve iş akışı günlükleri herkese açık olduğu için sayı günlüğe hiç yazdırılmaz. Kurmak için: private `gumus-kayit` deposu aç (README ile) → **Settings → Developer settings → Fine-grained tokens → Generate new token** (doğrudan: github.com/settings/personal-access-tokens/new) → Repository access: yalnızca `gumus-kayit` → Permissions → **Contents: Read and write** → anahtarı bu depoda `KAYIT_PAT` olarak kaydet. Farklı bir depo kullanmak istersen iş akışındaki "Takipçi kaydı" adımına `KAYIT_DEPO: sahip/depo` eklenir. Kod: `bot/kayit.py`.
 
 ### 4. Dene
 1. **Actions** sekmesi → **Gümüş paylaşımı** → **Run workflow**.

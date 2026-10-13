@@ -139,6 +139,20 @@ jobs:
             echo "devam=false" >> "$GITHUB_OUTPUT"
           fi
 
+      # Takipçi sayısı yalnızca sana özel gumus-kayit deposuna (takipci.md) yazılır.
+      # Bu depo ve günlükleri herkese açık olduğu için sayı günlüğe hiç yazdırılmaz.
+      # Kayıt başarısız olursa yalnızca uyarı çıkar; paylaşım etkilenmez.
+      - name: Takipçi kaydı
+        if: always() && needs.kontrol.outputs.tur != 'yasal'
+        continue-on-error: true
+        timeout-minutes: 2
+        env:
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+          KAYIT_PAT: ${{ secrets.KAYIT_PAT }}
+          HESAP_ADI: ${{ vars.HESAP_ADI }}
+          DENEME: ${{ github.event_name == 'workflow_dispatch' && inputs.deneme }}
+        run: python bot/kayit.py --tur "${{ needs.kontrol.outputs.tur }}"
+
       - name: Günlük kayıtları sakla
         if: always() && hashFiles('veri/gecmis.json') != ''
         uses: actions/cache/save@v4
