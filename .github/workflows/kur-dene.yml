@@ -1,0 +1,31 @@
+name: Kur kaynağı denemesi (geçici)
+on: workflow_dispatch
+permissions:
+  contents: read
+jobs:
+  dene:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - name: MetalCharts döviz uç noktasını dene (anahtar yazdırılmaz)
+        env:
+          METALCHARTS_KEY: ${{ secrets.METALCHARTS_KEY }}
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.request
+          req = urllib.request.Request("https://api.metalcharts.org/v1/currency/",
+              headers={"Authorization": "Bearer " + os.environ["METALCHARTS_KEY"], "Accept": "application/json",
+                       "User-Agent": "gumus-bot/1.0"})
+          try:
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  d = json.load(r); print("HTTP", r.status)
+          except urllib.error.HTTPError as e:
+              print("HTTP", e.code, e.read()[:300]); raise SystemExit(0)
+          rates = d.get("rates") or (d.get("data") or {}).get("rates") or {}
+          print("Anahtarlar:", list(d.keys()))
+          print("base:", d.get("base"), "date:", d.get("date"), "timestamp:", d.get("timestamp"), "source:", d.get("source"))
+          print("Kur sayısı:", len(rates), "| TRY:", rates.get("TRY"), "| EUR:", rates.get("EUR"))
+          print("Para birimleri:", sorted(rates)[:80])
+          PY
+      - name: Karşılaştırma için Frankfurter (ECB)
+        run: curl -s https://api.frankfurter.dev/v1/latest?base=USD\&symbols=TRY; echo
