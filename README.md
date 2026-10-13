@@ -9,7 +9,7 @@ Instagram'a otomatik paylaşım yapar:
 | ~20:00 | Günün özeti (10 sn video) |
 | Cumartesi ~10:00 | Haftalık özet (10 sn video: haftanın son değeri, günlük grafik, en yüksek/en düşük) |
 
-Hepsi müzikli Reels olarak paylaşılır ve profil ızgarasında da görünür.
+Hepsi müzikli Reels olarak paylaşılır ve profil ızgarasında da görünür. Günün özeti ve haftalık özet aynı videoyla hikâyeye de konur (hikâye başarısız olursa Reels etkilenmez). Açıklamalarda en fazla 5 hashtag var (Instagram sınırı); değiştirmek için bot/main.py → HASHTAG_GUNLUK / HASHTAG_HAFTA.
 
 Her paylaşımda: **gram gümüş (₺)**, **altın/gümüş paritesi**, **dolar/TL** ve her birinin önceki iş gününe göre değişimi (ok ile).
 

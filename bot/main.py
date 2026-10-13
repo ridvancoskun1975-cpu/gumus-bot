@@ -360,6 +360,14 @@ def _kaynak_satirlari(v):
     return "\n".join(satirlar)
 
 
+# Instagram Aralık 2025'ten beri gönderi başına en fazla 5 hashtag'e izin veriyor.
+HASHTAG_GUNLUK = "#gümüş #gramgümüş #gümüşfiyatları #altın #dolar"
+HASHTAG_HAFTA = "#gümüş #gramgümüş #gümüşfiyatları #haftalıközet #altın"
+
+# Bu türler Reels'in yanında hikâyeye de paylaşılır (aynı video, 9:16).
+HIKAYE_TURLERI = {"post", "hafta"}
+
+
 def aciklama_yaz(v, tur):
     if tur == "hafta":
         g, p, d = v["gram_deg"], v["parite_deg"], v["dolar_deg"]
@@ -371,9 +379,10 @@ def aciklama_yaz(v, tur):
             f"Dolar/TL: {v['dolar']} ₺ ({d['isaret']} {d['metin']})\n\n"
             "Günlük değerler iş günlerinin son paylaşımına (yaklaşık 20:00) aittir; "
             "değişimler önceki haftanın son değerine göredir.\n"
+            "Sizce gümüş gelecek hafta ne yöne gider? Yorumlara yazın 👇\n\n"
             "Bilgi amaçlıdır, yatırım tavsiyesi değildir.\n\n"
             f"{_kaynak_satirlari(v)}\n\n"
-            "#gümüş #gramgümüş #gümüşfiyatları #haftalıközet #altın #dolar #piyasa #yatırım"
+            f"{HASHTAG_HAFTA}"
         )
     baslik = "Günün gümüş özeti" if tur == "post" else "Güncel gümüş fiyatları"
     g, p, d = v["gram_deg"], v["parite_deg"], v["dolar_deg"]
@@ -385,7 +394,7 @@ def aciklama_yaz(v, tur):
         "Değişimler önceki iş gününe göredir.\n"
         "Bilgi amaçlıdır, yatırım tavsiyesi değildir.\n\n"
         f"{_kaynak_satirlari(v)}\n\n"
-        "#gümüş #gramgümüş #gümüşfiyatları #altın #dolar #piyasa #yatırım"
+        f"{HASHTAG_GUNLUK}"
     )
 
 
@@ -527,6 +536,19 @@ def yayinla(cikti, taban_url):
     _hazir_olmasini_bekle(k["id"])
     sonuc = _istek("POST", f"{kullanici_id}/media_publish", creation_id=k["id"])
     print(f"Paylaşıldı: {meta['tur']} (medya id {sonuc.get('id')})")
+    if meta["tur"] in HIKAYE_TURLERI and meta["dosya"].endswith(".mp4"):
+        hikaye_paylas(kullanici_id, medya_url)
+
+
+def hikaye_paylas(kullanici_id, video_url):
+    """Aynı videoyu hikâyeye de koyar. Hikâye başarısız olursa asıl paylaşım etkilenmez, yalnızca uyarı verilir."""
+    try:
+        k = _istek("POST", f"{kullanici_id}/media", media_type="STORIES", video_url=video_url)
+        _hazir_olmasini_bekle(k["id"])
+        sonuc = _istek("POST", f"{kullanici_id}/media_publish", creation_id=k["id"])
+        print(f"Hikâyeye de paylaşıldı (medya id {sonuc.get('id')})")
+    except Exception as e:
+        print(f"::warning::Hikâye paylaşılamadı: {e}")
 
 
 def token_yenile():
