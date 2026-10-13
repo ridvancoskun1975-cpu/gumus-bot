@@ -36,3 +36,7 @@ h1 { margin: 0; line-height: 0.9; font-weight: 800; }
 .alt { display: flex; justify-content: space-between; align-items: flex-end; gap: 40px; }
 .alt b { font-weight: 700; }
 .alt-sag { display: flex; flex-direction: column; align-items: flex-end; text-align: right; gap: 6px; }
+
+/* Video parıltısı (yalnızca hareketli videoda geçer; durağan görselde ekran dışında) */
+.isik { position: absolute; inset: -20% 0; pointer-events: none; transform: translateX(-140%);
+  background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.10) 50%, transparent 65%); }

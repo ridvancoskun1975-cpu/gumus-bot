@@ -339,6 +339,8 @@ def veri_hazirla(f, hesap):
         "tarih": f"{simdi.day:02d} {AYLAR[simdi.month - 1]} {simdi.year}",
         "saat": simdi.strftime("%H:%M"),
         "gram": tr_sayi(f["gram"], 2),
+        "gram_sayi": round(f["gram"], 2),            # hareketli videoda sayım için (dünden bugüne)
+        "gram_once_sayi": round(f["gram_once"], 2),
         "gram_deg": degisim(f["gram"], f["gram_once"]),
         "parite": tr_sayi(f["parite"], 1),
         "parite_deg": degisim(f["parite"], f["parite_once"]),
@@ -485,6 +487,68 @@ def gorsel_uret(tur, veri, png_yolu):
 ZEMIN_RENGI = "0x121418"   # templates/ortak.css içindeki --zemin ile aynı
 
 
+VIDEO_FPS = 30
+
+
+def _ses_girdisi(sure):
+    muzik = KOK / "assets" / "muzik.mp3"
+    if muzik.exists():
+        return (["-stream_loop", "-1", "-i", str(muzik)],
+                ["-af", f"loudnorm=I=-16:TP=-1.5:LRA=11,afade=t=in:d=0.5,afade=t=out:st={sure - 1.5}:d=1.5,aresample=44100"])
+    print("Uyarı: assets/muzik.mp3 yok, video müziksiz üretiliyor", file=sys.stderr)
+    return ["-f", "lavfi", "-i", "anullsrc=r=44100:cl=stereo"], []
+
+
+def hareketli_video_uret(tur, veri, mp4_yolu, sure=7):
+    """Şablonda window.kare(t) varsa her kareyi tarayıcıda çizip sesli video üretir.
+
+    Şablon hareket tanımlamıyorsa False döner; o zaman durağan video_uret() kullanılır.
+    Kareler JPEG olarak doğrudan ffmpeg'e akıtılır (diske yazılmaz).
+    """
+    from jinja2 import Environment, FileSystemLoader
+    from playwright.sync_api import sync_playwright
+
+    env = Environment(loader=FileSystemLoader(str(SABLONLAR)), autoescape=True)
+    html = env.get_template(f"{tur}.html").render(**veri)
+    if "window.kare" not in html:
+        return False
+    gecici = SABLONLAR / f"_hareket_{tur}.html"
+    gecici.write_text(html, encoding="utf-8")
+    ses, ses_filtre = _ses_girdisi(sure)
+    goruntu = (f"scale=1080:-2,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color={ZEMIN_RENGI},format=yuv420p")
+    komut = [ffmpeg_yolu(), "-y", "-loglevel", "error",
+             "-f", "image2pipe", "-framerate", str(VIDEO_FPS), "-c:v", "mjpeg", "-i", "-", *ses,
+             "-t", str(sure), "-vf", goruntu, *ses_filtre,
+             "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-r", str(VIDEO_FPS),
+             "-c:a", "aac", "-b:a", "128k", "-shortest", "-movflags", "+faststart", str(mp4_yolu)]
+    boyut = {"reels": (1080, 1920)}.get(tur, (1080, 1350))
+    try:
+        with sync_playwright() as p:
+            kwargs = {"executable_path": os.environ["CHROME_YOLU"]} if os.environ.get("CHROME_YOLU") else {}
+            tarayici = p.chromium.launch(**kwargs)
+            sayfa = tarayici.new_page(viewport={"width": boyut[0], "height": boyut[1]})
+            sayfa.goto(gecici.as_uri())
+            sayfa.evaluate("document.fonts.ready")
+            sayfa.wait_for_timeout(300)
+            if not sayfa.evaluate("typeof window.kare === 'function'"):
+                tarayici.close()
+                return False   # betik veri eksikliği yüzünden hareketi kapattı
+            ff = subprocess.Popen(komut, stdin=subprocess.PIPE)
+            try:
+                for i in range(int(sure * VIDEO_FPS)):
+                    sayfa.evaluate(f"window.kare({i / VIDEO_FPS:.4f})")
+                    ff.stdin.write(sayfa.screenshot(type="jpeg", quality=95,
+                                                    clip={"x": 0, "y": 0, "width": boyut[0], "height": boyut[1]}))
+            finally:
+                ff.stdin.close()
+                if ff.wait() != 0:
+                    raise RuntimeError("ffmpeg hareketli videoyu üretemedi")
+            tarayici.close()
+    finally:
+        gecici.unlink(missing_ok=True)
+    return True
+
+
 def video_uret(png_yolu, mp4_yolu, sure=7):
     """Görselden sesli dikey video üretir. 9:16 olmayan görseller zemin rengiyle 1080x1920'ye tamamlanır.
 
@@ -583,8 +647,10 @@ def yayinla(cikti, taban_url):
     _url_hazir_mi(medya_url)
     kullanici_id = hesap_bilgisi()["user_id"]
     if meta["dosya"].endswith(".mp4"):
+        # Kapak: hareketli videoda ilk kare sayımın başı olduğu için son karelerden biri alınır
+        # (her şey yerinde, parıltı geçmiş). Durağan videoda da aynı kare görünür.
         k = _istek("POST", f"{kullanici_id}/media", media_type="REELS", video_url=medya_url,
-                   caption=meta["aciklama"], share_to_feed="true")
+                   caption=meta["aciklama"], share_to_feed="true", thumb_offset=str(meta.get("kapak_ms", 0)))
     else:
         k = _istek("POST", f"{kullanici_id}/media", image_url=medya_url, caption=meta["aciklama"])
     _hazir_olmasini_bekle(k["id"])
@@ -871,11 +937,14 @@ def hazirla(tur, cikti, ornek, konu=None):
     gorsel_uret(tur, veri, png)
     # Her paylaşım sesli video (Reels) olarak gider; özetler okunabilsin diye biraz daha uzun.
     mp4 = cikti / f"{tur}-{damga}.mp4"
-    video_uret(png, mp4, sure=7 if tur == "reels" else 10)
+    sure = 7 if tur == "reels" else 10
+    if not hareketli_video_uret(tur, veri, mp4, sure=sure):
+        video_uret(png, mp4, sure=sure)
     dosya = mp4.name
 
     aciklama = aciklama_yaz(veri, tur)
     (cikti / "meta.json").write_text(json.dumps({"tur": tur, "dosya": dosya, "aciklama": aciklama,
+                                                 "kapak_ms": int((sure - 0.5) * 1000),
                                                  "fiyatlar": fiyat}, ensure_ascii=False, indent=2),
                                      encoding="utf-8")
     (cikti / "index.html").write_text("<!doctype html><meta charset='utf-8'><title>Gümüş bot</title>"
