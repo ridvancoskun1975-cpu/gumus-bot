@@ -1,7 +1,7 @@
 """Gümüş fiyat botu.
 
 Komutlar:
-  python bot/main.py hazirla --tur reels|post|hafta|yasal|bilgi|yorum --cikti site [--ornek] [--konu 1-6]
+  python bot/main.py hazirla --tur reels|post|hafta|ay|yasal|bilgi|yorum --cikti site [--ornek] [--konu 1-6]
   python bot/main.py yayinla --cikti site --url https://kullanici.github.io/repo/
   python bot/main.py token-yenile
 
@@ -296,6 +296,55 @@ def haftalik_fiyatlari_al():
     }
 
 
+def _ay_ayir(tarihler, bugun=None):
+    """Önceki takvim ayının kayıtlı iş günleri ve karşılaştırma günü.
+
+    Karşılaştırma, önceki ayın son kaydıdır; o ay hiç kayıt yoksa (ör. kayıtların başladığı
+    Ekim 2026) ayın ilk kaydına göre hesaplanır ve özet "kısmi" işaretlenir.
+    """
+    bugun = bugun or datetime.now(TR_SAAT).date()
+    ay_son = bugun.replace(day=1) - timedelta(days=1)
+    ay_bas = ay_son.replace(day=1)
+    bu_ay = sorted(d for d in tarihler if ay_bas <= d <= ay_son and d.weekday() < 5)
+    if len(bu_ay) < 5:
+        raise VeriYok(f"{AYLAR[ay_bas.month - 1]} {ay_bas.year} için yeterli günlük kayıt yok ({len(bu_ay)} gün).")
+    onceki = sorted(d for d in tarihler if d < ay_bas)
+    return bu_ay, (onceki[-1] if onceki else None), ay_bas
+
+
+def aylik_fiyatlari_al(bugun=None):
+    gecmis = {date.fromisoformat(k): v for k, v in gecmis_oku().items()}
+    gunler, onceki_gun, ay_bas = _ay_ayir(gecmis, bugun)
+    kismi = onceki_gun is None
+    baz_gun = gunler[0] if kismi else onceki_gun
+    son, once = gecmis[gunler[-1]], gecmis[baz_gun]
+    return {
+        "gram": son["gram"], "gram_once": once["gram"],
+        "parite": son["altin"] / son["gumus"], "parite_once": once["altin"] / once["gumus"],
+        "dolar": son["dolar"], "dolar_once": once["dolar"],
+        "kur_tarihi": son["kur_tarihi"],
+        "son_saat": son["saat"],
+        "ay": ay_bas.isoformat(), "kismi": kismi, "baz_tarih": baz_gun.isoformat(),
+        "gunluk": [{"tarih": g.isoformat(), "gram": gecmis[g]["gram"]} for g in gunler],
+    }
+
+
+def ornek_aylik(kismi=False):
+    import math
+    f = ornek_fiyatlar()
+    gunluk, gun, i = [], date(2026, 10, 1), 0
+    while gun.month == 10:
+        if gun.weekday() < 5 and (not kismi or gun.day >= 13):
+            gunluk.append({"tarih": gun.isoformat(), "gram": round(98.4 + 0.22 * i + 1.7 * math.sin(i / 2.6), 2)})
+            i += 1
+        gun += timedelta(days=1)
+    f["gram"] = gunluk[-1]["gram"]
+    f["gram_once"] = gunluk[0]["gram"] if kismi else 97.62
+    f.update({"son_saat": "20:00", "ay": "2026-10-01", "kismi": kismi,
+              "baz_tarih": gunluk[0]["tarih"] if kismi else "2026-09-30", "gunluk": gunluk})
+    return f
+
+
 def ornek_haftalik():
     f = ornek_fiyatlar()
     f["gram_once"] = 99.85
@@ -406,6 +455,67 @@ def haftalik_veri_hazirla(f, hesap):
     return v
 
 
+# Ay adlarının bulunma hâli ("ekimde"); ay adı belirli bir tarih bildirmeyince küçük harfle yazılır.
+AY_DE = ["ocakta", "şubatta", "martta", "nisanda", "mayısta", "haziranda", "temmuzda",
+         "ağustosta", "eylülde", "ekimde", "kasımda", "aralıkta"]
+BUYUK_HAREKET_AYLIK = 8.0     # aylık özet: önceki ayın son değerine göre
+AY_DEN = ["Ocak'tan", "Şubat'tan", "Mart'tan", "Nisan'dan", "Mayıs'tan", "Haziran'dan", "Temmuz'dan",
+          "Ağustos'tan", "Eylül'den", "Ekim'den", "Kasım'dan", "Aralık'tan"]
+
+
+def aylik_veri_hazirla(f, hesap):
+    v = veri_hazirla(f, hesap)
+    ay = date.fromisoformat(f["ay"])
+    gunler = [date.fromisoformat(g["tarih"]) for g in f["gunluk"]]
+    degerler = [g["gram"] for g in f["gunluk"]]
+    baz = date.fromisoformat(f["baz_tarih"])
+    v["ay_adi"] = f"{AYLAR[ay.month - 1]} {ay.year}"
+    v["kismi"] = f["kismi"]
+    v["aralik"] = (f"{gunler[0].day}–{gunler[-1].day} {AYLAR[ay.month - 1]}" if f["kismi"] else "")
+    v["baz_metin"] = (f"{baz.day} {AY_DEN[baz.month - 1]} bu yana" if f["kismi"]
+                      else "önceki ayın son değerine göre")
+    zaman = f"{baz.day} {AY_DEN[baz.month - 1]} bu yana" if f["kismi"] else AY_DE[ay.month - 1]
+    v["buyuk_hareket"] = buyuk_hareket(v["gram_deg"], zaman, BUYUK_HAREKET_AYLIK)
+    i_cok, i_az = degerler.index(max(degerler)), degerler.index(min(degerler))
+    v["en_yuksek"] = tr_sayi(degerler[i_cok], 2)
+    v["en_yuksek_gun"] = f"{gunler[i_cok].day} {AYLAR[gunler[i_cok].month - 1]}"
+    v["en_dusuk"] = tr_sayi(degerler[i_az], 2)
+    v["en_dusuk_gun"] = f"{gunler[i_az].day} {AYLAR[gunler[i_az].month - 1]}"
+    v["gun_sayisi"] = len(gunler)
+
+    # Grafik: ayın her iş günü; önceki ayın son değeri kesikli çizgi (kısmi ayda yok)
+    gen, yuk, ust, alt, yan = 904, 320, 56, 76, 14   # altta en düşük etiketine ve tarihlere yer
+    tum = degerler + ([] if f["kismi"] else [f["gram_once"]])
+    alt_s, ust_s = min(tum), max(tum)
+    aralik = (ust_s - alt_s) or 1
+    adim = (gen - 2 * yan) / max(len(degerler) - 1, 1)
+
+    def y(x):
+        return round(ust + (ust_s - x) / aralik * (yuk - ust - alt), 1)
+
+    noktalar = [(round(yan + i * adim, 1), y(d)) for i, d in enumerate(degerler)]
+    oran = lambda i: round((i * adim) / max(gen - 2 * yan, 1), 3)   # hareketli videoda belirme sırası
+    isaretler = []
+    for i, ad, deger in [(i_cok, "en yüksek", v["en_yuksek"]), (i_az, "en düşük", v["en_dusuk"]),
+                         (len(degerler) - 1, "son", v["gram"])]:
+        if any(m["i"] == i for m in isaretler):
+            continue
+        x, yy = noktalar[i]
+        ustte = ad != "en düşük"
+        isaretler.append({"i": i, "x": x, "y": yy, "deger": deger, "oran": oran(i),
+                          "ty": yy - 22 if ustte else yy + 38,
+                          "tx": min(max(x, 70), gen - 70)})
+    etiketler = [{"x": noktalar[0][0], "metin": f"{gunler[0].day} {AYLAR[ay.month - 1]}", "yan": "start"},
+                 {"x": noktalar[-1][0], "metin": f"{gunler[-1].day} {AYLAR[ay.month - 1]}", "yan": "end"}]
+    v["grafik"] = {"gen": gen, "yuk": yuk, "isaretler": isaretler, "etiketler": etiketler,
+                   "cizgi": " ".join(f"{x},{yy}" for x, yy in noktalar),
+                   "alan": f"{noktalar[0][0]},{yuk - alt} " + " ".join(f"{x},{yy}" for x, yy in noktalar)
+                           + f" {noktalar[-1][0]},{yuk - alt}",
+                   "taban": yuk - alt,
+                   "onceki_y": None if f["kismi"] else y(f["gram_once"]), "yon": v["gram_deg"]["yon"]}
+    return v
+
+
 def _kaynak_satirlari(v):
     satirlar = [
         "Gram fiyatı ons gümüş × dolar/TL ÷ 31,1035 ile hesaplanmıştır; kuyumcu ve banka fiyatlarından farklı olabilir.",
@@ -430,6 +540,9 @@ HASHTAG_HAFTA = (
 )
 
 
+HASHTAG_AY = "#gümüş #gramgümüş #gümüşfiyatları #gümüşyatırımı #değerlimetaller"
+
+
 def hashtag_sec(tur, tarih=None):
     if tur == "hafta":
         hafta_no = (tarih or datetime.now(TR_SAAT).date()).isocalendar()[1]
@@ -437,7 +550,7 @@ def hashtag_sec(tur, tarih=None):
     return HASHTAG_POST if tur == "post" else HASHTAG_REELS
 
 # Bu türler Reels'in yanında hikâyeye de paylaşılır (aynı video, 9:16).
-HIKAYE_TURLERI = {"post", "hafta"}
+HIKAYE_TURLERI = {"post", "hafta", "ay"}
 
 
 # 20:00 özetinin açıklamasında güne göre dönen soru (yorum almak için). Yön tahmini, al/sat
@@ -499,6 +612,28 @@ def aciklama_yaz(v, tur):
             f"{_kaynak_satirlari(v)}\n\n"
             f"{hashtag_sec(tur)}"
         )
+    if tur == "ay":
+        g, p, d = v["gram_deg"], v["parite_deg"], v["dolar_deg"]
+        ay = v["ay_adi"].split()[0]
+        if v["buyuk_hareket"]:
+            ilk = f"{v['buyuk_hareket']['metin']}: gram gümüş {ay.lower()} sonunda {v['gram']} ₺"
+        else:
+            ilk = f"Gram gümüş fiyatı {ay.lower()} sonunda: {v['gram']} ₺ ({g['isaret']} {g['metin']})"
+        not_ = ("Günlük değerler iş günlerinin son paylaşımına (yaklaşık 20:00) aittir; "
+                + (f"kayıtlar {v['aralik'].split('–')[0]} {ay} tarihinde başladığı için değişimler o güne göredir."
+                   if v["kismi"] else "değişimler önceki ayın son değerine göredir."))
+        return (
+            f"{ilk}\n"
+            f"Aylık gümüş özeti · {v['ay_adi']}{' (' + v['aralik'] + ')' if v['kismi'] else ''}\n\n"
+            f"Ayın en yükseği: {v['en_yuksek']} ₺ ({v['en_yuksek_gun']}) · en düşüğü: {v['en_dusuk']} ₺ ({v['en_dusuk_gun']})\n"
+            f"Altın/Gümüş paritesi: {v['parite']} ({p['isaret']} {p['metin']})\n"
+            f"Dolar/TL: {v['dolar']} ₺ ({d['isaret']} {d['metin']})\n\n"
+            f"{not_}\n"
+            f"{PAYLASIM_SATIRI + chr(10) if v.get('buyuk_hareket') else ''}\n"
+            "Bilgi amaçlıdır, yatırım tavsiyesi değildir.\n\n"
+            f"{_kaynak_satirlari(v)}\n\n"
+            f"{HASHTAG_AY}"
+        )
     baslik = "Günün gümüş özeti" if tur == "post" else "Güncel gümüş fiyatları"
     g, p, d = v["gram_deg"], v["parite_deg"], v["dolar_deg"]
     return (
@@ -525,7 +660,7 @@ def gorsel_uret(tur, veri, png_yolu):
     gecici = SABLONLAR / f"_cikti_{tur}.html"   # fontlar göreli yolla yüklensin diye burada
     gecici.write_text(html, encoding="utf-8")
     boyut = {"reels": (1080, 1920), "kapak": (1080, 1920), "post": (1080, 1350), "hafta": (1080, 1350), "yasal": (1080, 1350),
-             "bilgi": (1080, 1350), "yorum": (1080, 1350), "sayfa-og": (1200, 630)}[tur]
+             "bilgi": (1080, 1350), "yorum": (1080, 1350), "ay": (1080, 1350), "sayfa-og": (1200, 630)}[tur]
     # Instagram görsel gönderilerde yalnızca JPEG kabul ediyor; uzantı .jpg ise JPEG kaydedilir.
     jpeg = {"quality": 92} if Path(png_yolu).suffix.lower() in (".jpg", ".jpeg") else {}
     try:
@@ -544,13 +679,16 @@ def gorsel_uret(tur, veri, png_yolu):
         gecici.unlink(missing_ok=True)
 
 
-KAPAK_ETIKET = {"reels": "GÜNCEL FİYAT", "post": "GÜNÜN ÖZETİ", "hafta": "HAFTALIK ÖZET"}
+KAPAK_ETIKET = {"reels": "GÜNCEL FİYAT", "post": "GÜNÜN ÖZETİ", "hafta": "HAFTALIK ÖZET", "ay": "AYLIK ÖZET"}
 
 
 def kapak_verisi(tur, veri):
     """Reels kapağının (templates/kapak.html) büyük satırları: tür, gün, alt satır."""
     simdi = datetime.now(TR_SAAT)
-    if tur == "hafta":
+    if tur == "ay":
+        gun, yil = veri["ay_adi"].split()
+        alt = f"{yil} · {veri['baz_metin'] if veri['kismi'] else 'önceki aya göre'}"
+    elif tur == "hafta":
         gun = veri["aralik"].rsplit(" ", 1)[0]          # "05–09 Ekim" (yıl alt satırda)
         alt = f"{veri['aralik'].rsplit(' ', 1)[1]} · önceki haftaya göre"
     else:
@@ -1024,6 +1162,8 @@ def hazirla(tur, cikti, ornek, konu=None):
     try:
         if tur == "hafta":
             fiyat = ornek_haftalik() if ornek else haftalik_fiyatlari_al()
+        elif tur == "ay":
+            fiyat = ornek_aylik(kismi=os.environ.get("ORNEK_KISMI") == "1") if ornek else aylik_fiyatlari_al()
         else:
             fiyat = ornek_fiyatlar() if ornek else fiyatlari_al(kaydet=True)
     except VeriYok as e:
@@ -1031,7 +1171,8 @@ def hazirla(tur, cikti, ornek, konu=None):
         print(f"::warning::Paylaşım atlandı: {e}")
         return
     hesap = hesap_adi()
-    veri = haftalik_veri_hazirla(fiyat, hesap) if tur == "hafta" else veri_hazirla(fiyat, hesap)
+    hazirlayici = {"hafta": haftalik_veri_hazirla, "ay": aylik_veri_hazirla}.get(tur, veri_hazirla)
+    veri = hazirlayici(fiyat, hesap)
 
     damga = datetime.now(TR_SAAT).strftime("%Y%m%d-%H%M")
     png = cikti / f"{tur}-{damga}.png"
@@ -1062,7 +1203,7 @@ def main():
     ap = argparse.ArgumentParser()
     alt = ap.add_subparsers(dest="komut", required=True)
     h = alt.add_parser("hazirla")
-    h.add_argument("--tur", choices=["reels", "post", "hafta", "yasal", "bilgi", "yorum"], required=True)
+    h.add_argument("--tur", choices=["reels", "post", "hafta", "ay", "yasal", "bilgi", "yorum"], required=True)
     h.add_argument("--cikti", default="site")
     h.add_argument("--ornek", action="store_true", help="Gerçek fiyat yerine örnek veri kullan")
     h.add_argument("--konu", type=int, default=None,

@@ -8,14 +8,15 @@ on:
     - cron: '50 6 * * 6'      # Cumartesi 09:50 TR -> Haftalık özet
     - cron: '50 7 * * 0'      # Pazar 10:50 TR -> Yapay zekâ yorumu (kısa/orta/uzun vade, kaydırmalı 4 görsel)
     # Hafta içi 13:50 TR -> Gümüş rehberi (bilgi). Hangi gün hangi bölüm: bot/bilgi.py → takvim()
-    # (ilk hafta her gün, sonra salı ve perşembe). Takvimde olmayan günlerde "kontrol" işi birkaç saniyede biter.
+    # (ilk hafta her gün, sonra salı ve perşembe). Rehber olmayan günlerden ayın ilk iş günü aylık özet
+    # gider (bot/aylik.py; ilki 2 Kasım 2026). İkisi de yoksa "kontrol" işi birkaç saniyede biter.
     - cron: '50 10 * * 1-5'
   workflow_dispatch:
     inputs:
       tur:
         description: "Ne üretilsin?"
         type: choice
-        options: [reels, post, hafta, yasal, bilgi, yorum]
+        options: [reels, post, hafta, ay, yasal, bilgi, yorum]
         default: reels
       konu:
         description: "Yalnızca bilgi türü: bölüm no (1-6). Boşsa bugünün takvim bölümü."
@@ -68,8 +69,15 @@ jobs:
           if [ "$tur" = "bilgi" ] && [ -z "$KONU" ]; then
             bolum=$(python3 bot/bilgi.py bugun)   # hata verirse adım başarısız olur (bash -e)
             if [ -z "$bolum" ]; then
-              calis=false
-              echo "Bugün takvimde bilgi gönderisi yok; çalışma atlandı."
+              ay=""
+              if [ "${{ github.event_name }}" = "schedule" ]; then ay=$(python3 bot/aylik.py bugun); fi
+              if [ "$ay" = "ay" ]; then
+                tur=ay
+                echo "Bugün rehber yok, aylık özet günü."
+              else
+                calis=false
+                echo "Bugün takvimde bilgi gönderisi ya da aylık özet yok; çalışma atlandı."
+              fi
             else
               echo "Bugünün rehber bölümü: $bolum"
             fi
