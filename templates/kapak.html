@@ -1,0 +1,67 @@
+{% from "makrolar.html" import degisim, ag_etiketi %}<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Gümüş Reels Kapağı</title>
+<style>{% include "ortak.css" %}
+/* Reels kapağı (1080×1920). Profil ızgarası ortadaki 3:4 alanı (y 240–1680), akış ortadaki
+   kareyi (y 420–1500) gösterir; tarih, fiyat ve değişim bu alanın içinde, büyük yazılır. */
+.kapak { position: relative; width: 1080px; height: 1920px; box-sizing: border-box; background: var(--zemin);
+  color: var(--yazi); font-family: 'Archivo', sans-serif; overflow: hidden; }
+.kapak .orta { position: absolute; left: 96px; right: 96px; top: 470px; height: 980px;
+  display: flex; flex-direction: column; justify-content: space-between; }
+.kapak .tur { display: flex; align-items: center; gap: 16px; font-size: 40px; font-weight: 700; letter-spacing: 6px; color: var(--soluk); }
+.kapak .tur .nokta { width: 18px; height: 18px; }
+.kapak .gun { font-size: 150px; font-weight: 800; line-height: 0.9; letter-spacing: -4px; }
+.kapak .gun-alt { font-size: 46px; color: var(--vurgu); margin-top: 18px; }
+.kapak .fiyat-satir { display: flex; align-items: flex-end; gap: 22px; }
+.kapak .fiyat { font-size: 230px; font-weight: 800; line-height: 0.85; letter-spacing: -8px; }
+.kapak .birim { font-size: 96px; font-weight: 700; color: var(--vurgu); padding-bottom: 10px; }
+.kapak .alt-satir { display: flex; justify-content: space-between; align-items: center; }
+.kapak .hesap { font-size: 44px; font-weight: 700; }
+.kapak .ust-kenar, .kapak .alt-kenar { position: absolute; left: 96px; right: 96px; display: flex;
+  justify-content: space-between; align-items: center; }
+.kapak .ust-kenar { top: 150px; }
+.kapak .alt-kenar { bottom: 150px; font-size: 28px; color: var(--soluk); }
+</style>
+</head>
+<body>
+<div class="kapak">
+  <!-- Kenarlar yalnızca Reels sekmesinde (9:16) görünür; ızgarada kırpılır -->
+  <div class="ust-kenar">
+    <h1 style="font-size: 96px; letter-spacing: -2px">Gümüş</h1>
+    {{ ag_etiketi(110, 124, '10px 12px', 18, 40, 14) }}
+  </div>
+
+  <div class="orta">
+    <div>
+      <div class="tur"><span class="nokta"></span><span>{{ kapak_etiket }}</span></div>
+      <div class="gun" style="margin-top: 34px">{{ kapak_gun }}</div>
+      <div class="gun-alt mono">{{ kapak_alt }}</div>
+    </div>
+    <div>
+      <div class="soluk" style="font-size: 40px; font-weight: 700; letter-spacing: 4px; margin-bottom: 18px">GRAM GÜMÜŞ</div>
+      <div class="fiyat-satir">
+        <span class="fiyat sayi">{{ gram }}</span><span class="birim">₺</span>
+      </div>
+    </div>
+    <div class="alt-satir">
+      {% if buyuk_hareket %}
+      <div class="manset {{ buyuk_hareket.yon }}" style="font-size: 48px">
+        <svg width="36" height="36" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 L22 20 H2 Z" fill="currentColor"></path></svg>
+        <span>{{ buyuk_hareket.metin }}</span>
+      </div>
+      {% else %}
+      {{ degisim(gram_deg, 64, 46) }}
+      {% endif %}
+      {% if not buyuk_hareket %}<span class="hesap">{{ hesap }}</span>{% endif %}
+    </div>
+  </div>
+
+  <div class="alt-kenar">
+    <span>{% if buyuk_hareket %}{{ hesap }}{% endif %}</span>
+    <span>Bilgi amaçlıdır, yatırım tavsiyesi değildir.</span>
+  </div>
+</div>
+</body>
+</html>

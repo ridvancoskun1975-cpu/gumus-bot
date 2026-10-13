@@ -440,6 +440,35 @@ def hashtag_sec(tur, tarih=None):
 HIKAYE_TURLERI = {"post", "hafta"}
 
 
+# 20:00 özetinin açıklamasında güne göre dönen soru (yorum almak için). Yön tahmini, al/sat
+# ya da kişisel finans sorusu yok; takipçinin deneyimini ve ne görmek istediğini sorar.
+SORULAR_OZET = [
+    "Gram gümüşü en çok nereden takip ediyorsunuz: kuyumcu, banka, uygulama?",
+    "Rehberde hangi konuyu görmek istersiniz?",
+    "Kuyumcudaki fiyatla buradaki fiyat arasındaki farkı fark ettiniz mi?",
+    "Gümüşü en çok hangi birimle düşünüyorsunuz: gram, ons, kilogram?",
+    "Altın/gümüş paritesini bu sayfadan önce duymuş muydunuz?",
+    "Fiyatları hangi saatte görmek size daha uygun: sabah mı, akşam mı?",
+    "Sizin şehrinizde gümüş en çok ne için alınır?",
+    "Gümüşle ilk tanışmanız nasıl oldu: hediye, takı, merak?",
+    "Bu sayfada başka hangi bilgiyi görmek istersiniz?",
+    "Gümüş külçeyi hiç elinize alıp gördünüz mü?",
+]
+PAYLASIM_SATIRI = "Gümüşü takip eden bir tanıdığınıza gönderebilirsiniz."
+PAYLASIM_GUNLERI = {1, 3}   # salı, perşembe (20:00 özeti); büyük hareket günlerinde her paylaşımda
+
+
+def _cagri_satirlari(v, tur, gun=None):
+    """Açıklamaya eklenecek soru ve paylaşım satırları (boş olabilir)."""
+    gun = gun or datetime.now(TR_SAAT).date()
+    satirlar = []
+    if tur == "post":
+        satirlar.append(f"{SORULAR_OZET[gun.toordinal() % len(SORULAR_OZET)]} Yorumlara yazın 👇")
+    if v.get("buyuk_hareket") or (tur == "post" and gun.weekday() in PAYLASIM_GUNLERI):
+        satirlar.append(PAYLASIM_SATIRI)
+    return ("\n" + "".join(s + "\n" for s in satirlar) + "\n") if satirlar else ""
+
+
 def _ilk_satir(v, zaman):
     g = v["gram_deg"]
     if v.get("buyuk_hareket"):
@@ -460,7 +489,8 @@ def aciklama_yaz(v, tur):
             f"Dolar/TL: {v['dolar']} ₺ ({d['isaret']} {d['metin']})\n\n"
             "Günlük değerler iş günlerinin son paylaşımına (yaklaşık 20:00) aittir; "
             "değişimler önceki haftanın son değerine göredir.\n"
-            "Sizce gümüş gelecek hafta ne yöne gider? Yorumlara yazın 👇\n\n"
+            "Sizce gümüş gelecek hafta ne yöne gider? Yorumlara yazın 👇\n"
+            f"{PAYLASIM_SATIRI + chr(10) if v.get('buyuk_hareket') else ''}\n"
             "Bilgi amaçlıdır, yatırım tavsiyesi değildir.\n\n"
             f"{_kaynak_satirlari(v)}\n\n"
             f"{hashtag_sec(tur)}"
@@ -473,6 +503,7 @@ def aciklama_yaz(v, tur):
         f"Altın/Gümüş paritesi: {v['parite']} ({p['isaret']} {p['metin']})\n"
         f"Dolar/TL: {v['dolar']} ₺ ({d['isaret']} {d['metin']})\n\n"
         "Değişimler önceki iş gününe göredir.\n"
+        f"{_cagri_satirlari(v, tur)}"
         "Bilgi amaçlıdır, yatırım tavsiyesi değildir.\n\n"
         f"{_kaynak_satirlari(v)}\n\n"
         f"{hashtag_sec(tur)}"
@@ -489,7 +520,7 @@ def gorsel_uret(tur, veri, png_yolu):
     html = env.get_template(f"{tur}.html").render(**veri)
     gecici = SABLONLAR / f"_cikti_{tur}.html"   # fontlar göreli yolla yüklensin diye burada
     gecici.write_text(html, encoding="utf-8")
-    boyut = {"reels": (1080, 1920), "post": (1080, 1350), "hafta": (1080, 1350), "yasal": (1080, 1350),
+    boyut = {"reels": (1080, 1920), "kapak": (1080, 1920), "post": (1080, 1350), "hafta": (1080, 1350), "yasal": (1080, 1350),
              "bilgi": (1080, 1350), "yorum": (1080, 1350)}[tur]
     # Instagram görsel gönderilerde yalnızca JPEG kabul ediyor; uzantı .jpg ise JPEG kaydedilir.
     jpeg = {"quality": 92} if Path(png_yolu).suffix.lower() in (".jpg", ".jpeg") else {}
@@ -507,6 +538,31 @@ def gorsel_uret(tur, veri, png_yolu):
             tarayici.close()
     finally:
         gecici.unlink(missing_ok=True)
+
+
+KAPAK_ETIKET = {"reels": "GÜNCEL FİYAT", "post": "GÜNÜN ÖZETİ", "hafta": "HAFTALIK ÖZET"}
+
+
+def kapak_verisi(tur, veri):
+    """Reels kapağının (templates/kapak.html) büyük satırları: tür, gün, alt satır."""
+    simdi = datetime.now(TR_SAAT)
+    if tur == "hafta":
+        gun = veri["aralik"].rsplit(" ", 1)[0]          # "05–09 Ekim" (yıl alt satırda)
+        alt = f"{veri['aralik'].rsplit(' ', 1)[1]} · önceki haftaya göre"
+    else:
+        gun = f"{simdi.day} {AYLAR[simdi.month - 1]}"
+        alt = f"{GUNLER[simdi.weekday()]} · {veri['saat']}"
+    return {"kapak_etiket": KAPAK_ETIKET.get(tur, ""), "kapak_gun": gun, "kapak_alt": alt}
+
+
+def kapak_uret(tur, veri, jpg_yolu):
+    """Profil ızgarasında okunan Reels kapağı (JPEG). Başarısız olursa None; kapak son kareden alınır."""
+    try:
+        gorsel_uret("kapak", {**veri, **kapak_verisi(tur, veri)}, jpg_yolu)
+        return jpg_yolu.name
+    except Exception as e:
+        print(f"::warning::Kapak üretilemedi, videonun son karesi kullanılacak: {e}")
+        return None
 
 
 ZEMIN_RENGI = "0x121418"   # templates/ortak.css içindeki --zemin ile aynı
@@ -652,6 +708,25 @@ def _kaydirmali_konteyner(kullanici_id, urller, aciklama):
                   children=",".join(cocuklar), caption=aciklama)
 
 
+def _reels_konteyneri(kullanici_id, medya_url, meta, taban_url):
+    """Reels konteyneri. Önce tasarlanmış kapakla (cover_url) dener; kapak alınamazsa ya da
+    Instagram işleyemezse kapaksız yeniden dener ve videonun son karelerinden birini kullanır
+    (hareketli videoda ilk kare sayımın başı olduğu için)."""
+    ortak = {"media_type": "REELS", "video_url": medya_url, "caption": meta["aciklama"], "share_to_feed": "true"}
+    if meta.get("kapak"):
+        kapak_url = taban_url.rstrip("/") + "/" + meta["kapak"]
+        try:
+            _url_hazir_mi(kapak_url, sure_sn=60)
+            k = _istek("POST", f"{kullanici_id}/media", cover_url=kapak_url, **ortak)
+            _hazir_olmasini_bekle(k["id"])
+            return k
+        except RuntimeError as e:
+            print(f"::warning::Kapakla paylaşılamadı, son kareyle yeniden deneniyor: {e}")
+    k = _istek("POST", f"{kullanici_id}/media", thumb_offset=str(meta.get("kapak_ms", 0)), **ortak)
+    _hazir_olmasini_bekle(k["id"])
+    return k
+
+
 def yayinla(cikti, taban_url):
     meta = json.loads((cikti / "meta.json").read_text(encoding="utf-8"))
     if "dosyalar" in meta:
@@ -672,13 +747,10 @@ def yayinla(cikti, taban_url):
     _url_hazir_mi(medya_url)
     kullanici_id = hesap_bilgisi()["user_id"]
     if meta["dosya"].endswith(".mp4"):
-        # Kapak: hareketli videoda ilk kare sayımın başı olduğu için son karelerden biri alınır
-        # (her şey yerinde, parıltı geçmiş). Durağan videoda da aynı kare görünür.
-        k = _istek("POST", f"{kullanici_id}/media", media_type="REELS", video_url=medya_url,
-                   caption=meta["aciklama"], share_to_feed="true", thumb_offset=str(meta.get("kapak_ms", 0)))
+        k = _reels_konteyneri(kullanici_id, medya_url, meta, taban_url)
     else:
         k = _istek("POST", f"{kullanici_id}/media", image_url=medya_url, caption=meta["aciklama"])
-    _hazir_olmasini_bekle(k["id"])
+        _hazir_olmasini_bekle(k["id"])
     sonuc = _istek("POST", f"{kullanici_id}/media_publish", creation_id=k["id"])
     print(f"Paylaşıldı: {meta['tur']} (medya id {sonuc.get('id')})")
     if meta["tur"] in HIKAYE_TURLERI and meta["dosya"].endswith(".mp4"):
@@ -966,10 +1038,12 @@ def hazirla(tur, cikti, ornek, konu=None):
     if not hareketli_video_uret(tur, veri, mp4, sure=sure):
         video_uret(png, mp4, sure=sure)
     dosya = mp4.name
+    kapak = kapak_uret(tur, veri, cikti / f"kapak-{tur}-{damga}.jpg")
 
     aciklama = aciklama_yaz(veri, tur)
     (cikti / "meta.json").write_text(json.dumps({"tur": tur, "dosya": dosya, "aciklama": aciklama,
                                                  "kapak_ms": int((sure - 0.5) * 1000),
+                                                 "kapak": kapak,
                                                  "fiyatlar": fiyat}, ensure_ascii=False, indent=2),
                                      encoding="utf-8")
     (cikti / "index.html").write_text("<!doctype html><meta charset='utf-8'><title>Gümüş bot</title>"
