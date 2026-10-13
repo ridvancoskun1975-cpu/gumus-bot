@@ -1,0 +1,70 @@
+name: Bilgi sayfasını yayınla
+
+# Instagram'a paylaşım yapmadan yalnızca bilgi sayfasını (GitHub Pages ana sayfası) son kayıtlarla
+# yeniden üretip yayınlar. Normalde sayfa her paylaşımda kendiliğinden güncellenir; bu iş, sayfada
+# yapılan bir değişikliği paylaşımı beklemeden yayına almak için. Elle: Actions → Bilgi sayfasını
+# yayınla → Run workflow (dal: main).
+# Not: Pages sitesini baştan kurar; o anki paylaşımın video/görsel dosyaları siteden kalkar
+# (Instagram onları paylaşım sırasında zaten almış olur). Paylaşım saatlerine (~10:00, ~14:00,
+# ~20:00) denk getirme: paylaşım işi dosyalarını yayınlarken bu iş araya girerse paylaşım bozulabilir.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gumus-sayfa
+  cancel-in-progress: false
+
+jobs:
+  uret:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Gerekenleri kur
+        timeout-minutes: 6
+        run: |
+          pip install -q -r requirements.txt
+          python -m playwright install chromium
+
+      # Fiyat kayıtları paylaşım işinin sakladığı önbellekten okunur (geri yazılmaz).
+      - name: Günlük kayıtları getir
+        uses: actions/cache/restore@v4
+        with:
+          path: veri/gecmis.json
+          key: gecmis-sayfa-${{ github.run_id }}
+          restore-keys: gecmis-
+
+      - name: Bilgi sayfasını üret
+        env:
+          HESAP_ADI: ${{ vars.HESAP_ADI }}
+        run: |
+          python bot/sayfa.py --cikti site
+          test -f site/og.png && grep -q "Gram gümüş fiyatı" site/index.html
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  yayinla:
+    needs: uret
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.yayin.outputs.page_url }}
+    steps:
+      - name: Sayfayı internete koy (GitHub Pages)
+        id: yayin
+        uses: actions/deploy-pages@v4
