@@ -51,6 +51,12 @@ VADELER = [
     {"anahtar": "uzun", "ad": "Uzun vade", "ufuk": "1 yıl ve üzeri", "pencere": 365, "etiket": "Son 1 yıl", "esnek": False},
 ]
 
+# Ağır basan yön (14 Ekim 2026, Rıdvan: "fazla nötr; ağır basan bir taraf olmalı, sonuç yine yasalara uygun").
+# Her vade için model yükseliş ya da düşüş seçer (yatay/belirsiz seçeneği yok) ve gücünü dürüstçe belirtir.
+YONLER = ("yükseliş", "düşüş")
+GUCLER = ("zayıf", "orta", "belirgin")
+GUC_ADI = {"zayıf": "hafif eğilim", "orta": "orta eğilim", "belirgin": "belirgin eğilim"}
+
 # Kelime sınırları (görselde büyük yazı sığsın diye). Model açıklamada bunları görür; kod biraz pay bırakır.
 SINIR = {"ozet": 5, "durum": 18, "seyir": 26, "izlenecek": 8}
 PAY = {"ozet": 1, "durum": 4, "seyir": 5, "izlenecek": 3}
@@ -88,24 +94,30 @@ Kurallar (hepsine uy):
 2. Fiyat verileri ile haber özeti çelişirse fiyat verilerini esas al (görselde onlar gösteriliyor).
 3. Haberleri kendi cümlelerinle, çok kısa an; alıntı yapma, kaynak adı yazma. Bir gelişmenin fiyata etkisini kesin bir neden gibi değil, "etkili olmuş olabilir" gibi temkinli yaz.
 4. Yönlendirme yapma: al, sat, tut, ekle, azalt, bekle, fırsat, hedef fiyat, destek/direnç seviyesi, stop, portföy, pozisyon gibi ifadeler kullanma. Okura ne yapması gerektiğini söyleme, emir kipi kullanma, okura hitap etme.
-5. Kesinlik bildirme: "kesin, garanti, mutlaka, kesinlikle" yok. Olası seyri koşullu yaz ("... sürerse", "... durumunda") ve her zaman iki yönü de an.
+5. Kesinlik bildirme: "kesin, garanti, mutlaka, kesinlikle" yok. Olası seyri koşullu yaz ("... sürerse", "... durumunda").
 6. Hiç rakam, yüzde, baz puan, tarih yazma; sayıları yazıyla da yazma. Sayılar görselde ayrıca gösteriliyor. "Üç ay", "bir yıl", "önümüzdeki hafta" gibi süreleri yazıyla yazabilirsin.
 7. Abartılı, heyecanlı dil yok (patlama, uçuş, çöküş, roket gibi). Sakin, sade, günlük Türkçe; Türkçe karakterleri doğru kullan.
 8. Gram gümüşün TL fiyatı ons gümüş (dolar) ile dolar/TL'nin çarpımından gelir; hareketin onstan mı kurdan mı geldiğini ayırt etmeye çalış.
 9. Vadelere göre ağırlık: kısa vadede bu haftanın fiyat hareketi, haftanın gelişmeleri ve önümüzdeki haftanın takvimi; orta vadede son aylardaki eğilim, faiz beklentileri ve kur; uzun vadede yıllık eğilim ve arz-talep gibi yapısal etkenler.
 10. Bir vade için fiyat kaydı yetersizse (veri_yeterli: false) bu, görselde ayrıca not olarak yazılır; "durum" alanında kayıtların kısa olduğunu tekrarlama. O vadeyi özetteki uzun dönem bağlam ve kur verisiyle, daha temkinli yaz.
+11. Her vade için ağır basan yönü seç: "yükseliş" ya da "düşüş". Yatay, nötr ya da belirsiz seçeneği yok; okur net bir değerlendirme görmeli. Yönü dayanaklardaki ağırlığa göre seç, keyfi seçme. Etkenler karışıksa biraz daha ağır basan tarafı seç ve gücünü "zayıf" yaz; gücü dürüstçe belirle ("zayıf", "orta", "belirgin"). Ağır basan yön bir değerlendirmedir: kesinlik, hedef ya da al-sat önerisi değildir.
+12. "ozet" ve "seyir" ağır basan yönle uyumlu olsun, ikisini dengeleyip nötr bir sonuca bağlama. "seyir"de önce ağır basan yönü ve nedenini koşullu yaz, sonra karşı yönü kısa bir risk olarak an.
 
 Her vade için alanlar:
-- ozet: kapakta görünen çok kısa başlık, en fazla 5 kelime.
+- yon: ağır basan yön, "yükseliş" ya da "düşüş".
+- guc: ağır basan yönün gücü, "zayıf", "orta" ya da "belirgin".
+- ozet: kapakta görünen çok kısa başlık, en fazla 5 kelime; ağır basan yönü yansıtsın.
 - durum: verilerde ve haberlerde ne görülüyor, en fazla 18 kelime, tek cümle.
-- seyir: koşullu olası seyir, iki yönü de anarak, en fazla 26 kelime.
+- seyir: koşullu olası seyir; önce ağır basan yön, sonra karşı yön kısa risk olarak; en fazla 26 kelime.
 - izlenecek: izlenecek etkenler, en fazla 8 kelime, cümle değil."""
 
 
 def _vade_sema():
     alan = lambda a: {"type": "string", "description": f"en fazla {SINIR[a]} kelime"}
-    return {"type": "object", "additionalProperties": False,
-            "properties": {k: alan(k) for k in SINIR}, "required": list(SINIR)}
+    ozellik = {"yon": {"type": "string", "enum": list(YONLER), "description": "ağır basan yön"},
+               "guc": {"type": "string", "enum": list(GUCLER), "description": "ağır basan yönün gücü"},
+               **{k: alan(k) for k in SINIR}}
+    return {"type": "object", "additionalProperties": False, "properties": ozellik, "required": list(ozellik)}
 
 
 SEMA = {"type": "object", "additionalProperties": False,
@@ -390,6 +402,10 @@ def denetle(yorum, gelismeler=None):
     hatalar = []
     for v in VADELER:
         alanlar = yorum.get(v["anahtar"]) or {}
+        if alanlar.get("yon") not in YONLER:
+            hatalar.append(f"{v['anahtar']}.yon: 'yükseliş' ya da 'düşüş' olmalı (verilen: {alanlar.get('yon')!r})")
+        if alanlar.get("guc") not in GUCLER:
+            hatalar.append(f"{v['anahtar']}.guc: 'zayıf', 'orta' ya da 'belirgin' olmalı (verilen: {alanlar.get('guc')!r})")
         for alan, sinir in SINIR.items():
             metin = (alanlar.get(alan) or "").strip()
             yer = f"{v['anahtar']}.{alan}"
@@ -504,6 +520,7 @@ ORNEK_GELISMELER = {
 
 ORNEK_YORUM = {
     "kisa": {
+        "yon": "yükseliş", "guc": "orta",
         "ozet": "Cuma toparlanması, kur desteği",
         "durum": "Hafta başında gerileyen ons cuma günü toparlandı; gram fiyattaki artışa dolar/TL de katkı verdi.",
         "seyir": "Ons toparlanmayı sürdürürse gram fiyat desteklenebilir; enflasyon verisi faiz beklentilerini "
@@ -511,13 +528,15 @@ ORNEK_YORUM = {
         "izlenecek": "ABD enflasyon verisi, TCMB kararı, ons",
     },
     "orta": {
-        "ozet": "Faiz beklentisi ve kur belirleyici",
+        "yon": "yükseliş", "guc": "zayıf",
+        "ozet": "Kur desteği, ons belirleyici",
         "durum": "Kendi kayıtlarımız kısa; dolar/TL üç ayda istikrarlı yükseldi, Fed temkinli bir dil kullanıyor.",
         "seyir": "Kurdaki eğilim korunursa onstaki düşüşler gram fiyata daha az yansıyabilir; faiz indirimleri "
                  "gecikirse ons baskı altında kalabilir.",
         "izlenecek": "Fed faiz beklentileri, dolar/TL, sanayi talebi",
     },
     "uzun": {
+        "yon": "yükseliş", "guc": "belirgin",
         "ozet": "Yapısal talep güçlü görünüyor",
         "durum": "Gümüş son bir yılda belirgin yükseldi; güneş paneli talebi ve arz açığı öne çıkıyor.",
         "seyir": "Sanayi talebi güçlü kalırsa ons desteklenebilir; küresel büyüme yavaşlarsa talep zayıflayabilir "
@@ -566,12 +585,20 @@ def _nasil_hazirlandi(gelismeler):
         dayanak = (f"Yorumlar aşağıdaki fiyat ve kur verilerinden yapay zekâ ({MODEL_ADI}) ile otomatik üretilir; "
                    "yayından önce bir uzman tarafından incelenmez. Bu hafta haber taraması yapılamadığı için "
                    "yalnızca geçmiş fiyat ve kur hareketlerine dayanır.")
-    return (f"Nasıl hazırlandı: {dayanak} Tahmin niteliğindedir; geçmiş hareketler gelecek için güvence "
+    return (f"Nasıl hazırlandı: {dayanak} Her vadede verilere göre ağır basan yön ve gücü belirtilir; bu bir "
+            "değerlendirmedir, kesinlik ya da alım-satım önerisi değildir. Tahmin niteliğindedir; geçmiş hareketler gelecek için güvence "
             "değildir. Her pazar güncellenir. Bu yorum için hiçbir kurumdan ücret ya da menfaat alınmamıştır.")
 
 
+def yon_metni(vade):
+    """"▼ Düşüş ağır basıyor (orta eğilim)" — açıklamada ve görselde aynı ifade."""
+    ok = "▲" if vade["yon"] == "yükseliş" else "▼"
+    return f"{ok} {vade['yon'].capitalize()} ağır basıyor ({GUC_ADI[vade['guc']]})"
+
+
 def aciklama(v, yorum, kaynak_satirlari, gelismeler=None):
-    vade_satirlari = [f"{x['ad']} ({x['ufuk']}): {yorum[x['anahtar']]['ozet']}" for x in v["vadeler"]]
+    vade_satirlari = [f"{x['ad']} ({x['ufuk']}): {yon_metni(yorum[x['anahtar']])} · {yorum[x['anahtar']]['ozet']}"
+                      for x in v["vadeler"]]
     alanlar = kaynak_alanlari(gelismeler)
 
     def kur(soru=True, kaynak_sayisi=None):

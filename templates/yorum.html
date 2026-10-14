@@ -1,4 +1,4 @@
-{% from "makrolar.html" import ag_etiketi, degisim %}<!doctype html>
+{% from "makrolar.html" import ag_etiketi, degisim, yon_isareti %}<!doctype html>
 <html lang="tr">
 <head>
 <meta charset="utf-8">
@@ -34,6 +34,11 @@ h2 { margin: 4px 0 0; font-size: 96px; line-height: 1; font-weight: 800; letter-
 .bos { font-size: 40px; font-weight: 700; color: var(--soluk); }
 .veri-not { margin-top: 12px; font-size: 22px; color: var(--soluk); line-height: 1.3; }
 .yz-blok { margin-top: 30px; }
+.yon { display: inline-flex; align-items: center; gap: 10px; font-weight: 800; }
+.yon.artis { color: var(--artis); }
+.yon.dusus { color: var(--dusus); }
+.yon.dusus svg { transform: rotate(180deg); }
+.yon small { font-size: 0.72em; font-weight: 600; color: var(--soluk); }
 .yz-blok .kucuk-baslik { margin-bottom: 8px; }
 .metin { font-size: var(--metin, 42px); line-height: 1.3; font-weight: 500; text-wrap: pretty; }
 .izle { color: var(--vurgu); font-weight: 700; }
@@ -63,7 +68,10 @@ h2 { margin: 4px 0 0; font-size: 96px; line-height: 1; font-weight: 800; letter-
       {% for v in vadeler %}
       <div class="vade-satir">
         <div class="vade-ad"><b>{{ v.ad }}</b><span>{{ v.ufuk }}</span></div>
-        <div class="vade-ozet">{{ v.yorum.ozet }}</div>
+        <div>
+          {{ yon_isareti(v.yorum, 30, 22) }}
+          <div class="vade-ozet" style="margin-top: 6px">{{ v.yorum.ozet }}</div>
+        </div>
       </div>
       {% endfor %}
     </div>
@@ -100,6 +108,7 @@ h2 { margin: 4px 0 0; font-size: 96px; line-height: 1; font-weight: 800; letter-
       {% if v.not %}<div class="veri-not">{{ v.not }}</div>{% endif %}
     </div>
 
+    <div class="yz-blok"><div class="kucuk-baslik">AĞIR BASAN</div>{{ yon_isareti(v.yorum, 44, 34) }}</div>
     <div class="yz-blok"><div class="kucuk-baslik">DURUM</div><div class="metin">{{ v.yorum.durum }}</div></div>
     <div class="yz-blok"><div class="kucuk-baslik">OLASI SEYİR</div><div class="metin">{{ v.yorum.seyir }}</div></div>
     <div class="yz-blok"><div class="kucuk-baslik">İZLENECEK</div><div class="metin izle">{{ v.yorum.izlenecek }}</div></div>
