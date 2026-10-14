@@ -27,16 +27,21 @@ on:
         description: "Deneme: sadece üret, Instagram'a paylaşma"
         type: boolean
         default: true
+      onay:
+        description: "Günlük sınırı aşmaya Rıdvan sohbette onay verdi (yalnızca o açıkça onaylarsa işaretle)"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
-# Sıra (aynı anda tek üretim/paylaşım) iş düzeyinde: uret ve yayinla "gumus-paylasim" grubunda. Onay bekleyen
-# bir çalıştırma (bkz. onay işi) grubu tutmaz; böylece onay beklerken zamanlı paylaşımlar takılmaz.
+concurrency:
+  group: gumus-paylasim
+  cancel-in-progress: false
 
 jobs:
   # Türü belirler; bilgi gününde değilse kurulum yapmadan bitirir (zamanlı bilgi çalışması her iş günü başlar).
-  # Günlük sınır: bugün 3 paylaşım yapılmışsa bu çalıştırma onayını bekler (bot/sinir.py).
+  # Günlük sınır: bugün 3 paylaşım yapılmışsa, onay yoksa paylaşmadan durur (bot/sinir.py).
   kontrol:
     runs-on: ubuntu-24.04   # sabit sürüm: ubuntu-latest 19 Ekim 2026 itibarıyla Ubuntu 26e geçiyor
     timeout-minutes: 3
@@ -46,7 +51,6 @@ jobs:
     outputs:
       tur: ${{ steps.tur.outputs.tur }}
       calis: ${{ steps.tur.outputs.calis }}
-      onay: ${{ steps.sinir.outputs.onay }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -106,53 +110,25 @@ jobs:
           echo "tur=$tur" >> "$GITHUB_OUTPUT"
           echo "calis=$calis" >> "$GITHUB_OUTPUT"
 
-      # Günde en fazla 3 paylaşım (Rıdvan, 14 Ekim 2026). Bugün 3 paylaşım yapılmışsa onay=true: çalıştırma
-      # "onay" işinde bekler, GitHub sana bildirir; onaylamadan hiçbir şey üretilip paylaşılmaz. Deneme
-      # çalıştırmasında yalnızca sayıyı yazar. Sayım GitHub geçmişinden; Instagram'a istek atılmaz.
+      # Günde en fazla 3 paylaşım (Rıdvan, 14 Ekim 2026). Bugün 3 paylaşım yapılmışsa ve onay yoksa iş hata
+      # verip durur: hiçbir şey üretilmez, paylaşılmaz; GitHub "Run failed" e-postası gönderir. Onay Claude
+      # sohbetinden verilir: Rıdvan "onayla" derse Claude aynı türü onay işaretiyle yeniden başlatır.
+      # Deneme çalıştırmasında yalnızca sayıyı yazar. Sayım GitHub geçmişinden; Instagram'a istek atılmaz.
       - name: Günlük sınır (en fazla 3 paylaşım)
-        id: sinir
         if: steps.tur.outputs.calis == 'true'
         env:
           GITHUB_TOKEN: ${{ github.token }}
           TUR: ${{ steps.tur.outputs.tur }}
           KONU: ${{ inputs.konu }}
           YAYIN: ${{ github.event_name == 'schedule' || inputs.deneme == false }}
-        run: python3 bot/sinir.py kontrol --yayin "$YAYIN" --tur "$TUR" --konu "$KONU"
-
-  # Yalnızca günlük sınır aşılacaksa çalışır. "onay" ortamında zorunlu onaylayıcı Rıdvan: GitHub e-posta ve
-  # uygulama bildirimi gönderir, çalıştırma sayfasında "Review deployments" → Approve / Reject. Ortam korumasızsa
-  # (onaylayıcı tanımlı değilse) iş hemen başlar ama onay kaydı olmadığı için hata verir: yine paylaşılmaz.
-  onay:
-    needs: kontrol
-    if: needs.kontrol.outputs.calis == 'true' && needs.kontrol.outputs.onay == 'true'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 3
-    environment: onay
-    permissions:
-      actions: read
-    steps:
-      - name: Onay kaydını doğrula
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          n=$(gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/approvals" \
-                --jq '[.[] | select(.state == "approved") | select(any(.environments[]; .name == "onay"))] | length')
-          if [ "${n:-0}" -lt 1 ]; then
-            echo "::error::Onay kaydı yok: 'onay' ortamında onaylayıcı tanımlı değil. Paylaşılmadı. Ayarlar → Environments → onay → Required reviewers."
-            exit 1
-          fi
-          echo "Onaylandı; içerik şimdi üretilip paylaşılacak."
+          ONAY: ${{ github.event_name == 'workflow_dispatch' && inputs.onay == true }}
+        run: python3 bot/sinir.py --yayin "$YAYIN" --onay "$ONAY" --tur "$TUR" --konu "$KONU"
 
   uret:
-    needs: [kontrol, onay]
-    if: >-
-      !cancelled() && needs.kontrol.result == 'success' && needs.kontrol.outputs.calis == 'true'
-      && (needs.onay.result == 'success' || needs.onay.result == 'skipped')
+    needs: kontrol
+    if: needs.kontrol.outputs.calis == 'true'
     runs-on: ubuntu-24.04   # sabit sürüm: ubuntu-latest 19 Ekim 2026 itibarıyla Ubuntu 26e geçiyor
     timeout-minutes: 15
-    concurrency:
-      group: gumus-paylasim
-      cancel-in-progress: false
     outputs:
       devam: ${{ steps.uret.outputs.devam }}
       tur: ${{ needs.kontrol.outputs.tur }}
@@ -261,37 +237,23 @@ jobs:
   # concurrency grubu yüzünden bekleyen çalıştırma sıradakini de bekletir. Süre dolarsa iş hata verir,
   # engel kalkınca "Re-run failed jobs" aynı videoyu paylaşır (uret artifact'ı 7 gün durur).
   yayinla:
-    needs: [uret, onay]
-    if: >-
-      !cancelled() && needs.uret.result == 'success' && needs.uret.outputs.devam == 'true'
-      && (github.event_name == 'schedule' || inputs.deneme == false)
+    needs: uret
+    if: needs.uret.outputs.devam == 'true' && (github.event_name == 'schedule' || inputs.deneme == false)
     runs-on: ubuntu-24.04   # sabit sürüm: ubuntu-latest 19 Ekim 2026 itibarıyla Ubuntu 26e geçiyor
     timeout-minutes: 175
-    concurrency:
-      group: gumus-paylasim
-      cancel-in-progress: false
     permissions:
       contents: read
-      actions: read   # günlük sınırın son denetimi
       pages: write
       id-token: write
     environment:
       name: github-pages
       url: ${{ steps.yayin.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
-
-      # Aynı anda başlayan iki çalıştırma kontrol işinde ikisi de "2" sayıp sınırı birlikte aşmasın diye
-      # paylaşımdan hemen önce yeniden sayar (bu iş sırayla çalışır). Onaylı çalıştırmada atlanır.
-      - name: Günlük sınır (son denetim)
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          ONAYLI: ${{ needs.onay.result == 'success' }}
-        run: python3 bot/sinir.py son --onayli "$ONAYLI"
-
       - name: Dosyayı internete koy (GitHub Pages)
         id: yayin
         uses: actions/deploy-pages@v4
+
+      - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
         with:

@@ -1,6 +1,5 @@
 """Günlük paylaşım sınırı (14 Ekim 2026, Rıdvan): takipçileri rahatsız etmemek için günde en fazla 3 paylaşım.
-4. ve sonrası onaysız gitmez: iş akışı "onay" ortamında bekler, GitHub Rıdvan'a bildirim gönderir; yalnızca
-o onaylarsa içerik üretilip paylaşılır, reddederse hiçbir şey paylaşılmaz.
+4. ve sonrası Rıdvan onaylamadan gitmez.
 
 Bir paylaşım = botun Instagram'a bir kez paylaşım yapan çalıştırması (paylas.yml'de "yayinla" işi başarıyla
 bitmiş ya da şu an sürüyor): bir Reels, bir gönderi ya da bir seferde giden rehber hikâye kareleri. Gönderiyle
@@ -8,9 +7,13 @@ birlikte hikâyeye konan kopyası (günlük özet) ayrıca sayılmaz. Gün Türk
 çalıştırma geçmişinden yapılır (Instagram'a istek atılmaz); Instagram uygulamasından elle yapılan paylaşımlar
 sayılmaz.
 
-Kullanım (iş akışında):
-  python3 bot/sinir.py kontrol --yayin true|false   # paylaşımdan önce: onay gerekir mi (GITHUB_OUTPUT: onay)
-  python3 bot/sinir.py son --onayli true|false      # paylaşım adımından hemen önce: onaysız 4. paylaşımı durdurur
+Sınır doluysa ve onay yoksa kontrol işi hata verip durur: hiçbir şey üretilmez ve paylaşılmaz, GitHub
+"Run failed" e-postası gönderir. Onay yalnızca Claude sohbetinden verilir (Rıdvan GitHub'a girmez):
+  - tek paylaşım için: Rıdvan "onayla" der, Claude aynı türü Run workflow → onay: true ile yeniden başlatır;
+  - bir günün tamamı için: Rıdvan izin verirse Claude GUN_SINIRI'na o günü yazar (aşağıda).
+Claude onay işaretini ya da GUN_SINIRI'nı Rıdvan sohbette açıkça onaylamadan KULLANMAZ.
+
+Kullanım (iş akışında): python3 bot/sinir.py --yayin true|false --onay true|false [--tur T] [--konu N]
 Yalnızca standart kitaplık kullanır (kontrol işi Python paketi kurmadan çalışır).
 """
 import argparse
@@ -24,6 +27,8 @@ from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 GUNLUK_SINIR = 3
+# Rıdvan'ın sohbette onayladığı gün istisnaları: {"YYYY-AA-GG" (TR): o gün izin verilen toplam paylaşım}.
+GUN_SINIRI = {}
 TR = ZoneInfo("Europe/Istanbul")
 IS_AKISI = "paylas.yml"
 YAYIN_ISI = "yayinla"
@@ -36,6 +41,10 @@ class SayilamadiHatasi(RuntimeError):
 
 def _zaman(s):
     return datetime.strptime(s, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc) if s else None
+
+
+def bugunun_siniri(gun):
+    return GUN_SINIRI.get(gun.isoformat(), GUNLUK_SINIR)
 
 
 def paylasim_sayisi(calistirmalar, isler, simdi, bu_calistirma):
@@ -106,14 +115,6 @@ def say(simdi=None, deneme_sayisi=3, ara_sn=20):
 
 # ---------------------------------------------------------------- iş akışı
 
-def _cikti(**kv):
-    yol = os.environ.get("GITHUB_OUTPUT")
-    if yol:
-        with open(yol, "a", encoding="utf-8") as f:
-            for k, v in kv.items():
-                f.write(f"{k}={v}\n")
-
-
 def _ozet(metin):
     yol = os.environ.get("GITHUB_STEP_SUMMARY")
     if yol:
@@ -125,69 +126,52 @@ def _liste(sayilan):
     return ", ".join(f"{z.astimezone(TR):%H:%M} ({d})" for _, z, d in sayilan) or "yok"
 
 
-def kontrol(yayin, tur, konu):
-    """Paylaşımdan önce: bugün GUNLUK_SINIR paylaşım olduysa onay ister. Sayılamazsa da onay ister."""
+def kontrol(yayin, onay, tur, konu, simdi=None):
+    """0: devam, 1: dur (paylaşılmaz). Sınır doluysa onay olmadan durur; sayılamazsa da durur."""
+    simdi = simdi or datetime.now(timezone.utc)
     ne = tur + (f" #{konu}" if konu else "")
+    sinir = bugunun_siniri(simdi.astimezone(TR).date())
     try:
-        sayilan = say()
+        sayilan = say(simdi)
     except SayilamadiHatasi as e:
-        if not yayin:
-            print(f"::warning::Bugünkü paylaşımlar sayılamadı ({e}). Deneme çalıştırması, paylaşım yok.")
-            _cikti(onay="false", sayi="?")
-            return
-        print(f"::warning::Bugünkü paylaşımlar sayılamadı ({e}); güvenli taraf: paylaşım onayını bekleyecek.")
-        _ozet(f"### ⚠️ Onay gerekiyor\nBugünkü paylaşımlar sayılamadı. Bu paylaşım (**{ne}**) "
-              "onaylarsan üretilip paylaşılacak; reddedersen hiçbir şey paylaşılmaz.")
-        _cikti(onay="true", sayi="?")
-        return
+        if not yayin or onay:
+            print(f"::warning::Bugünkü paylaşımlar sayılamadı ({e}); "
+                  + ("deneme çalıştırması, paylaşım yok." if not yayin else "onaylı paylaşım, devam."))
+            return 0
+        print(f"::error::Bugünkü paylaşımlar sayılamadı ({e}). Güvenli taraf: {ne} onaysız paylaşılmadı. "
+              "Paylaşılsın istersen Claude'a 'onayla' de.")
+        _ozet(f"### ⛔ Paylaşılmadı: {ne}\nBugünkü paylaşımlar sayılamadı. Paylaşılsın istersen Claude'a "
+              "**onayla** de.")
+        return 1
     n = len(sayilan)
-    print(f"Bugün (TR) {n} paylaşım: {_liste(sayilan)}. Günlük sınır {GUNLUK_SINIR}.")
-    if yayin and n >= GUNLUK_SINIR:
-        print(f"::warning::Bugün {n} paylaşım yapıldı; bu {n + 1}. olur ({ne}). Paylaşım için onayın bekleniyor.")
-        _ozet(f"### ⚠️ Onay gerekiyor: bugünün {n + 1}. paylaşımı\n"
-              f"Bugün yapılan paylaşımlar (TR saati): {_liste(sayilan)}.\n\n"
-              f"Bu çalıştırma: **{ne}**. Onaylarsan üretilip paylaşılacak; reddedersen hiçbir şey paylaşılmaz.")
-        _cikti(onay="true", sayi=n)
-    else:
-        if not yayin:
-            print("Deneme çalıştırması: paylaşım yok, onay gerekmez.")
-        _cikti(onay="false", sayi=n)
-
-
-def son(onayli):
-    """Paylaşım adımından hemen önce: aynı anda başlayan iki çalıştırma sınırı birlikte aşmasın."""
-    if onayli:
-        print("Bu paylaşım onaylandı; günlük sınır denetimi atlandı.")
+    print(f"Bugün (TR) {n} paylaşım: {_liste(sayilan)}. Günlük sınır {sinir}.")
+    if not yayin:
+        print("Deneme çalıştırması: paylaşım yok, sınır uygulanmaz.")
         return 0
-    try:
-        sayilan = say()
-    except SayilamadiHatasi as e:
-        print(f"::error::Bugünkü paylaşımlar sayılamadı ({e}); onaysız paylaşılmadı. "
-              "Paylaşmak istersen Run workflow ile yeniden başlat.")
-        return 1
-    n = len(sayilan)
-    if n >= GUNLUK_SINIR:
-        print(f"::error::Bugün {n} paylaşım yapılmış ({_liste(sayilan)}); bu {n + 1}. paylaşım onaysız "
-              "gönderilmedi. Paylaşmak istersen Run workflow ile yeniden başlat; onayın istenecek.")
-        return 1
-    print(f"Günlük sınır tamam: bugün {n} paylaşım, bu {n + 1}. olacak.")
-    return 0
+    if n < sinir:
+        print(f"Sınır tamam: bu, bugünün {n + 1}. paylaşımı.")
+        return 0
+    if onay:
+        print(f"Bu, bugünün {n + 1}. paylaşımı; Rıdvan onayladı, devam.")
+        _ozet(f"Bugünün {n + 1}. paylaşımı (**{ne}**), Rıdvan'ın onayıyla.")
+        return 0
+    print(f"::error::Günlük sınır: bugün {n} paylaşım yapıldı ({_liste(sayilan)}). Bu {n + 1}. paylaşım "
+          f"({ne}) onayın olmadan paylaşılmadı. Paylaşılsın istersen Claude'a 'onayla' de.")
+    _ozet(f"### ⛔ Paylaşılmadı: bugünün {n + 1}. paylaşımı olacaktı\n"
+          f"Bugün yapılan paylaşımlar (TR saati): {_liste(sayilan)}.\n\n"
+          f"Bu çalıştırma: **{ne}**. Hiçbir şey üretilmedi, paylaşılmadı. "
+          "Paylaşılsın istersen Claude'a **onayla** de.")
+    return 1
 
 
 def main():
     ap = argparse.ArgumentParser()
-    alt = ap.add_subparsers(dest="komut", required=True)
-    k = alt.add_parser("kontrol")
-    k.add_argument("--yayin", choices=["true", "false"], required=True)
-    k.add_argument("--tur", default="")
-    k.add_argument("--konu", default="")
-    s = alt.add_parser("son")
-    s.add_argument("--onayli", choices=["true", "false"], required=True)
+    ap.add_argument("--yayin", choices=["true", "false"], required=True)
+    ap.add_argument("--onay", choices=["true", "false"], default="false")
+    ap.add_argument("--tur", default="")
+    ap.add_argument("--konu", default="")
     a = ap.parse_args()
-    if a.komut == "kontrol":
-        kontrol(a.yayin == "true", a.tur, a.konu)
-        return 0
-    return son(a.onayli == "true")
+    return kontrol(a.yayin == "true", a.onay == "true", a.tur, a.konu)
 
 
 if __name__ == "__main__":
