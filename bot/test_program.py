@@ -24,9 +24,9 @@ def kayitlar(bugun):
     return sonuc
 
 
-def p(yil, ay, gun, saat=9, dakika=0):
+def p(yil, ay, gun, saat=9, dakika=0, rehber_hikaye=False):
     an = datetime(yil, ay, gun, saat, dakika, tzinfo=TR)
-    return prg.program(an, kayitlar(an.date()), HIKAYE)
+    return prg.program(an, kayitlar(an.date()), HIKAYE, rehber_hikaye=rehber_hikaye)
 
 
 def satir(pr, bas):
@@ -92,6 +92,17 @@ kontrol("13 Kasım: kısa Reels sürüyor (14 Kasım #7)", "14 Kasım Cumartesi 
 # 3 Ocak 2027: kısa Reels de bitti
 h = p(2027, 1, 3)
 kontrol("3 Ocak 2027: kısa Reels bitti", "yeni rehber bölümleri eklenince devam eder" in satir(h, "Rehberden kısa")["ek"])
+
+# Rehber hikâyesi otomatik kapalıyken (14 Ekim'den beri) sayfa hikâye/öne çıkan yazmaz; açıksa yazar
+r_kapali = satir(a, "Gümüş rehberi")
+kontrol("otomatik kapalı: 'hikâye' ve 'Öne çıkanlar' yok", "hikâye" not in r_kapali["ne"]
+        and not any("Öne çıkanlar" in e for e in r_kapali["ek"]) and a["rehber_hikaye"] is False, r_kapali)
+r_acik = satir(p(2026, 10, 14, rehber_hikaye=True), "Gümüş rehberi")
+kontrol("otomatik açık: 've hikâye' ve 'Öne çıkanlar' var", "ve hikâye" in r_acik["ne"]
+        and any("Öne çıkanlar" in e for e in r_acik["ek"]), r_acik)
+import main as bot  # noqa: E402
+kontrol("main'deki ayar okunuyor", prg.program(datetime(2026, 10, 14, 9, tzinfo=TR), [], HIKAYE)["rehber_hikaye"]
+        == bot.REHBER_HIKAYE_OTOMATIK)
 
 # Satırlar sıralı ve hepsinin adı var
 kontrol("satır sırası", [s["zaman"].split(" ~")[0] for s in a["satirlar"]][:2] == ["Hafta içi", "Rehber günleri"], a["satirlar"])

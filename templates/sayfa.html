@@ -229,7 +229,7 @@ footer p { margin: 6px 0; }
 
   <section id="rehber" aria-labelledby="h-rehber">
     <h2 id="h-rehber">Gümüş rehberi</h2>
-    <p class="soluk" style="margin-top: 0">Instagram'daki rehber serisinin metinleri. Bölümler Instagram'da Öne çıkanlar › Rehber'de de toplanır.</p>
+    <p class="soluk" style="margin-top: 0">Instagram'daki rehber serisinin metinleri.{% if program and program.rehber_hikaye %} Bölümler Instagram'da Öne çıkanlar › Rehber'de de toplanır.{% endif %}</p>
     {% for b in rehber %}
     <details{% if loop.first %} open{% endif %}>
       <summary><span class="no">#{{ '%02d'|format(b.no) }}</span><span><b>{{ b.baslik }}</b><small>{{ b.alt }}</small></span></summary>

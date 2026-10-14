@@ -103,7 +103,8 @@ def _program(simdi, kayit_gunleri):
     """Paylaşım takvimi ve saatler botun gerçek ayarlarından (bot/program.py). Okunamazsa sayfa yine
     üretilir, saat ve takvim içeren yerler gizlenir (yanlış bilgi yazılmasın) ve uyarı çıkar."""
     try:
-        return prg.program(simdi, kayit_gunleri, bot.HIKAYE_TURLERI, REHBER_SAATI)
+        return prg.program(simdi, kayit_gunleri, bot.HIKAYE_TURLERI, REHBER_SAATI,
+                           getattr(bot, "REHBER_HIKAYE_OTOMATIK", True))
     except Exception as e:
         print(f"::warning::Bilgi sayfası: paylaşım takvimi üretilemedi, takvim gizlendi ({type(e).__name__}: {e})")
         return None
