@@ -47,14 +47,20 @@ small { font-size: 0.85em; }
 
 header.ust { position: sticky; top: 0; z-index: 2; background: rgba(18, 20, 24, 0.92); backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--cizgi); }
-header .kap { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 10px; padding-bottom: 10px; }
+/* Büyük yazı ayarlı telefonlarda (Instagram'ın uygulama içi tarayıcısı yazıyı büyütür) marka ve düğme
+   yan yana sığmazsa düğme alt satıra iner; üst üste binmez (14 Ekim 2026). */
+header .kap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px;
+  padding-top: 10px; padding-bottom: 10px; }
 .marka { display: flex; align-items: center; gap: 10px; color: var(--yazi); text-decoration: none; min-width: 0; }
-.ag { width: 38px; height: 42px; border: 2px solid var(--vurgu); border-radius: 6px; display: grid; place-items: center;
+.marka > span { min-width: 0; }
+.ag { width: 2.25em; height: 2.5em; border: 2px solid var(--vurgu); border-radius: 6px; display: grid; place-items: center;
   font-weight: 800; color: var(--vurgu); flex: none; }
 .marka b { display: block; font-size: 19px; line-height: 1.1; }
 .marka small { display: block; color: var(--soluk); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.dugme { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 16px;
-  border-radius: 999px; background: var(--yazi); color: var(--zemin); font-weight: 700; text-decoration: none; white-space: nowrap; }
+.dugme { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 8px 16px;
+  max-width: 100%; border-radius: 999px; background: var(--yazi); color: var(--zemin); font-weight: 700; line-height: 1.2;
+  text-align: center; text-decoration: none; }
+header .dugme { flex: none; margin-left: auto; white-space: nowrap; }
 .dugme.ikincil { background: transparent; color: var(--yazi); border: 1.5px solid var(--cizgi); }
 
 section { padding: 30px 0 8px; }
@@ -131,7 +137,7 @@ footer p { margin: 6px 0; }
       <span class="ag" aria-hidden="true">Ag</span>
       <span><b>Gümüş</b><small>{{ hesap }}</small></span>
     </a>
-    <a class="dugme" href="{{ instagram }}">Instagram'da takip et</a>
+    <a class="dugme" href="{{ instagram }}" aria-label="Instagram'da {{ hesap }} hesabını takip et">Takip et</a>
   </div>
 </header>
 
