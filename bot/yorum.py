@@ -235,7 +235,12 @@ def haftanin_gelismeleri(bugun, anahtar=None):
             parcalar.append(metin)
         ozet = "".join(parcalar).strip()
         if not kaynaklar:
-            raise RuntimeError("özette kaynak gösterilen bilgi yok")
+            # Nedeni görünsün: kaç arama yapıldı, kaç sonuç geldi, arama hata kodu döndü mü.
+            aramalar = [b.get("content") for b in bloklar if b.get("type") == "web_search_tool_result"]
+            hatalar = sorted({c.get("error_code", "?") for c in aramalar if isinstance(c, dict)})
+            sonuc = sum(len(c) for c in aramalar if isinstance(c, list))
+            raise RuntimeError(f"özette kaynak gösterilen bilgi yok ({arama} arama, {sonuc} sonuç, {len(ozet)} karakter"
+                               + (f", arama hataları: {', '.join(hatalar)}" if hatalar else "") + ")")
         print(f"Haftanın gelişmeleri derlendi ({arama} arama, {len(kaynaklar)} kaynak, {len(ozet)} karakter, "
               f"{cikti_token} çıktı token)")
         return {"metin": ozet, "kaynaklar": list(kaynaklar.values()), "arama": arama, "model": MODEL}
