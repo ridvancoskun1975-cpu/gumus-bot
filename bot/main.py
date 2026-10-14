@@ -263,13 +263,16 @@ def fiyatlari_al(kaydet=True):
     }
 
 
-def _hafta_ayir(tarihler):
-    """Son tamamlanan haftanın kayıtlı iş günlerini ve önceki haftanın son kayıtlı gününü döndürür.
+def _hafta_ayir(tarihler, bugun=None):
+    """Son tamamlanan haftanın kayıtlı iş günlerini ve karşılaştırma gününü döndürür: (günler, önceki_gün).
 
     Hafta sonu çalışınca biten haftayı, hafta içi (elle) çalışınca yarım kalan bu
     haftayı değil bir önceki tam haftayı alır.
+    Önceki haftaya ait kayıt yoksa (kayıtlar bu hafta başladı, 13 Ekim 2026) özet atlanmaz: önceki_gün None
+    döner ve değişim haftanın ilk kaydına göre hesaplanır (kısmi hafta; aylık özetteki kuralın aynısı).
+    Rıdvan, 14 Ekim 2026: ilk haftadan eksik olamaz; ücretsiz ve zahmetsiz olsun (dış geçmiş verisi yok).
     """
-    bugun = datetime.now(TR_SAAT).date()
+    bugun = bugun or datetime.now(TR_SAAT).date()
     if bugun.weekday() < 5:
         sinir = bugun - timedelta(days=bugun.weekday())       # bu haftanın pazartesi
     else:
@@ -280,20 +283,26 @@ def _hafta_ayir(tarihler):
     if len(bu_hafta) < 2:
         raise VeriYok(f"{pazartesi:%d.%m.%Y} haftası için yeterli günlük kayıt yok ({len(bu_hafta)} gün).")
     if not onceki:
-        raise VeriYok("Önceki haftaya ait kayıt yok; haftalık değişim hesaplanamıyor.")
+        if any(d < pazartesi for d in tarihler):
+            raise VeriYok("Önceki haftaya ait kayıt yok; haftalık değişim hesaplanamıyor.")
+        print(f"Kayıtlar {bu_hafta[0]:%d.%m.%Y}'de başladı: haftalık değişim haftanın ilk kaydına göre (kısmi hafta).")
+        return bu_hafta, None
     return bu_hafta, onceki[-1]
 
 
 def haftalik_fiyatlari_al():
     gecmis = {date.fromisoformat(k): v for k, v in gecmis_oku().items()}
     gunler, onceki_gun = _hafta_ayir(gecmis)
-    son, once = gecmis[gunler[-1]], gecmis[onceki_gun]
+    kismi = onceki_gun is None
+    baz_gun = gunler[0] if kismi else onceki_gun
+    son, once = gecmis[gunler[-1]], gecmis[baz_gun]
     return {
         "gram": son["gram"], "gram_once": once["gram"],
         "parite": son["altin"] / son["gumus"], "parite_once": once["altin"] / once["gumus"],
         "dolar": son["dolar"], "dolar_once": once["dolar"],
         "kur_tarihi": son["kur_tarihi"],
         "son_saat": son["saat"],
+        "kismi": kismi, "baz_tarih": baz_gun.isoformat(),
         "gunluk": [{"tarih": g.isoformat(), "gram": gecmis[g]["gram"]} for g in gunler],
     }
 
@@ -347,13 +356,16 @@ def ornek_aylik(kismi=False):
     return f
 
 
-def ornek_haftalik():
+def ornek_haftalik(kismi=False):
     f = ornek_fiyatlar()
-    f["gram_once"] = 99.85
     f["son_saat"] = "20:00"
     f["gunluk"] = [{"tarih": t, "gram": v} for t, v in
                    [("2026-10-05", 100.62), ("2026-10-06", 101.94), ("2026-10-07", 101.18),
                     ("2026-10-08", 102.49), ("2026-10-09", 103.79)]]
+    if kismi:                                   # kayıtlar hafta ortasında başlamış: salı–cuma, baz salı
+        f["gunluk"] = f["gunluk"][1:]
+    f["gram_once"] = f["gunluk"][0]["gram"] if kismi else 99.85
+    f.update({"kismi": kismi, "baz_tarih": f["gunluk"][0]["tarih"] if kismi else "2026-10-02"})
     return f
 
 
@@ -514,13 +526,19 @@ def haftalik_veri_hazirla(f, hesap):
     else:
         v["aralik"] = f"{ilk.day:02d} {AYLAR[ilk.month - 1]} – {son.day:02d} {AYLAR[son.month - 1]} {son.year}"
     v["son_an"] = f"{GUNLER[son.weekday()]} {f.get('son_saat', '')}".strip()
+    v["kismi"] = bool(f.get("kismi"))
+    baz = date.fromisoformat(f["baz_tarih"]) if f.get("baz_tarih") else None
+    # Kısmi haftada (kayıtlar bu hafta başladı) karşılaştırma haftanın ilk kaydına göre; görselde ve açıklamada yazılır
+    v["baz_metin"] = (f"{GUNLER[baz.weekday()]} {baz.day} {AY_DEN[baz.month - 1]} bu yana" if v["kismi"]
+                      else "önceki haftanın son değerine göre")
+    v["baz_gorsel"] = v["baz_metin"] if v["kismi"] else "Önceki haftanın son değerine göre"
     v["buyuk_hareket"] = buyuk_hareket(v["gram_deg"], "bu hafta", BUYUK_HAREKET_HAFTALIK)
     v["en_yuksek"] = tr_sayi(max(degerler), 2)
     v["en_dusuk"] = tr_sayi(min(degerler), 2)
 
-    # Grafik: gram gümüşün günlük değerleri, önceki haftanın son değeri kesikli çizgi
+    # Grafik: gram gümüşün günlük değerleri, önceki haftanın son değeri kesikli çizgi (kısmi haftada çizgi yok)
     gen, yuk, kenar, yan = 904, 230, 30, 64
-    tum = degerler + [f["gram_once"]]
+    tum = degerler + ([] if v["kismi"] else [f["gram_once"]])
     alt_s, ust_s = min(tum), max(tum)
     aralik = (ust_s - alt_s) or 1
     adim = (gen - 2 * yan) / max(len(degerler) - 1, 1)
@@ -534,7 +552,7 @@ def haftalik_veri_hazirla(f, hesap):
                 for i, (g, d) in enumerate(zip(gunler, degerler))]
     v["grafik"] = {"gen": gen, "yuk": yuk, "noktalar": noktalar,
                    "cizgi": " ".join(f"{n['x']},{n['y']}" for n in noktalar),
-                   "onceki_y": y(f["gram_once"]), "yon": v["gram_deg"]["yon"]}
+                   "onceki_y": None if v["kismi"] else y(f["gram_once"]), "yon": v["gram_deg"]["yon"]}
     return v
 
 
@@ -701,8 +719,9 @@ def aciklama_yaz(v, tur):
             f"Altın/Gümüş paritesi: {v['parite']} ({p['isaret']} {p['metin']})\n"
             f"Dolar/TL: {v['dolar']} ₺ ({d['isaret']} {d['metin']})\n\n"
             "Günlük değerler iş günlerinin son paylaşımına (yaklaşık 20:00) aittir; "
-            "değişimler önceki haftanın son değerine göredir.\n"
-            "Sizce gümüş gelecek hafta ne yöne gider? Yorumlara yazın 👇\n"
+            + (f"değişimler {v['baz_metin']}dır (günlük kayıtlar o gün başladı; önceki haftaya ait kayıt yok).\n"
+               if v["kismi"] else "değişimler önceki haftanın son değerine göredir.\n")
+            + "Sizce gümüş gelecek hafta ne yöne gider? Yorumlara yazın 👇\n"
             f"{PAYLASIM_SATIRI + chr(10) if v.get('buyuk_hareket') else ''}\n"
             "Bilgi amaçlıdır, yatırım tavsiyesi değildir.\n\n"
             f"{_kaynak_satirlari(v)}\n\n"
@@ -788,7 +807,7 @@ def kapak_verisi(tur, veri):
         alt = f"{yil} · {veri['baz_metin'] if veri['kismi'] else 'önceki aya göre'}"
     elif tur == "hafta":
         gun = veri["aralik"].rsplit(" ", 1)[0]          # "05–09 Ekim" (yıl alt satırda)
-        alt = f"{veri['aralik'].rsplit(' ', 1)[1]} · önceki haftaya göre"
+        alt = f"{veri['aralik'].rsplit(' ', 1)[1]} · " + (veri["baz_metin"] if veri["kismi"] else "önceki haftaya göre")
     else:
         gun = f"{simdi.day} {AYLAR[simdi.month - 1]}"
         alt = f"{GUNLER[simdi.weekday()]} · {veri['saat']}"
@@ -1559,7 +1578,7 @@ def hazirla(tur, cikti, ornek, konu=None):
         return
     try:
         if tur == "hafta":
-            fiyat = ornek_haftalik() if ornek else haftalik_fiyatlari_al()
+            fiyat = ornek_haftalik(kismi=os.environ.get("ORNEK_KISMI") == "1") if ornek else haftalik_fiyatlari_al()
         elif tur == "ay":
             fiyat = ornek_aylik(kismi=os.environ.get("ORNEK_KISMI") == "1") if ornek else aylik_fiyatlari_al()
         else:

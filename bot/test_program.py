@@ -55,7 +55,12 @@ a = p(2026, 10, 14)
 r = satir(a, "Gümüş rehberi")
 kontrol("14 Ekim: rehber satırı ilk hafta + düzen", "21 Ekim'e kadar hafta içi her gün, sonra salı ve perşembe" in r["ek"], r)
 kontrol("14 Ekim: sıradaki bugünle başlar", "sıradaki: 14, 15, 16 ve 19 Ekim" in r["ek"], r)
-kontrol("14 Ekim: haftalık ilki 24 Ekim", "ilki 24 Ekim Cumartesi" in " ".join(satir(a, "Haftalık")["ek"]), satir(a, "Haftalık"))
+kontrol("14 Ekim: haftalık ilki 17 Ekim (kısmi hafta), not yok", satir(a, "Haftalık")["ek"] == [], satir(a, "Haftalık"))
+kontrol("ilk haftalık 17 Ekim (kayıtlar 13 Ekim'de başladı, önceki hafta boş)",
+        prg.ilk_haftalik(date(2026, 10, 14), {KAYIT_BAS, date(2026, 10, 14)}) == date(2026, 10, 17))
+kontrol("önceki haftalar kayıtlıyken boş hafta özet vermez",
+        prg.ilk_haftalik(date(2026, 10, 14), {date(2026, 10, 1), date(2026, 10, 13), date(2026, 10, 14)}) == date(2026, 10, 24)
+        and prg.ilk_haftalik(date(2026, 10, 14), {date(2026, 9, 30)}) == date(2026, 10, 24))
 kontrol("14 Ekim: kısa Reels 17 Ekim #3", "17 Ekim Cumartesi (rehber #3)" in " ".join(satir(a, "Rehberden kısa")["ek"]))
 kontrol("14 Ekim: aylık 2 Kasım", "2 Kasım Pazartesi" in " ".join(satir(a, "Aylık")["ek"]))
 kontrol("14 Ekim: ECB ~17:00 (yaz saati)", a["ecb"]["saat"] == "~17:00", a["ecb"])

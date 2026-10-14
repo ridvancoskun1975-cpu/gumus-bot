@@ -6,7 +6,7 @@ Instagram'a otomatik paylaşım yapar:
 |---|---|
 | ~10:00 | Reels (7 sn video) |
 | ~20:00 | Günün özeti (10 sn video) |
-| Cumartesi ~10:00 | Haftalık özet (10 sn video: haftanın son değeri, günlük grafik, en yüksek/en düşük) |
+| Cumartesi ~10:00 | Haftalık özet (10 sn video: haftanın son değeri, günlük grafik, en yüksek/en düşük). Değişim önceki haftanın son değerine göre; önceki haftaya ait kayıt yoksa (kayıtlar o hafta başladıysa) özet atlanmaz, haftanın ilk kaydına göre hesaplanır ve bu görselde ve açıklamada yazılır (kısmi hafta, ilki 17 Ekim 2026). Yerelde kısmi örnek: `ORNEK_KISMI=1 python bot/main.py hazirla --tur hafta --ornek --cikti <klasör>` |
 | Pazar ~11:00 | Yapay zekâ yorumu: kısa, orta ve uzun vade (kaydırmalı 4 görsel, müziksiz) |
 
 Hepsi müzikli Reels olarak paylaşılır ve profil ızgarasında da görünür. Günün özeti ve haftalık özet aynı videoyla hikâyeye de konur (hikâye başarısız olursa Reels etkilenmez). Açıklamalarda en fazla 5 hashtag var (Instagram sınırı). Etiketler paylaşımlara dağıtılır: Reels, günün özeti ve haftalık özet farklı set kullanır; haftalık özet iki set arasında hafta hafta döner. Değiştirmek için bot/main.py → HASHTAG_REELS / HASHTAG_POST / HASHTAG_HAFTA.

@@ -32,13 +32,15 @@
       </div>
       <span class="kahraman-birim" style="font-size: 64px; padding-bottom: 18px">₺</span>
     </div>
-    <div class="soluk" style="font-size: 26px">Önceki haftanın son değerine göre · en yüksek {{ en_yuksek }} ₺ · en düşük {{ en_dusuk }} ₺</div>
+    <div class="soluk" style="font-size: 26px">{{ baz_gorsel }} · en yüksek {{ en_yuksek }} ₺ · en düşük {{ en_dusuk }} ₺</div>
   </div>
 
   {% set gr = grafik %}
   <svg width="{{ gr.gen }}" height="{{ gr.yuk + 70 }}" viewBox="0 -34 {{ gr.gen }} {{ gr.yuk + 70 }}" style="display: block">
+    {% if gr.onceki_y is not none %}
     <line x1="0" x2="{{ gr.gen }}" y1="{{ gr.onceki_y }}" y2="{{ gr.onceki_y }}" stroke="var(--cizgi)" stroke-width="3" stroke-dasharray="10 10"></line>
     <text x="{{ gr.gen }}" y="{{ gr.onceki_y - 10 }}" text-anchor="end" class="grafik-etiket">geçen hafta</text>
+    {% endif %}
     <polyline id="grafik-cizgi" points="{{ gr.cizgi }}" fill="none" stroke="var(--{{ gr.yon }})" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"></polyline>
     {% for n in gr.noktalar %}
     <g class="grafik-nokta" data-oran="{{ n.oran }}">

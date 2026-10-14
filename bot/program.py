@@ -162,13 +162,15 @@ def _kayitli_mi(gun, kayitlar, bugun):
 
 def ilk_haftalik(bugun, kayitlar):
     """Bugünden itibaren haftalık özetin gerçekten çıkacağı ilk cumartesi (bot/main.py → _hafta_ayir kuralı:
-    biten haftada en az 2 kayıt ve önceki haftada en az 1 kayıt)."""
+    biten haftada en az 2 kayıt; önceki haftada kayıt yoksa ancak kayıtlar o hafta başladıysa çıkar, kısmi hafta)."""
     cumartesi = bugun + timedelta(days=(5 - bugun.weekday()) % 7)
     for _ in range(60):
         pazartesi = cumartesi - timedelta(days=5)
         bu = [pazartesi + timedelta(days=i) for i in range(5)]
         once = [pazartesi - timedelta(days=7 - i) for i in range(7)]
-        if sum(_kayitli_mi(g, kayitlar, bugun) for g in bu) >= 2 and any(_kayitli_mi(g, kayitlar, bugun) for g in once):
+        onceki_var = any(_kayitli_mi(g, kayitlar, bugun) for g in once)
+        kayitlar_bu_hafta_basladi = not any(g < pazartesi for g in kayitlar)
+        if sum(_kayitli_mi(g, kayitlar, bugun) for g in bu) >= 2 and (onceki_var or kayitlar_bu_hafta_basladi):
             return cumartesi
         cumartesi += timedelta(days=7)
     return None
