@@ -3,9 +3,11 @@
 Kullanım (iş akışı her paylaşımda çağırır, hazirla'dan sonra):
   python bot/sayfa.py --cikti site [--ornek]
 
-site/index.html'i (önceki sade dosya listesinin yerine) son fiyatlar, gram ↔ TL hesap makinesi,
-son günlerin tablosu ve grafiği, hesaplama yöntemi, yayımlanmış Gümüş rehberi bölümleri ve
-kaynaklarla yeniden yazar. Ayrıca WhatsApp/Instagram bağlantı önizlemesi için og.png (1200×630),
+site/index.html'i son fiyatlar, gram ↔ TL hesap makinesi, son günlerin tablosu ve grafiği, hesaplama
+yöntemi, paylaşım takvimi ve kaynaklarla yeniden yazar. Gümüş rehberi ayrı sayfadadır (site/rehber/):
+yalnızca başlıklar görünür, başlığa dokununca açılır; Instagram'da yayımlanmış bölümler ve ayrıntılı
+bilgi (bot/ayrintili.py). Ana sayfa şişmesin diye rehberden orada yalnızca bir bağlantı kartı var
+(Rıdvan, 14 Ekim 2026). Ayrıca WhatsApp/Instagram bağlantı önizlemesi için og.png (1200×630),
 fontlar ve sitemap.xml üretir. GitHub Pages her yayında siteyi baştan kurduğu için sayfa her
 çalıştırmada yeniden üretilir.
 
@@ -24,6 +26,7 @@ from urllib.parse import quote
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import bilgi  # noqa: E402
 import main as bot  # noqa: E402
+import ayrintili  # noqa: E402
 import program as prg  # noqa: E402
 
 GRAFIK_GUN = 30        # grafikteki en fazla iş günü
@@ -110,6 +113,17 @@ def _program(simdi, kayit_gunleri):
         return None
 
 
+def _ayrintili(simdi):
+    """Ayrıntılı rehber (bot/ayrintili.py). Gözden geçirme tarihi geçtiyse uyarı verir ve sayfada not gösterir."""
+    eski = simdi.date() > ayrintili.SONRAKI_GOZDEN_GECIRME
+    if eski:
+        print(f"::warning::Bilgi sayfası: ayrıntılı rehberin rakamları {ayrintili.SONRAKI_GOZDEN_GECIRME} itibarıyla "
+              "gözden geçirilmeli (yeni World Silver Survey / USGS raporları); bot/ayrintili.py")
+    g = ayrintili.GOZDEN_GECIRME
+    return {"bolumler": ayrintili.BOLUMLER, "eski": eski, "kaynak_donemi": ayrintili.KAYNAK_DONEMI,
+            "gozden_gecirme": f"{g.day} {bot.AYLAR[g.month - 1]} {g.year}"}
+
+
 def _kaynaklar():
     """Kaynak satırları botun kullandığı adreslerden (kaynak değişirse sayfa da değişsin)."""
     from urllib.parse import urlparse
@@ -126,9 +140,10 @@ def _kaynaklar():
             "kur_ad": kur_site.split(".")[0].capitalize(), "kur_url": f"https://{kur_site}"}
 
 
-def _rehber(simdi, saat=None):
-    """Instagram'da yayımlanmış rehber bölümleri (yeniden eskiye) ve sıradaki bölüm."""
-    yayimlanan, siradaki = [], None
+def _rehber(simdi):
+    """Instagram'da yayımlanmış rehber bölümleri (#1'den başlayarak). Henüz paylaşılmamış bölümler
+    sayfada görünmez; paylaşıldığı gün (REHBER_SAATI'nden sonra) eklenir."""
+    yayimlanan = []
     bugun = simdi.date()
     saat_gecti = (simdi.hour, simdi.minute) >= REHBER_SAATI
     for gun, no in bilgi.yayim_listesi():
@@ -136,9 +151,7 @@ def _rehber(simdi, saat=None):
             b = bilgi.BOLUMLER[no - 1]
             yayimlanan.append({"no": no, "tarih": _kisa_tarih(gun), "baslik": b["baslik"], "alt": b["alt"],
                                "sayfalar": b["sayfalar"]})
-        elif siradaki is None:
-            siradaki = {"no": no, "baslik": bilgi.BOLUMLER[no - 1]["baslik"], "tarih": _tarih(gun, saat)}
-    return list(reversed(yayimlanan)), siradaki
+    return sorted(yayimlanan, key=lambda b: b["no"])
 
 
 def veri_hazirla(gecmis, simdi=None):
@@ -159,7 +172,7 @@ def veri_hazirla(gecmis, simdi=None):
                       "saat": k.get("saat", ""), "gram": bot.tr_sayi(k["gram"]), "deg": d})
 
     program = _program(simdi, [g for g, _ in kayitlar])
-    rehber, siradaki = _rehber(simdi, program["rehber_saati"] if program else None)
+    rehber = _rehber(simdi)
     hesap = bot.hesap_adi() or "@gumusagtr"
     url = site_adresi()
     guncelleme = _tarih(gun, son.get("saat"))
@@ -189,7 +202,7 @@ def veri_hazirla(gecmis, simdi=None):
         "grafik": _grafik(kayitlar),
         "ilk_kayit": _tarih(kayitlar[0][0]),
         "rehber": rehber,
-        "siradaki": siradaki,
+        "ayrintili": _ayrintili(simdi),
         "program": program,
         "kaynak": _kaynaklar(),
         "yil": simdi.year,
@@ -201,7 +214,10 @@ def uret(cikti, gecmis, simdi=None):
 
     v = veri_hazirla(gecmis, simdi)
     env = Environment(loader=FileSystemLoader(str(bot.SABLONLAR)), autoescape=True)
-    (cikti / "index.html").write_text(env.get_template("sayfa.html").render(**v), encoding="utf-8")
+    (cikti / "index.html").write_text(env.get_template("sayfa.html").render(**v, kok=""), encoding="utf-8")
+    (cikti / "rehber").mkdir(exist_ok=True)
+    (cikti / "rehber" / "index.html").write_text(env.get_template("rehber.html").render(**v, kok="../"),
+                                                 encoding="utf-8")
 
     fontlar = cikti / "fonts"
     fontlar.mkdir(exist_ok=True)
@@ -209,11 +225,13 @@ def uret(cikti, gecmis, simdi=None):
         if f.suffix in (".woff2", ".txt"):
             shutil.copy2(f, fontlar / f.name)
 
+    gun = (simdi or datetime.now(bot.TR_SAAT)).date().isoformat()
     (cikti / "sitemap.xml").write_text(
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-        f'<url><loc>{v["url"]}</loc><lastmod>{(simdi or datetime.now(bot.TR_SAAT)).date().isoformat()}</lastmod>'
-        '<changefreq>daily</changefreq></url></urlset>\n', encoding="utf-8")
+        f'<url><loc>{v["url"]}</loc><lastmod>{gun}</lastmod><changefreq>daily</changefreq></url>'
+        f'<url><loc>{v["url"]}rehber/</loc><lastmod>{gun}</lastmod><changefreq>weekly</changefreq></url>'
+        '</urlset>\n', encoding="utf-8")
 
     # Bağlantı önizlemesi (WhatsApp, Instagram DM): güncel fiyatlı görsel
     try:

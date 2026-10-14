@@ -157,6 +157,29 @@ BOLUMLER = [
                 ],
             },
             {
+                "baslik": "Başka ayarlar",
+                "tablo": [
+                    ("958", "%95,8 gümüş · Britannia"),
+                    ("830", "%83 gümüş"),
+                    ("800", "%80 gümüş · en düşük"),
+                ],
+                "maddeler": [
+                    "Uluslararası damga sözleşmesinde gümüş için en düşük ayar 800'dür; "
+                    "830, 925, 958 ve 999 gibi ayarlar da tanınır.",
+                    "958 ayarı İngiltere'de Britannia ayarı olarak bilinir.",
+                ],
+                "kaynak": "Kaynak: Hallmarking Convention teknik kararları; İngiltere Hallmarking Act 1973",
+            },
+            {
+                "baslik": "Külçede ne yazar?",
+                "maddeler": [
+                    "Uluslararası piyasadaki büyük külçelerde rafineri damgası, seri numarası, "
+                    "saflık ve 2019'dan beri üretim ayı ile yılı bulunur.",
+                    "Bu külçeler yaklaşık 1.000 ons (±%10) ağırlığında ve en az 999 saflıktadır.",
+                ],
+                "kaynak": "Kaynak: LBMA Good Delivery teknik şartları",
+            },
+            {
                 "baslik": "Fiyata etkisi",
                 "maddeler": [
                     "Paylaşımlarımızdaki gram fiyat saf gümüş içindir.",
@@ -455,8 +478,9 @@ BOLUMLER = [
             {
                 "baslik": "Büyük külçe",
                 "maddeler": [
-                    "Uluslararası piyasada el değiştiren standart külçe 750–1.100 ons (yaklaşık "
-                    "23–34 kg) ağırlığında ve en az 999 saflıktadır.",
+                    "Uluslararası piyasada el değiştiren standart külçe yaklaşık 1.000 ons (±%10; "
+                    "yaklaşık 28–34 kg) ağırlığında ve en az 999 saflıktadır. 2025'ten önce "
+                    "üretilenlerde aralık 750–1.100 ons.",
                     "Bu külçeler genelde bankalar, rafineriler ve fonlar arasında el değiştirir.",
                 ],
                 "kaynak": "Kaynak: LBMA Good Delivery kuralları",

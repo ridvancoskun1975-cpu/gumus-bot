@@ -48,7 +48,7 @@ jobs:
           HESAP_ADI: ${{ vars.HESAP_ADI }}
         run: |
           python bot/sayfa.py --cikti site
-          test -f site/og.png && grep -q "Gram gümüş fiyatı" site/index.html
+          test -f site/og.png && grep -q "Gram gümüş fiyatı" site/index.html && grep -q "Gümüş rehberi" site/rehber/index.html
 
       - uses: actions/upload-pages-artifact@v3
         with:

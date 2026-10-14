@@ -1,0 +1,90 @@
+{#- Gümüş rehberi sayfası (bot/sayfa.py üretir → site/rehber/index.html). Yalnızca başlıklar görünür;
+    başlığa dokununca açılır (Rıdvan, 14 Ekim 2026: "rehber ayrı bir yerde durur ve başlıklar olur.
+    İnsanlar başlıklara bastığı zaman genişler."). Bölümler Instagram'da paylaşıldıkça eklenir. -#}
+{% extends "taban.html" %}
+{% block bas %}
+<title>Gümüş Rehberi: Ons, Gram, Ayar, Fiyat Geçmişi · {{ hesap }}</title>
+<meta name="description" content="Gümüş rehberi: ons ve gram hesabı, ayar ve damga, fiyat geçmişi, arz ve talep, Türkiye'de vergi. Başlık başlık, kaynaklı. Bilgi amaçlıdır, yatırım tavsiyesi değildir.">
+<link rel="canonical" href="{{ url }}rehber/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:site_name" content="Gümüş · {{ hesap }}">
+<meta property="og:title" content="Gümüş rehberi · {{ hesap }}">
+<meta property="og:description" content="Ons ve gram hesabı, ayar, fiyat geçmişi, arz ve talep; başlık başlık.">
+<meta property="og:url" content="{{ url }}rehber/">
+<meta property="og:image" content="{{ url }}og.png?v={{ surum }}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+{% endblock %}
+
+{% block icerik %}
+  <a class="geri" href="../">← Gram gümüş fiyatı ve hesap makinesi</a>
+
+  <section aria-labelledby="h-rehber" style="padding-top: 14px">
+    <h1 id="h-rehber" style="font-size: 30px">Gümüş rehberi</h1>
+    <p class="soluk" style="margin: 8px 0 0">Başlığa dokunun, açılsın. Yeni bölümler Instagram'da paylaşıldıkça eklenir.</p>
+
+    {% if rehber %}
+    <h2 class="etiket grup">Bölümler</h2>
+    {% for b in rehber %}
+    <details id="b{{ b.no }}">
+      <summary><span class="no">#{{ '%02d'|format(b.no) }}</span><span><b>{{ b.baslik }}</b></span></summary>
+      <div class="bolum">
+        <p class="soluk" style="margin: 0">{{ b.alt }}</p>
+        {% for s in b.sayfalar %}
+        <h3>{{ s.baslik }}</h3>
+        {% if s.buyuk %}<div><span class="buyuk">{{ s.buyuk }}</span> <span class="soluk">{{ s.buyuk_alt }}</span></div>{% endif %}
+        {% if s.formul %}<div class="formul">{{ s.formul }}</div>{% endif %}
+        {% if s.tablo %}<table><tbody>{% for e, d in s.tablo %}<tr><td>{{ e }}</td><td class="s">{{ d }}</td></tr>{% endfor %}</tbody></table>{% endif %}
+        {% if s.maddeler %}<ul class="duz">{% for m in s.maddeler %}<li>{{ m }}</li>{% endfor %}</ul>{% endif %}
+        {% if s.kaynak %}<p class="kaynak">{{ s.kaynak }}</p>{% endif %}
+        {% endfor %}
+        <p class="kaynak">Bölüm #{{ b.no }} · Instagram'da {{ b.tarih }}{% if program and program.rehber_hikaye %} · Öne çıkanlar › Rehber{% endif %}</p>
+      </div>
+    </details>
+    {% endfor %}
+    {% endif %}
+
+    {% if ayrintili %}
+    <h2 class="etiket grup">Ayrıntılı bilgi</h2>
+    {% if ayrintili.eski %}<p class="not uyari">Bu bölümdeki yıllık rakamların yeni raporlarla güncellenmesi bekleniyor.</p>{% endif %}
+    {% for b in ayrintili.bolumler %}
+    <details id="a-{{ b.id }}">
+      <summary><span><b>{{ b.baslik }}</b></span></summary>
+      <div class="bolum">
+        {% if b.giris %}<p>{{ b.giris }}</p>{% endif %}
+        {% if b.tablo %}
+        <div class="a-tablo-kap"><table class="a-tablo">
+          {% set ns = namespace(s=[]) %}{% for h in b.tablo.basliklar %}{% set ns.s = ns.s + [(b.tablo.sayisal[loop.index0] if b.tablo.sayisal else (not loop.first and b.tablo.basliklar|length > 2))] %}{% endfor %}
+          {% if b.tablo.basliklar and b.tablo.basliklar[0] %}<thead><tr>{% for h in b.tablo.basliklar %}<th{% if ns.s[loop.index0] %} class="s"{% endif %}>{{ h }}</th>{% endfor %}</tr></thead>{% endif %}
+          <tbody>{% for r in b.tablo.satirlar %}<tr>{% for c in r %}<td{% if ns.s[loop.index0] %} class="s"{% endif %}>{{ c }}</td>{% endfor %}</tr>{% endfor %}</tbody>
+        </table></div>
+        {% endif %}
+        {% if b.maddeler %}<ul class="duz">{% for m in b.maddeler %}<li>{{ m }}</li>{% endfor %}</ul>{% endif %}
+        {% if b.not %}<p class="kaynak">{{ b.not }}</p>{% endif %}
+        {% if b.kaynaklar %}<p class="kaynak">Kaynak: {% for ad, u in b.kaynaklar %}<a href="{{ u }}" rel="noopener">{{ ad }}</a>{% if not loop.last %} · {% endif %}{% endfor %}</p>{% endif %}
+      </div>
+    </details>
+    {% endfor %}
+    <p class="not">Ayrıntılı bilgideki rakamlar {{ ayrintili.kaynak_donemi }} ve her başlıkta belirtilen kaynaklara dayanır; son doğrulama {{ ayrintili.gozden_gecirme }}.</p>
+    {% endif %}
+    <p class="not">Bilgi amaçlıdır, yatırım tavsiyesi değildir.</p>
+    <div class="dugmeler"><a class="dugme" href="{{ instagram }}">{{ hesap }} hesabını takip et</a></div>
+  </section>
+{% endblock %}
+
+{% block betik %}
+<script>
+// Bağlantı bir başlığa gidiyorsa (ör. rehber/#b3) o başlık açık gelsin
+(function () {
+  var ac = function () {
+    var id = decodeURIComponent(location.hash.slice(1));
+    var d = id && document.getElementById(id);
+    if (d && d.tagName === 'DETAILS') { d.open = true; d.scrollIntoView(); }
+  };
+  ac();
+  window.addEventListener('hashchange', ac);
+})();
+</script>
+{% endblock %}
