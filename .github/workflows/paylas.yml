@@ -128,7 +128,8 @@ jobs:
     needs: kontrol
     if: needs.kontrol.outputs.calis == 'true'
     runs-on: ubuntu-24.04   # sabit sürüm: ubuntu-latest 19 Ekim 2026 itibarıyla Ubuntu 26e geçiyor
-    timeout-minutes: 15
+    # Pazar yorumu Opus 5.5 "ekstra yüksek" çabayla yazılır; düşünme dakikalar sürebilir, süre geniş.
+    timeout-minutes: ${{ needs.kontrol.outputs.tur == 'yorum' && 45 || 15 }}
     outputs:
       devam: ${{ steps.uret.outputs.devam }}
       tur: ${{ needs.kontrol.outputs.tur }}
@@ -168,13 +169,14 @@ jobs:
 
       - name: Görseli / videoyu üret
         id: uret
-        timeout-minutes: 5
+        timeout-minutes: ${{ needs.kontrol.outputs.tur == 'yorum' && 35 || 5 }}
         env:
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
           HESAP_ADI: ${{ vars.HESAP_ADI }}
           METALCHARTS_KEY: ${{ secrets.METALCHARTS_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}   # yalnızca pazar yorumu kullanır
-          YZ_MODEL: ${{ vars.YZ_MODEL }}                         # boşsa claude-sonnet-5-5
+          YZ_MODEL: ${{ vars.YZ_MODEL }}                         # boşsa claude-opus-5-5
+          YZ_CABA: ${{ vars.YZ_CABA }}                           # boşsa xhigh (ekstra yüksek)
           KONU: ${{ inputs.konu }}
         run: |
           ek=()

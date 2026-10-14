@@ -19,27 +19,30 @@ Rakamları görsel kod tarafından yazılır, yorum metninde rakam bulunmasına 
 seviye/hedef çıkmasın). Kurum ve olay adları (Fed, TCMB, seçim, gümrük vergisi…) yalnızca haftanın
 gelişmeleri özetinde geçiyorsa kullanılabilir; özet yoksa hiç kullanılamaz.
 
-Yapay zekâ: Anthropic Claude API (ANTHROPIC_API_KEY). Haftada 2 çağrı + birkaç web araması;
-ayda yaklaşık 1 dolar.
+Yapay zekâ: Anthropic Claude API (ANTHROPIC_API_KEY), Claude Opus 5.5, "ekstra yüksek" (xhigh) çaba
+(14 Ekim 2026, Rıdvan'ın isteği). Haftada 2 çağrı + birkaç web araması. Yanıtlar akışla (streaming)
+alınır: yüksek çabada düşünme uzun sürebilir, akış bağlantının boşta kalıp kopmasını önler.
 """
 import json
 import os
 import re
 import sys
-import time
 from datetime import date, timedelta
 from urllib.parse import urlparse
 
-import requests
-
 ONS_GRAM = 31.1034768
 API_URL = "https://api.anthropic.com/v1/messages"
-MODEL = os.environ.get("YZ_MODEL", "").strip() or "claude-sonnet-5-5"
-# Sonnet 5.5'te düşünme (thinking) varsayılan olarak açık ve düşünme tokenları max_tokens'a dahil.
-# Sınır düşük kalırsa model yanıtı yazmadan kesilir (stop_reason: max_tokens; 14 Ekim 2026 denemesi).
-# Bu yüzden sınır geniş, düşünme düzeyi "medium" ile sınırlı. Gerçek maliyet kullanılan tokena göredir.
-YANIT_SINIRI = 16000
-CABA = os.environ.get("YZ_CABA", "").strip() or "medium"
+# Pazar yorumu Claude Opus 5.5 ile, "ekstra yüksek" (xhigh) çabayla yazılır (14 Ekim 2026, Rıdvan).
+# Değiştirmek için GitHub → Variables: YZ_MODEL (model), YZ_CABA (low/medium/high/xhigh/max).
+MODEL = os.environ.get("YZ_MODEL", "").strip() or "claude-opus-5-5"
+CABA = os.environ.get("YZ_CABA", "").strip() or "xhigh"
+# Opus 5.5'te düşünme (thinking) her zaman açık ve düşünme tokenları max_tokens'a dahil. Sınır düşük
+# kalırsa model yanıtı yazmadan kesilir (stop_reason: max_tokens; 14 Ekim 2026 Sonnet denemesi).
+# Belgeler yüksek çabada 64k ile başlamayı öneriyor. Gerçek maliyet kullanılan tokena göredir.
+YANIT_SINIRI = 64000
+# Bir çağrı için en uzun bekleme (sn). Akışta sunucu ara ara "ping" gönderir; bu süre iki parça
+# arasındaki en uzun sessizliktir, çağrının toplam süresi değil.
+ZAMAN_ASIMI = 600
 MODEL_ADI = "Claude, Anthropic"
 
 HASHTAG = "#gümüş #gümüşyatırımı #gümüşfiyatları #değerlimetaller #emtia"
@@ -215,7 +218,7 @@ def haftanin_gelismeleri(bugun, anahtar=None):
     try:
         bloklar, arama, cikti_token = [], 0, 0
         for _ in range(4):
-            cevap = _api(anahtar, govde, zaman_asimi=300)
+            cevap = _api(anahtar, govde)
             bloklar += cevap.get("content", [])
             arama += (cevap.get("usage", {}).get("server_tool_use") or {}).get("web_search_requests") or 0
             cikti_token += cevap.get("usage", {}).get("output_tokens") or 0
@@ -430,27 +433,26 @@ def denetle(yorum, gelismeler=None):
 
 # ---------------------------------------------------------------- yapay zekâ çağrısı
 
-def _api(anahtar, govde, zaman_asimi=120):
-    """Claude Messages API'ye istek; geçici hatalarda bekleyip yeniden dener. Yanıt JSON'u döndürür."""
-    son_hata = None
-    for deneme in range(4):
-        try:
-            r = requests.post(API_URL, json=govde, timeout=zaman_asimi, headers={
-                "x-api-key": anahtar, "anthropic-version": "2023-06-01", "content-type": "application/json"})
-        except requests.RequestException as e:
-            son_hata = e
-            time.sleep(10 * (deneme + 1))
-            continue
-        if r.status_code in (401, 403):
-            raise RuntimeError(f"Claude API anahtarı geçersiz ya da yetkisiz (HTTP {r.status_code}): {r.text[:300]}")
-        if r.status_code in (429, 500, 502, 503, 529):
-            son_hata = RuntimeError(f"HTTP {r.status_code}: {r.text[:200]}")
-            time.sleep(20 * (deneme + 1))
-            continue
-        if r.status_code >= 400:
-            raise RuntimeError(f"Claude API hatası (HTTP {r.status_code}): {r.text[:500]}")
-        return r.json()
-    raise RuntimeError(f"Claude API'ye ulaşılamadı: {son_hata}")
+def _api(anahtar, govde, zaman_asimi=ZAMAN_ASIMI):
+    """Claude Messages API'ye akışlı (streaming) istek; tamamlanan yanıtı sözlük olarak döndürür.
+
+    Yüksek çabada düşünme dakikalar sürebilir; akışsız istekte bağlantı o süre boyunca sessiz kalır ve
+    bazı ağlar boşta kalan bağlantıyı koparır. Akışta parçalar ve ping'ler sürekli gelir. Geçici
+    hatalarda (429, 5xx, 529, bağlantı) SDK bekleyip yeniden dener.
+    """
+    import anthropic
+
+    istemci = anthropic.Anthropic(api_key=anahtar, max_retries=4, timeout=zaman_asimi)
+    try:
+        with istemci.messages.stream(**govde) as akis:
+            mesaj = akis.get_final_message()
+    except (anthropic.AuthenticationError, anthropic.PermissionDeniedError) as e:
+        raise RuntimeError(f"Claude API anahtarı geçersiz ya da yetkisiz (HTTP {e.status_code}): {str(e)[:300]}")
+    except anthropic.APIStatusError as e:
+        raise RuntimeError(f"Claude API hatası (HTTP {e.status_code}): {str(e)[:500]}")
+    except anthropic.APIConnectionError as e:
+        raise RuntimeError(f"Claude API'ye ulaşılamadı: {e}")
+    return mesaj.model_dump(mode="json", exclude_none=True)
 
 
 def _cagir(anahtar, mesajlar):
@@ -460,7 +462,7 @@ def _cagir(anahtar, mesajlar):
         "system": SISTEM,
         "messages": mesajlar,
         "output_config": {"effort": CABA, "format": {"type": "json_schema", "schema": SEMA}},
-    }, zaman_asimi=300)
+    })
     if cevap.get("stop_reason") not in ("end_turn", "stop_sequence"):
         raise RuntimeError(f"Claude yanıtı tamamlanmadı (stop_reason: {cevap.get('stop_reason')})")
     metin = "".join(b.get("text", "") for b in cevap.get("content", []) if b.get("type") == "text")
