@@ -44,7 +44,7 @@ MODEL_ADI = "Claude, Anthropic"
 
 HASHTAG = "#gümüş #gümüşyatırımı #gümüşfiyatları #değerlimetaller #emtia"
 
-# pencere: gün; esnek: kayıt kısaysa eldeki en uzun süreyle (en az 4 gün) hesaplanır
+# pencere: gün; esnek: kayıt kısaysa eldeki en uzun süreyle (en az 3 gün; ilk hafta salı→cuma) hesaplanır
 VADELER = [
     {"anahtar": "kisa", "ad": "Kısa vade", "ufuk": "1–4 hafta", "pencere": 28, "etiket": "Son 4 hafta", "esnek": True},
     {"anahtar": "orta", "ad": "Orta vade", "ufuk": "1–6 ay", "pencere": 91, "etiket": "Son 3 ay", "esnek": False},
@@ -93,7 +93,7 @@ Kurallar (hepsine uy):
 7. Abartılı, heyecanlı dil yok (patlama, uçuş, çöküş, roket gibi). Sakin, sade, günlük Türkçe; Türkçe karakterleri doğru kullan.
 8. Gram gümüşün TL fiyatı ons gümüş (dolar) ile dolar/TL'nin çarpımından gelir; hareketin onstan mı kurdan mı geldiğini ayırt etmeye çalış.
 9. Vadelere göre ağırlık: kısa vadede bu haftanın fiyat hareketi, haftanın gelişmeleri ve önümüzdeki haftanın takvimi; orta vadede son aylardaki eğilim, faiz beklentileri ve kur; uzun vadede yıllık eğilim ve arz-talep gibi yapısal etkenler.
-10. Bir vade için fiyat kaydı yetersizse (veri_yeterli: false) "durum" alanında kendi kayıtlarımızın kısa olduğunu belirt; o vadeyi özetteki uzun dönem bağlam ve kur verisiyle, daha temkinli yaz.
+10. Bir vade için fiyat kaydı yetersizse (veri_yeterli: false) bu, görselde ayrıca not olarak yazılır; "durum" alanında kayıtların kısa olduğunu tekrarlama. O vadeyi özetteki uzun dönem bağlam ve kur verisiyle, daha temkinli yaz.
 
 Her vade için alanlar:
 - ozet: kapakta görünen çok kısa başlık, en fazla 5 kelime.
@@ -120,6 +120,22 @@ ARAMA_SINIRI = 6   # haftada en fazla 6 arama (~6 sent)
 # resmi kurumları tercih eder.
 ENGELLI_SITELER = ["reddit.com", "x.com", "twitter.com", "facebook.com", "instagram.com", "tiktok.com",
                    "youtube.com", "eksisozluk.com", "quora.com", "pinterest.com", "telegram.org", "t.me"]
+
+# Web araması yalnızca bu sitelerde yapılır (haber ajansları, resmi kurumlar, tanınmış ekonomi basını).
+# 14 Ekim denemesinde serbest aramada forex bonus ve hisse sinyal siteleri kaynak olarak çıktı; SPK III-37.1
+# md. 78 yorumların güvenilir kaynaklara dayanmasını istiyor. Alt alan adları da dahildir (bigpara.hurriyet.com.tr).
+# Liste boşaltılırsa yalnızca ENGELLI_SITELER uygulanır.
+GUVENILIR_SITELER = [
+    # dünya
+    "reuters.com", "bloomberg.com", "apnews.com", "cnbc.com", "marketwatch.com", "wsj.com", "ft.com",
+    "kitco.com", "fxstreet.com", "investing.com", "tradingeconomics.com", "mining.com", "cmegroup.com",
+    # kurumlar
+    "silverinstitute.org", "lbma.org.uk", "federalreserve.gov", "bls.gov", "bea.gov", "ecb.europa.eu",
+    "tcmb.gov.tr", "tuik.gov.tr",
+    # Türkiye
+    "aa.com.tr", "bloomberght.com", "dunya.com", "ekonomim.com", "hurriyet.com.tr", "haberturk.com",
+    "ntv.com.tr", "trthaber.com", "paraanaliz.com", "ekonomist.com.tr",
+]
 
 ARASTIRMA_SISTEM = """Sen bir piyasa haberleri araştırmacısısın. Bugün pazar; bir Instagram hesabında yayımlanacak gram gümüş yorumuna dayanak olacak haftanın gelişmelerini web aramasıyla derliyorsun.
 
@@ -178,7 +194,8 @@ def haftanin_gelismeleri(bugun, anahtar=None):
         "output_config": {"effort": CABA},
         "system": ARASTIRMA_SISTEM,
         "tools": [{"type": "web_search_20250305", "name": "web_search", "max_uses": ARAMA_SINIRI,
-                   "blocked_domains": ENGELLI_SITELER,
+                   **({"allowed_domains": GUVENILIR_SITELER} if GUVENILIR_SITELER
+                      else {"blocked_domains": ENGELLI_SITELER}),
                    "user_location": {"type": "approximate", "country": "TR", "timezone": "Europe/Istanbul"}}],
         "messages": [{"role": "user", "content": _arastirma_istegi(bugun)}],
     }
@@ -287,7 +304,7 @@ def vade_istatistikleri(seri, ecb):
         hedef = son_gun - timedelta(days=v["pencere"])
         gun, once = _deger_once(seri, hedef)
         etiket, kisa_kayit = v["etiket"], False
-        if gun is None and v["esnek"] and (son_gun - ilk_gun).days >= 4:
+        if gun is None and v["esnek"] and (son_gun - ilk_gun).days >= 3:
             gun, once = ilk_gun, seri[ilk_gun]
             etiket, kisa_kayit = f"Son {(son_gun - ilk_gun).days} gün", True
             hedef = ilk_gun
