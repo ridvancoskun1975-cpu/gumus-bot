@@ -292,7 +292,9 @@ def _hafta_ayir(tarihler, bugun=None):
 
 def haftalik_fiyatlari_al():
     gecmis = {date.fromisoformat(k): v for k, v in gecmis_oku().items()}
-    gunler, onceki_gun = _hafta_ayir(gecmis)
+    # YALNIZCA DENEME DALI (hafta-deneme-17-ekim; main'e alınmaz): Rıdvan 15 Ekim 00:24'te istedi —
+    # ilk haftalık özeti cuma akşamı gerçek kayıtlarla, paylaşmadan önizlemek için bugün 17 Ekim cumartesi sayılır.
+    gunler, onceki_gun = _hafta_ayir(gecmis, bugun=date(2026, 10, 17))
     kismi = onceki_gun is None
     baz_gun = gunler[0] if kismi else onceki_gun
     son, once = gecmis[gunler[-1]], gecmis[baz_gun]
