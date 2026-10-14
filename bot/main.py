@@ -1048,7 +1048,12 @@ def _yayinla(cikti, taban_url):
         except Exception as e:
             print(f"Uyarı: bağlantı alınamadı ({e})", file=sys.stderr)
         if meta.get("hikayeler"):
-            rehber_hikayeleri(kullanici_id, meta, taban_url)
+            if REHBER_HIKAYE_OTOMATIK:
+                rehber_hikayeleri(kullanici_id, meta, taban_url)
+            else:
+                print(f"Rehber #{meta['konu']} hikâye kareleri ({len(meta['hikayeler'])}) otomatik paylaşılmadı "
+                      f"(hikâye kalabalık olmasın). İstersen: Run workflow → tür: hikaye, "
+                      f"konu: {meta['konu']}, deneme kapalı.")
         return
     medya_url = taban_url.rstrip("/") + "/" + meta["dosya"]
     _url_hazir_mi(medya_url)
@@ -1064,6 +1069,10 @@ def _yayinla(cikti, taban_url):
         hikaye_paylas(kullanici_id, medya_url)
 
 
+# Rehber gönderisinden sonra bölümün kareleri hikâyeye otomatik gitmez (14 Ekim 2026, Rıdvan: hikâye bu
+# kadar kalabalık olmamalı). Kareler yine üretilir ve önizlemede durur; hikâyeye koymak elle:
+# Run workflow → tür: hikaye, konu: <no>, deneme kapalı. Otomatiği geri açmak için True yap.
+REHBER_HIKAYE_OTOMATIK = False
 HIKAYE_ARA_SN = int(os.environ.get("HIKAYE_ARA_SN", "20"))   # iki hikâye karesi arası (art arda istek yağmasın)
 _PAYLASILAN_HIKAYELER = set()   # yeniden denemede (geçici engel) aynı kare iki kez gitmesin
 
@@ -1189,7 +1198,8 @@ def bilgi_hazirla(cikti, konu=None):
     metin = bilgi.aciklama(konu)
     if len(metin) > 2200:
         raise RuntimeError(f"Açıklama Instagram sınırını aşıyor ({len(metin)} > 2200 karakter)")
-    # Aynı bölümün 9:16 hikâye kareleri: gönderiden sonra hikâyeye konur, "Rehber" öne çıkanında toplanır.
+    # Aynı bölümün 9:16 hikâye kareleri: üretilir ama otomatik paylaşılmaz (REHBER_HIKAYE_OTOMATIK);
+    # elle "hikaye" türüyle hikâyeye konup "Rehber" öne çıkanında toplanır.
     # Üretilemezse gönderi yine gider (yalnızca uyarı).
     try:
         hikayeler = rehber_hikaye_uret(cikti, konu, hesap, damga)
