@@ -40,9 +40,9 @@
       <div class="gun-alt mono">{{ kapak_alt }}</div>
     </div>
     <div>
-      <div class="soluk" style="font-size: 40px; font-weight: 700; letter-spacing: 4px; margin-bottom: 18px">GRAM GÜMÜŞ</div>
+      <div class="soluk" style="font-size: 40px; font-weight: 700; letter-spacing: 4px; margin-bottom: 18px">{{ kapak_ust or "GRAM GÜMÜŞ" }}</div>
       <div class="fiyat-satir">
-        <span class="fiyat sayi">{{ gram }}</span><span class="birim">₺</span>
+        <span class="fiyat sayi">{{ kapak_sayi or gram }}</span><span class="birim">{{ kapak_birim or "₺" }}</span>
       </div>
     </div>
     {% if ozel or gun_baslik %}
@@ -61,7 +61,10 @@
     </div>
     {% else %}
     <div class="alt-satir">
-      {% if buyuk_hareket %}
+      {% if kapak_not %}
+      <!-- Haftalık kart (bot/kart.py): büyük sayı kartın kendisi, altında kısa açıklama -->
+      <span class="vurgu" style="font-size: 54px; font-weight: 700">{{ kapak_not }}</span>
+      {% elif buyuk_hareket %}
       <div class="manset {{ buyuk_hareket.yon }}" style="font-size: 48px">
         <svg width="36" height="36" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 L22 20 H2 Z" fill="currentColor"></path></svg>
         <span>{{ buyuk_hareket.metin }}</span>

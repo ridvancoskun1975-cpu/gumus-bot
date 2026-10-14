@@ -1,0 +1,78 @@
+{% from "makrolar.html" import degisim, ag_etiketi %}<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Altın – gümüş</title>
+<style>{% include "ortak.css" %}
+/* Altın–gümüş kartı (bot/kart.py): cuma ~10:00 Reels'in yerine. Üst 220 px ve alt 420 px Reels arayüzüne bırakılır. */
+.bolum { font-size: 30px; font-weight: 700; letter-spacing: 4px; color: var(--soluk); margin: 0 0 14px; }
+.ikili { display: flex; border-top: 2px solid var(--cizgi); border-bottom: 2px solid var(--cizgi); }
+.ikili > div { flex: 1; display: flex; flex-direction: column; gap: 8px; padding: 26px 0; }
+.ikili > div + div { border-left: 2px solid var(--cizgi); padding-left: 32px; }
+.haftalar { display: flex; flex-direction: column; gap: 14px; }
+.hafta { display: grid; grid-template-columns: 130px 1fr 110px; align-items: center; gap: 18px; }
+.hafta .ad { font-size: 28px; color: var(--soluk); }
+.hafta .yol { height: 34px; border-radius: 6px; background: rgba(201, 209, 218, 0.06); overflow: hidden; }
+.hafta .cubuk { height: 100%; border-radius: 6px; background: var(--cizgi); }
+.hafta .deger { font-size: 36px; font-weight: 700; text-align: right; }
+.hafta.bugun .ad { color: var(--yazi); font-weight: 700; }
+.hafta.bugun .cubuk { background: var(--vurgu); }
+</style>
+</head>
+<body>
+<div class="sahne" style="position: relative; width: 1080px; height: 1920px; padding: 220px 170px 420px 96px">
+  <div class="isik" aria-hidden="true"></div>
+  <div class="ust">
+    <div class="ust-sol" style="gap: 16px">
+      <div class="etiket" style="gap: 14px; font-size: 28px"><span id="nokta" class="nokta" style="width: 14px; height: 14px"></span><span>{{ kart_etiket }}</span></div>
+      <h1 style="font-size: 128px; letter-spacing: -3px">Gümüş</h1>
+      <div class="tarih mono" style="font-size: 32px">{{ tarih }} · {{ saat }}</div>
+    </div>
+    {{ ag_etiketi(130, 148, '12px 14px', 22, 50, 18) }}
+  </div>
+
+  <div class="kahraman" style="gap: 12px; padding-top: 30px">
+    <div class="kahraman-baslik" style="font-size: 32px">1 GRAM ALTIN ≈</div>
+    <div style="display: flex; align-items: baseline; gap: 18px">
+      <span id="fiyat" class="kahraman-sayi sayi" style="font-size: 150px; letter-spacing: -5px"
+            data-hedef="{{ parite_sayi }}" data-once="{{ parite_gecen_sayi }}" data-basamak="1">{{ "%.1f"|format(parite_sayi)|replace(".", ",") }}</span>
+      <span class="kahraman-birim" style="font-size: 54px">gram gümüş</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 16px; font-size: 30px" class="soluk">
+      {% if parite_hafta_deg %}<span id="fiyat-deg" style="display: inline-flex; transform-origin: 0 50%">{{ degisim(parite_hafta_deg, 32, 22) }}</span>
+      <span>{{ gecen_hafta }} kapanışına göre</span>{% else %}<span>Altın/gümüş paritesi</span>{% endif %}
+    </div>
+  </div>
+
+  <div class="ikili satir">
+    <div><span class="soluk" style="font-size: 28px">Gram altın</span><span><b class="sayi" style="font-size: 60px">{{ gram_altin }}</b> <b class="vurgu" style="font-size: 36px">₺</b></span></div>
+    <div><span class="soluk" style="font-size: 28px">Gram gümüş</span><span><b class="sayi" style="font-size: 60px">{{ gram }}</b> <b class="vurgu" style="font-size: 36px">₺</b></span></div>
+  </div>
+
+  <div>
+    <div class="bolum">HAFTALARIN KAPANIŞ PARİTESİ</div>
+    <div class="haftalar">
+      {% for h in haftalar %}
+      <div class="hafta{% if h.bugun %} bugun{% endif %}">
+        <span class="ad">{{ h.ad }}</span>
+        <div class="yol"><div class="cubuk" data-oran="{{ h.oran }}" style="width: {{ h.oran }}%"></div></div>
+        <span class="deger sayi">{{ h.metin }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% if hafta_yok %}<div class="soluk" style="font-size: 26px; margin-top: 16px">Önceki haftaların değerleri kayıtlar biriktikçe eklenir.</div>{% endif %}
+  </div>
+
+  <div class="soluk" style="font-size: 26px; line-height: 1.35">Parite yükseldikçe 1 gram altın daha çok gümüşe denk gelir, düştükçe daha aza. Kapanış: haftanın son kaydı (genelde cuma ~20:00).</div>
+
+  <div class="alt">
+    <b style="font-size: 34px">{{ hesap }}</b>
+    <div class="alt-sag soluk" style="font-size: 22px; max-width: 520px">
+      <span>Bilgi amaçlıdır, yatırım tavsiyesi değildir.</span>
+      <span>Metal fiyatları: {{ kaynak_metal }}</span>
+    </div>
+  </div>
+</div>
+<script>{% include "hareket.js" %}</script>
+</body>
+</html>

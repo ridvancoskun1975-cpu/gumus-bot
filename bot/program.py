@@ -5,6 +5,7 @@ her zaman güncel kalmalı.") sayfadaki saatler, günler ve takvim buradan gelir
 - saatler ve günler: .github/workflows/paylas.yml içindeki cron satırları ve "Türü belirle" adımındaki
   cron → tür eşlemesi (eşlemede olmayan cron reels'tir, iş akışındaki "else" gibi)
 - rehber, kısa Reels ve aylık özet günleri: bot/bilgi.py → takvim(), kisa_takvim(); bot/aylik.py
+- haftalık kart günleri (~10:00 Reels'in yerine): bot/kart.py → KART_GUNLERI
 - hikâyeye de giden türler: bot/main.py → HIKAYE_TURLERI (rehber bölümleri her zaman hikâyeye de gider)
 - ilk haftalık özet ve ilk pazar yorumu: günlük kayıtların başladığı güne göre (botun kendi kurallarıyla)
 - ECB kurunun yayın saati: iş günleri 16:00 Frankfurt saati, o günün Türkiye karşılığı (yaz/kış saati)
@@ -281,6 +282,11 @@ def program(simdi=None, kayit_gunleri=(), hikaye_turleri=None, rehber_saati=(13,
             sonraki_cmt = bugun + timedelta(days=(5 - bugun.weekday()) % 7)
             if ilk and ilk > sonraki_cmt:
                 ek = [f"ilki {tek_tarih(ilk)} (önceki haftayla kıyaslamak için kayıt gerekiyor)"]
+        elif tur == "reels":
+            # Haftalık kartlar (bot/kart.py) bu saatte, o günün Reels'inin yerine gider.
+            import kart
+            ek = [", ".join(f'{GUN_ADLARI[g]} "{kart.KART_ADI[k]}" kartı' for g, k in sorted(kart.KART_GUNLERI.items()))
+                  + " (o günün Reels'i yerine; fiyat kartta da yazar)"]
         elif tur == "yorum":
             ilk = ilk_yorum(bugun, kayitlar)
             sonraki_pz = bugun + timedelta(days=(6 - bugun.weekday()) % 7)

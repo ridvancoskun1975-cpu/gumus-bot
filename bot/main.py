@@ -260,6 +260,9 @@ def fiyatlari_al(kaydet=True):
         "kur_tarihi": kur_tarihi.isoformat(),
         # Günlük başlık ve özel gün kuralları (bot/baslik.py) için önceki günlerin gram değerleri
         "gecmis_gram": {k: v["gram"] for k, v in gecmis.items() if k < bugun.isoformat()},
+        # Altın–gümüş kartı (bot/kart.py) için önceki günlerin paritesi
+        "gecmis_parite": {k: v["altin"] / v["gumus"] for k, v in gecmis.items()
+                          if k < bugun.isoformat() and v.get("gumus")},
     }
 
 
@@ -372,6 +375,11 @@ def ornek_haftalik(kismi=False):
 def ornek_fiyatlar():
     f = {"gram": 103.79, "gram_once": 102.49, "parite": 66.2, "parite_once": 66.77,
          "dolar": 49.25, "dolar_once": 49.21, "kur_tarihi": "2026-10-12"}
+    # Altın–gümüş kartı örneği: önceki 5 haftanın cuma kapanışı (örnek değerler)
+    bugun = datetime.now(TR_SAAT).date()
+    cuma = bugun - timedelta(days=bugun.weekday() + 3)
+    f["gecmis_parite"] = {(cuma - timedelta(weeks=i)).isoformat(): v
+                          for i, v in enumerate([66.77, 67.31, 65.62, 64.95, 65.88])}
     senaryo = os.environ.get("ORNEK_SENARYO", "").strip()
     if senaryo:
         f.update(ornek_senaryo(senaryo))
@@ -777,7 +785,7 @@ def gorsel_uret(tur, veri, png_yolu):
     gecici.write_text(html, encoding="utf-8")
     boyut = {"reels": (1080, 1920), "kapak": (1080, 1920), "post": (1080, 1350), "hafta": (1080, 1350), "yasal": (1080, 1350),
              "bilgi": (1080, 1350), "yorum": (1080, 1350), "ay": (1080, 1350), "kisa": (1080, 1920), "ozel": (1080, 1920),
-             "sayfa-og": (1200, 630)}[tur]
+             "kart-gram": (1080, 1920), "kart-parite": (1080, 1920), "sayfa-og": (1200, 630)}[tur]
     # Instagram görsel gönderilerde yalnızca JPEG kabul ediyor; uzantı .jpg ise JPEG kaydedilir.
     jpeg = {"quality": 92} if Path(png_yolu).suffix.lower() in (".jpg", ".jpeg") else {}
     try:
@@ -811,6 +819,10 @@ def kapak_verisi(tur, veri):
     else:
         gun = f"{simdi.day} {AYLAR[simdi.month - 1]}"
         alt = f"{GUNLER[simdi.weekday()]} · {veri['saat']}"
+    if veri.get("kart"):
+        import kart
+        return {"kapak_etiket": veri["kart_etiket"], "kapak_gun": gun, "kapak_alt": alt,
+                "gun_baslik": None, **kart.kapak_verisi(veri)}
     return {"kapak_etiket": KAPAK_ETIKET.get(tur, ""), "kapak_gun": gun, "kapak_alt": alt}
 
 
@@ -861,7 +873,8 @@ def hareketli_video_uret(tur, veri, mp4_yolu, sure=7):
              "-t", str(sure), "-vf", goruntu, *ses_filtre,
              "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-r", str(VIDEO_FPS),
              "-c:a", "aac", "-b:a", "128k", "-shortest", "-movflags", "+faststart", str(mp4_yolu)]
-    boyut = {"reels": (1080, 1920), "kisa": (1080, 1920), "ozel": (1080, 1920)}.get(tur, (1080, 1350))
+    boyut = {"reels": (1080, 1920), "kisa": (1080, 1920), "ozel": (1080, 1920),
+             "kart-gram": (1080, 1920), "kart-parite": (1080, 1920)}.get(tur, (1080, 1350))
     try:
         with sync_playwright() as p:
             kwargs = {"executable_path": os.environ["CHROME_YOLU"]} if os.environ.get("CHROME_YOLU") else {}
@@ -1592,39 +1605,65 @@ def hazirla(tur, cikti, ornek, konu=None):
     veri = hazirlayici(fiyat, hesap)
 
     damga = datetime.now(TR_SAAT).strftime("%Y%m%d-%H%M")
+    # Kart günü (bot/kart.py: çarşamba "Kaç gram eder?", cuma "Altın–gümüş"): ~10:00 Reels'in yerine kart gider.
+    # Özel gün ya da büyük hareket varsa kart atlanır. Kart üretilemezse olağan Reels'e dönülür.
+    kart_adi = None
+    if tur == "reels" and (not ornek or os.environ.get("KART")):
+        try:
+            import kart
+            kart_adi = kart.kart_turu(datetime.now(TR_SAAT).date(), veri)
+            if kart_adi == "gram":
+                veri.update(kart.gram_karti(fiyat, tr_sayi))
+            elif kart_adi == "parite":
+                veri.update(kart.parite_karti(fiyat, tr_sayi, degisim, datetime.now(TR_SAAT).date()))
+        except Exception as e:
+            print(f"::warning::Kart hazırlanamadı, olağan Reels'le devam ediliyor: {type(e).__name__}: {e}")
+            kart_adi = None
+            veri.pop("kart", None)
     # Özel günde (eşik aşıldı / en az bir aylık en yüksek) aynı paylaşım özel görselle gider.
     # Özel görsel üretilemezse paylaşım olağan görselle yapılır.
-    sablon = "ozel" if veri.get("ozel") else tur
+    sablon = "ozel" if veri.get("ozel") else (f"kart-{kart_adi}" if kart_adi else tur)
     png = cikti / f"{tur}-{damga}.png"
     try:
         gorsel_uret(sablon, veri, png)
     except Exception as e:
-        if sablon != "ozel":
+        if sablon == "ozel":
+            print(f"::warning::Özel gün görseli üretilemedi, olağan görselle devam ediliyor: {type(e).__name__}: {e}")
+            veri["ozel"], veri["baslik_notu"] = None, None
+        elif kart_adi:
+            print(f"::warning::Kart görseli üretilemedi, olağan Reels'le devam ediliyor: {type(e).__name__}: {e}")
+            veri["kart"], kart_adi = None, None
+        else:
             raise
-        print(f"::warning::Özel gün görseli üretilemedi, olağan görselle devam ediliyor: {type(e).__name__}: {e}")
-        veri["ozel"], veri["baslik_notu"], sablon = None, None, tur
+        sablon = tur
         gorsel_uret(sablon, veri, png)
     # Her paylaşım sesli video (Reels) olarak gider; özetler okunabilsin diye biraz daha uzun.
     mp4 = cikti / f"{tur}-{damga}.mp4"
-    sure = 10 if (sablon == "ozel" or tur != "reels") else 7
+    sure = 10 if (sablon == "ozel" or kart_adi or tur != "reels") else 7
     try:
         hareketli = hareketli_video_uret(sablon, veri, mp4, sure=sure)
     except Exception as e:
-        if sablon != "ozel":
+        if sablon != "ozel" and not kart_adi:
             raise
-        print(f"::warning::Özel gün videosu hareketli üretilemedi, durağan video kullanılıyor: {type(e).__name__}: {e}")
+        print(f"::warning::{'Kart' if kart_adi else 'Özel gün'} videosu hareketli üretilemedi, durağan video kullanılıyor: {type(e).__name__}: {e}")
         hareketli = False
     if not hareketli:
         video_uret(png, mp4, sure=sure)
     dosya = mp4.name
     kapak = kapak_uret(tur, veri, cikti / f"kapak-{tur}-{damga}.jpg")
 
-    aciklama = aciklama_yaz(veri, tur)
+    if kart_adi:
+        import kart
+        aciklama = kart.aciklama(veri, _ilk_satir(veri, "bugün"), _kaynak_satirlari(veri))
+    else:
+        aciklama = aciklama_yaz(veri, tur)
     (cikti / "meta.json").write_text(json.dumps({"tur": tur, "dosya": dosya, "aciklama": aciklama,
+                                                 "kart": kart_adi,
                                                  "kapak_ms": int((sure - 0.5) * 1000),
                                                  "kapak": kapak,
                                                  "baslik": _baslik_ozeti(veri),
-                                                 "fiyatlar": {k: v for k, v in fiyat.items() if k != "gecmis_gram"}},
+                                                 "fiyatlar": {k: v for k, v in fiyat.items()
+                                                              if k not in ("gecmis_gram", "gecmis_parite")}},
                                                 ensure_ascii=False, indent=2),
                                      encoding="utf-8")
     (cikti / "index.html").write_text("<!doctype html><meta charset='utf-8'><title>Gümüş bot</title>"
@@ -1634,6 +1673,8 @@ def hazirla(tur, cikti, ornek, konu=None):
     print(aciklama)
     ozet = _baslik_ozeti(veri)
     print(f"\nBaşlık: {ozet['metin']} ({ozet['tur']})" if ozet else "\nBaşlık: yok (olağan gün)")
+    if tur == "reels":
+        print(f"Kart: {kart_adi}" if kart_adi else "Kart: yok")
     print(f"Üretilen dosya: {cikti / dosya}")
 
 

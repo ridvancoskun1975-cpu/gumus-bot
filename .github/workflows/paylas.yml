@@ -20,7 +20,7 @@ on:
         options: [reels, post, hafta, ay, yasal, bilgi, kisa, yorum, hikaye]
         default: reels
       konu:
-        description: "Yalnızca bilgi, kisa ve hikaye türü: rehber bölüm no. bilgi/kisa için boşsa bugünün takvim bölümü; hikaye için zorunlu."
+        description: "bilgi, kisa, hikaye: rehber bölüm no (bilgi/kisa için boşsa bugünün bölümü; hikaye için zorunlu). reels: gram ya da parite = haftalık kart, yok = kartsız (boşsa güne göre)."
         type: string
         default: ""
       deneme:
@@ -181,7 +181,10 @@ jobs:
           KONU: ${{ inputs.konu }}
         run: |
           ek=()
-          case "${{ needs.kontrol.outputs.tur }}" in bilgi|kisa|hikaye) if [ -n "$KONU" ]; then ek=(--konu "$KONU"); fi ;; esac
+          case "${{ needs.kontrol.outputs.tur }}" in
+            bilgi|kisa|hikaye) if [ -n "$KONU" ]; then ek=(--konu "$KONU"); fi ;;
+            reels) if [ -n "$KONU" ]; then export KART="$KONU"; fi ;;   # haftalık kart (bot/kart.py) elle: gram / parite / yok
+          esac
           python bot/main.py hazirla --tur "${{ needs.kontrol.outputs.tur }}" --cikti site "${ek[@]}"
           if [ -f site/meta.json ]; then
             echo "devam=true" >> "$GITHUB_OUTPUT"
