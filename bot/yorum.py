@@ -35,6 +35,11 @@ import requests
 ONS_GRAM = 31.1034768
 API_URL = "https://api.anthropic.com/v1/messages"
 MODEL = os.environ.get("YZ_MODEL", "").strip() or "claude-sonnet-5-5"
+# Sonnet 5.5'te düşünme (thinking) varsayılan olarak açık ve düşünme tokenları max_tokens'a dahil.
+# Sınır düşük kalırsa model yanıtı yazmadan kesilir (stop_reason: max_tokens; 14 Ekim 2026 denemesi).
+# Bu yüzden sınır geniş, düşünme düzeyi "medium" ile sınırlı. Gerçek maliyet kullanılan tokena göredir.
+YANIT_SINIRI = 16000
+CABA = os.environ.get("YZ_CABA", "").strip() or "medium"
 MODEL_ADI = "Claude, Anthropic"
 
 HASHTAG = "#gümüş #gümüşyatırımı #gümüşfiyatları #değerlimetaller #emtia"
@@ -169,7 +174,8 @@ def haftanin_gelismeleri(bugun, anahtar=None):
         return None
     govde = {
         "model": MODEL,
-        "max_tokens": 3000,
+        "max_tokens": YANIT_SINIRI,
+        "output_config": {"effort": CABA},
         "system": ARASTIRMA_SISTEM,
         "tools": [{"type": "web_search_20250305", "name": "web_search", "max_uses": ARAMA_SINIRI,
                    "blocked_domains": ENGELLI_SITELER,
@@ -177,11 +183,12 @@ def haftanin_gelismeleri(bugun, anahtar=None):
         "messages": [{"role": "user", "content": _arastirma_istegi(bugun)}],
     }
     try:
-        bloklar, arama = [], 0
+        bloklar, arama, cikti_token = [], 0, 0
         for _ in range(4):
             cevap = _api(anahtar, govde, zaman_asimi=300)
             bloklar += cevap.get("content", [])
             arama += (cevap.get("usage", {}).get("server_tool_use") or {}).get("web_search_requests") or 0
+            cikti_token += cevap.get("usage", {}).get("output_tokens") or 0
             if cevap.get("stop_reason") != "pause_turn":
                 break
             # Uzun süren arama turu duraklatıldı: yanıtı olduğu gibi geri gönderip devam ettir.
@@ -211,7 +218,8 @@ def haftanin_gelismeleri(bugun, anahtar=None):
         ozet = "".join(parcalar).strip()
         if not kaynaklar:
             raise RuntimeError("özette kaynak gösterilen bilgi yok")
-        print(f"Haftanın gelişmeleri derlendi ({arama} arama, {len(kaynaklar)} kaynak, {len(ozet)} karakter)")
+        print(f"Haftanın gelişmeleri derlendi ({arama} arama, {len(kaynaklar)} kaynak, {len(ozet)} karakter, "
+              f"{cikti_token} çıktı token)")
         return {"metin": ozet, "kaynaklar": list(kaynaklar.values()), "arama": arama, "model": MODEL}
     except Exception as e:
         print(f"::warning::Haftanın gelişmeleri alınamadı ({e}); yorum yalnızca fiyat ve kur verileriyle yazılacak")
@@ -409,11 +417,11 @@ def _api(anahtar, govde, zaman_asimi=120):
 def _cagir(anahtar, mesajlar):
     cevap = _api(anahtar, {
         "model": MODEL,
-        "max_tokens": 1500,
+        "max_tokens": YANIT_SINIRI,
         "system": SISTEM,
         "messages": mesajlar,
-        "output_config": {"format": {"type": "json_schema", "schema": SEMA}},
-    })
+        "output_config": {"effort": CABA, "format": {"type": "json_schema", "schema": SEMA}},
+    }, zaman_asimi=300)
     if cevap.get("stop_reason") not in ("end_turn", "stop_sequence"):
         raise RuntimeError(f"Claude yanıtı tamamlanmadı (stop_reason: {cevap.get('stop_reason')})")
     metin = "".join(b.get("text", "") for b in cevap.get("content", []) if b.get("type") == "text")
