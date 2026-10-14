@@ -5,8 +5,11 @@ bakiye uç noktası da yok). Bu yüzden bakiye şöyle izlenir:
   1. Pazar yorumu her API çağrısının token ve web arama sayısını bir dosyaya yazar
      (bot/yorum.py → API_HARCAMA_DOSYA). İş akışı bunları fiyatlandırıp özel gumus-kayit deposundaki
      api-bakiye.md'ye ekler (kaydet). Deneme çalıştırmaları da gerçek para harcadığı için kaydedilir.
-  2. Rıdvan Console → Billing'de gördüğü bakiyeyi Claude'a söyler; Claude onu "son okuma" olarak
-     işler (okuma). Tahmini bakiye = son okuma − sonraki harcamalar.
+  2. Kredi yüklemeleri (elle ya da Console'un otomatik yüklemesi) Anthropic'in makbuz mailinden
+     ("Your receipt from Anthropic, PBC", satır "… credit purchase") okunur: "Claude API kredisi:
+     Gmail makbuzları" zamanlanmış görevi (Claude, pazartesi ve cumartesi ~11:52) yeni makbuzları
+     bulup buraya işler (yukleme). Tahmini bakiye = yüklenen − harcanan. Rıdvan Billing'de gördüğü
+     bakiyeyi söylerse "son okuma" olarak işlenir (okuma); o zaman tahmin o andan başlar.
   3. "API bakiye kontrolü" iş akışı (bakiye.yml) pazartesi ve cumartesi ~12:20 çalışır (kontrol):
      tahmini bakiyeye bakar ve API'ye çok küçük bir istek atar (anahtar geçerli mi, kredi bitti mi).
      Riskli alanda iş kırmızı biter: GitHub hata maili gelir, Mail Özeti onu en üste koyar.
@@ -17,7 +20,9 @@ depodaki api-bakiye.md'de durur.
 Kullanım:
   python bot/bakiye.py kaydet --tur yorum            (iş akışı; KAYIT_PAT, API_HARCAMA_DOSYA, DENEME)
   python bot/bakiye.py kontrol                       (bakiye.yml; ANTHROPIC_API_KEY, KAYIT_PAT)
-  python bot/bakiye.py okuma --usd 7.40 --yerel <api-bakiye.md>   (Claude, özel deponun klonunda)
+  python bot/bakiye.py yukleme --usd 20 --tarih 2026-10-13T14:45+03:00 --kaynak "makbuz #2902-7959-3803" \
+         --yerel <api-bakiye.md>                     (Claude, özel deponun klonunda; aynı makbuz iki kez işlenmez)
+  python bot/bakiye.py okuma --usd 7.40 --yerel <api-bakiye.md>   (Claude: Billing'deki bakiye, isteğe bağlı)
   python bot/bakiye.py durum --yerel <api-bakiye.md>               (Claude: dosyadaki durumu yazdırır)
 """
 import argparse
@@ -84,14 +89,24 @@ def durum_hesapla(veri):
     haftalik = (sum(gercek[-6:]) / len(gercek[-6:])) if gercek else VARSAYILAN_HAFTALIK
     haftalik = max(haftalik, 0.05)
     okuma = veri.get("son_okuma")
-    if not okuma:
-        return {"tahmini": None, "harcanan": None, "haftalik": haftalik, "hafta": None, "seviye": "bilinmiyor"}
-    sinir = datetime.fromisoformat(okuma["tarih"])
-    harcanan = sum(h["usd"] for h in veri["harcamalar"] if datetime.fromisoformat(h["tarih"]) > sinir)
-    tahmini = okuma["usd"] - harcanan
+    if not okuma and not veri["yuklemeler"]:
+        return {"tahmini": None, "harcanan": None, "yuklenen": None, "haftalik": haftalik, "hafta": None,
+                "seviye": "bilinmiyor"}
+    if okuma:
+        taban, sinir = okuma["usd"], datetime.fromisoformat(okuma["tarih"])
+    else:
+        taban, sinir = 0.0, None
+
+    def sonra(kayitlar):
+        return [k for k in kayitlar if sinir is None or datetime.fromisoformat(k["tarih"]) > sinir]
+
+    harcanan = sum(h["usd"] for h in sonra(veri["harcamalar"]))
+    yuklenen = sum(y["usd"] for y in sonra(veri["yuklemeler"]))
+    tahmini = taban + yuklenen - harcanan
     hafta = tahmini / haftalik
     seviye = "kritik" if hafta < KRITIK_HAFTA else "riskli" if hafta < RISK_HAFTA else "normal"
-    return {"tahmini": tahmini, "harcanan": harcanan, "haftalik": haftalik, "hafta": hafta, "seviye": seviye}
+    return {"tahmini": tahmini, "harcanan": harcanan, "yuklenen": yuklenen, "haftalik": haftalik, "hafta": hafta,
+            "seviye": seviye}
 
 
 # ---------------------------------------------------------------- dosya biçimi
@@ -99,9 +114,10 @@ def durum_hesapla(veri):
 def veriyi_oku(metin):
     m = VERI_DESEN.search(metin or "")
     if not m:
-        return {"son_okuma": None, "harcamalar": [], "son_kontrol": None}
+        return {"son_okuma": None, "yuklemeler": [], "harcamalar": [], "son_kontrol": None}
     veri = json.loads(m.group(1))
     veri.setdefault("son_okuma", None)
+    veri.setdefault("yuklemeler", [])
     veri.setdefault("harcamalar", [])
     veri.setdefault("son_kontrol", None)
     return veri
@@ -121,11 +137,15 @@ def dosyayi_olustur(veri):
     okuma = veri.get("son_okuma")
     if okuma:
         bakiye = (f"**Tahmini bakiye:** {_usd(d['tahmini'])} (son okuma {_usd(okuma['usd'])} · "
-                  f"{_tarih_tr(okuma['tarih'])}; sonrasında {_usd(d['harcanan'])} harcama)")
+                  f"{_tarih_tr(okuma['tarih'])}; sonrasında {_usd(d['yuklenen'])} yükleme, "
+                  f"{_usd(d['harcanan'])} harcama)")
+        sure = f" · yaklaşık {int(d['hafta'])} pazar yeter (pazar başına ~{_usd(d['haftalik'])})"
+    elif d["tahmini"] is not None:
+        bakiye = (f"**Tahmini bakiye:** {_usd(d['tahmini'])} (yüklenen {_usd(d['yuklenen'])} − "
+                  f"harcanan {_usd(d['harcanan'])})")
         sure = f" · yaklaşık {int(d['hafta'])} pazar yeter (pazar başına ~{_usd(d['haftalik'])})"
     else:
-        bakiye = ("**Tahmini bakiye:** bilinmiyor — Billing sayfasındaki bakiye henüz girilmedi "
-                  "(Rıdvan söyleyince Claude işler)")
+        bakiye = "**Tahmini bakiye:** bilinmiyor — henüz kredi yüklemesi kaydı yok"
         sure = ""
     k = veri.get("son_kontrol")
     kontrol = (f"**Son kontrol:** {_tarih_tr(k['tarih'])} · {KONTROL_ADI.get(k['sonuc'], k['sonuc'])}"
@@ -137,6 +157,8 @@ def dosyayi_olustur(veri):
                         f"{_sayi(h['girdi'])} | {_sayi(h['cikti'])} | {h['arama']} | {_usd(h['usd'])} |")
     if not satirlar:
         satirlar.append("| — | henüz kayıt yok | | | | | | |")
+    yukleme_satirlari = [f"| {_tarih_tr(y['tarih'])} | {_usd(y['usd'])} | {y.get('kaynak', '')} |"
+                         for y in reversed(veri["yuklemeler"])] or ["| — | henüz kayıt yok | |"]
     gorunur = "\n".join([
         "# Claude API kredisi · gumus-bot",
         "",
@@ -147,12 +169,19 @@ def dosyayi_olustur(veri):
         kontrol,
         "",
         f"Gerçek bakiye: {BILLING_URL} (Anthropic bakiyeyi okuyan bir API sunmadığı için buradaki tahmindir). "
-        "Kredi yükleyince ya da Billing'de gördüğün bakiyeyi Claude'a yaz; Claude \"son okuma\" olarak işler. "
+        "Kredi yüklemeleri (elle ya da otomatik yükleme) Anthropic'in makbuz mailinden kendiliğinden işlenir "
+        "(\"Claude API kredisi: Gmail makbuzları\" görevi, pazartesi ve cumartesi ~11:52). "
         f"Uyarı: {RISK_HAFTA} pazardan az yetecek kredi kalınca ya da API kredi bitti deyince \"API bakiye kontrolü\" "
         "işi (pazartesi ve cumartesi ~12:20) kırmızı biter, hata maili gelir.",
         "",
         "Bu dosyayı gumus-bot kendisi günceller (bot/bakiye.py); elle değiştirme. Saatler Türkiye saatidir. "
         "Tutarlar token sayısından hesaplanan tahmindir (Opus 5.5: milyon token 4 $ girdi / 20 $ çıktı, arama 1 sent).",
+        "",
+        "## Kredi yüklemeleri (makbuzlardan, KDV hariç)",
+        "",
+        "| Tarih | Kredi | Kaynak |",
+        "|---|---|---|",
+        *yukleme_satirlari,
         "",
         "## Harcamalar",
         "",
@@ -291,8 +320,7 @@ def kontrol(simdi=None):
     elif d["seviye"] == "riskli":
         hatalar.append(f"Claude API kredisi azaldı: {RISK_HAFTA} pazardan az yetecek kadar kaldı (tahmini).")
     elif d["seviye"] == "bilinmiyor" and veri is not None:
-        print("::warning::Billing sayfasındaki bakiye henüz girilmedi; yalnızca kredinin bitip bitmediği "
-              "denetlenebiliyor. Bakiyeyi Claude'a yaz.")
+        print("::warning::Kredi yüklemesi kaydı yok; yalnızca kredinin bitip bitmediği denetlenebiliyor.")
 
     ozet = os.environ.get("GITHUB_STEP_SUMMARY")
     if hatalar:
@@ -308,6 +336,22 @@ def kontrol(simdi=None):
         with open(ozet, "a", encoding="utf-8") as f:
             f.write(f"Claude API kredisi: {d['seviye']} · canlı denetim: {KONTROL_ADI.get(sonuc, sonuc)}\n")
     return 0
+
+
+def yukleme(usd, yol, tarih, kaynak):
+    """Kredi yüklemesini (makbuzdaki KDV hariç tutar) yerel dosyaya işler. Aynı kaynak varsa eklemez.
+
+    True: eklendi, False: zaten vardı."""
+    metin = open(yol, encoding="utf-8").read() if os.path.exists(yol) else ""
+    veri = veriyi_oku(metin)
+    if any(y.get("kaynak") == kaynak for y in veri["yuklemeler"]):
+        return False
+    veri["yuklemeler"].append({"tarih": datetime.fromisoformat(tarih).isoformat(timespec="minutes"),
+                               "usd": round(float(usd), 2), "kaynak": kaynak})
+    veri["yuklemeler"].sort(key=lambda y: y["tarih"])
+    with open(yol, "w", encoding="utf-8") as f:
+        f.write(dosyayi_olustur(veri))
+    return True
 
 
 def okuma(usd, yol, simdi=None):
@@ -331,6 +375,11 @@ def main():
     a_okuma.add_argument("--usd", required=True)
     a_okuma.add_argument("--yerel", required=True)
     a_okuma.add_argument("--tarih", help="ISO zaman (varsayılan şimdi)")
+    a_yukleme = alt.add_parser("yukleme")
+    a_yukleme.add_argument("--usd", required=True)
+    a_yukleme.add_argument("--tarih", required=True, help="makbuzdaki ödeme zamanı, ISO (ör. 2026-10-13T14:45+03:00)")
+    a_yukleme.add_argument("--kaynak", required=True, help='ör. "makbuz #2902-7959-3803"')
+    a_yukleme.add_argument("--yerel", required=True)
     a_durum = alt.add_parser("durum")
     a_durum.add_argument("--yerel", required=True)
     a = ap.parse_args()
@@ -351,9 +400,14 @@ def main():
         d = okuma(a.usd.replace(",", "."), a.yerel, simdi)
         print(json.dumps(d, ensure_ascii=False))
         return 0
+    if a.komut == "yukleme":
+        eklendi = yukleme(a.usd.replace(",", "."), a.yerel, a.tarih, a.kaynak)
+        print("eklendi" if eklendi else "zaten kayıtlı")
+        return 0
     if a.komut == "durum":
         veri = veriyi_oku(open(a.yerel, encoding="utf-8").read())
         print(json.dumps({**durum_hesapla(veri), "son_okuma": veri.get("son_okuma"),
+                          "yuklemeler": veri["yuklemeler"],
                           "son_kontrol": veri.get("son_kontrol"), "kayit": len(veri["harcamalar"])},
                          ensure_ascii=False))
         return 0
