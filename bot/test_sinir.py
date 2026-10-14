@@ -68,7 +68,8 @@ def karar(sayici, yayin, onay):
         return sinir.kontrol(yayin, onay, "bilgi", "3", simdi=SIMDI)
 
 
-asil_say = sinir.say
+asil_say, asil_gun = sinir.say, sinir.GUN_SINIRI
+sinir.GUN_SINIRI = {}   # sınamalar gerçek gün istisnalarından bağımsız
 #        sayı  yayın  onay   beklenen (0 devam, 1 dur)
 for n, yayin, onay, bek in [(0, True, False, 0), (2, True, False, 0), (3, True, False, 1), (6, True, False, 1),
                             (3, True, True, 0), (6, True, True, 0), (3, False, False, 0), (9, False, False, 0)]:
@@ -83,7 +84,10 @@ esit(karar(sahte(3), True, False), 0, "istisna günü 4. geçer")
 esit(karar(sahte(4), True, False), 0, "istisna günü 5. geçer")
 esit(karar(sahte(5), True, False), 1, "istisna günü 6. durur")
 esit(sinir.bugunun_siniri(datetime(2026, 10, 15).date()), 3, "ertesi gün 3")
-sinir.GUN_SINIRI = {}
+sinir.GUN_SINIRI = asil_gun
 sinir.say = asil_say
+for gun, n in sinir.GUN_SINIRI.items():   # gerçek istisnalar geçerli tarih ve makul sayı olmalı
+    esit(datetime.fromisoformat(gun).date().isoformat(), gun, f"istisna tarihi {gun}")
+    esit(isinstance(n, int) and sinir.GUNLUK_SINIR < n <= 10, True, f"istisna sayısı {gun}")
 
 print(f"Tamam: {gecen} sınama geçti.")

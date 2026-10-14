@@ -28,7 +28,10 @@ from zoneinfo import ZoneInfo
 
 GUNLUK_SINIR = 3
 # Rıdvan'ın sohbette onayladığı gün istisnaları: {"YYYY-AA-GG" (TR): o gün izin verilen toplam paylaşım}.
-GUN_SINIRI = {}
+GUN_SINIRI = {
+    # 14 Ekim 2026 06:10: gece 2 rehber hikâyesi gitti; 13:50 Rehber #3 ve 19:50 akşam özetine (4. ve 5.) onay verdi.
+    "2026-10-14": 5,
+}
 TR = ZoneInfo("Europe/Istanbul")
 IS_AKISI = "paylas.yml"
 YAYIN_ISI = "yayinla"
