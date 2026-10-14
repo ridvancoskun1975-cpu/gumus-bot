@@ -177,6 +177,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}   # yalnızca pazar yorumu kullanır
           YZ_MODEL: ${{ vars.YZ_MODEL }}                         # boşsa claude-opus-5-5
           YZ_CABA: ${{ vars.YZ_CABA }}                           # boşsa xhigh (ekstra yüksek)
+          API_HARCAMA_DOSYA: ${{ runner.temp }}/api-harcama.jsonl  # pazar yorumunun token/arama sayıları
           KONU: ${{ inputs.konu }}
         run: |
           ek=()
@@ -212,6 +213,18 @@ jobs:
           HESAP_ADI: ${{ vars.HESAP_ADI }}
           DENEME: ${{ github.event_name == 'workflow_dispatch' && inputs.deneme }}
         run: python bot/kayit.py --tur "${{ needs.kontrol.outputs.tur }}"
+
+      # Pazar yorumunun Claude API harcaması (token ve arama; deneme dahil) özel gumus-kayit deposuna
+      # yazılır (api-bakiye.md). Tutar günlüğe yazılmaz. Kredi takibi: bot/bakiye.py ve bakiye.yml.
+      - name: API harcama kaydı
+        if: always() && needs.kontrol.outputs.tur == 'yorum'
+        continue-on-error: true
+        timeout-minutes: 2
+        env:
+          KAYIT_PAT: ${{ secrets.KAYIT_PAT }}
+          DENEME: ${{ github.event_name == 'workflow_dispatch' && inputs.deneme }}
+          API_HARCAMA_DOSYA: ${{ runner.temp }}/api-harcama.jsonl
+        run: python bot/bakiye.py kaydet --tur yorum
 
       - name: Günlük kayıtları sakla
         if: always() && hashFiles('veri/gecmis.json') != ''

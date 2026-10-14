@@ -14,3 +14,8 @@
 - "Rehber" öne çıkanının standardı (Rıdvan, 14 Ekim 2026): her bölüm tek video; öne çıkandaki sıra önemli değil,
   eksik olmaması önemli. Tek tek kare olarak giden eski #1–#2 yerine videoları 18 Ekim'de paylaşılır, eski
   kareleri Rıdvan siler. Rehber hikâyesini elle kareler hâlinde paylaşma.
+- Claude API kredisi (pazar yorumu): bakiye Anthropic'ten okunamıyor, özel gumus-kayit deposundaki `api-bakiye.md`
+  tahmin eder (bot/bakiye.py). Rıdvan Billing sayfasındaki bakiyeyi söylediğinde (kredi yükledikten sonra da) onu
+  "son okuma" olarak işle: gumus-kayit'i klonla (add_repo, access: push), `python bot/bakiye.py okuma --usd <tutar>
+  --yerel <klon>/api-bakiye.md`, commit + push. Tutarları herkese açık yerlere (bu depo, iş akışı günlükleri,
+  girdiler) yazma. Billing: https://platform.claude.com/settings/billing

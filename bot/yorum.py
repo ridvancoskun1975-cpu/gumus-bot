@@ -452,7 +452,32 @@ def _api(anahtar, govde, zaman_asimi=ZAMAN_ASIMI):
         raise RuntimeError(f"Claude API hatası (HTTP {e.status_code}): {str(e)[:500]}")
     except anthropic.APIConnectionError as e:
         raise RuntimeError(f"Claude API'ye ulaşılamadı: {e}")
-    return mesaj.model_dump(mode="json", exclude_none=True)
+    cevap = mesaj.model_dump(mode="json", exclude_none=True)
+    _harcama_ekle(cevap.get("model") or govde.get("model"), cevap.get("usage"))
+    return cevap
+
+
+def _harcama_ekle(model, kullanim):
+    """Başarılı her çağrının token ve web arama sayısını API_HARCAMA_DOSYA'ya bir satır olarak ekler.
+
+    Kredi takibi içindir (bot/bakiye.py fiyatlandırıp özel gumus-kayit deposuna yazar). Değişken
+    tanımlı değilse hiçbir şey yapmaz; yazamazsa yalnızca uyarı verir, yorumu hiçbir zaman durdurmaz.
+    """
+    yol = os.environ.get("API_HARCAMA_DOSYA", "").strip()
+    if not yol:
+        return
+    try:
+        k = kullanim or {}
+        satir = {"model": model,
+                 "girdi": k.get("input_tokens") or 0,
+                 "cikti": k.get("output_tokens") or 0,
+                 "onbellek_yazma": k.get("cache_creation_input_tokens") or 0,
+                 "onbellek_okuma": k.get("cache_read_input_tokens") or 0,
+                 "arama": (k.get("server_tool_use") or {}).get("web_search_requests") or 0}
+        with open(yol, "a", encoding="utf-8") as f:
+            f.write(json.dumps(satir) + "\n")
+    except Exception as e:  # noqa: BLE001 — kayıt hiçbir durumda yorumu durdurmamalı
+        print(f"Uyarı: API harcaması kaydedilemedi ({type(e).__name__})", file=sys.stderr)
 
 
 def _cagir(anahtar, mesajlar):

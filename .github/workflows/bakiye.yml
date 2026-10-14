@@ -1,0 +1,39 @@
+name: API bakiye kontrolü
+
+# Pazar yorumunun kullandığı Claude API ön ödemeli kredisini haftada iki kez denetler (bot/bakiye.py).
+# Anthropic bakiyeyi okuyan bir API sunmadığı için bakiye tahminidir: Rıdvan'ın Console → Billing'de
+# okuduğu son bakiye − sonraki harcamalar (özel gumus-kayit deposu → api-bakiye.md). Ayrıca API'ye çok
+# küçük bir istek atılır (anahtar geçerli mi, kredi bitti mi). Riskli alanda (4 pazardan az yetecek
+# kredi) ya da kredi bitince iş kırmızı biter: GitHub hata maili gelir, Mail Özeti onu en üste koyar.
+# Tutarlar günlüğe yazılmaz (depo herkese açık). Elle: Actions → API bakiye kontrolü → Run workflow.
+on:
+  schedule:
+    - cron: '20 9 * * 1,6'   # Pazartesi ve cumartesi 12:20 TR (pazar yorumundan önce ve sonra)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gumus-bakiye
+  cancel-in-progress: false
+
+jobs:
+  kontrol:
+    runs-on: ubuntu-24.04   # sabit sürüm: ubuntu-latest 19 Ekim 2026 itibarıyla Ubuntu 26e geçiyor
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Gerekenleri kur
+        run: pip install -q requests
+
+      - name: Kredi durumunu denetle
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          KAYIT_PAT: ${{ secrets.KAYIT_PAT }}
+        run: python bot/bakiye.py kontrol
