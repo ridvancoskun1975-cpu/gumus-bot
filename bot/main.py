@@ -1448,6 +1448,11 @@ def yorum_hazirla(cikti, ornek):
             raise RuntimeError(f"Örnek yorum denetimden geçmedi: {hatalar}")
     else:
         gelismeler = yorum.haftanin_gelismeleri(bugun)
+        if gelismeler is None and os.environ.get("ANTHROPIC_API_KEY", "").strip():
+            # 14 Ekim 2026 denemesi: tarama bir kez kaynaksız döndü, hemen ardından düzgün çalıştı. Bir kez daha dene
+            # (~6 sent); yine olmazsa yorum yalnızca fiyat ve kur verileriyle yazılır (açıklamada belirtilir).
+            print("Haber taraması bir kez daha deneniyor.")
+            gelismeler = yorum.haftanin_gelismeleri(bugun)
         yz = yorum.yz_yorum(yorum.model_girdisi(seri, ecb, ist, bugun, kaynak_notu, gelismeler,
                                                 kapanis=kapanis == max(seri)), gelismeler)
         if yz is None:
