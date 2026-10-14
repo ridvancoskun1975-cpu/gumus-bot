@@ -127,8 +127,9 @@ ENGELLI_SITELER = ["reddit.com", "x.com", "twitter.com", "facebook.com", "instag
 # Liste boşaltılırsa yalnızca ENGELLI_SITELER uygulanır.
 GUVENILIR_SITELER = [
     # dünya
-    "reuters.com", "bloomberg.com", "apnews.com", "cnbc.com", "marketwatch.com", "wsj.com", "ft.com",
-    "kitco.com", "fxstreet.com", "investing.com", "tradingeconomics.com", "mining.com", "cmegroup.com",
+    # reuters.com, apnews.com, ft.com, wsj.com, marketwatch.com Claude'un tarayıcısına kapalı: listede
+    # olursa API isteği 400 ile reddeder (14 Ekim 2026). Kapanan bir site çıkarsa hata mesajı adını söyler.
+    "bloomberg.com", "cnbc.com", "kitco.com", "fxstreet.com", "investing.com", "tradingeconomics.com", "mining.com", "cmegroup.com",
     # kurumlar
     "silverinstitute.org", "lbma.org.uk", "federalreserve.gov", "bls.gov", "bea.gov", "ecb.europa.eu",
     "tcmb.gov.tr", "tuik.gov.tr",
