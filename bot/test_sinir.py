@@ -71,19 +71,20 @@ def karar(sayici, yayin, onay):
 asil_say, asil_gun = sinir.say, sinir.GUN_SINIRI
 sinir.GUN_SINIRI = {}   # sınamalar gerçek gün istisnalarından bağımsız
 #        sayı  yayın  onay   beklenen (0 devam, 1 dur)
-for n, yayin, onay, bek in [(0, True, False, 0), (2, True, False, 0), (3, True, False, 1), (6, True, False, 1),
-                            (3, True, True, 0), (6, True, True, 0), (3, False, False, 0), (9, False, False, 0)]:
+# günde en fazla 4 (14 Ekim 2026 21:23'ten beri): 4. geçer, 5. onaysız durur
+for n, yayin, onay, bek in [(0, True, False, 0), (3, True, False, 0), (4, True, False, 1), (6, True, False, 1),
+                            (4, True, True, 0), (6, True, True, 0), (4, False, False, 0), (9, False, False, 0)]:
     esit(karar(sahte(n), yayin, onay), bek, f"n={n} yayın={yayin} onay={onay}")
 esit(karar(hata, True, False), 1, "sayılamazsa onaysız durur")
 esit(karar(hata, True, True), 0, "sayılamazsa onaylı devam")
 esit(karar(hata, False, False), 0, "sayılamazsa deneme devam (paylaşım yok)")
 
-# gün istisnası: Rıdvan o gün için 5'e izin verdiyse 4. ve 5. geçer, 6. durur; ertesi gün yine 3
+esit(sinir.GUNLUK_SINIR, 4, "günlük sınır 4")
+# gün istisnası: Rıdvan o gün için 5'e izin verdiyse 5. geçer, 6. durur; ertesi gün yine 4
 sinir.GUN_SINIRI = {"2026-10-14": 5}
-esit(karar(sahte(3), True, False), 0, "istisna günü 4. geçer")
 esit(karar(sahte(4), True, False), 0, "istisna günü 5. geçer")
 esit(karar(sahte(5), True, False), 1, "istisna günü 6. durur")
-esit(sinir.bugunun_siniri(datetime(2026, 10, 15).date()), 3, "ertesi gün 3")
+esit(sinir.bugunun_siniri(datetime(2026, 10, 15).date()), 4, "ertesi gün 4")
 sinir.GUN_SINIRI = asil_gun
 sinir.say = asil_say
 for gun, n in sinir.GUN_SINIRI.items():   # gerçek istisnalar geçerli tarih ve makul sayı olmalı

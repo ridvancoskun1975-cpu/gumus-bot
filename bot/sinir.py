@@ -1,9 +1,9 @@
-"""Günlük paylaşım sınırı (14 Ekim 2026, Rıdvan): takipçileri rahatsız etmemek için günde en fazla 3 paylaşım.
-4. ve sonrası Rıdvan onaylamadan gitmez.
+"""Günlük paylaşım sınırı (Rıdvan): takipçileri rahatsız etmemek için günde en fazla 4 paylaşım (14 Ekim 2026
+21:23; önce 3). 5. ve sonrası Rıdvan onaylamadan gitmez.
 
 Bir paylaşım = botun Instagram'a bir kez paylaşım yapan çalıştırması (paylas.yml'de "yayinla" işi başarıyla
-bitmiş ya da şu an sürüyor): bir Reels, bir gönderi ya da bir seferde giden rehber hikâye kareleri. Gönderiyle
-birlikte hikâyeye konan kopyası (günlük özet) ayrıca sayılmaz. Gün Türkiye saatine göre. Sayım GitHub'ın
+bitmiş ya da şu an sürüyor): bir Reels, bir gönderi ya da elle başlatılan bir rehber hikâyesi. Gönderiyle
+birlikte hikâyeye konan kopyası (günlük özet, rehber gönderisinin hikâye videosu) ayrıca sayılmaz. Gün Türkiye saatine göre. Sayım GitHub'ın
 çalıştırma geçmişinden yapılır (Instagram'a istek atılmaz); Instagram uygulamasından elle yapılan paylaşımlar
 sayılmaz.
 
@@ -26,7 +26,7 @@ import urllib.request
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
-GUNLUK_SINIR = 3
+GUNLUK_SINIR = 4
 # Rıdvan'ın sohbette onayladığı gün istisnaları: {"YYYY-AA-GG" (TR): o gün izin verilen toplam paylaşım}.
 GUN_SINIRI = {
     # 14 Ekim 2026 06:10: gece 2 rehber hikâyesi gitti; 13:50 Rehber #3 ve 19:50 akşam özetine (4. ve 5.) onay verdi.

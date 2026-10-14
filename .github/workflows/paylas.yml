@@ -41,7 +41,7 @@ concurrency:
 
 jobs:
   # Türü belirler; bilgi gününde değilse kurulum yapmadan bitirir (zamanlı bilgi çalışması her iş günü başlar).
-  # Günlük sınır: bugün 3 paylaşım yapılmışsa, onay yoksa paylaşmadan durur (bot/sinir.py).
+  # Günlük sınır: bugün 4 paylaşım yapılmışsa, onay yoksa paylaşmadan durur (bot/sinir.py).
   kontrol:
     runs-on: ubuntu-24.04   # sabit sürüm: ubuntu-latest 19 Ekim 2026 itibarıyla Ubuntu 26e geçiyor
     timeout-minutes: 3
@@ -110,11 +110,11 @@ jobs:
           echo "tur=$tur" >> "$GITHUB_OUTPUT"
           echo "calis=$calis" >> "$GITHUB_OUTPUT"
 
-      # Günde en fazla 3 paylaşım (Rıdvan, 14 Ekim 2026). Bugün 3 paylaşım yapılmışsa ve onay yoksa iş hata
+      # Günde en fazla 4 paylaşım (Rıdvan, 14 Ekim 2026; önce 3). Bugün 4 paylaşım yapılmışsa ve onay yoksa iş hata
       # verip durur: hiçbir şey üretilmez, paylaşılmaz; GitHub "Run failed" e-postası gönderir. Onay Claude
       # sohbetinden verilir: Rıdvan "onayla" derse Claude aynı türü onay işaretiyle yeniden başlatır.
       # Deneme çalıştırmasında yalnızca sayıyı yazar. Sayım GitHub geçmişinden; Instagram'a istek atılmaz.
-      - name: Günlük sınır (en fazla 3 paylaşım)
+      - name: Günlük sınır (en fazla 4 paylaşım)
         if: steps.tur.outputs.calis == 'true'
         env:
           GITHUB_TOKEN: ${{ github.token }}

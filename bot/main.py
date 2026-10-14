@@ -1028,10 +1028,14 @@ def yayinla(cikti, taban_url, bekle_dk=0):
 def _yayinla(cikti, taban_url):
     meta = json.loads((cikti / "meta.json").read_text(encoding="utf-8"))
     if meta["tur"] == "hikaye":
-        urller = [taban_url.rstrip("/") + "/" + h for h in meta["hikayeler"]]
+        videolar = meta.get("hikaye_videolari") or []
+        if not videolar:
+            # Kareler tek tek paylaşılmaz (hikâye kalabalık olmasın); video yoksa hiçbir şey gitmez.
+            raise RuntimeError(f"Rehber #{meta['konu']} hikâye videosu üretilmemiş; hikâye paylaşılmadı")
+        urller = [taban_url.rstrip("/") + "/" + v for v in videolar]
         kullanici_id = hesap_bilgisi()["user_id"]
         gorsel_hikayeler(kullanici_id, urller, _PAYLASILAN_HIKAYELER)
-        print(f"Rehber #{meta['konu']} hikâyeleri paylaşıldı ({len(urller)} kare). "
+        print(f"Rehber #{meta['konu']} hikâyesi paylaşıldı ({len(urller)} video). "
               "Profilde Öne çıkanlar › Rehber'e eklemeyi unutma.")
         return
     if "dosyalar" in meta:
@@ -1051,9 +1055,8 @@ def _yayinla(cikti, taban_url):
             if REHBER_HIKAYE_OTOMATIK:
                 rehber_hikayeleri(kullanici_id, meta, taban_url)
             else:
-                print(f"Rehber #{meta['konu']} hikâye kareleri ({len(meta['hikayeler'])}) otomatik paylaşılmadı "
-                      f"(hikâye kalabalık olmasın). İstersen: Run workflow → tür: hikaye, "
-                      f"konu: {meta['konu']}, deneme kapalı.")
+                print(f"Rehber #{meta['konu']} hikâye videosu otomatik paylaşılmadı (REHBER_HIKAYE_OTOMATIK "
+                      f"kapalı). İstersen: Run workflow → tür: hikaye, konu: {meta['konu']}, deneme kapalı.")
         return
     medya_url = taban_url.rstrip("/") + "/" + meta["dosya"]
     _url_hazir_mi(medya_url)
@@ -1069,23 +1072,26 @@ def _yayinla(cikti, taban_url):
         hikaye_paylas(kullanici_id, medya_url)
 
 
-# Rehber gönderisinden sonra bölümün kareleri hikâyeye otomatik gitmez (14 Ekim 2026, Rıdvan: hikâye bu
-# kadar kalabalık olmamalı). Kareler yine üretilir ve önizlemede durur; hikâyeye koymak elle:
-# Run workflow → tür: hikaye, konu: <no>, deneme kapalı. Otomatiği geri açmak için True yap.
-REHBER_HIKAYE_OTOMATIK = False
+# Rehber gönderisinden sonra aynı bölüm hikâyeye tek müzikli video olarak gider (14 Ekim 2026 21:23, Rıdvan:
+# kapak 3 sn, her kare 6 sn; kareler tek tek gitmez, hikâye kalabalık olmasın — 05:35'teki karar). Video
+# gönderiyle aynı çalıştırmada gittiği için günlük sınırda ayrıca sayılmaz. Rıdvan videoyu "Rehber" öne
+# çıkanına ekler. Kapatmak için False; o zaman elle: Run workflow → tür: hikaye, konu: <no>, deneme kapalı.
+REHBER_HIKAYE_OTOMATIK = True
 HIKAYE_ARA_SN = int(os.environ.get("HIKAYE_ARA_SN", "20"))   # iki hikâye karesi arası (art arda istek yağmasın)
 _PAYLASILAN_HIKAYELER = set()   # yeniden denemede (geçici engel) aynı kare iki kez gitmesin
 
 
 def gorsel_hikayeler(kullanici_id, urller, paylasilan):
-    """Görselleri sırayla hikâyeye koyar. paylasilan kümesindeki adresler atlanır, paylaşılan eklenir."""
+    """Görselleri ya da videoları (.mp4) sırayla hikâyeye koyar. paylasilan kümesindeki adresler atlanır,
+    paylaşılan eklenir."""
     for i, url in enumerate(urller, 1):
         if url in paylasilan:
             continue
         if paylasilan:
             time.sleep(HIKAYE_ARA_SN)
         _url_hazir_mi(url)
-        k = _istek("POST", f"{kullanici_id}/media", media_type="STORIES", image_url=url)
+        medya = {"video_url": url} if url.endswith(".mp4") else {"image_url": url}
+        k = _istek("POST", f"{kullanici_id}/media", media_type="STORIES", **medya)
         _hazir_olmasini_bekle(k["id"])
         sonuc = _istek("POST", f"{kullanici_id}/media_publish", creation_id=k["id"])
         paylasilan.add(url)
@@ -1093,17 +1099,23 @@ def gorsel_hikayeler(kullanici_id, urller, paylasilan):
 
 
 def rehber_hikayeleri(kullanici_id, meta, taban_url):
-    """Rehber gönderisinden sonra aynı bölüm hikâyeye. Gönderi zaten paylaşıldığı için hata yalnızca
-    uyarı verir (yeniden deneme gönderiyi ikinci kez paylaşmasın)."""
-    urller = [taban_url.rstrip("/") + "/" + h for h in meta["hikayeler"]]
+    """Rehber gönderisinden sonra aynı bölüm hikâyeye, tek müzikli video olarak (uzun bölümde birkaç video).
+    Gönderi zaten paylaşıldığı için hata yalnızca uyarı verir (yeniden deneme gönderiyi ikinci kez
+    paylaşmasın). Video üretilemediyse kareler tek tek paylaşılmaz (hikâye kalabalık olmasın)."""
+    videolar = meta.get("hikaye_videolari") or []
+    if not videolar:
+        print(f"::warning::Rehber #{meta['konu']} hikâye videosu yok; hikâye paylaşılmadı. "
+              f"Sonradan: Run workflow → tür: hikaye, konu: {meta['konu']}, deneme kapalı.")
+        return
+    urller = [taban_url.rstrip("/") + "/" + v for v in videolar]
     paylasilan = set()
     try:
         gorsel_hikayeler(kullanici_id, urller, paylasilan)
-        print(f"Rehber #{meta['konu']} hikâyeye de paylaşıldı ({len(urller)} kare). "
+        print(f"Rehber #{meta['konu']} hikâyeye de paylaşıldı ({len(urller)} video). "
               "Profilde Öne çıkanlar › Rehber'e eklemeyi unutma.")
     except Exception as e:
-        print(f"::warning::Rehber hikâyesi yarıda kaldı: {len(paylasilan)}/{len(urller)} kare paylaşıldı ({e}). "
-              f"Tamamlamak için paylaşılan kareleri hikâyeden silip Run workflow → tür: hikaye, "
+        print(f"::warning::Rehber hikâyesi yarıda kaldı: {len(paylasilan)}/{len(urller)} video paylaşıldı ({e}). "
+              f"Tamamlamak için paylaşılan videoları hikâyeden silip Run workflow → tür: hikaye, "
               f"konu: {meta['konu']}, deneme kapalı.")
 
 
@@ -1198,16 +1210,23 @@ def bilgi_hazirla(cikti, konu=None):
     metin = bilgi.aciklama(konu)
     if len(metin) > 2200:
         raise RuntimeError(f"Açıklama Instagram sınırını aşıyor ({len(metin)} > 2200 karakter)")
-    # Aynı bölümün 9:16 hikâye kareleri: üretilir ama otomatik paylaşılmaz (REHBER_HIKAYE_OTOMATIK);
-    # elle "hikaye" türüyle hikâyeye konup "Rehber" öne çıkanında toplanır.
+    # Aynı bölümün 9:16 hikâye kareleri ve onlardan müzikli hikâye videosu: video gönderiden sonra hikâyeye
+    # gider (REHBER_HIKAYE_OTOMATIK) ve "Rehber" öne çıkanında toplanır. Kareler tek tek paylaşılmaz.
     # Üretilemezse gönderi yine gider (yalnızca uyarı).
+    hikaye_videolari = []
     try:
         hikayeler = rehber_hikaye_uret(cikti, konu, hesap, damga)
     except Exception as e:
         print(f"::warning::Rehber hikâye kareleri üretilemedi, gönderi hikâyesiz gidecek: {e}")
         hikayeler = []
+    if hikayeler:
+        try:
+            hikaye_videolari = rehber_hikaye_videosu_uret(cikti, hikayeler, konu, damga)
+        except Exception as e:
+            print(f"::warning::Rehber hikâye videosu üretilemedi, gönderi hikâyesiz gidecek: {e}")
     (cikti / "meta.json").write_text(json.dumps({"tur": "bilgi", "konu": konu, "dosyalar": dosyalar,
-                                                 "hikayeler": hikayeler, "aciklama": metin},
+                                                 "hikayeler": hikayeler, "hikaye_videolari": hikaye_videolari,
+                                                 "aciklama": metin},
                                                 ensure_ascii=False, indent=2),
                                      encoding="utf-8")
     (cikti / "index.html").write_text("<!doctype html><meta charset='utf-8'><title>Gümüş bot</title>"
@@ -1216,6 +1235,8 @@ def bilgi_hazirla(cikti, konu=None):
     print(f"\nÜretilen dosyalar ({len(metin)} karakter açıklama):", *dosyalar, sep="\n")
     if hikayeler:
         print(f"Hikâye kareleri ({len(hikayeler)}):", *hikayeler, sep="\n")
+    if hikaye_videolari:
+        print(f"Hikâye videosu ({len(hikaye_videolari)}):", *hikaye_videolari, sep="\n")
 
 
 def rehber_hikaye_uret(cikti, konu, hesap, damga):
@@ -1227,6 +1248,54 @@ def rehber_hikaye_uret(cikti, konu, hesap, damga):
     return rehber_hikaye.uret(b, konu, sonraki, bilgi.SERI, hesap, cikti, damga)
 
 
+def _hikaye_sesi(sure):
+    """Rehber hikâye videosunun ses girdileri ve filtresi ([a] çıkışı). Depodaki müzik parçanın ilk 30 sn'si;
+    hikâye videosu daha uzun olabildiği için parça düz döngüyle değil, kendi üstüne 2 sn bindirilerek
+    uzatılır (döngü yerinde kesik duyulmasın). Müzik yoksa sessiz."""
+    muzik = KOK / "assets" / "muzik.mp3"
+    if not muzik.exists():
+        print("Uyarı: assets/muzik.mp3 yok, video müziksiz üretiliyor", file=sys.stderr)
+        return ["-f", "lavfi", "-i", "anullsrc=r=44100:cl=stereo"], "[1:a]aresample=44100[a]"
+    girdi = ["-i", str(muzik), "-i", str(muzik), "-stream_loop", "-1", "-i", str(muzik)]
+    filtre = ("[1:a][2:a]acrossfade=d=2:c1=tri:c2=tri[m];[m][3:a]acrossfade=d=2:c1=tri:c2=tri,"
+              f"loudnorm=I=-16:TP=-1.5:LRA=11,afade=t=in:d=0.5,afade=t=out:st={sure - 1.5}:d=1.5,"
+              "aresample=44100[a]")
+    return girdi, filtre
+
+
+def rehber_hikaye_videosu_uret(cikti, hikayeler, konu, damga):
+    """Rehber hikâye karelerinden müzikli 9:16 hikâye videosu üretir; dosya adlarını sırayla döndürür.
+
+    Kapak 3 sn, diğer kareler 6 sn ekranda kalır (rehber_hikaye.KAPAK_SN / KARE_SN). Video 60 sn'yi
+    aşacaksa kareler arasından eşit parçalara bölünür (rehber_hikaye.video_parcalari); müzik her
+    parçada baştan başlar. Müzik yoksa (MUZIK_ANAHTAR tanımlı değil) video sessiz üretilir."""
+    import rehber_hikaye as rh
+    cikti = Path(cikti)
+    videolar = []
+    for i, parca in enumerate(rh.video_parcalari(len(hikayeler)), 1):
+        sureler = [rh.kare_suresi(j) for j in parca]
+        sure = sum(sureler)
+        liste = cikti / f"_hikaye-video-{konu}-{i}.txt"
+        satirlar = []
+        for j, s in zip(parca, sureler):
+            satirlar += [f"file '{(cikti / hikayeler[j]).resolve().as_posix()}'", f"duration {s}"]
+        satirlar.append(f"file '{(cikti / hikayeler[parca[-1]]).resolve().as_posix()}'")   # concat: son kare yinelenir
+        liste.write_text("\n".join(satirlar) + "\n", encoding="utf-8")
+        mp4 = cikti / f"bilgi{konu}-{damga}-hikaye-video-{i}.mp4"
+        ses, filtre = _hikaye_sesi(sure)
+        komut = [ffmpeg_yolu(), "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", str(liste), *ses,
+                 "-filter_complex", f"[0:v]scale=1080:1920,fps={VIDEO_FPS},format=yuv420p[v];{filtre}",
+                 "-map", "[v]", "-map", "[a]", "-t", str(sure),
+                 "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-r", str(VIDEO_FPS),
+                 "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", str(mp4)]
+        try:
+            subprocess.run(komut, check=True)
+        finally:
+            liste.unlink(missing_ok=True)
+        videolar.append(mp4.name)
+    return videolar
+
+
 def hikaye_hazirla(cikti, konu):
     """Yalnızca rehber bölümünün hikâye kareleri (gönderi yok). Gönderisi önceden paylaşılmış bölümler
     için (1-2. bölüm 13 Ekim'de) ya da gönderiden sonraki hikâye paylaşımı yarıda kaldıysa."""
@@ -1235,11 +1304,15 @@ def hikaye_hazirla(cikti, konu):
         raise RuntimeError(f"hikaye türünde konu (bölüm no 1-{len(bilgi.BOLUMLER)}) verilmeli (verilen: {konu})")
     damga = datetime.now(TR_SAAT).strftime("%Y%m%d-%H%M")
     hikayeler = rehber_hikaye_uret(cikti, konu, hesap_adi(), damga)
-    (cikti / "meta.json").write_text(json.dumps({"tur": "hikaye", "konu": konu, "hikayeler": hikayeler},
+    videolar = rehber_hikaye_videosu_uret(cikti, hikayeler, konu, damga)   # hikâyeye giden bunlar
+    (cikti / "meta.json").write_text(json.dumps({"tur": "hikaye", "konu": konu, "hikayeler": hikayeler,
+                                                 "hikaye_videolari": videolar},
                                                 ensure_ascii=False, indent=2), encoding="utf-8")
     (cikti / "index.html").write_text("<!doctype html><meta charset='utf-8'><title>Gümüş bot</title>"
-                                      + "".join(f"<p><a href='{d}'>{d}</a></p>" for d in hikayeler), encoding="utf-8")
+                                      + "".join(f"<p><a href='{d}'>{d}</a></p>" for d in videolar + hikayeler),
+                                      encoding="utf-8")
     print(f"Rehber #{konu} hikâye kareleri ({len(hikayeler)}):", *hikayeler, sep="\n")
+    print(f"Hikâye videosu ({len(videolar)}):", *videolar, sep="\n")
 
 
 def _sayilabilir(metin):

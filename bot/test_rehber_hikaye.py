@@ -103,8 +103,37 @@ def main():
     import bilgi
     for no, gb in enumerate(bilgi.BOLUMLER, 1):
         sonuc.append(kontrol(f"bölüm {no} ({gb['baslik']})", gb))
+    # 9) Hikâye videosu: kapak 3 sn, kare 6 sn; tek video en çok 60 sn, kesim kare sınırında, parçalar dengeli
+    sonuc.append(video_kontrol())
     print(f"\n{sum(sonuc)}/{len(sonuc)} sınama geçti")
     sys.exit(0 if all(sonuc) else 1)
+
+
+def video_kontrol():
+    hatalar = []
+    if (rh.KAPAK_SN, rh.KARE_SN, rh.HIKAYE_EN_UZUN_SN) != (3, 6, 60):
+        hatalar.append("süreler 3/6/60 değil")
+    beklenen = {1: [[0]], 7: [list(range(7))], 10: [list(range(10))],                 # 7 kare = 39 sn, 10 kare = 57 sn
+                11: [list(range(6)), list(range(6, 11))],                               # 63 sn → 33 + 30 sn
+                20: [list(range(10)), list(range(10, 20))]}                             # 117 sn → 57 + 60 sn
+    for n, b in beklenen.items():
+        p = rh.video_parcalari(n)
+        if p != b:
+            hatalar.append(f"n={n}: {p}")
+    for n in range(1, 41):
+        p = rh.video_parcalari(n)
+        sureler = [sum(rh.kare_suresi(j) for j in parca) for parca in p]
+        if [j for parca in p for j in parca] != list(range(n)):
+            hatalar.append(f"n={n}: kare kayboldu ya da sıra bozuldu")
+        if max(sureler) > 60:
+            hatalar.append(f"n={n}: {max(sureler)} sn")
+        en_az = -(-(3 + 6 * (n - 1)) // 60)          # süreye göre gereken en az video sayısı
+        if len(p) > en_az + 1:
+            hatalar.append(f"n={n}: gereksiz parça ({len(p)} > {en_az})")
+    if rh.video_parcalari(0) != []:
+        hatalar.append("boş bölüm")
+    print(("TAMAM  " if not hatalar else "HATA   ") + "hikâye videosu parçaları" + ("" if not hatalar else f": {hatalar}"))
+    return not hatalar
 
 
 if __name__ == "__main__":

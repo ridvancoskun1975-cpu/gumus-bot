@@ -1,9 +1,11 @@
-"""Gümüş rehberi bölümünün 9:16 hikâye kareleri (templates/rehber-hikaye.html).
+"""Gümüş rehberi bölümünün 9:16 hikâye kareleri (templates/rehber-hikaye.html) ve hikâye videosu.
 
-Bot rehber gönderisinden (kaydırmalı) hemen sonra aynı bölümü hikâyeye de koyar; Rıdvan bu kareleri
-profildeki "Rehber" öne çıkanına ekler (Instagram API öne çıkanları yönetmeye izin vermiyor). Öne
-çıkan, Instagram'ın 2023'te kaldırdığı "Rehberler" bölümünün yerini tutar: bütün bölümler bir başlık
-altında, sırayla okunur.
+Bot rehber gönderisinden (kaydırmalı) hemen sonra aynı bölümü hikâyeye de koyar: kareler tek tek değil,
+tek bir müzikli video olarak (14 Ekim 2026, Rıdvan: kapak 3 sn, her kare 6 sn; hikâye kalabalık olmasın).
+Rıdvan bu videoyu profildeki "Rehber" öne çıkanına ekler (Instagram API öne çıkanları yönetmeye izin
+vermiyor). Öne çıkan, Instagram'ın 2023'te kaldırdığı "Rehberler" bölümünün yerini tutar: bütün bölümler
+bir başlık altında, sırayla okunur. Bir hikâye en çok 60 sn olabildiği için uzun bölüm kareler arasından
+eşit parçalara bölünür (video_parcalari).
 
 Kare sayısı içeriğe göre değişir (Rıdvan, 14 Ekim 2026: "İçerik okunaklı olmalı. İçeriğe göre kare
 sayısı artabilir ya da azalır."):
@@ -33,6 +35,39 @@ OLC_JS = """() => {
   }
   return true;
 }"""
+
+
+# Hikâye videosu (14 Ekim 2026, Rıdvan: "kapak 3 saniye, her kare için 6 sn yeterli", müzikli).
+KAPAK_SN = 3
+KARE_SN = 6
+HIKAYE_EN_UZUN_SN = 60     # Instagram'da tek hikâyenin en uzun süresi
+
+
+def kare_suresi(sira):
+    """Videoda karenin ekranda kalma süresi (sn); sıra 0 = kapak."""
+    return KAPAK_SN if sira == 0 else KARE_SN
+
+
+def video_parcalari(n, en_uzun=HIKAYE_EN_UZUN_SN):
+    """n kareli bölümü (ilki kapak) hikâye videolarına böler: [[kare sıraları (0'dan)], ...].
+
+    Her video en_uzun saniyeyi aşmaz; kesim her zaman kare sınırında olur (bir kare iki videoya
+    bölünmez); gerekirse parça sayısı en aza indirilir ve kareler parçalara olabildiğince eşit dağılır."""
+    if n < 1:
+        return []
+    sureler = [kare_suresi(i) for i in range(n)]
+    if max(sureler) > en_uzun:
+        raise ValueError(f"Bir kare tek başına {en_uzun} sn'yi aşıyor")
+    p = max(1, -(-sum(sureler) // en_uzun))
+    while True:
+        boylar = [n // p + (1 if i < n % p else 0) for i in range(p)]
+        parcalar, bas = [], 0
+        for boy in boylar:
+            parcalar.append(list(range(bas, bas + boy)))
+            bas += boy
+        if all(sum(sureler[j] for j in parca) <= en_uzun for parca in parcalar):
+            return parcalar
+        p += 1
 
 
 def sayfalari_cikar(b):
