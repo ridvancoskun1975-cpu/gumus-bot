@@ -24,6 +24,7 @@ from urllib.parse import quote
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import bilgi  # noqa: E402
 import main as bot  # noqa: E402
+import program as prg  # noqa: E402
 
 GRAFIK_GUN = 30        # grafikteki en fazla iş günü
 TABLO_GUN = 10         # tablodaki en fazla iş günü
@@ -98,7 +99,33 @@ def _grafik(kayitlar):
     }
 
 
-def _rehber(simdi):
+def _program(simdi, kayit_gunleri):
+    """Paylaşım takvimi ve saatler botun gerçek ayarlarından (bot/program.py). Okunamazsa sayfa yine
+    üretilir, saat ve takvim içeren yerler gizlenir (yanlış bilgi yazılmasın) ve uyarı çıkar."""
+    try:
+        return prg.program(simdi, kayit_gunleri, bot.HIKAYE_TURLERI, REHBER_SAATI)
+    except Exception as e:
+        print(f"::warning::Bilgi sayfası: paylaşım takvimi üretilemedi, takvim gizlendi ({type(e).__name__}: {e})")
+        return None
+
+
+def _kaynaklar():
+    """Kaynak satırları botun kullandığı adreslerden (kaynak değişirse sayfa da değişsin)."""
+    from urllib.parse import urlparse
+    metal = urlparse(bot.METALCHARTS_URL).hostname or ""
+    metal_site = metal[4:] if metal.startswith("api.") else metal
+    kur = urlparse(bot.KUR_URL)
+    kur_site = (kur.hostname or "")
+    kur_site = kur_site[4:] if kur_site.startswith("api.") else kur_site
+    ecb = "/providers/ecb/" in kur.path
+    if "metalcharts" not in metal_site or not ecb:
+        print("::warning::Bilgi sayfası: kaynak adresleri beklenenden farklı; kaynaklar bölümünü gözden geçir "
+              f"(metal: {metal_site}, kur: {bot.KUR_URL})")
+    return {"metal_ad": bot.KAYNAK_METAL, "metal_url": f"https://{metal_site}", "kur_ecb": ecb,
+            "kur_ad": kur_site.split(".")[0].capitalize(), "kur_url": f"https://{kur_site}"}
+
+
+def _rehber(simdi, saat=None):
     """Instagram'da yayımlanmış rehber bölümleri (yeniden eskiye) ve sıradaki bölüm."""
     yayimlanan, siradaki = [], None
     bugun = simdi.date()
@@ -109,7 +136,7 @@ def _rehber(simdi):
             yayimlanan.append({"no": no, "tarih": _kisa_tarih(gun), "baslik": b["baslik"], "alt": b["alt"],
                                "sayfalar": b["sayfalar"]})
         elif siradaki is None:
-            siradaki = {"no": no, "baslik": bilgi.BOLUMLER[no - 1]["baslik"], "tarih": _tarih(gun)}
+            siradaki = {"no": no, "baslik": bilgi.BOLUMLER[no - 1]["baslik"], "tarih": _tarih(gun, saat)}
     return list(reversed(yayimlanan)), siradaki
 
 
@@ -130,7 +157,8 @@ def veri_hazirla(gecmis, simdi=None):
         tablo.append({"tarih": f"{g.day:02d}.{g.month:02d}", "gun": bot.GUN_KISA[g.weekday()],
                       "saat": k.get("saat", ""), "gram": bot.tr_sayi(k["gram"]), "deg": d})
 
-    rehber, siradaki = _rehber(simdi)
+    program = _program(simdi, [g for g, _ in kayitlar])
+    rehber, siradaki = _rehber(simdi, program["rehber_saati"] if program else None)
     hesap = bot.hesap_adi() or "@gumusagtr"
     url = site_adresi()
     guncelleme = _tarih(gun, son.get("saat"))
@@ -161,6 +189,8 @@ def veri_hazirla(gecmis, simdi=None):
         "ilk_kayit": _tarih(kayitlar[0][0]),
         "rehber": rehber,
         "siradaki": siradaki,
+        "program": program,
+        "kaynak": _kaynaklar(),
         "yil": simdi.year,
     }
 

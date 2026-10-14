@@ -123,6 +123,9 @@ details[open] summary::after { content: '−'; }
 .bolum h3 { font-size: 17px; margin: 14px 0 6px; }
 .bolum .buyuk { font: 800 26px 'JetBrains Mono', ui-monospace, monospace; }
 .bolum table { font-size: 15px; }
+.program td { vertical-align: top; }
+.program td:first-child { width: 42%; color: var(--soluk); }
+.program td small { display: block; margin-top: 3px; color: var(--soluk); font-size: 14px; line-height: 1.4; }
 .bolum .kaynak { color: var(--soluk); font-size: 13px; }
 
 .yasal li { color: var(--soluk); }
@@ -146,7 +149,8 @@ footer p { margin: 6px 0; }
     <h1 id="baslik">Gram gümüş fiyatı</h1>
     <div class="fiyat"><span class="sayi">{{ gram }}</span><span class="birim">₺</span></div>
     {% if gram_deg %}<div>{{ deg(gram_deg) }} <span class="soluk">önceki iş gününe göre ({{ once_gram }} ₺)</span></div>{% endif %}
-    <p class="zaman">Son güncelleme: {{ guncelleme }} (Türkiye saati). Hafta içi ~10:00 ve ~20:00'de güncellenir; anlık (canlı) fiyat değildir.</p>
+    {# Saat ve günler bot/program.py'den: paylas.yml cron satırlarından üretilir, elle yazılmaz #}
+    <p class="zaman">Son güncelleme: {{ guncelleme }} (Türkiye saati).{% if program %} Güncelleme saatleri: {{ program.guncelleme | lower }}.{% endif %} Anlık (canlı) fiyat değildir.</p>
     <div class="kutular">
       <div class="kutu"><span>Ons gümüş</span><b class="sayi">{{ ons }} $</b><small>1 troy ons = 31,1035 g</small></div>
       <div class="kutu"><span>Dolar / TL</span><b class="sayi">{{ dolar }} ₺</b><small>ECB referans kuru · {{ kur_tarihi }}{% if dolar_deg %}{{ deg(dolar_deg) }}{% endif %}</small></div>
@@ -208,7 +212,7 @@ footer p { margin: 6px 0; }
             <td class="s">{{ s.gram }}</td><td class="s">{{ deg(s.deg) if s.deg else '—' }}</td></tr>{% endfor %}
       </tbody>
     </table>
-    <p class="not">Her iş gününün son değeri (genelde ~20:00 paylaşımı). Kayıtlar {{ ilk_kayit }} günü başladı.</p>
+    <p class="not">Her iş gününün son değeri{% if program %} (genelde {{ program.son_deger_saati }} paylaşımı){% endif %}. Kayıtlar {{ ilk_kayit }} günü başladı.</p>
   </section>
 
   <section id="hesaplama" aria-labelledby="h-nasil">
@@ -218,14 +222,14 @@ footer p { margin: 6px 0; }
       <li>Ons gümüş, 1 troy ons (31,1035 gram) saf gümüşün dolar fiyatıdır. Dolar/TL ile çarpıp 31,1035'e bölünce 1 gramın TL karşılığı çıkar.</li>
       <li>Gösterge fiyattır; kuyumcu, banka ve borsa fiyatlarından farklıdır. İşçilik, alış-satış farkı (makas) ve vergiler dahil değildir.</li>
       <li>Dolar/TL, Avrupa Merkez Bankası'nın (ECB) referans kurudur. TCMB ve bankaların alış kurundan genelde biraz (binde birkaç) yüksektir; gram fiyat da aynı oranda farklı çıkar.</li>
-      <li>ECB kuru iş günleri ~17:00'de yenilenir: ~10:00 değeri önceki iş gününün, ~20:00 değeri o günün kurunu kullanır.</li>
+      {% if program %}<li>ECB kuru iş günleri Türkiye saatiyle {{ program.ecb.saat }} sularında yenilenir: {{ program.ecb.kullanim }}.</li>{% endif %}
       <li>Altın/gümüş paritesi, 1 ons altının kaç ons gümüş ettiğini gösterir; aynı oran gramda da geçerlidir.</li>
     </ul>
   </section>
 
   <section id="rehber" aria-labelledby="h-rehber">
     <h2 id="h-rehber">Gümüş rehberi</h2>
-    <p class="soluk" style="margin-top: 0">Instagram'daki rehber serisinin metinleri. Yeni bölümler salı ve perşembe ~14:00'te.</p>
+    <p class="soluk" style="margin-top: 0">Instagram'daki rehber serisinin metinleri. Bölümler Instagram'da Öne çıkanlar › Rehber'de de toplanır.</p>
     {% for b in rehber %}
     <details{% if loop.first %} open{% endif %}>
       <summary><span class="no">#{{ '%02d'|format(b.no) }}</span><span><b>{{ b.baslik }}</b><small>{{ b.alt }}</small></span></summary>
@@ -247,25 +251,25 @@ footer p { margin: 6px 0; }
 
   <section id="takvim" aria-labelledby="h-takvim">
     <h2 id="h-takvim">Instagram'da ne zaman ne var?</h2>
-    <table>
+    {% if program %}
+    <table class="program">
       <tbody>
-        <tr><td>Hafta içi ~10:00</td><td>Güncel fiyat (Reels)</td></tr>
-        <tr><td>Hafta içi ~20:00</td><td>Günün özeti (Reels ve hikâye)</td></tr>
-        <tr><td>Salı, perşembe ~14:00</td><td>Gümüş rehberi</td></tr>
-        <tr><td>Cumartesi ~10:00</td><td>Haftalık özet ve grafik</td></tr>
-        <tr><td>Cumartesi ~14:00</td><td>Rehberden kısa video</td></tr>
-        <tr><td>Ayın ilk iş günü ~14:00</td><td>Aylık özet ve grafik</td></tr>
-        <tr><td>Pazar ~11:00</td><td>Kısa, orta ve uzun vade yapay zekâ yorumu</td></tr>
+        {% for s in program.satirlar %}
+        <tr><td>{{ s.zaman }}</td><td>{{ s.ne }}{% for e in s.ek %}<small>{{ e }}</small>{% endfor %}</td></tr>
+        {% endfor %}
       </tbody>
     </table>
+    <p class="not">Saatler yaklaşıktır (Türkiye saati); takvim botun ayarlarından her paylaşımda yeniden üretilir.</p>
+    {% endif %}
     <div class="dugmeler"><a class="dugme" href="{{ instagram }}">{{ hesap }} hesabını takip et</a></div>
   </section>
 
   <section id="kaynaklar" aria-labelledby="h-kaynak">
     <h2 id="h-kaynak">Kaynaklar ve yasal bilgi</h2>
     <ul class="duz yasal">
-      <li>Metal fiyatları (ons gümüş, ons altın): <a href="https://metalcharts.org">MetalCharts · metalcharts.org</a>. Veriler gecikmeli ya da hatalı olabilir.</li>
-      <li>Dolar/TL: Avrupa Merkez Bankası (ECB) referans kurlarından EUR çaprazıyla hesaplanmıştır, <a href="https://frankfurter.dev">Frankfurter</a> üzerinden ({{ kur_tarihi }} kuru).</li>
+      <li>Metal fiyatları (ons gümüş, ons altın): <a href="{{ kaynak.metal_url }}">{{ kaynak.metal_ad }}</a>. Veriler gecikmeli ya da hatalı olabilir.</li>
+      <li>Dolar/TL: {% if kaynak.kur_ecb %}Avrupa Merkez Bankası (ECB) referans kurlarından EUR çaprazıyla hesaplanmıştır, {% endif %}<a href="{{ kaynak.kur_url }}">{{ kaynak.kur_ad }}</a> üzerinden ({{ kur_tarihi }} kuru).</li>
+      {% if program and program.yorum %}<li>Pazar yorumları fiyat ve kur verileri ile haftanın haberlerinden yapay zekâ ile üretilir; tahmindir, hata içerebilir ve uzman incelemesinden geçmez. Haber kaynakları her yorumun açıklamasında yazar.</li>{% endif %}
       <li>Bu sayfa ve hesaptaki tüm paylaşımlar yalnızca bilgi amaçlıdır; alım-satım önerisi içermez ve yatırım danışmanlığı kapsamında değildir. Yatırım danışmanlığı, SPK'dan yetkili kuruluşlarla imzalanan sözleşmeyle verilir.</li>
       <li>Değerler mali durumunuza ve risk tercihlerinize göre hazırlanmamıştır; yalnızca bunlara dayanarak karar vermeyin.</li>
       <li>Bu hesap DM'den tavsiye vermez, para ya da yatırım istemez. Hesap adına size yazanlara itibar etmeyin.</li>
@@ -277,7 +281,7 @@ footer p { margin: 6px 0; }
 
 <footer>
   <div class="kap">
-    <p><b style="color: var(--yazi)">{{ hesap }}</b> · Gram gümüş fiyatı, hafta içi her gün.</p>
+    <p><b style="color: var(--yazi)">{{ hesap }}</b> · Gram gümüş fiyatı{% if program %}, {{ program.fiyat_ozet }}{% endif %}.</p>
     <p>Bilgi amaçlıdır, yatırım tavsiyesi değildir. Yazı tipleri: Archivo ve JetBrains Mono (SIL Open Font License).</p>
   </div>
 </footer>
