@@ -106,6 +106,10 @@ r_acik = satir(p(2026, 10, 14, rehber_hikaye=True), "Gümüş rehberi")
 kontrol("otomatik açık: 've hikâye' ve 'Öne çıkanlar' var", "ve hikâye" in r_acik["ne"]
         and any("Öne çıkanlar" in e for e in r_acik["ek"]), r_acik)
 import main as bot  # noqa: E402
+bot_etiket = lambda g: bot.HASHTAG_HAFTA.index(bot.hashtag_sec("hafta", g))
+# Haftalık özetin etiket sırası (Rıdvan 14 Ekim 2026: ilk özet 17 Ekim yatırım ağırlıklı 1. setle)
+kontrol("17 Ekim haftalık 1. set, 24 Ekim 2. set",
+        bot_etiket(date(2026, 10, 17)) == 0 and bot_etiket(date(2026, 10, 24)) == 1 and bot_etiket(date(2026, 10, 31)) == 0)
 kontrol("main'deki ayar okunuyor", prg.program(datetime(2026, 10, 14, 9, tzinfo=TR), [], HIKAYE)["rehber_hikaye"]
         == bot.REHBER_HIKAYE_OTOMATIK)
 
