@@ -177,21 +177,20 @@ def takipci_satirlari():
 
 
 def paylasim_adlari(medyalar, satirlar):
-    """Her gönderiye takipci.md'deki paylaşım adını eşler (bot paylaştıktan hemen sonra kayıt düşer).
+    """Her gönderiye takipci.md'deki paylaşım adını eşler. Kayıt üretim işinde, Instagram'a
+    gönderilmeden birkaç dakika önce düşer: gönderiden önceki en yakın kayıt (en çok 25 dk) seçilir.
     Eşleşmezse açıklamadan, o da olmazsa Reels/Gönderi."""
-    gercek = [s for s in satirlar if "(deneme)" not in s[2]]
+    gercek = [(datetime.strptime(f"{s[0]} {s[1]}", "%Y-%m-%d %H:%M").replace(tzinfo=TR_SAAT), s[2])
+              for s in satirlar if "(deneme)" not in s[2]]
     kullanilan = set()
     for m in sorted(medyalar, key=lambda x: x["_zaman"]):
+        adaylar = [(z, i) for i, (z, _) in enumerate(gercek) if i not in kullanilan
+                   and -25 <= (z - m["_zaman"]).total_seconds() / 60 <= 2]
         ad = None
-        for i, s in enumerate(gercek):
-            if i in kullanilan:
-                continue
-            kayit_zamani = datetime.strptime(f"{s[0]} {s[1]}", "%Y-%m-%d %H:%M").replace(tzinfo=TR_SAAT)
-            fark = (kayit_zamani - m["_zaman"]).total_seconds() / 60
-            if -1.5 <= fark <= 30:
-                ad = s[2]
-                kullanilan.add(i)
-                break
+        if adaylar:
+            _, i = max(adaylar)
+            kullanilan.add(i)
+            ad = gercek[i][1]
         m["_ad"] = RAPOR_ADI.get(ad, ad) if ad else aciklamadan_ad(m)
 
 
@@ -199,7 +198,7 @@ def aciklamadan_ad(m):
     a = (m.get("caption") or "").lower()
     for anahtar, ad in (("haftalık gümüş özeti", "Haftalık özet"), ("aylık gümüş özeti", "Aylık özet"),
                         ("günün gümüş özeti", "Günlük özet"), ("güncel gümüş fiyatları", "Fiyat Reels'i"),
-                        ("yasal", "Yasal bilgilendirme")):
+                        ("yasal bilgilendirme", "Yasal bilgilendirme")):
         if anahtar in a:
             return ad
     return TUR_ADI.get(m.get("media_product_type"), "Gönderi")
@@ -236,8 +235,12 @@ def _kisa_zaman(z):
 
 
 def _ort(liste, anahtar):
+    """Ortalama; 10 ve üstü tam sayıya yuvarlanır (138,7 kişi değil 139 kişi)."""
     degerler = [m["_ist"].get(anahtar) for m in liste if m["_ist"].get(anahtar) is not None]
-    return sum(degerler) / len(degerler) if degerler else None
+    if not degerler:
+        return None
+    o = sum(degerler) / len(degerler)
+    return round(o) if o >= 10 else round(o, 1)
 
 
 def _top(liste, anahtar):
