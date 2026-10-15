@@ -8,7 +8,7 @@ yöntemi, paylaşım takvimi ve kaynaklarla yeniden yazar. Gümüş rehberi ayr�
 yalnızca başlıklar görünür, başlığa dokununca açılır; Instagram'da yayımlanmış bölümler ve ayrıntılı
 bilgi (bot/ayrintili.py). Ana sayfa şişmesin diye rehberden orada yalnızca bir bağlantı kartı var
 (Rıdvan, 14 Ekim 2026). Ayrıca WhatsApp/Instagram bağlantı önizlemesi için og.png (1200×630),
-fontlar ve sitemap.xml üretir. GitHub Pages her yayında siteyi baştan kurduğu için sayfa her
+fontlar, sitemap.xml ve Google Search Console doğrulama dosyasını üretir. GitHub Pages her yayında siteyi baştan kurduğu için sayfa her
 çalıştırmada yeniden üretilir.
 
 Fiyatlar veri/gecmis.json kayıtlarından gelir (hafta içi her paylaşımın değeri); MetalCharts
@@ -33,6 +33,9 @@ GRAFIK_GUN = 30        # grafikteki en fazla iş günü
 TABLO_GUN = 10         # tablodaki en fazla iş günü
 REHBER_SAATI = (13, 45)  # rehber bölümü o gün bu saatten sonra sayfaya girer (~14:00 paylaşımı)
 TL_MIKTARLAR = [1000, 5000, 10000, 50000]
+# Google Search Console sahiplik doğrulaması (URL ön eki mülkü, HTML dosyası yöntemi; 15 Ekim 2026).
+# Site her yayında baştan kurulduğu için dosya her çalıştırmada yazılır; kaldırılırsa doğrulama düşer.
+GOOGLE_DOGRULAMA = "googleade97aa5989bb9eb.html"
 GRAM_MIKTARLAR = [(1, "1 gram"), (10, "10 gram"), (100, "100 gram"), (1000, "1 kilogram")]
 
 
@@ -232,6 +235,7 @@ def uret(cikti, gecmis, simdi=None):
         f'<url><loc>{v["url"]}</loc><lastmod>{gun}</lastmod><changefreq>daily</changefreq></url>'
         f'<url><loc>{v["url"]}rehber/</loc><lastmod>{gun}</lastmod><changefreq>weekly</changefreq></url>'
         '</urlset>\n', encoding="utf-8")
+    (cikti / GOOGLE_DOGRULAMA).write_text(f"google-site-verification: {GOOGLE_DOGRULAMA}", encoding="utf-8")
 
     # Bağlantı önizlemesi (WhatsApp, Instagram DM): güncel fiyatlı görsel
     try:
