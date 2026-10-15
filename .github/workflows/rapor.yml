@@ -1,0 +1,36 @@
+# Haftalık Instagram raporu: paylaşımların istatistiklerini özel gumus-kayit deposuna yazar (bot/rapor.py).
+# Paylaşım yapmaz, günlüğe sayı yazmaz. Paylaşım saatleriyle çakışmasın (09:45–10:45, 13:45–14:45, 19:45–20:45).
+name: Haftalık Instagram raporu
+on:
+  workflow_dispatch:
+    inputs:
+      bitis:
+        description: "Raporun son günü (YYYY-AA-GG); boş = dün"
+        required: false
+      deneme:
+        description: "Deneme (dosya adı -deneme ile biter)"
+        type: boolean
+        default: false
+  push:
+    branches: [rapor-deneme]   # GEÇİCİ: örnek rapor için; main'e alınırken kaldırılır
+permissions:
+  contents: read
+concurrency:
+  group: gumus-rapor
+jobs:
+  rapor:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -q requests
+      - name: Raporu hazırla
+        env:
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+          KAYIT_PAT: ${{ secrets.KAYIT_PAT }}
+          DENEME: ${{ github.event_name == 'push' || inputs.deneme }}
+          BITIS: ${{ github.event_name == 'push' && '2026-10-15' || inputs.bitis }}
+        run: python bot/rapor.py ${BITIS:+--bitis "$BITIS"}
