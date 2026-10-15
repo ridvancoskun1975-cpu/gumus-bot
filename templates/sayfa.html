@@ -136,7 +136,7 @@
     <ul class="duz yasal">
       <li>Metal fiyatları (ons gümüş, ons altın): <a href="{{ kaynak.metal_url }}">{{ kaynak.metal_ad }}</a>. Veriler gecikmeli ya da hatalı olabilir.</li>
       <li>Dolar/TL: {% if kaynak.kur_ecb %}Avrupa Merkez Bankası (ECB) referans kurlarından EUR çaprazıyla hesaplanmıştır, {% endif %}<a href="{{ kaynak.kur_url }}">{{ kaynak.kur_ad }}</a> üzerinden ({{ kur_tarihi }} kuru).</li>
-      {% if program and program.yorum %}<li>Pazar yorumları fiyat ve kur verileri ile haftanın haberlerinden yapay zekâ ile üretilir; tahmindir, hata içerebilir ve uzman incelemesinden geçmez. Haber kaynakları her yorumun açıklamasında yazar.</li>{% endif %}
+      {% if program and program.yorum %}<li>Pazar yorumları fiyat ve kur verileri ile haftanın haberlerinden yapay zekâ ile üretilir. Tahmindir: hata içerebilir, eksik ya da güncel olmayabilir ve uzman incelemesinden geçmez; bilgileri kendiniz doğrulamadan dayanak almayın. Haber kaynakları her yorumun açıklamasında yazar.</li>{% endif %}
       <li>Bu sayfa ve hesaptaki tüm paylaşımlar yalnızca bilgi amaçlıdır; alım-satım önerisi içermez ve yatırım danışmanlığı kapsamında değildir. Yatırım danışmanlığı, SPK'dan yetkili kuruluşlarla imzalanan sözleşmeyle verilir.</li>
       <li>Değerler mali durumunuza ve risk tercihlerinize göre hazırlanmamıştır; yalnızca bunlara dayanarak karar vermeyin.</li>
       <li>Bu hesap DM'den tavsiye vermez, para ya da yatırım istemez. Hesap adına size yazanlara itibar etmeyin.</li>

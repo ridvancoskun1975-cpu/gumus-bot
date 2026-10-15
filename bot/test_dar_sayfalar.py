@@ -134,7 +134,8 @@ def main():
             kart = re.search(r'<aside class="davet".*?</aside>', html, re.S)
             if kart:
                 yazi = " ".join(re.sub(r"<[^>]+>", " ", kart.group(0)).split())
-                kontrol("Pazar yapay zekâ yorumu" in yazi, f"kartta pazar yorumu yok: {f}")
+                kontrol("Pazar üst düzey yapay zekâ analizi" in yazi and "Her gün fiyat, her pazar derin yorum" in yazi,
+                        f"kartta pazar yorumu yok: {f}")
                 kontrol(len(yazi) <= 160, f"kart uzun ({len(yazi)} harf; az ve öz olmalı): {f} → {yazi}")
             kontrol("yatırım tavsiyesi değildir" in html or "yatırım danışmanlığı kapsamında değildir" in html,
                     f"yasal not yok: {f}")

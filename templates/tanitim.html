@@ -5,7 +5,7 @@
 {% macro kart() -%}
 {%- if tanitim %}
 <aside class="davet" aria-labelledby="davet-baslik">
-  <h2 id="davet-baslik">Gümüşü her gün saatinde takip edin</h2>
+  <h2 id="davet-baslik">{{ tanitim.baslik }}</h2>
   <p class="davet-satir">{% for h in tanitim.satir %}<span>{{ h }}</span>{% if not loop.last %} · {% endif %}{% endfor %}</p>
   <a class="dugme" href="{{ instagram }}">Instagram'da takip et</a>
 </aside>

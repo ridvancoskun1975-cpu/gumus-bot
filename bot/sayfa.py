@@ -137,10 +137,14 @@ def _tanitim(program):
     haftalik = bul("Haftalık özet")
     if haftalik:
         satir.append(f"{gun(haftalik)} haftalık özet")
+    # 15 Ekim 20:18 (Rıdvan, 2. seçenek): "Her gün fiyat, her pazar derin yorum" · "Pazar üst düzey yapay
+    # zekâ analizi". "En gelişmiş" ya da "uzman" denmez (doğrulanamaz / yasal metinle çelişir); model adı
+    # sitede yazılmaz (Rıdvan 20:27: "riske girmeyelim"). Yorum takvimde yoksa başlık eski hâline döner.
     yorum = bul("yapay zekâ yorumu") if program.get("yorum") else None
     if yorum:
-        satir.append(f"{gun(yorum)} yapay zekâ yorumu")
-    return {"satir": satir}
+        satir.append(f"{gun(yorum)} üst düzey yapay zekâ analizi")
+    baslik = "Her gün fiyat, her pazar derin yorum" if yorum else "Gümüşü her gün saatinde takip edin"
+    return {"baslik": baslik, "satir": satir}
 
 
 def _ayrintili(simdi):
