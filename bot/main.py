@@ -1723,7 +1723,8 @@ def hazirla(tur, cikti, ornek, konu=None):
     hazirlayici = {"hafta": haftalik_veri_hazirla, "ay": aylik_veri_hazirla}.get(tur, veri_hazirla)
     veri = hazirlayici(fiyat, hesap)
     if tur == "hafta":
-        veri["pazar_hatirlatma"] = PAZAR_HATIRLATMA if (ornek or pazar_yorumu_yarin()) else None
+        # YALNIZCA DENEME DALI: cuma akşamki önizlemede de hatırlatma görünsün diye bugün 17 Ekim cumartesi sayılır.
+        veri["pazar_hatirlatma"] = PAZAR_HATIRLATMA if (ornek or pazar_yorumu_yarin(date(2026, 10, 17))) else None
 
     damga = datetime.now(TR_SAAT).strftime("%Y%m%d-%H%M")
     # Özel günde (eşik aşıldı / en az bir aylık en yüksek) aynı paylaşım özel görselle gider.
