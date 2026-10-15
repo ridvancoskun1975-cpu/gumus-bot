@@ -113,6 +113,15 @@ kontrol("17 Ekim haftalık 1. set, 24 Ekim 2. set",
 kontrol("main'deki ayar okunuyor", prg.program(datetime(2026, 10, 14, 9, tzinfo=TR), [], HIKAYE)["rehber_hikaye"]
         == bot.REHBER_HIKAYE_OTOMATIK)
 
+# Pazar yorumu 15 Ekim 2026'dan beri Reels ve hikâye olarak da gider; sayfa bunu botun ayarından yazar
+y_acik = satir(prg.program(datetime(2026, 10, 16, 9, tzinfo=TR), [], HIKAYE, yorum_reels=True), "Kısa, orta")
+y_kapali = satir(prg.program(datetime(2026, 10, 16, 9, tzinfo=TR), [], HIKAYE, yorum_reels=False), "Kısa, orta")
+kontrol("pazar yorumu Reels açıkken 'kaydırmalı gönderi, Reels ve hikâye'",
+        y_acik["ne"].endswith("(kaydırmalı gönderi, Reels ve hikâye)"), y_acik)
+kontrol("pazar yorumu Reels kapalıyken yalnızca 'kaydırmalı gönderi'", y_kapali["ne"].endswith("(kaydırmalı gönderi)"), y_kapali)
+kontrol("main'deki YORUM_REELS okunuyor", ("Reels ve hikâye" in satir(prg.program(datetime(2026, 10, 16, 9, tzinfo=TR), [],
+        HIKAYE), "Kısa, orta")["ne"]) == bool(bot.YORUM_REELS))
+
 # Satırlar sıralı ve hepsinin adı var
 kontrol("satır sırası", [s["zaman"].split(" ~")[0] for s in a["satirlar"]][:2] == ["Hafta içi", "Rehber günleri"], a["satirlar"])
 kontrol("bilinmeyen tür yok", all(not s["ne"][:1].islower() for s in a["satirlar"]))
