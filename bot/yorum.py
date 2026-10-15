@@ -597,19 +597,19 @@ def ornek_veri(bugun):
 UYARI = ("Burada yer alan yatırım bilgi, yorum ve tavsiyeleri yatırım danışmanlığı kapsamında değildir. "
          "Yatırım danışmanlığı hizmeti; aracı kurumlar, portföy yönetim şirketleri, mevduat kabul etmeyen "
          "bankalar ile müşteri arasında imzalanacak yatırım danışmanlığı sözleşmesi çerçevesinde sunulmaktadır. "
-         "Buradaki yorumlar yapay zekâ ile üretilmiştir ve mali durumunuz ile risk ve getiri tercihlerinize "
-         "uygun olmayabilir. Bu nedenle, sadece burada yer alan bilgilere dayanılarak yatırım kararı verilmesi "
+         "Buradaki yorumlar üst düzey yapay zekâ ile üretilmiş olsa da hata içerebilir; mali durumunuz ile risk "
+         "ve getiri tercihlerinize uygun olmayabilir. Bu nedenle, sadece burada yer alan bilgilere dayanılarak yatırım kararı verilmesi "
          "beklentilerinize uygun sonuçlar doğurmayabilir.")
 
 
 def _nasil_hazirlandi(gelismeler):
     # Model ve şirket adı yazılmaz (Rıdvan, 15 Ekim 2026 20:31: "Kaldır"); "yapay zekâ ile" yeterli.
     if gelismeler:
-        dayanak = ("Yorumlar aşağıdaki fiyat ve kur verileri ile yapay zekânın pazar sabahı web aramasıyla "
-                   "derlediği haftanın haberlerinden otomatik üretilir; haber özetleri ayrıca "
+        dayanak = ("Yorumlar aşağıdaki fiyat ve kur verileri ile pazar sabahı web aramasıyla derlenen "
+                   "haftanın haberlerinden üst düzey yapay zekâ ile otomatik üretilir; haber özetleri ayrıca "
                    "doğrulanmaz ve yayından önce bir uzman tarafından incelenmez.")
     else:
-        dayanak = ("Yorumlar aşağıdaki fiyat ve kur verilerinden yapay zekâ ile otomatik üretilir; "
+        dayanak = ("Yorumlar aşağıdaki fiyat ve kur verilerinden üst düzey yapay zekâ ile otomatik üretilir; "
                    "yayından önce bir uzman tarafından incelenmez. Bu hafta haber taraması yapılamadığı için "
                    "yalnızca geçmiş fiyat ve kur hareketlerine dayanır.")
     return (f"Nasıl hazırlandı: {dayanak} Her vadede verilere göre ağır basan yön ve gücü belirtilir; bu bir "
