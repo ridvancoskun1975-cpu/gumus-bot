@@ -12,6 +12,12 @@
   onay ister. (Rıdvan'ın 15 Ekim 2026 tarihli açık isteği; metni kendisi verdi.)
 - Rıdvan genelde yalnızca telefondan, Claude üzerinden çalışır: GitHub ayarı, GitHub onay ekranı ya da başka
   bir arayüz gerektiren çözüm önerme.
+- Taahhüt: hafta içi her gün 2 kez gram fiyatı (~10:00 Reels, ~20:00 özet); bu ikisi kaldırılmaz, başka içerikle
+  değiştirilmez.
+- Pazar yorumu 2 paylaşım sayılır (kaydırmalı + Reels).
+- Instagram'a tarayıcıyla bakılmaz.
+- Sitede ve açıklamalarda model ya da şirket adı yazılmaz.
+  (Bu dört kural: Rıdvan, 16 Ekim 2026 "CLAUDE.md'ye ekle".)
 - Rehber hikâyesi kareler tek tek değil, tek müzikli video olarak gider (kapak 3 sn, kare 6 sn), rehber gönderisiyle
   aynı çalıştırmada (`bot/main.py` → `REHBER_HIKAYE_OTOMATIK = True`); hikâye kalabalık olmamalı.
 - "Rehber" öne çıkanının standardı (Rıdvan, 14 Ekim 2026): her bölüm tek video; öne çıkandaki sıra önemli değil,
