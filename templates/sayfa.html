@@ -18,6 +18,7 @@
 <meta name="twitter:card" content="summary_large_image">
 {% endblock %}
 {% block icerik %}
+{% from "tanitim.html" import serit, kart with context %}
 {%- macro deg(d, ek="") -%}
 {%- if d -%}<span class="deg {{ d.yon }}"><span aria-hidden="true">{{ d.isaret }}</span> {{ d.metin }}{{ ek }}</span>{%- endif -%}
 {%- endmacro -%}
@@ -38,6 +39,7 @@
       <a class="dugme ikincil" href="{{ whatsapp }}">WhatsApp'ta paylaş</a>
     </div>
   </section>
+  {{ kart() }}
 
   <section id="hesap-makinesi" aria-labelledby="h-hesap">
     <h2 id="h-hesap">Hesap makinesi</h2>

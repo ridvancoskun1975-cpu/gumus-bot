@@ -37,10 +37,12 @@ tr.vurgu td { color: var(--yazi); font-weight: 700; background: rgba(201, 209, 2
 .hm .sonuc small { display: block; font: 500 14px 'Archivo', system-ui, sans-serif; color: var(--soluk); margin-top: 4px; }
 {% endblock %}
 {% block icerik %}
+{% from "tanitim.html" import serit, kart with context %}
 {%- macro deg(d) -%}
 {%- if d -%}<span class="deg {{ d.yon }}"><span aria-hidden="true">{{ d.isaret }}</span> {{ d.metin }}</span>{%- endif -%}
 {%- endmacro -%}
   <nav class="yol" aria-label="Konum"><a href="{{ kok }}">Gram gümüş fiyatı</a> › <a href="{{ kok }}hesap/">Hesaplar</a></nav>
+  {{ serit() }}
 
   <section class="kahraman cevap" aria-labelledby="baslik" style="padding-top: 12px">
     <h1 id="baslik">{{ s.h1 }}</h1>
@@ -51,6 +53,7 @@ tr.vurgu td { color: var(--yazi); font-weight: 700; background: rgba(201, 209, 2
     <p class="ozet">{{ s.ozet }}</p>
     {% if s.formul %}<div class="formul" style="margin-top: 12px">{{ s.formul }}</div>{% endif %}
   </section>
+  {{ kart() }}
 
   {% if s.hesap_turu == "milyem" %}
   <section aria-labelledby="h-hm">

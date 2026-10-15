@@ -1,0 +1,27 @@
+{#- İlk temasta kısa tanıtım ve Instagram'a davet (Rıdvan, 15 Ekim 2026). Bütün sayfalarda aynı.
+    Saatler v.tanitim'den (bot/sayfa.py → _tanitim(), botun takviminden); elle yazılmaz.
+    kok: sitenin köküne göreli yol. -#}
+{% macro serit() -%}
+{%- if tanitim %}
+<p class="davet-serit"><b>{{ hesap }}</b> · {{ tanitim.serit }} · <a href="{{ instagram }}">Takip et →</a></p>
+{%- endif %}
+{%- endmacro %}
+
+{% macro kart(kok="") -%}
+{%- if tanitim %}
+<aside class="davet" aria-labelledby="davet-baslik">
+  <p class="etiket">{{ hesap }} · yalnızca gümüş</p>
+  <h2 id="davet-baslik">Gümüşü her gün saatinde, tek yerden takip edin</h2>
+  <ul>
+    {%- for h in tanitim.hizmet %}
+    <li><span class="zaman">{{ h.zaman }}</span> · {{ h.ne }}</li>
+    {%- endfor %}
+  </ul>
+  <p class="davet-not">Kaynağı açık: uluslararası ons fiyatı ve ECB kuru. Ücretsiz; bilgi verir, yatırım tavsiyesi vermez.</p>
+  <div class="davet-alt">
+    <a class="dugme" href="{{ instagram }}">Instagram'da takip et</a>
+    <span>Fiyat her iş günü akışınıza gelsin. Bu sayfa da her paylaşımda kendiliğinden güncellenir.</span>
+  </div>
+</aside>
+{%- endif %}
+{%- endmacro %}

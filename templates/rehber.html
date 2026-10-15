@@ -19,6 +19,7 @@
 {% endblock %}
 
 {% block icerik %}
+{% from "tanitim.html" import serit, kart with context %}
   <a class="geri" href="../">← Gram gümüş fiyatı ve hesap makinesi</a>
 
   <section aria-labelledby="h-rehber" style="padding-top: 14px">
@@ -71,7 +72,7 @@
     <p class="not">Ayrıntılı bilgideki rakamlar {{ ayrintili.kaynak_donemi }} ve her başlıkta belirtilen kaynaklara dayanır; son doğrulama {{ ayrintili.gozden_gecirme }}.</p>
     {% endif %}
     <p class="not">Bilgi amaçlıdır, yatırım tavsiyesi değildir.</p>
-    <div class="dugmeler"><a class="dugme" href="{{ instagram }}">{{ hesap }} hesabını takip et</a></div>
+    {{ kart() }}
   </section>
 {% endblock %}
 

@@ -123,6 +123,12 @@ def main():
         html = (cikti / "index.html").read_text(encoding="utf-8")
         kontrol('href="hesap/"' in html and 'href="gecmis/"' in html, "ana sayfada hesap/geçmiş bağlantısı yok")
         kontrol((cikti / "googleade97aa5989bb9eb.html").exists(), "Search Console doğrulama dosyası yok")
+        # İlk temasta tanıtım kartı ve Instagram daveti her sayfada (Rıdvan, 15 Ekim 2026)
+        for f in dosyalar:
+            html = (cikti / f).read_text(encoding="utf-8")
+            kontrol('class="davet"' in html and "Instagram'da takip et" in html, f"tanıtım kartı yok: {f}")
+            if f not in ("index.html", "rehber/index.html"):
+                kontrol('class="davet-serit"' in html, f"üstteki davet satırı yok: {f}")
 
         print(f"{len(dosyalar)} sayfa, {len(harita)} site haritası adresi")
     if HATA:

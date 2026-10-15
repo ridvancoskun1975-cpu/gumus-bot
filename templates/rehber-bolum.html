@@ -23,8 +23,10 @@
 .komsu { display: grid; gap: 8px; margin-top: 18px; }
 {% endblock %}
 {% block icerik %}
+{% from "tanitim.html" import serit, kart with context %}
 {% set b = s.bolum %}
   <nav class="yol" aria-label="Konum"><a href="{{ kok }}">Gram gümüş fiyatı</a> › <a href="{{ kok }}rehber/">Gümüş rehberi</a> › #{{ b.no }}</nav>
+  {{ serit() }}
   <article class="sayfa" style="padding-top: 12px">
     <h1 style="font-size: 30px">{{ b.baslik }}</h1>
     <p class="soluk" style="margin: 8px 0 0">{{ b.alt }}</p>
@@ -37,6 +39,7 @@
     {% if p.kaynak %}<p class="not">{{ p.kaynak }}</p>{% endif %}
     {% endfor %}
     <p class="not">Gümüş rehberi #{{ b.no }} · Instagram'da {{ b.tarih }}. Güncel gram gümüş: <a href="{{ kok }}">{{ gram }} ₺</a> ({{ guncelleme_kisa }}).</p>
+    {{ kart() }}
     <div class="komsu">
       {% if s.onceki %}<a class="kart-bag" href="{{ kok }}{{ s.onceki[1] }}"><span><small>Önceki bölüm</small><b>{{ s.onceki[0] }}</b></span><span class="ok" aria-hidden="true">←</span></a>{% endif %}
       {% if s.sonraki %}<a class="kart-bag" href="{{ kok }}{{ s.sonraki[1] }}"><span><small>Sonraki bölüm</small><b>{{ s.sonraki[0] }}</b></span><span class="ok" aria-hidden="true">→</span></a>{% endif %}

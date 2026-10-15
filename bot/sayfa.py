@@ -117,6 +117,27 @@ def _program(simdi, kayit_gunleri):
         return None
 
 
+def _tanitim(program):
+    """Google'dan gelen ziyaretçiye ilk temasta hesabın kısa tanıtımı (Rıdvan, 15 Ekim 2026: "benzersiz
+    hizmetlerimiz ilk temasta kısaca tanıtılmalı; Instagram hesabını takip etmeye teşvik edici olmalı").
+    Saat ve günler elle yazılmaz, botun takviminden (bot/program.py) alınır; takvimde olmayan hizmet
+    kartta görünmez. Takvim okunamazsa kart da çıkmaz."""
+    if not program:
+        return None
+
+    def bul(anahtar):
+        return next((s for s in program["satirlar"] if anahtar in s["ne"]), None)
+
+    hizmet = [{"zaman": program["guncelleme"], "ne": "gram gümüş fiyatı ve günün özeti"}]
+    for anahtar, kisa in (("Haftalık özet", "haftalık özet ve grafik"),
+                          ("yapay zekâ yorumu", "kısa, orta ve uzun vade yapay zekâ yorumu"),
+                          ("Gümüş rehberi", "Gümüş rehberi, sade ve kaynaklı")):
+        s = bul(anahtar)
+        if s:
+            hizmet.append({"zaman": s["zaman"], "ne": kisa})
+    return {"hizmet": hizmet, "serit": f"{program['guncelleme']} gram gümüş fiyatı Instagram'da"}
+
+
 def _ayrintili(simdi):
     """Ayrıntılı rehber (bot/ayrintili.py). Gözden geçirme tarihi geçtiyse uyarı verir ve sayfada not gösterir."""
     eski = simdi.date() > ayrintili.SONRAKI_GOZDEN_GECIRME
@@ -210,6 +231,7 @@ def veri_hazirla(gecmis, simdi=None):
         "rehber": rehber,
         "ayrintili": _ayrintili(simdi),
         "program": program,
+        "tanitim": _tanitim(program),
         "kaynak": _kaynaklar(),
         "yil": simdi.year,
     }
