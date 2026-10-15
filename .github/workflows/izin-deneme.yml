@@ -1,0 +1,54 @@
+# GEÇİCİ: IG_TOKEN'ın istatistik ve yorum izinlerini denetler (15 Ekim 2026, Adım 2).
+# Yalnızca izin-deneme dalına push edilince çalışır; sayı yazdırmaz, yalnızca izin var/yok.
+name: Instagram izin denemesi
+on:
+  push:
+    branches: [izin-deneme]
+permissions:
+  contents: read
+jobs:
+  izin:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: İzinleri denetle
+        env:
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.error, urllib.parse, urllib.request
+          T = os.environ["IG_TOKEN"]
+          API = "https://graph.instagram.com/v23.0"
+          def get(yol, **q):
+              q["access_token"] = T
+              try:
+                  with urllib.request.urlopen(f"{API}{yol}?{urllib.parse.urlencode(q)}", timeout=30) as r:
+                      return json.load(r)
+              except urllib.error.HTTPError as e:
+                  try:
+                      h = json.load(e).get("error", {})
+                  except Exception:
+                      h = {}
+                  return {"_hata": f"HTTP {e.code} kod {h.get('code')} {str(h.get('message',''))[:140]}"}
+          me = get("/me", fields="user_id,username")
+          print("Hesap:", me.get("username") or me.get("_hata"))
+          m = get("/me/media", fields="id,media_type,media_product_type,timestamp", limit=5)
+          if "_hata" in m:
+              print("Medya listesi alınamadı:", m["_hata"]); raise SystemExit(1)
+          medya = m.get("data", [])
+          reels = next((x for x in medya if x.get("media_product_type") == "REELS"), None)
+          gonderi = next((x for x in medya if x.get("media_product_type") == "FEED"), None)
+          sonuc = {}
+          for ad, x, metrik in (("Reels", reels, "reach,saved,shares,views"), ("Gönderi", gonderi, "reach,saved,shares")):
+              if not x:
+                  print(f"{ad}: örnek medya yok"); continue
+              r = get(f"/{x['id']}/insights", metric=metrik)
+              ok = "data" in r
+              sonuc[ad] = ok
+              print(f"{ad} istatistikleri ({metrik}):", "İZİN VAR" if ok else r.get("_hata"))
+          if medya:
+              c = get(f"/{medya[0]['id']}/comments", fields="id", limit=1)
+              print("Yorumlar:", "İZİN VAR" if "data" in c else c.get("_hata"))
+          hs = get("/me/insights", metric="reach", period="day")
+          print("Hesap istatistikleri (100 takipçide açılır):", "İZİN VAR" if "data" in hs else hs.get("_hata"))
+          PY
