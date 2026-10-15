@@ -1658,23 +1658,17 @@ def _baslik_ozeti(veri):
 
 # Cumartesi haftalık özetinde ertesi günün pazar yorumu hatırlatması (Rıdvan, 15 Ekim 2026 21:28: "Cumartesi
 # için pazar derin analizi kaçırmayın benzeri bir hatırlatma"). Görselde (Reels ve hikâyesi) ve açıklamada.
-# Yalnızca bugün cumartesiyse ve yarın pazar yorumu takvimdeyse çıkar (boş söz verilmez).
+# KURAL (Rıdvan, 15 Ekim 2026 23:22: "bu kural olmalı. her cumartesi bu yazı çıkmalı."): her cumartesi çıkar;
+# takvime ya da kayıtlara bakılmaz, hata yüzünden düşmez. Pazar yorumu her pazar zamanlı olduğu için söz boş
+# kalmaz; bot/test_pazar.py ikisini birlikte denetler (pazar yorumu takvimden çıkarsa sınama kırılır).
 PAZAR_HATIRLATMA = {"kalin": "Yarın ~11:00", "metin": "Pazar derin analizi: kısa, orta ve uzun vade. Kaçırmayın."}
 
 
 def pazar_yorumu_yarin(bugun=None):
-    """Bugün cumartesi ve yarın pazar yorumu paylaşılacak mı (paylas.yml'de yorum çalışması + kayıt kuralı)."""
+    """Haftalık özette pazar hatırlatması çıkacak mı: KURAL, her cumartesi evet (TR saatine göre).
+    Başka gün elle çalıştırılan haftalık özette "Yarın ~11:00" yanlış olacağı için çıkmaz."""
     bugun = bugun or datetime.now(TR_SAAT).date()
-    if bugun.weekday() != 5:
-        return False
-    try:
-        import program
-        kayitlar = {date.fromisoformat(k) for k in gecmis_oku()}
-        p = program.program(datetime.now(TR_SAAT), kayitlar, HIKAYE_TURLERI)
-        return bool(p.get("yorum")) and program.ilk_yorum(bugun, kayitlar) == bugun + timedelta(days=1)
-    except Exception as e:
-        print(f"::warning::Pazar hatırlatması denetlenemedi ({type(e).__name__}: {e}); hatırlatma yazılmadı.")
-        return False
+    return bugun.weekday() == 5
 
 
 def hazirla(tur, cikti, ornek, konu=None):
