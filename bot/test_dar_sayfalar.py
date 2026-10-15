@@ -56,7 +56,8 @@ def main():
     simdi = datetime(2026, 10, 15, 21, 0, tzinfo=bot.TR_SAAT)   # rehber #1–#4 yayımlanmış olsun
     with tempfile.TemporaryDirectory() as d:
         cikti = Path(d)
-        v = sayfa.uret(cikti, gecmis, simdi)
+        euro = {k["kur_tarihi"]: k["dolar"] * 1.16 for k in gecmis.values()}
+        v = sayfa.uret(cikti, gecmis, simdi, euro=euro)
         site = v["url"]
         dosyalar = sorted(p.relative_to(cikti).as_posix() for p in cikti.rglob("index.html"))
         kontrol(len(dosyalar) >= 25, f"beklenenden az sayfa: {len(dosyalar)}")
@@ -104,8 +105,17 @@ def main():
         kontrol(f'class="sayi">{dar.para(100 * gram)}<' in html, "100 gram sayfasının cevabı tutmuyor")
         html = (cikti / "hesap/1000-tl-kac-gram-gumus/index.html").read_text(encoding="utf-8")
         kontrol(f'class="sayi">{bot.tr_sayi(1000 / gram)}<' in html, "1000 TL sayfasının cevabı tutmuyor")
-        html = (cikti / "hesap/925-ayar-gumus-gram-fiyati/index.html").read_text(encoding="utf-8")
-        kontrol(f'class="sayi">{bot.tr_sayi(gram * 0.925)}<' in html, "925 ayar sayfasının cevabı tutmuyor")
+        html = (cikti / "hesap/gram-gumus-kac-euro/index.html").read_text(encoding="utf-8")
+        kontrol(f'class="sayi">{bot.tr_sayi(gram / (son["dolar"] * 1.16), 3)}<' in html, "euro sayfasının cevabı tutmuyor")
+        kontrol(not (cikti / "hesap/925-ayar-gumus-gram-fiyati").exists(), "925 ayar sayfası olmamalı (Rıdvan, 15 Ekim)")
+        kontrol(not any("925 ayar" in (cikti / f).read_text(encoding="utf-8") and f.startswith("hesap/1")
+                        for f in dosyalar), "ağırlık/tutar sayfalarında 925 ayar sütunu olmamalı")
+        # Euro kuru alınamazsa euro sayfası olmadan üretilir, bağlantı kırılmaz
+        with tempfile.TemporaryDirectory() as d2:
+            sayfa.uret(Path(d2), gecmis, simdi, euro={})
+            kontrol(not (Path(d2) / "hesap/gram-gumus-kac-euro").exists(), "euro yokken euro sayfası üretilmiş")
+            for f in Path(d2).rglob("index.html"):
+                kontrol("gram-gumus-kac-euro" not in f.read_text(encoding="utf-8"), f"euro yokken euro bağlantısı: {f}")
         html = (cikti / "hesap/altin-gumus-orani/index.html").read_text(encoding="utf-8")
         kontrol(f'class="sayi">{bot.tr_sayi(son["altin"] / son["gumus"], 1)}<' in html, "oran sayfası tutmuyor")
         html = (cikti / "rehber/index.html").read_text(encoding="utf-8")

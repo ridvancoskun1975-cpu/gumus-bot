@@ -215,7 +215,7 @@ def veri_hazirla(gecmis, simdi=None):
     }
 
 
-def uret(cikti, gecmis, simdi=None):
+def uret(cikti, gecmis, simdi=None, euro=None):
     from jinja2 import Environment, FileSystemLoader
 
     v = veri_hazirla(gecmis, simdi)
@@ -235,7 +235,7 @@ def uret(cikti, gecmis, simdi=None):
     # ana sayfa ve rehber yine yayınlanır, yalnızca uyarı çıkar.
     harita = []
     try:
-        harita, dar = dar_sayfalar.uret(cikti, env, v, gecmis)
+        harita, dar = dar_sayfalar.uret(cikti, env, v, gecmis, euro)
         v["dar_sayi"] = len(dar)
     except Exception as e:
         print(f"::warning::Dar arama sayfaları üretilemedi: {type(e).__name__}: {e}")
@@ -267,7 +267,11 @@ def main():
     cikti = Path(a.cikti) if os.path.isabs(a.cikti) else bot.KOK / a.cikti
     cikti.mkdir(parents=True, exist_ok=True)
     try:
-        v = uret(cikti, ornek_gecmis() if a.ornek else bot.gecmis_oku())
+        if a.ornek:   # örnek kayıtlar; euro kuru örnek (EUR/USD ≈ 1,16), ağa çıkılmaz
+            gecmis = ornek_gecmis()
+            v = uret(cikti, gecmis, euro={k["kur_tarihi"]: k["dolar"] * 1.16 for k in gecmis.values()})
+        else:
+            v = uret(cikti, bot.gecmis_oku())
     except bot.VeriYok as e:
         print(f"::warning::{e}")
         return

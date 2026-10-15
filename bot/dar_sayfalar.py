@@ -1,8 +1,9 @@
-"""Dar aramalar için sayfalar: "100 gram gümüş kaç TL", "1000 TL kaç gram gümüş", "925 ayar gümüş
-gram fiyatı", "1 ons gümüş kaç TL", "altın gümüş oranı", "gümüş fiyatları geçmiş" gibi.
+"""Dar aramalar için sayfalar: "100 gram gümüş kaç TL", "1000 TL kaç gram gümüş", "1 ons gümüş kaç TL",
+"gram gümüş kaç euro", "altın gümüş oranı", "gümüş fiyatları geçmiş" gibi.
 
 Rıdvan (15 Ekim 2026): "dar aramaların hiç birini kaçırmayalım. bu mantık ile gelen aramalar konusunu
-ciddi ele al ve genişlet." Arama ailesi listesi Google otomatik tamamlamasından çıkarıldı (proje belgesi
+ciddi ele al ve genişlet." 925/800 ayar sayfaları Rıdvan'ın isteğiyle yok (15 Ekim 07:25: takı
+aramalarına yönelmesin; hurda/milyem hesabı kaldı). Arama ailesi listesi Google otomatik tamamlamasından çıkarıldı (proje belgesi
 arastirma/dar-aramalar-15-ekim.md). Her aile için tek ve dolu bir sayfa yapılır (çok sayıda ince sayfa
 değil: Google aynı kalıpta toplu üretilmiş zayıf sayfaları cezalandırıyor). Her sayfa:
   - sorunun cevabını ilk satırda, rakamla verir (görselde ve açıklamada kullanılan aynı kayıttan),
@@ -49,9 +50,7 @@ AYARLAR = [
     (830, "830", ""),
     (800, "800", "damga sözleşmesindeki en düşük ayar"),
 ]
-AYAR_SAYFALAR = [925, 800]
-KISA_AD = {999: "külçe", 958: "Britannia", 925: "takı", 800: "en düşük"}   # dar tablolarda kısa açıklama
-AYAR_AGIRLIK = [1, 5, 10, 20, 50, 100, 250, 1000]
+KISA_AD = {999: "külçe", 958: "Britannia", 925: "sterling", 800: "en düşük"}   # dar tablolarda kısa açıklama
 ONS_MIKTARLAR = [1, 5, 10, 32.1507, 100]   # 32,15 ons = 1 kg
 
 HARFLER = str.maketrans("çğıöşüÇĞİÖŞÜâîû", "cgiosuCGIOSUaiu")
@@ -118,8 +117,9 @@ def _ortak_notlar(ek=None):
     return n
 
 
-def sayfalar(v, gecmis):
-    """Bütün dar arama sayfalarının verisi: [{yol, sablon, ...}]. v = sayfa.veri_hazirla() çıktısı."""
+def sayfalar(v, gecmis, euro=None):
+    """Bütün dar arama sayfalarının verisi: [{yol, sablon, ...}]. v = sayfa.veri_hazirla() çıktısı;
+    euro = {ECB tarihi: EUR/TRY} (euro_kurlari(); yoksa euro sayfası üretilmez)."""
     kayitlar = sorted((date.fromisoformat(g), k) for g, k in gecmis.items())
     gun, son = kayitlar[-1]
     gram, dolar, ons = son["gram"], son["dolar"], son["gumus"]
@@ -136,11 +136,20 @@ def sayfalar(v, gecmis):
 
     agirlik_yol = {g: f"hesap/{p}-gumus-kac-tl/" for g, _, p in AGIRLIKLAR}
     tl_yol = {t: f"hesap/{t}-tl-kac-gram-gumus/" for t in TL_SAYFALAR}
-    ayar_yol = {a: f"hesap/{a}-ayar-gumus-gram-fiyati/" for a in AYAR_SAYFALAR}
     yollar = {
         "merkez": "hesap/", "milyem": "hesap/hurda-gumus-milyem-hesabi/", "ons": "hesap/1-ons-gumus-kac-tl/",
-        "dolar": "hesap/gram-gumus-kac-dolar/", "parite": "hesap/altin-gumus-orani/", "gecmis": "gecmis/",
+        "dolar": "hesap/gram-gumus-kac-dolar/", "euro": "hesap/gram-gumus-kac-euro/",
+        "parite": "hesap/altin-gumus-orani/", "gecmis": "gecmis/",
     }
+    # Euro: ECB EUR/TRY, kaydın kendi ECB tarihindeki kur (dolar kuruyla aynı gün; tutarlı çapraz)
+    euro = euro or {}
+
+    def eur_kur(k):
+        return euro.get(k.get("kur_tarihi"))
+
+    eur_son = eur_kur(son)
+    if euro and not eur_son:
+        print(f"::warning::Euro sayfası: {son.get('kur_tarihi')} tarihli ECB EUR/TRY kuru yok; euro atlandı.")
     rehber_yol = {b["no"]: f"rehber/{b['no']}-{adres_parcasi(b['baslik'])}/" for b in v["rehber"]}
 
     def rehber_bag(no, metin):
@@ -152,42 +161,40 @@ def sayfalar(v, gecmis):
         ad_uzun = "1 kg (1 kilo)" if g == 1000 else ad
         komsu = [{"hucreler": [ad2, para(g2 * gram) + " ₺"], "bag": agirlik_yol[g2] if g2 != g else None,
                   "vurgu": g2 == g} for g2, ad2, _ in AGIRLIKLAR]
-        ayar_satir = [{"hucreler": [f"{a} ayar" + (f" ({KISA_AD[a]})" if a in KISA_AD else ""),
-                                    gram_yaz(g * a / 1000), para(deger * a / 1000) + " ₺"],
-                       "bag": ayar_yol.get(a)} for a, _, ack in AYARLAR]
         ilgili = [(f"{ad2} gümüş kaç TL", agirlik_yol[g2]) for g2, ad2, _ in AGIRLIKLAR if g2 != g][:4]
-        ilgili += [("1.000 TL kaç gram gümüş", tl_yol[1000]), ("925 ayar gram fiyatı", ayar_yol[925]),
-                   ("Gümüş hesap makinesi", yollar["merkez"])]
+        ilgili += [("1.000 TL kaç gram gümüş", tl_yol[1000])]
+        ilgili += [("Gram gümüş kaç euro", yollar["euro"])] if eur_son else []
+        ilgili += [("Gümüş hesap makinesi", yollar["merkez"])]
         ilgili += rehber_bag(6, "Kuyumcudaki fiyat neden farklı?")
+        eur_metin = f" / {para(deger / eur_son)} €" if eur_son else ""
         ekle(
             yol=agirlik_yol[g], kisa=f"{ad} gümüş kaç TL", grup="Ağırlık → TL",
             title=f"{ad_uzun.replace('kilo', 'Kilo').title() if g == 1000 else ad.title()} Gümüş Kaç TL? "
                   f"{para(deger)} ₺ · {tarih_kisa}",
-            desc=f"{ad_uzun} gümüş {para(deger)} ₺ ({tarih}). {ad} saf gümüşün değeri, 925 ve 800 ayarda "
-                 f"içindeki gümüş, dolar karşılığı ve son günler. Bilgi amaçlıdır, yatırım tavsiyesi değildir.",
+            desc=f"{ad_uzun} gümüş {para(deger)} ₺ ({tarih}). {ad} saf gümüşün TL, dolar"
+                 f"{' ve euro' if eur_son else ''} karşılığı, başka ağırlıklar ve son günler. Bilgi amaçlıdır, "
+                 f"yatırım tavsiyesi değildir.",
             h1=f"{ad_uzun} gümüş kaç TL?",
             cevap=para(deger), birim="₺",
             deg=bot.degisim(deger, g * once["gram"]) if once else None,
             ozet=f"{ad_uzun} saf gümüşün değeri {tarih} itibarıyla {para(deger)} ₺ "
-                 f"(yaklaşık {para(g * gram_usd)} $). Hesap: {bot.tr_sayi(g, 0)} g × {bot.tr_sayi(gram)} ₺.",
+                 f"(yaklaşık {para(g * gram_usd)} ${eur_metin}). Hesap: {bot.tr_sayi(g, 0)} g × {bot.tr_sayi(gram)} ₺. "
+                 f"999 külçede gümüşün binde 999'u saftır; aradaki fark binde birdir.",
             formul=f"{bot.tr_sayi(g, 0)} g × {bot.tr_sayi(gram)} ₺ (1 gram) = {para(deger)} ₺",
             tablolar=[
                 {"baslik": "Başka ağırlıklar", "sutunlar": ["Gümüş", "Değer"], "satirlar": komsu, "sayisal": [1]},
-                {"baslik": f"{ad} eşyada içindeki gümüş (ayara göre)", "sutunlar": ["Ayar", "Saf gümüş", "Değer"],
-                 "satirlar": ayar_satir, "sayisal": [1, 2],
-                 "not": "999 külçede gümüşün binde 999'u saftır; tabloda bu küçük fark da hesaba katıldı."},
             ],
             seyir=_seyir(kayitlar, lambda k, g=g: g * k["gram"], lambda x: para(x) + " ₺"),
             seyir_baslik=f"Son günlerde {ad} gümüş (₺)",
-            notlar=_ortak_notlar(["Külçe gümüş teslimi KDV'den istisnadır; takı ve eşyada KDV, içindeki gümüş "
-                                  "bedeli düşüldükten sonra kalan tutar üzerinden hesaplanır (ayrıntı rehberde)."]),
+            notlar=_ortak_notlar(["Külçe gümüş teslimi KDV'den istisnadır (KDV Kanunu md. 17/4-g; ayrıntı "
+                                  "rehberde)."]),
             ilgili=ilgili,
         )
 
     # ---- TL → gram
     for t in TL_SAYFALAR:
         g = t / gram
-        tablo = [{"hucreler": [tl_yaz(t2), gram_kisa(t2 / gram), gram_kisa(t2 / (gram * 0.925))],
+        tablo = [{"hucreler": [tl_yaz(t2), gram_kisa(t2 / gram)],
                   "bag": tl_yol.get(t2) if t2 != t else None, "vurgu": t2 == t} for t2 in TL_TABLO]
         ad = f"{bot.tr_sayi(t, 0)} TL"
         ilgili = [(f"{bot.tr_sayi(t2, 0)} TL kaç gram gümüş", tl_yol[t2]) for t2 in TL_SAYFALAR if t2 != t]
@@ -198,7 +205,7 @@ def sayfalar(v, gecmis):
             yol=tl_yol[t], kisa=f"{ad} kaç gram gümüş", grup="TL → gram",
             title=f"{ad} Kaç Gram Gümüş Eder? {gram_yaz(g)} · {tarih_kisa}",
             desc=f"{ad} ile {gram_yaz(g)} saf gümüş alınır ({tarih}, gram {bot.tr_sayi(gram)} ₺). 500 TL'den "
-                 f"1 milyon TL'ye tablo, 925 ayar karşılığı ve son günler. Bilgi amaçlıdır.",
+                 f"1 milyon TL'ye tablo ve son günler. Bilgi amaçlıdır, yatırım tavsiyesi değildir.",
             h1=f"{ad} kaç gram gümüş eder?",
             cevap=bot.tr_sayi(g, 1 if g >= 100 else 2), birim="g",
             alt=f"yaklaşık {bot.tr_sayi(g / 1000, 2)} kg" if g >= 1000 else None,
@@ -206,10 +213,8 @@ def sayfalar(v, gecmis):
                  f"(1 gram {bot.tr_sayi(gram)} ₺). Kuyumcu ve bankada satış fiyatı daha yüksek olduğu için "
                  f"alınan miktar bundan az olur.",
             formul=f"{bot.tr_sayi(t, 0)} ₺ ÷ {bot.tr_sayi(gram)} ₺ (1 gram) = {gram_yaz(g)}",
-            tablolar=[{"baslik": "Tutara göre gümüş", "sutunlar": ["Tutar", "Saf gümüş", "925 ayar"],
-                       "satirlar": tablo, "sayisal": [1, 2],
-                       "not": "925 ayar sütunu: aynı tutarla kaç gram 925 ayar eşyanın içindeki gümüşe denk gelir "
-                              "(işçilik hariç)."}],
+            tablolar=[{"baslik": "Tutara göre gümüş", "sutunlar": ["Tutar", "Saf gümüş"],
+                       "satirlar": tablo, "sayisal": [1]}],
             seyir=_seyir(kayitlar, lambda k, t=t: t / k["gram"], gram_yaz),
             seyir_baslik=f"Son günlerde {ad} ile alınan gümüş",
             seyir_ters=True,
@@ -217,46 +222,9 @@ def sayfalar(v, gecmis):
             ilgili=ilgili,
         )
 
-    # ---- Ayar → gram fiyatı
-    for a in AYAR_SAYFALAR:
-        f = gram * a / 1000
-        tablo = [{"hucreler": [f"{bot.tr_sayi(g2, 0)} g", gram_yaz(g2 * a / 1000), para(g2 * f) + " ₺"]}
-                 for g2 in AYAR_AGIRLIK]
-        ayarlar = [{"hucreler": [f"{a2} ayar", f"%{bot.tr_sayi(a2 / 10, 1)}", bot.tr_sayi(gram * a2 / 1000) + " ₺"],
-                    "bag": ayar_yol.get(a2) if a2 != a else None, "vurgu": a2 == a} for a2, _, _ in AYARLAR]
-        ack = dict((x, c) for x, _, c in AYARLAR)[a]
-        ilgili = [(f"{a2} ayar gümüş gram fiyatı", ayar_yol[a2]) for a2 in AYAR_SAYFALAR if a2 != a]
-        ilgili += [("Hurda gümüş ve milyem hesabı", yollar["milyem"]), ("10 gram gümüş kaç TL", agirlik_yol[10]),
-                   ("Gümüş hesap makinesi", yollar["merkez"])]
-        ilgili += rehber_bag(3, "Külçede 999 ne demek? (ayar ve damga)")
-        ekle(
-            yol=ayar_yol[a], kisa=f"{a} ayar gümüş gram fiyatı", grup="Ayar",
-            title=f"{a} Ayar Gümüş Gram Fiyatı: {bot.tr_sayi(f)} ₺ · {tarih_kisa}",
-            desc=f"{a} ayar gümüşün 1 gramındaki saf gümüşün değeri {bot.tr_sayi(f)} ₺ ({tarih}). 1 gramdan "
-                 f"1 kilograma tablo, ayar karşılaştırması. Takı ve hurda fiyatı farkı açıklamalı.",
-            h1=f"{a} ayar gümüş gram fiyatı",
-            cevap=bot.tr_sayi(f), birim="₺",
-            alt=f"1 gram {a} ayarın içindeki {bot.tr_sayi(a / 1000, 3)} g saf gümüşün değeri",
-            ozet=f"{a} ayar{f' ({ack})' if ack else ''} gümüşün binde {a}'i saf gümüştür. {tarih} itibarıyla 1 gram {a} ayar "
-                 f"gümüşün içindeki gümüşün değeri {bot.tr_sayi(f)} ₺. Takı fiyatına işçilik ve KDV eklenir; "
-                 f"hurda alış fiyatı ise genelde bunun altındadır.",
-            formul=f"{bot.tr_sayi(gram)} ₺ × {a} ÷ 1000 = {bot.tr_sayi(f)} ₺ (1 gram {a} ayar)",
-            tablolar=[
-                {"baslik": f"{a} ayar: ağırlığa göre", "sutunlar": ["Ağırlık", "İçindeki gümüş", "Değer"],
-                 "satirlar": tablo, "sayisal": [1, 2]},
-                {"baslik": "Ayarlara göre 1 gram", "sutunlar": ["Ayar", "Saflık", "1 gram"],
-                 "satirlar": ayarlar, "sayisal": [1, 2]},
-            ],
-            seyir=_seyir(kayitlar, lambda k, a=a: k["gram"] * a / 1000, lambda x: bot.tr_sayi(x) + " ₺"),
-            seyir_baslik=f"Son günlerde 1 gram {a} ayar (₺)",
-            notlar=_ortak_notlar(["Ayar, alaşımın binde kaçının saf gümüş olduğunu gösterir (milyem). Uluslararası "
-                                  "damga sözleşmesinin tanıdığı en düşük gümüş ayarı 800'dür."]),
-            ilgili=ilgili,
-        )
-
     # ---- Hurda / milyem hesabı (hesap makinesiyle)
     ekle(
-        yol=yollar["milyem"], kisa="Hurda gümüş ve milyem hesabı", grup="Ayar", hesap_turu="milyem",
+        yol=yollar["milyem"], kisa="Hurda gümüş ve milyem hesabı", grup="Hurda ve milyem", hesap_turu="milyem",
         title=f"Hurda Gümüş Hesaplama: Milyem Tablosu ve Gram Değeri · {tarih_kisa}",
         desc=f"Hurda ya da eski gümüşün içindeki saf gümüşü ve değerini hesaplayın: ağırlık × milyem. Güncel "
              f"gram gümüş {bot.tr_sayi(gram)} ₺ ({tarih}). 999, 958, 925, 830, 800 ayar tablosu.",
@@ -268,17 +236,17 @@ def sayfalar(v, gecmis):
         formul=f"Değer = ağırlık (g) × milyem ÷ 1000 × {bot.tr_sayi(gram)} ₺",
         tablolar=[{"baslik": "Milyem tablosu (1 gram)", "sutunlar": ["Ayar / milyem", "Saflık", "1 gram"],
                    "satirlar": [{"hucreler": [f"{a}" + (f" ({KISA_AD[a]})" if a in KISA_AD else ""), f"%{bot.tr_sayi(a / 10, 1)}", bot.tr_sayi(gram * a / 1000) + " ₺"],
-                                 "bag": ayar_yol.get(a)} for a, _, c in AYARLAR], "sayisal": [1, 2]}],
+                                 } for a, _, c in AYARLAR], "sayisal": [1, 2]}],
         notlar=_ortak_notlar(["Ürünün üzerindeki damga (ör. 925, 800) ayarı gösterir; damgasız eşyanın ayarı "
                               "ancak ölçümle anlaşılır."]),
-        ilgili=[("925 ayar gümüş gram fiyatı", ayar_yol[925]), ("800 ayar gümüş gram fiyatı", ayar_yol[800]),
-                ("Gümüş hesap makinesi", yollar["merkez"])] + rehber_bag(3, "Külçede 999 ne demek?"),
+        ilgili=[("100 gram gümüş kaç TL", agirlik_yol[100]), ("Gümüş hesap makinesi", yollar["merkez"])]
+               + rehber_bag(3, "Külçede 999 ne demek?"),
     )
 
     # ---- Ons
     ons_tl = ons * dolar
     ekle(
-        yol=yollar["ons"], kisa="1 ons gümüş kaç TL, kaç gram", grup="Ons ve dolar",
+        yol=yollar["ons"], kisa="1 ons gümüş kaç TL, kaç gram", grup="Ons, dolar, euro",
         title=f"1 Ons Gümüş Kaç TL? {para(ons_tl)} ₺ · Ons Kaç Gram · {tarih_kisa}",
         desc=f"1 ons gümüş {bot.tr_sayi(ons)} $ = {para(ons_tl)} ₺ ({tarih}). 1 troy ons 31,1035 gramdır. "
              f"5, 10, 100 ons ve 1 kg'ın ons karşılığı.",
@@ -302,7 +270,7 @@ def sayfalar(v, gecmis):
 
     # ---- Dolar
     ekle(
-        yol=yollar["dolar"], kisa="Gram gümüş kaç dolar", grup="Ons ve dolar",
+        yol=yollar["dolar"], kisa="Gram gümüş kaç dolar", grup="Ons, dolar, euro",
         title=f"Gram Gümüş Kaç Dolar? {bot.tr_sayi(gram_usd, 3)} $ · {tarih_kisa}",
         desc=f"1 gram gümüş {bot.tr_sayi(gram_usd, 3)} $ ({tarih}); 1 kg gümüş {para(1000 * gram_usd)} $. Ons "
              f"fiyatından gram dolar hesabı ve ağırlık tablosu.",
@@ -322,6 +290,35 @@ def sayfalar(v, gecmis):
         ilgili=[("1 ons gümüş kaç TL", yollar["ons"]), ("1 kg gümüş kaç TL", agirlik_yol[1000]),
                 ("Gümüş hesap makinesi", yollar["merkez"])],
     )
+
+    # ---- Euro (ECB EUR/TRY; kur alınamazsa sayfa yok)
+    if eur_son:
+        gram_eur = gram / eur_son
+        ekle(
+            yol=yollar["euro"], kisa="Gram gümüş kaç euro", grup="Ons, dolar, euro",
+            title=f"Gram Gümüş Kaç Euro? {bot.tr_sayi(gram_eur, 3)} € · {tarih_kisa}",
+            desc=f"1 gram gümüş {bot.tr_sayi(gram_eur, 3)} € ({tarih}); 1 kg gümüş {para(1000 * gram_eur)} €. "
+                 f"250 g, 500 g ve 1 ons gümüşün euro karşılığı, ECB euro kuruyla.",
+            h1="Gram gümüş kaç euro?",
+            cevap=bot.tr_sayi(gram_eur, 3), birim="€", alt=f"1 € = {bot.tr_sayi(eur_son)} ₺ (ECB, {_kisa(date.fromisoformat(son['kur_tarihi']))})",
+            ozet=f"{tarih} itibarıyla 1 gram saf gümüş {bot.tr_sayi(gram_eur, 3)} €, 1 kilogram {para(1000 * gram_eur)} € "
+                 f"eder. Euro karşılığı, TL fiyatın Avrupa Merkez Bankası'nın aynı günkü euro kuruna "
+                 f"(1 € = {bot.tr_sayi(eur_son)} ₺) bölünmesiyle bulunur.",
+            formul=f"{bot.tr_sayi(gram)} ₺ ÷ {bot.tr_sayi(eur_son)} ₺ = {bot.tr_sayi(gram_eur, 3)} € (1 gram)",
+            tablolar=[{"baslik": "Ağırlığa göre euro", "sutunlar": ["Gümüş", "Euro", "TL"],
+                       "satirlar": [{"hucreler": [ad, para(g * gram_eur) + " €", para(g * gram) + " ₺"],
+                                     "bag": agirlik_yol[g]} for g, ad, _ in AGIRLIKLAR]
+                                  + [{"hucreler": ["1 ons", para(bot.ONS_GRAM * gram_eur) + " €", para(ons * dolar) + " ₺"],
+                                      "bag": yollar["ons"]}], "sayisal": [1, 2]}],
+            seyir=[r for r in _seyir(kayitlar, lambda k: k["gram"] / eur_kur(k) if eur_kur(k) else float("nan"),
+                                     lambda x: bot.tr_sayi(x, 3) + " €")
+                   if "nan" not in r["deger"]],
+            seyir_baslik="Son günlerde 1 gram gümüş (€)",
+            notlar=_ortak_notlar(["Euro kuru, ECB'nin euro referans kurudur; dolar kuru da aynı kaynaktan ve aynı "
+                                  "günden alındığı için euro ve dolar karşılıkları birbiriyle tutarlıdır."]),
+            ilgili=[("Gram gümüş kaç dolar", yollar["dolar"]), ("1 ons gümüş kaç TL", yollar["ons"]),
+                    ("1 kg gümüş kaç TL", agirlik_yol[1000]), ("Gümüş hesap makinesi", yollar["merkez"])],
+        )
 
     # ---- Altın / gümüş oranı
     haftalar = {}
@@ -430,7 +427,7 @@ def sayfalar(v, gecmis):
     ekle(
         sablon="hesap-merkez.html", yol=yollar["merkez"], kisa="Gümüş hesap makinesi", grup="Merkez",
         title=f"Gümüş Hesap Makinesi: Gram, Kg, Ons, Ayar → TL ve Dolar · {tarih_kisa}",
-        desc=f"Gümüş hesaplama: gram, kilogram ya da ons; 999, 925, 800 ayar; TL ve dolar karşılığı. Gram gümüş "
+        desc=f"Gümüş hesaplama: gram, kilogram ya da ons; ayara (milyem) göre; TL ve dolar karşılığı. Gram gümüş "
              f"{bot.tr_sayi(gram)} ₺ ({tarih}). Kaç gram eder, kaç TL eder sayfaları.",
         h1="Gümüş hesap makinesi",
         gram_sayi=round(gram, 6), usd_sayi=round(gram_usd, 8),
@@ -440,9 +437,29 @@ def sayfalar(v, gecmis):
     return liste
 
 
-def uret(cikti, env, v, gecmis):
-    """Sayfaları yazar; site haritası için [(adres, son değişiklik)] döndürür."""
-    liste = sayfalar(v, gecmis)
+def euro_kurlari(gecmis):
+    """Kayıtların ECB tarihlerini kapsayan EUR/TRY referans kurları: {"YYYY-AA-GG": kur}. Tek istek
+    (Frankfurter, yalnızca ECB sağlayıcısı; dolar kuruyla aynı kaynak). Alınamazsa boş sözlük (euro yok)."""
+    import requests
+    tarihler = sorted(k.get("kur_tarihi") for k in gecmis.values() if k.get("kur_tarihi"))
+    if not tarihler:
+        return {}
+    try:
+        r = requests.get(bot.KUR_URL, timeout=30, headers={"User-Agent": bot.TARAYICI, "Accept": "application/json"},
+                         params={"base": "EUR", "quotes": "TRY", "from": tarihler[0]})
+        r.raise_for_status()
+        kur = {x["date"]: float(x["rate"]) for x in r.json() if x.get("quote") == "TRY"}
+        if not kur or not all(1 < k < 1000 for k in kur.values()):
+            raise ValueError(f"beklenmeyen kur ({len(kur)} gün)")
+        return kur
+    except Exception as e:
+        print(f"::warning::Euro kuru alınamadı (ECB / Frankfurter), euro sayfası atlandı: {type(e).__name__}: {e}")
+        return {}
+
+
+def uret(cikti, env, v, gecmis, euro=None):
+    """Sayfaları yazar; site haritası için [(adres, son değişiklik)] döndürür. euro verilmezse ECB'den alınır."""
+    liste = sayfalar(v, gecmis, euro_kurlari(gecmis) if euro is None else euro)
     son = max(date.fromisoformat(g) for g in gecmis)
     harita = []
     for s in liste:
