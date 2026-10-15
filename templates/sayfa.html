@@ -61,6 +61,10 @@
         <tbody>{% for s in gram_tablo %}<tr><td>{{ s.ad }}</td><td class="s">{{ s.tl }} ₺</td></tr>{% endfor %}</tbody>
       </table>
     </div>
+    <a class="kart-bag" href="hesap/" style="margin-top: 16px">
+      <span><b>Bütün hesaplar</b><small>100 gram, 1 kg, 1.000 ₺, 925 ayar, hurda, ons, dolar, altın–gümüş oranı</small></span>
+      <span class="ok" aria-hidden="true">→</span>
+    </a>
   </section>
 
   <section id="son-gunler" aria-labelledby="h-son">
@@ -88,7 +92,7 @@
             <td class="s">{{ s.gram }}</td><td class="s">{{ deg(s.deg) if s.deg else '—' }}</td></tr>{% endfor %}
       </tbody>
     </table>
-    <p class="not">Her iş gününün son değeri{% if program %} (genelde {{ program.son_deger_saati }} paylaşımı){% endif %}. Kayıtlar {{ ilk_kayit }} günü başladı.</p>
+    <p class="not">Her iş gününün son değeri{% if program %} (genelde {{ program.son_deger_saati }} paylaşımı){% endif %}. Kayıtlar {{ ilk_kayit }} günü başladı. <a href="gecmis/">Bütün geçmiş fiyatlar →</a></p>
   </section>
 
   <section id="hesaplama" aria-labelledby="h-nasil">

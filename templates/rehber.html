@@ -40,6 +40,7 @@
         {% if s.maddeler %}<ul class="duz">{% for m in s.maddeler %}<li>{{ m }}</li>{% endfor %}</ul>{% endif %}
         {% if s.kaynak %}<p class="kaynak">{{ s.kaynak }}</p>{% endif %}
         {% endfor %}
+        {% if b.adres %}<p style="margin: 10px 0 0"><a href="{{ b.adres }}">Bu bölümün sayfası →</a></p>{% endif %}
         <p class="kaynak">Bölüm #{{ b.no }} · Instagram'da {{ b.tarih }}{% if program and program.rehber_hikaye %} · Öne çıkanlar › Rehber{% endif %}</p>
       </div>
     </details>

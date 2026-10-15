@@ -1,0 +1,106 @@
+{#- Hesaplar merkezi (bot/dar_sayfalar.py → site/hesap/): gram/kg/ons ve ayara göre TL ve dolar hesap
+    makinesi, ters hesap (TL → gram) ve bütün dar arama sayfalarının listesi. -#}
+{% extends "taban.html" %}
+{% block bas %}
+<title>{{ s.title }}</title>
+<meta name="description" content="{{ s.desc }}">
+<link rel="canonical" href="{{ url }}{{ s.yol }}">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:site_name" content="Gümüş · {{ hesap }}">
+<meta property="og:title" content="{{ s.title }}">
+<meta property="og:description" content="{{ s.desc }}">
+<meta property="og:url" content="{{ url }}{{ s.yol }}">
+<meta property="og:image" content="{{ url }}og.png?v={{ surum }}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+{% endblock %}
+{% block stil %}
+.yol { margin-top: 16px; font-size: 14px; color: var(--soluk); }
+.yol a { color: var(--soluk); }
+.hm .satir { display: grid; grid-template-columns: 1.3fr 1fr 1.3fr; gap: 10px; }
+@media (max-width: 520px) { .hm .satir { grid-template-columns: 1fr 1fr; } .hm .satir label:first-child { grid-column: span 2; } }
+.hm label { display: block; font-size: 14px; color: var(--soluk); font-weight: 600; }
+.hm input, .hm select { width: 100%; margin-top: 6px; min-height: 52px; padding: 0 12px; border-radius: 10px;
+  border: 1.5px solid var(--cizgi); background: var(--zemin); color: var(--yazi); }
+.hm input { font: 700 22px 'JetBrains Mono', ui-monospace, monospace; }
+.hm select { font: 600 16px 'Archivo', system-ui, sans-serif; }
+.hm .sonuc { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+.hm .sonuc div { background: var(--zemin); border: 1px solid var(--cizgi); border-radius: 10px; padding: 10px 12px; min-width: 0; }
+.hm .sonuc span { display: block; font-size: 13px; color: var(--soluk); }
+.hm .sonuc b { display: block; font: 800 clamp(17px, 5vw, 24px) 'JetBrains Mono', ui-monospace, monospace; overflow-wrap: anywhere; }
+.liste { list-style: none; padding: 0; margin: 8px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+@media (max-width: 520px) { .liste { grid-template-columns: 1fr; } }
+.liste a { display: block; padding: 11px 14px; background: var(--kart); border: 1px solid var(--cizgi); border-radius: 10px;
+  text-decoration: none; color: var(--yazi); }
+{% endblock %}
+{% block icerik %}
+  <nav class="yol" aria-label="Konum"><a href="{{ kok }}">Gram gümüş fiyatı</a> › Hesaplar</nav>
+  <section aria-labelledby="baslik" style="padding-top: 12px">
+    <h1 id="baslik" style="font-size: 28px">{{ s.h1 }}</h1>
+    <p class="soluk" style="margin: 8px 0 0">1 gram saf gümüş = <b style="color: var(--yazi)">{{ gram }} ₺</b> · {{ guncelleme }}. Anlık (canlı) fiyat değildir.</p>
+
+    <div class="hesap hm" id="hm" data-gram="{{ s.gram_sayi }}" data-usd="{{ s.usd_sayi }}" style="margin-top: 16px">
+      <div class="satir">
+        <label>Miktar<input id="m" inputmode="decimal" autocomplete="off" value="100"></label>
+        <label>Birim<select id="b"><option value="1">gram</option><option value="1000">kilogram</option><option value="31.1034768">ons</option></select></label>
+        <label>Ayar<select id="a"><option value="1000">saf gümüş</option>{% for v_, ad in s.ayarlar %}<option value="{{ v_ }}">{{ ad }}</option>{% endfor %}</select></label>
+      </div>
+      <div class="sonuc" aria-live="polite">
+        <div><span>Türk lirası</span><b id="r-tl">—</b></div>
+        <div><span>Dolar</span><b id="r-usd">—</b></div>
+      </div>
+      <p class="not" id="r-saf"></p>
+      <div class="alanlar" style="grid-template-columns: 1fr 1fr; margin-top: 14px">
+        <label>Tutar (₺)<input id="t" inputmode="decimal" autocomplete="off" value="1.000"></label>
+        <label>Kaç gram saf gümüş<input id="tg" readonly tabindex="-1"></label>
+      </div>
+      <p class="not">Ham gümüş değeridir; kuyumcu ve banka fiyatı işçilik, alış-satış farkı ve vergiler yüzünden farklıdır.</p>
+    </div>
+  </section>
+
+  {% for grup, sayfalar in s.gruplar %}
+  <section aria-label="{{ grup }}">
+    <h2 class="etiket">{{ grup }}</h2>
+    <ul class="liste">{% for ad, y in sayfalar %}<li><a href="{{ kok }}{{ y }}">{{ ad }}</a></li>{% endfor %}</ul>
+  </section>
+  {% endfor %}
+  <section aria-label="Rehber">
+    <h2 class="etiket">Gümüş rehberi</h2>
+    <ul class="liste"><li><a href="{{ kok }}rehber/">Ons, ayar, parite, fiyat farkı: bütün bölümler</a></li></ul>
+    <p class="not">Bilgi amaçlıdır, yatırım tavsiyesi değildir.</p>
+    <div class="dugmeler"><a class="dugme" href="{{ instagram }}">{{ hesap }} hesabını takip et</a></div>
+  </section>
+{% endblock %}
+{% block betik %}
+<script>
+(function () {
+  var k = document.getElementById('hm'), f = parseFloat(k.dataset.gram), u = parseFloat(k.dataset.usd);
+  var m = document.getElementById('m'), b = document.getElementById('b'), a = document.getElementById('a');
+  var t = document.getElementById('t'), tg = document.getElementById('tg');
+  var rtl = document.getElementById('r-tl'), rusd = document.getElementById('r-usd'), rsaf = document.getElementById('r-saf');
+  if (!(f > 0)) return;
+  var oku = function (x) {
+    x = String(x).replace(/\s|₺|g/gi, '');
+    if (!x) return NaN;
+    if (x.indexOf(',') >= 0) x = x.replace(/\./g, '').replace(',', '.');
+    else if (/^\d{1,3}(\.\d{3})+$/.test(x)) x = x.replace(/\./g, '');
+    return parseFloat(x);
+  };
+  var bc = function (x, n) { return x.toLocaleString('tr-TR', { minimumFractionDigits: n, maximumFractionDigits: n }); };
+  var ileri = function () {
+    var mm = oku(m.value);
+    if (!isFinite(mm)) { rtl.textContent = rusd.textContent = '—'; rsaf.textContent = ''; return; }
+    var saf = mm * parseFloat(b.value) * parseFloat(a.value) / 1000;
+    rtl.textContent = bc(saf * f, 2) + ' ₺';
+    rusd.textContent = bc(saf * u, 2) + ' $';
+    rsaf.textContent = 'İçindeki saf gümüş: ' + bc(saf, 2) + ' g';
+  };
+  var geri = function () { var tt = oku(t.value); tg.value = isFinite(tt) ? bc(tt / f, 2) + ' g' : ''; };
+  [m, b, a].forEach(function (e) { e.addEventListener('input', ileri); e.addEventListener('change', ileri); });
+  t.addEventListener('input', geri);
+  ileri(); geri();
+})();
+</script>
+{% endblock %}

@@ -28,6 +28,7 @@ import bilgi  # noqa: E402
 import main as bot  # noqa: E402
 import ayrintili  # noqa: E402
 import program as prg  # noqa: E402
+import dar_sayfalar  # noqa: E402
 
 GRAFIK_GUN = 30        # grafikteki en fazla iş günü
 TABLO_GUN = 10         # tablodaki en fazla iş günü
@@ -153,7 +154,9 @@ def _rehber(simdi):
         if gun < bugun or (gun == bugun and saat_gecti):
             b = bilgi.BOLUMLER[no - 1]
             yayimlanan.append({"no": no, "tarih": _kisa_tarih(gun), "baslik": b["baslik"], "alt": b["alt"],
-                               "sayfalar": b["sayfalar"]})
+                               "sayfalar": b["sayfalar"],
+                               # bölümün kendi sayfası, rehber/ altında (bot/dar_sayfalar.py)
+                               "adres": f"{no}-{dar_sayfalar.adres_parcasi(b['baslik'])}/"})
     return sorted(yayimlanan, key=lambda b: b["no"])
 
 
@@ -228,13 +231,24 @@ def uret(cikti, gecmis, simdi=None):
         if f.suffix in (".woff2", ".txt"):
             shutil.copy2(f, fontlar / f.name)
 
+    # Dar aramalar için sayfalar (hesap/, gecmis/, rehber bölümleri; bot/dar_sayfalar.py). Hata verirse
+    # ana sayfa ve rehber yine yayınlanır, yalnızca uyarı çıkar.
+    harita = []
+    try:
+        harita, dar = dar_sayfalar.uret(cikti, env, v, gecmis)
+        v["dar_sayi"] = len(dar)
+    except Exception as e:
+        print(f"::warning::Dar arama sayfaları üretilemedi: {type(e).__name__}: {e}")
+
     gun = (simdi or datetime.now(bot.TR_SAAT)).date().isoformat()
+    satirlar = [(v["url"], gun, "daily"), (v["url"] + "rehber/", gun, "weekly")]
+    satirlar += [(adres, son, "daily" if "/hesap/" in adres or adres.endswith("/gecmis/") else "weekly")
+                 for adres, son in harita]
     (cikti / "sitemap.xml").write_text(
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-        f'<url><loc>{v["url"]}</loc><lastmod>{gun}</lastmod><changefreq>daily</changefreq></url>'
-        f'<url><loc>{v["url"]}rehber/</loc><lastmod>{gun}</lastmod><changefreq>weekly</changefreq></url>'
-        '</urlset>\n', encoding="utf-8")
+        + "".join(f"<url><loc>{a}</loc><lastmod>{s}</lastmod><changefreq>{c}</changefreq></url>" for a, s, c in satirlar)
+        + '</urlset>\n', encoding="utf-8")
     (cikti / GOOGLE_DOGRULAMA).write_text(f"google-site-verification: {GOOGLE_DOGRULAMA}", encoding="utf-8")
 
     # Bağlantı önizlemesi (WhatsApp, Instagram DM): güncel fiyatlı görsel
