@@ -49,6 +49,9 @@ jobs:
           if medya:
               c = get(f"/{medya[0]['id']}/comments", fields="id", limit=1)
               print("Yorumlar:", "İZİN VAR" if "data" in c else c.get("_hata"))
+          uid = me.get("user_id")
+          pl = get(f"/{uid}/content_publishing_limit", fields="quota_usage") if uid else {"_hata": "user_id yok"}
+          print("Paylaşım izni:", "İZİN VAR" if "data" in pl else pl.get("_hata"))
           hs = get("/me/insights", metric="reach", period="day")
           print("Hesap istatistikleri (100 takipçide açılır):", "İZİN VAR" if "data" in hs else hs.get("_hata"))
           PY
