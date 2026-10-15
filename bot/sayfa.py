@@ -130,12 +130,18 @@ def _tanitim(program):
 
     hizmet = [{"zaman": program["guncelleme"], "ne": "gram gümüş fiyatı ve günün özeti"}]
     for anahtar, kisa in (("Haftalık özet", "haftalık özet ve grafik"),
-                          ("yapay zekâ yorumu", "kısa, orta ve uzun vade yapay zekâ yorumu"),
                           ("Gümüş rehberi", "Gümüş rehberi, sade ve kaynaklı")):
         s = bul(anahtar)
         if s:
             hizmet.append({"zaman": s["zaman"], "ne": kisa})
-    return {"hizmet": hizmet, "serit": f"{program['guncelleme']} gram gümüş fiyatı Instagram'da"}
+    # Öne çıkan: pazar yapay zekâ yorumu (Rıdvan, 15 Ekim 08:17: "tanıtım kartında şimdi yer almalı").
+    # Yasal çerçeve yorumun kendisiyle aynı: değerlendirmedir, al-sat önerisi değildir.
+    yorum = bul("yapay zekâ yorumu") if program.get("yorum") else None
+    one = {"zaman": yorum["zaman"]} if yorum else None
+    serit = f"{program['guncelleme']} gram gümüş fiyatı"
+    if yorum:
+        serit += f", {yorum['zaman'].split(' ~')[0].lower()} yapay zekâ yorumu"
+    return {"hizmet": hizmet, "one": one, "serit": serit + " Instagram'da"}
 
 
 def _ayrintili(simdi):

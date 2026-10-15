@@ -127,6 +127,8 @@ def main():
         for f in dosyalar:
             html = (cikti / f).read_text(encoding="utf-8")
             kontrol('class="davet"' in html and "Instagram'da takip et" in html, f"tanıtım kartı yok: {f}")
+            kontrol("Pazar yorumu: hangi yön ağır basıyor?" in html and "al-sat önerisi değildir" in html,
+                    f"kartta pazar yorumu (ve yasal satırı) yok: {f}")
             if f not in ("index.html", "rehber/index.html"):
                 kontrol('class="davet-serit"' in html, f"üstteki davet satırı yok: {f}")
 

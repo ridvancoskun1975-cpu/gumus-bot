@@ -12,6 +12,13 @@
 <aside class="davet" aria-labelledby="davet-baslik">
   <p class="etiket">{{ hesap }} · yalnızca gümüş</p>
   <h2 id="davet-baslik">Gümüşü her gün saatinde, tek yerden takip edin</h2>
+  {%- if tanitim.one %}
+  <div class="davet-one">
+    <p class="etiket">Öne çıkan · {{ tanitim.one.zaman }}</p>
+    <b>Pazar yorumu: hangi yön ağır basıyor?</b>
+    <p>Yapay zekâ haftanın fiyat verisini ve haberlerini okur; kısa, orta ve uzun vadede yükselişin mi düşüşün mü ağır bastığını gücüyle ve kaynaklarıyla yazar. Değerlendirmedir; al-sat önerisi değildir.</p>
+  </div>
+  {%- endif %}
   <ul>
     {%- for h in tanitim.hizmet %}
     <li><span class="zaman">{{ h.zaman }}</span> · {{ h.ne }}</li>
