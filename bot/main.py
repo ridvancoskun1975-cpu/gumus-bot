@@ -1572,11 +1572,12 @@ def yorum_hazirla(cikti, ornek):
 
 # Pazar yorumunun Reels'i (Rıdvan, 15 Ekim 2026 21:25: "Reels bence şart"; 21:53: "Reels'te düzgün bir pazar
 # analizi videosu olmalı. Zaten 4 sayfa. Süre biraz uzun olabilir"): kaydırmalı gönderinin 4 sayfası sırayla,
-# 9:16 ekranı dolduran bir video (kapak → kısa → orta → uzun vade → kapanış). Kaydırmalıyla AYNI çalıştırmada,
+# 9:16 ekranı dolduran bir video (kapak → kısa → orta → uzun vade). Kaydırmalıyla AYNI çalıştırmada,
 # gönderiden hemen sonra paylaşılır ve aynı video hikâyeye de konur. Reels üretilemez ya da paylaşılamazsa
 # kaydırmalı gönderi yine gider (yalnızca uyarı). Kapatmak için False.
 YORUM_REELS = True
-YORUM_REELS_SAHNELER = (6, 11, 11, 11, 4)   # sn: kapak, kısa, orta, uzun vade, kapanış (toplam 43 sn)
+# Rıdvan 21:59: "21 sn olsun, 3 sn giriş 6 sn sayfalar". 5. bir süre eklenirse kapanış sahnesi de çıkar.
+YORUM_REELS_SAHNELER = (3, 6, 6, 6)   # sn: kapak, kısa, orta, uzun vade (toplam 21 sn)
 
 
 def yorum_reels_uret(cikti, veri, metin, damga):
