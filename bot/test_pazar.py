@@ -2,10 +2,11 @@
 
 - Pazar Reels'inin paylaşımı patlarsa (geçici engel dahil) hata dışarı sızmaz: yayinla() baştan denerse
   kaydırmalı gönderi ikinci kez gitmesin.
-- Cumartesi hatırlatması yalnızca cumartesi ve yarın pazar yorumu takvimdeyse çıkar; açıklamaya da yazılır.
+- Cumartesi hatırlatması KURAL: her cumartesi (ve yalnızca cumartesi) görselde ve açıklamada çıkar; kayıt okunamasa
+  da düşmez; pazar yorumu ve haftalık özet takvimde durmalı.
 """
 import sys
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
@@ -47,15 +48,42 @@ try:
 finally:
     main._url_hazir_mi, main._istek, main.hikaye_paylas = eski
 
-# 2) Cumartesi hatırlatması
-kontrol(main.pazar_yorumu_yarin(date(2026, 10, 16)) is False, "cuma: hatırlatma yok")
-kontrol(main.pazar_yorumu_yarin(date(2026, 10, 18)) is False, "pazar: hatırlatma yok")
+# 2) Cumartesi hatırlatması — KURAL (Rıdvan, 15 Ekim 2026 23:22): "her cumartesi bu yazı çıkmalı"
+gun = date(2026, 10, 17)
+for i in range(2 * 366):                      # iki yıl boyunca her gün: cumartesi evet, diğer günler hayır
+    g = gun + timedelta(days=i)
+    kontrol(main.pazar_yorumu_yarin(g) is (g.weekday() == 5), f"{g}: hatırlatma yalnızca ve her cumartesi")
+
+# Kayıt dosyası okunamasa da (ör. önbellek boş) cumartesi hatırlatması düşmez: takvime/kayda bakılmaz
+eski_oku = main.gecmis_oku
+try:
+    def patla():
+        raise RuntimeError("kayıt yok")
+    main.gecmis_oku = patla
+    kontrol(main.pazar_yorumu_yarin(date(2026, 10, 24)) is True, "kayıt okunamasa da cumartesi hatırlatma var")
+finally:
+    main.gecmis_oku = eski_oku
+
+# Söz boş kalmasın: haftalık özet cumartesi, pazar yorumu pazar zamanlı (biri takvimden çıkarsa kural konuşulur)
+akis = (Path(__file__).parent.parent / ".github" / "workflows" / "paylas.yml").read_text(encoding="utf-8")
+kontrol("cron: '50 6 * * 6'" in akis, "haftalık özet her cumartesi zamanlı")
+kontrol("cron: '50 7 * * 0'" in akis, "pazar yorumu her pazar zamanlı (hatırlatmanın sözü)")
+
+# Haftalık özet her zaman hafta şablonuyla çizilir (özel gün şablonunda şerit yok): gerçek veride özel gün yok
 f = main.ornek_haftalik()
+f.pop("gecmis_gram", None)                    # haftalik_fiyatlari_al() bu anahtarı hiç vermez
 v = main.haftalik_veri_hazirla(f, "@gunlukgumus")
+kontrol(not v.get("ozel"), "haftalık özet özel gün şablonuna geçmez")
+
 kontrol("Yarın ~11:00" not in main.aciklama_yaz(v, "hafta"), "hatırlatma yoksa açıklamada da yok")
 v["pazar_hatirlatma"] = main.PAZAR_HATIRLATMA
 metin = main.aciklama_yaz(v, "hafta")
 kontrol("Yarın ~11:00 · Pazar derin analizi: kısa, orta ve uzun vade. Kaçırmayın." in metin, "açıklamada hatırlatma")
 kontrol(len(metin) <= 2200, "açıklama 2200 sınırında")
+
+# Görselde (Reels ve hikâyesi aynı şablondan) şerit
+from jinja2 import Environment, FileSystemLoader  # noqa: E402
+html = Environment(loader=FileSystemLoader(str(main.SABLONLAR)), autoescape=True).get_template("hafta.html").render(**v)
+kontrol('id="hatirlatma"' in html and "Pazar derin analizi" in html and "Yarın ~11:00" in html, "görselde hatırlatma")
 
 print(f"test_pazar: {gecen} sınama geçti")
