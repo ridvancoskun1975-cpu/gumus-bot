@@ -11,8 +11,8 @@ on:
         description: "Deneme (dosya adı -deneme ile biter)"
         type: boolean
         default: false
-  push:
-    branches: [rapor-deneme]   # GEÇİCİ: örnek rapor için; main'e alınırken kaldırılır
+  schedule:
+    - cron: '5 6 * * 1'   # Pazartesi 09:05 TR: geçen pazartesi–pazar (anahtar yenileme 08:17, ilk paylaşım ~10:00)
 permissions:
   contents: read
 concurrency:
@@ -31,6 +31,6 @@ jobs:
         env:
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
           KAYIT_PAT: ${{ secrets.KAYIT_PAT }}
-          DENEME: ${{ github.event_name == 'push' || inputs.deneme }}
-          BITIS: ${{ github.event_name == 'push' && '2026-10-15' || inputs.bitis }}
+          DENEME: ${{ inputs.deneme || false }}
+          BITIS: ${{ inputs.bitis }}
         run: python bot/rapor.py ${BITIS:+--bitis "$BITIS"}
