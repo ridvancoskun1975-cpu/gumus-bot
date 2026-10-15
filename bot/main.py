@@ -1570,29 +1570,33 @@ def yorum_hazirla(cikti, ornek):
           *([reels["dosya"], reels["kapak"]] if reels else []), sep="\n")
 
 
-# Pazar yorumunun kısa Reels'i (Rıdvan, 15 Ekim 2026 21:25: "Reels bence şart"): kaydırmalı gönderiyle AYNI
-# çalıştırmada, gönderiden hemen sonra paylaşılır ve aynı video hikâyeye de konur. Kaydırmalı gönderi tam metni
-# taşır; Reels kapaktaki özeti (tarih, gram, üç vadenin ağır basan yönü) 12 sn'de gösterir ve profile çağırır.
-# Reels üretilemez ya da paylaşılamazsa kaydırmalı gönderi yine gider (yalnızca uyarı). Kapatmak için False.
+# Pazar yorumunun Reels'i (Rıdvan, 15 Ekim 2026 21:25: "Reels bence şart"; 21:53: "Reels'te düzgün bir pazar
+# analizi videosu olmalı. Zaten 4 sayfa. Süre biraz uzun olabilir"): kaydırmalı gönderinin 4 sayfası sırayla,
+# 9:16 ekranı dolduran bir video (kapak → kısa → orta → uzun vade → kapanış). Kaydırmalıyla AYNI çalıştırmada,
+# gönderiden hemen sonra paylaşılır ve aynı video hikâyeye de konur. Reels üretilemez ya da paylaşılamazsa
+# kaydırmalı gönderi yine gider (yalnızca uyarı). Kapatmak için False.
 YORUM_REELS = True
-YORUM_REELS_SN = 12
+YORUM_REELS_SAHNELER = (6, 11, 11, 11, 4)   # sn: kapak, kısa, orta, uzun vade, kapanış (toplam 43 sn)
 
 
 def yorum_reels_uret(cikti, veri, metin, damga):
     """Pazar Reels'inin videosu, kapağı ve açıklaması. Hata verirse None (kaydırmalı gönderi etkilenmez)."""
+    sure = sum(YORUM_REELS_SAHNELER)
+    veri = {**veri, "sahne_sureleri": list(YORUM_REELS_SAHNELER)}
     try:
         mp4 = cikti / f"yorum-reels-{damga}.mp4"
-        if not hareketli_video_uret("yorum-reels", veri, mp4, sure=YORUM_REELS_SN):
+        if not hareketli_video_uret("yorum-reels", veri, mp4, sure=sure):
             raise RuntimeError("şablonda hareket yok")
         kapak = cikti / f"kapak-yorum-reels-{damga}.jpg"
         gorsel_uret("yorum-reels", veri, kapak)
     except Exception as e:
         print(f"::warning::Pazar Reels'i üretilemedi ({type(e).__name__}: {e}); yalnızca kaydırmalı gönderi gidecek.")
         return None
-    # Açıklama kaydırmalıyla aynı (uyarılar, kaynaklar, etiketler); yalnızca "kaydırın" yerine profile yönlendirir.
+    # Açıklama kaydırmalıyla aynı (uyarılar, kaynaklar, etiketler); yalnızca "kaydırın" satırı profile yönlendirir.
     reels_metin = metin.replace("Ayrıntılar görsellerde, kaydırın →",
-                                "Ayrıntılar (durum, olası seyir, izlenecekler) profildeki kaydırmalı gönderide →")
-    return {"dosya": mp4.name, "kapak": kapak.name, "kapak_ms": int((YORUM_REELS_SN - 0.5) * 1000),
+                                "Yorumun 4 sayfası profildeki kaydırmalı gönderide de var →")
+    # Yedek kapak anı: kapak sahnesinin bütün öğeleri görünürken (kapak sahnesinin sonundan 1 sn önce)
+    return {"dosya": mp4.name, "kapak": kapak.name, "kapak_ms": int((YORUM_REELS_SAHNELER[0] - 1) * 1000),
             "aciklama": reels_metin}
 
 
