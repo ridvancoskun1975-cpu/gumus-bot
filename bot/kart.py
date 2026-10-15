@@ -58,7 +58,9 @@ def _gun_kisa(g):
 
 
 def gram_karti(f, tr_sayi):
-    gram = f["gram"]
+    # Görselde yazan (2 ondalığa yuvarlanmış) gram fiyatıyla hesaplanır ki tablo kendi içinde tutarlı olsun:
+    # 89,00 ₺ yazıyorsa 1 kilogram 89.000 ₺ (88.999 değil).
+    gram = round(f["gram"], 2)
     return {
         "kart": "gram",
         "kart_etiket": KART_ETIKET["gram"],

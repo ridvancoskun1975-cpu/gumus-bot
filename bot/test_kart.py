@@ -48,6 +48,9 @@ esit([s["tl"] for s in v["tl_tablo"]], ["1.000", "5.000", "10.000"], "TL tutarla
 esit([s["gram"] for s in v["tl_tablo"]], ["10,37", "51,86", "103,71"], "TL → gram")
 esit([(s["ad"], s["tl"]) for s in v["gram_tablo"]], [("100 gram", "9.642"), ("1 kilogram", "96.420")], "gram → TL")
 
+v = kart.gram_karti({"gram": 88.9993}, main.tr_sayi)
+esit(v["gram_tablo"][-1]["tl"], "89.000", "kilogram yazan gram fiyatıyla tutarlı (89,00 ₺ → 89.000 ₺)")
+
 # ---------------------------------------------------------------- haftalık kapanış paritesi
 kayit = {  # iş günlerinin son kaydı; bu hafta (19–23 Ekim) sayılmaz
     "2026-10-13": 84.0, "2026-10-14": 84.5, "2026-10-16": 85.1,        # 42. hafta: kapanış 16 Ekim
