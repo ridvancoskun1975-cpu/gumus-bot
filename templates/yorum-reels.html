@@ -38,6 +38,10 @@
 .yr .yon.dusus svg { transform: rotate(180deg); }
 .yr .yon small { font-size: 0.72em; font-weight: 600; color: var(--soluk); }
 .yr .yz-not { font-size: 27px; }
+/* "Ayrıntılar geliyor →" (Rıdvan 22:09: ilk sayfada sağa ok). Solda: sağ kenarı Reels'in beğeni/yorum düğmeleri kapatır. */
+.yr .ileri { display: inline-flex; align-items: center; gap: 16px; font-size: 40px; font-weight: 800;
+  padding: 18px 32px; border-radius: 999px; border: 3px solid var(--vurgu); color: var(--yazi); }
+.yr .ileri .ok { display: inline-block; color: var(--vurgu); }
 /* vade sahneleri */
 .yr .no { font-size: 36px; font-weight: 600; color: var(--vurgu); letter-spacing: 2px; }
 .yr h2 { margin: 4px 0 0; font-size: 112px; line-height: 1; font-weight: 800; letter-spacing: -4px; }
@@ -86,6 +90,9 @@
         </div>
       </div>
       {% endfor %}
+    </div>
+    <div class="blok" data-g="0.55" style="top: 1440px">
+      <span class="ileri">Ayrıntılar geliyor <svg class="ok" id="ileri-ok" width="52" height="40" viewBox="0 0 52 40" aria-hidden="true"><path d="M4 20 H44 M30 6 L46 20 L30 34" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
     </div>
   </div>
 
@@ -184,6 +191,8 @@ document.fonts.ready.then(sigdir);
       el.style.opacity = q;
       el.style.transform = `translate(${(1 - q) * dx}px, ${(1 - q) * dy}px)`;
     });
+    const ok = document.getElementById('ileri-ok');
+    if (ok) ok.style.transform = `translateX(${12 * (0.5 - 0.5 * Math.cos(2 * Math.PI * t / 0.9))}px)`;
     if (nokta) nokta.style.opacity = 0.35 + 0.65 * (0.5 + 0.5 * Math.cos(2 * Math.PI * t / 1.2));
     if (isik) {
       const r = (t - 3.0) / 1.3;
