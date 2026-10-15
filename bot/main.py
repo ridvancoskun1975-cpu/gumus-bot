@@ -524,7 +524,7 @@ def ozel_grafik(ozel, ilk_kayit):
 GUN_KISA = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"]
 
 
-def haftalik_veri_hazirla(f, hesap):
+def haftalik_veri_hazirla(f, hesap, grafik_yuk=230):
     v = veri_hazirla(f, hesap)
     gunler = [date.fromisoformat(g["tarih"]) for g in f["gunluk"]]
     degerler = [g["gram"] for g in f["gunluk"]]
@@ -545,7 +545,7 @@ def haftalik_veri_hazirla(f, hesap):
     v["en_dusuk"] = tr_sayi(min(degerler), 2)
 
     # Grafik: gram gümüşün günlük değerleri, önceki haftanın son değeri kesikli çizgi (kısmi haftada çizgi yok)
-    gen, yuk, kenar, yan = 904, 230, 30, 64
+    gen, yuk, kenar, yan = 904, grafik_yuk, 30, 64
     tum = degerler + ([] if v["kismi"] else [f["gram_once"]])
     alt_s, ust_s = min(tum), max(tum)
     aralik = (ust_s - alt_s) or 1
@@ -787,7 +787,7 @@ def gorsel_uret(tur, veri, png_yolu):
     boyut = {"reels": (1080, 1920), "kapak": (1080, 1920), "post": (1080, 1350), "hafta": (1080, 1350), "yasal": (1080, 1350),
              "bilgi": (1080, 1350), "yorum": (1080, 1350), "ay": (1080, 1350), "kisa": (1080, 1920), "ozel": (1080, 1920),
              "kart-gram": (1080, 1920), "kart-parite": (1080, 1920), "sayfa-og": (1200, 630),
-             "yorum-reels": (1080, 1920)}[tur]
+             "yorum-reels": (1080, 1920), "hafta-dikey": (1080, 1920)}[tur]
     # Instagram görsel gönderilerde yalnızca JPEG kabul ediyor; uzantı .jpg ise JPEG kaydedilir.
     jpeg = {"quality": 92} if Path(png_yolu).suffix.lower() in (".jpg", ".jpeg") else {}
     try:
@@ -876,7 +876,8 @@ def hareketli_video_uret(tur, veri, mp4_yolu, sure=7):
              "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-r", str(VIDEO_FPS),
              "-c:a", "aac", "-b:a", "128k", "-shortest", "-movflags", "+faststart", str(mp4_yolu)]
     boyut = {"reels": (1080, 1920), "kisa": (1080, 1920), "ozel": (1080, 1920),
-             "kart-gram": (1080, 1920), "kart-parite": (1080, 1920), "yorum-reels": (1080, 1920)}.get(tur, (1080, 1350))
+             "kart-gram": (1080, 1920), "kart-parite": (1080, 1920), "yorum-reels": (1080, 1920),
+             "hafta-dikey": (1080, 1920)}.get(tur, (1080, 1350))
     try:
         with sync_playwright() as p:
             kwargs = {"executable_path": os.environ["CHROME_YOLU"]} if os.environ.get("CHROME_YOLU") else {}
