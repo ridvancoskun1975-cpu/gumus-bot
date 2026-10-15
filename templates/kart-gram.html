@@ -1,0 +1,69 @@
+{% from "makrolar.html" import degisim, ag_etiketi %}<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Kaç gram eder?</title>
+<style>{% include "ortak.css" %}
+/* "Kaç gram eder?" kartı (bot/kart.py): çarşamba ~12:00, ayrı Reels (10:00 ve 20:00 fiyat paylaşımlarına ek). Üst 220 px ve alt 420 px Reels arayüzüne bırakılır. */
+.bolum { font-size: 30px; font-weight: 700; letter-spacing: 4px; color: var(--soluk); margin: 0 0 6px; }
+.tablo { display: flex; flex-direction: column; }
+.tablo .satir { display: flex; justify-content: space-between; align-items: baseline; padding: 16px 0; border-top: 2px solid var(--cizgi); }
+.tablo .satir:last-child { border-bottom: 2px solid var(--cizgi); }
+.tablo .sol { font-size: 52px; font-weight: 700; }
+.tablo .sag { font-size: 62px; font-weight: 800; }
+.tablo .birim { font-size: 38px; font-weight: 700; color: var(--vurgu); margin-left: 10px; }
+</style>
+</head>
+<body>
+<div class="sahne" style="position: relative; width: 1080px; height: 1920px; padding: 220px 170px 420px 96px">
+  <div class="isik" aria-hidden="true"></div>
+  <div class="ust">
+    <div class="ust-sol" style="gap: 16px">
+      <div class="etiket" style="gap: 14px; font-size: 28px"><span id="nokta" class="nokta" style="width: 14px; height: 14px"></span><span>{{ kart_etiket }}</span></div>
+      <h1 style="font-size: 120px; letter-spacing: -3px">Gümüş</h1>
+      <div class="tarih mono" style="font-size: 32px">{{ tarih }} · {{ saat }}</div>
+    </div>
+    {{ ag_etiketi(130, 148, '12px 14px', 22, 50, 18) }}
+  </div>
+
+  <div class="kahraman" style="gap: 10px; padding-top: 30px">
+    <div class="kahraman-baslik" style="font-size: 30px">GRAM GÜMÜŞ</div>
+    <div style="display: flex; align-items: baseline; gap: 18px">
+      <span id="fiyat" class="kahraman-sayi sayi" style="font-size: 104px; letter-spacing: -3px"
+            data-hedef="{{ gram_sayi }}" data-once="{{ gram_once_sayi }}">{{ gram }}</span>
+      <span class="kahraman-birim" style="font-size: 50px">₺</span>
+      <span id="fiyat-deg" style="display: inline-flex; transform-origin: 0 100%; margin-left: 10px">{{ degisim(gram_deg, 34, 24) }}</span>
+    </div>
+  </div>
+
+  <div>
+    <div class="bolum">PARANIZ KAÇ GRAM EDER?</div>
+    <div class="tablo">
+      {% for s in tl_tablo %}
+      <div class="satir"><span class="sol sayi">{{ s.tl }} ₺</span><span><span class="sag sayi">{{ s.gram }}</span><span class="birim">gram</span></span></div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div>
+    <div class="bolum">KAÇ LİRA EDER?</div>
+    <div class="tablo">
+      {% for s in gram_tablo %}
+      <div class="satir"><span class="sol">{{ s.ad }}</span><span><span class="sag sayi">{{ s.tl }}</span><span class="birim">₺</span></span></div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="soluk" style="font-size: 26px; line-height: 1.35">Ons gümüş × dolar/TL'den hesaplanır. Kuyumcu ve bankalarda işçilik, vergi ve alış-satış farkı yüzünden fiyat farklıdır.</div>
+
+  <div class="alt">
+    <b style="font-size: 34px">{{ hesap }}</b>
+    <div class="alt-sag soluk" style="font-size: 22px; max-width: 520px">
+      <span>Bilgi amaçlıdır, yatırım tavsiyesi değildir.</span>
+      <span>Metal fiyatları: {{ kaynak_metal }}</span>
+    </div>
+  </div>
+</div>
+<script>{% include "hareket.js" %}</script>
+</body>
+</html>

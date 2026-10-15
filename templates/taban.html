@@ -131,6 +131,12 @@ details { scroll-margin-top: 90px; }
 .yasal li { color: var(--soluk); }
 footer { border-top: 1px solid var(--cizgi); margin-top: 34px; padding: 20px 0 40px; color: var(--soluk); font-size: 14px; }
 footer p { margin: 6px 0; }
+/* İlk temasta tanıtım ve Instagram daveti (templates/tanitim.html): az ve öz, sayfa başına bir kez */
+.davet { margin: 26px 0 4px; padding: 16px; background: var(--kart); border: 1px solid rgba(201, 209, 218, 0.38);
+  border-radius: 14px; }
+.davet h2 { font-size: 20px; margin: 0 0 6px; text-wrap: balance; }
+.davet-satir { margin: 0 0 14px; color: var(--soluk); font-size: 15px; line-height: 1.5; }
+.davet-satir span { display: inline-block; }   /* madde ortadan bölünmesin; sığmazsa kendi içinde kırılır */
 {% block stil %}{% endblock %}
 </style>
 </head>
@@ -152,6 +158,7 @@ footer p { margin: 6px 0; }
 <footer>
   <div class="kap">
     <p><b style="color: var(--yazi)">{{ hesap }}</b> · Gram gümüş fiyatı{% if program %}, {{ program.fiyat_ozet }}{% endif %}.</p>
+    <p><a href="{{ kok }}">Gram gümüş fiyatı</a> · <a href="{{ kok }}hesap/">Hesap makinesi</a> · <a href="{{ kok }}gecmis/">Geçmiş fiyatlar</a> · <a href="{{ kok }}rehber/">Gümüş rehberi</a></p>
     <p>Bilgi amaçlıdır, yatırım tavsiyesi değildir. Yazı tipleri: Archivo ve JetBrains Mono (SIL Open Font License).</p>
   </div>
 </footer>

@@ -17,7 +17,9 @@
   const grafikNoktalar = Array.from(document.querySelectorAll('.grafik-nokta'));
   const alan = document.getElementById('grafik-alan');
   const halka = document.getElementById('bugun-halka');
-  const bicim = x => x.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  const cubuklar = Array.from(document.querySelectorAll('.cubuk'));   // altın–gümüş kartı: haftaların paritesi
+  const basamak = parseInt(fiyat.dataset.basamak || '2', 10);   // altın–gümüş kartında parite 1 ondalık
+  const bicim = x => x.toFixed(basamak).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   const yumusak = p => 1 - Math.pow(1 - Math.min(Math.max(p, 0), 1), 3);
   const ara = (t, a, b) => yumusak((t - a) / (b - a));
 
@@ -54,6 +56,11 @@
         halka.style.opacity = h === null || h > 1 ? 0 : 0.8 * (1 - h);
       }
     }
+    // 4b) Kart çubukları sırayla soldan büyür (oran = son genişlik, %)
+    cubuklar.forEach((c, i) => {
+      const o = parseFloat(c.dataset.oran) || 0;
+      c.style.width = `${o * ara(t, 0.7 + 0.15 * i, 1.5 + 0.15 * i)}%`;
+    });
     // 5a) Büyük hareket manşeti ilk kareden görünür, dikkat çekmek için hafifçe atar
     if (manset) manset.style.transform = `scale(${1 + 0.035 * (0.5 - 0.5 * Math.cos(2 * Math.PI * t / 1.2))})`;
     // 5) Başlıktaki nokta canlı yayın gibi atar

@@ -1,0 +1,141 @@
+{#- Dar arama sayfası (bot/dar_sayfalar.py üretir): "100 gram gümüş kaç TL", "1000 TL kaç gram gümüş",
+    "925 ayar gümüş gram fiyatı" gibi. s = sayfanın verisi, kok = sitenin köküne göreli yol. -#}
+{% extends "taban.html" %}
+{% block bas %}
+<title>{{ s.title }}</title>
+<meta name="description" content="{{ s.desc }}">
+<link rel="canonical" href="{{ url }}{{ s.yol }}">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:site_name" content="Gümüş · {{ hesap }}">
+<meta property="og:title" content="{{ s.title }}">
+<meta property="og:description" content="{{ s.desc }}">
+<meta property="og:url" content="{{ url }}{{ s.yol }}">
+<meta property="og:image" content="{{ url }}og.png?v={{ surum }}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+{% endblock %}
+{% block stil %}
+.yol { margin-top: 16px; font-size: 14px; color: var(--soluk); }
+.yol a { color: var(--soluk); }
+.cevap h1 { font-size: 26px; line-height: 1.2; letter-spacing: 0; text-transform: none; color: var(--yazi); }
+.cevap .fiyat .sayi { font-size: clamp(48px, 14vw, 84px); }
+.cevap .fiyat .birim { font-size: clamp(22px, 6vw, 34px); }
+.ozet { margin: 12px 0 0; }
+.tablo-kap { overflow-x: auto; margin-top: 8px; }
+.tablo-kap table { min-width: 0; }
+.tablo-kap td.s, .tablo-kap th.s { white-space: nowrap; }
+tr.vurgu td { color: var(--yazi); font-weight: 700; background: rgba(201, 209, 218, 0.06); }
+.ilgili { list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 8px; }
+.ilgili a { display: block; padding: 12px 14px; background: var(--kart); border: 1px solid var(--cizgi); border-radius: 10px;
+  text-decoration: none; color: var(--yazi); }
+.ilgili a::after { content: ' →'; color: var(--soluk); }
+.hm select { width: 100%; margin-top: 6px; min-height: 52px; padding: 0 12px; border-radius: 10px; border: 1.5px solid var(--cizgi);
+  background: var(--zemin); color: var(--yazi); font: 600 17px 'Archivo', system-ui, sans-serif; }
+.hm .sonuc { margin-top: 14px; font: 800 30px 'JetBrains Mono', ui-monospace, monospace; }
+.hm .sonuc small { display: block; font: 500 14px 'Archivo', system-ui, sans-serif; color: var(--soluk); margin-top: 4px; }
+{% endblock %}
+{% block icerik %}
+{% from "tanitim.html" import kart with context %}
+{%- macro deg(d) -%}
+{%- if d -%}<span class="deg {{ d.yon }}"><span aria-hidden="true">{{ d.isaret }}</span> {{ d.metin }}</span>{%- endif -%}
+{%- endmacro -%}
+  <nav class="yol" aria-label="Konum"><a href="{{ kok }}">Gram gümüş fiyatı</a> › <a href="{{ kok }}hesap/">Hesaplar</a></nav>
+
+  <section class="kahraman cevap" aria-labelledby="baslik" style="padding-top: 12px">
+    <h1 id="baslik">{{ s.h1 }}</h1>
+    <div class="fiyat"><span class="sayi">{{ s.cevap }}</span><span class="birim">{{ s.birim }}</span></div>
+    {% if s.alt %}<div class="soluk">{{ s.alt }}</div>{% endif %}
+    {% if s.deg %}<div>{{ deg(s.deg) }} <span class="soluk">önceki iş gününe göre</span></div>{% endif %}
+    <p class="zaman">Son güncelleme: {{ guncelleme }} (Türkiye saati). Anlık (canlı) fiyat değildir.</p>
+    <p class="ozet">{{ s.ozet }}</p>
+    {% if s.formul %}<div class="formul" style="margin-top: 12px">{{ s.formul }}</div>{% endif %}
+  </section>
+  {{ kart() }}
+
+  {% if s.hesap_turu == "milyem" %}
+  <section aria-labelledby="h-hm">
+    <h2 id="h-hm">Hesapla</h2>
+    <div class="hesap hm" id="hm" data-gram="{{ gram_sayi }}">
+      <div class="alanlar" style="grid-template-columns: 1fr 1fr">
+        <label>Ağırlık (gram)<input id="hm-g" inputmode="decimal" autocomplete="off" value="100"></label>
+        <label>Ayar (milyem)<input id="hm-a" inputmode="numeric" autocomplete="off" value="925"></label>
+      </div>
+      <div class="sonuc" id="hm-s" aria-live="polite"></div>
+      <p class="not">{{ guncelleme_kisa }} değeriyle (1 gram saf gümüş = {{ gram }} ₺). İçindeki gümüşün ham değeridir; alım fiyatı genelde daha düşüktür.</p>
+    </div>
+  </section>
+  {% endif %}
+
+  {% for t in s.tablolar %}
+  <section aria-label="{{ t.baslik }}">
+    <h2>{{ t.baslik }}</h2>
+    <div class="tablo-kap"><table>
+      <thead><tr>{% for c in t.sutunlar %}<th{% if loop.index0 in t.sayisal %} class="s"{% endif %}>{{ c }}</th>{% endfor %}</tr></thead>
+      <tbody>{% for r in t.satirlar %}
+        <tr{% if r.vurgu %} class="vurgu"{% endif %}>{% for c in r.hucreler %}<td{% if loop.index0 in t.sayisal %} class="s"{% endif %}>{% if loop.first and r.bag %}<a href="{{ kok }}{{ r.bag }}">{{ c }}</a>{% else %}{{ c }}{% endif %}</td>{% endfor %}</tr>{% endfor %}
+      </tbody>
+    </table></div>
+    {% if t.not %}<p class="not">{{ t.not }}</p>{% endif %}
+  </section>
+  {% endfor %}
+
+  {% if s.seyir %}
+  <section aria-labelledby="h-seyir">
+    <h2 id="h-seyir">{{ s.seyir_baslik }}</h2>
+    <div class="tablo-kap"><table>
+      <thead><tr><th>Gün</th><th class="s">Değer</th><th class="s">Değişim</th></tr></thead>
+      <tbody>{% for r in s.seyir %}
+        <tr><td><span class="sayi">{{ r.tarih }}</span> <span class="soluk">{{ r.gun }}</span></td><td class="s">{{ r.deger }}</td><td class="s">{{ deg(r.deg) if r.deg else '—' }}</td></tr>{% endfor %}
+      </tbody>
+    </table></div>
+    <p class="not">Her iş gününün son değeri. Gün gün bütün kayıtlar: <a href="{{ kok }}gecmis/">gümüş fiyatları geçmiş</a>.</p>
+  </section>
+  {% endif %}
+
+  {% if s.notlar %}
+  <section aria-labelledby="h-not">
+    <h2 id="h-not">Bilinmesi gerekenler</h2>
+    <ul class="duz">{% for n in s.notlar %}<li>{{ n }}</li>{% endfor %}</ul>
+  </section>
+  {% endif %}
+
+  {% if s.ilgili %}
+  <section aria-labelledby="h-ilgili">
+    <h2 id="h-ilgili">Diğer hesaplar</h2>
+    <ul class="ilgili">{% for ad, y in s.ilgili %}<li><a href="{{ kok }}{{ y }}">{{ ad }}</a></li>{% endfor %}</ul>
+  </section>
+  {% endif %}
+
+  <section aria-label="Kaynaklar">
+    <p class="not">Kaynak: metal fiyatları <a href="{{ kaynak.metal_url }}">{{ kaynak.metal_ad }}</a>; dolar/TL {% if kaynak.kur_ecb %}Avrupa Merkez Bankası (ECB) referans kuru, {% endif %}<a href="{{ kaynak.kur_url }}">{{ kaynak.kur_ad }}</a> üzerinden ({{ kur_tarihi }}). Bilgi amaçlıdır; alım-satım önerisi değildir, yatırım danışmanlığı kapsamında değildir.</p>
+    <div class="dugmeler"><a class="dugme ikincil" href="{{ kok }}hesap/">Hesap makinesi</a></div>
+  </section>
+{% endblock %}
+{% block betik %}
+{% if s.hesap_turu == "milyem" %}
+<script>
+(function () {
+  var k = document.getElementById('hm'), f = parseFloat(k.dataset.gram);
+  var g = document.getElementById('hm-g'), a = document.getElementById('hm-a'), s = document.getElementById('hm-s');
+  if (!(f > 0)) return;
+  var oku = function (x) {
+    x = String(x).replace(/\s|₺|g/gi, '');
+    if (!x) return NaN;
+    if (x.indexOf(',') >= 0) x = x.replace(/\./g, '').replace(',', '.');
+    else if (/^\d{1,3}(\.\d{3})+$/.test(x)) x = x.replace(/\./g, '');
+    return parseFloat(x);
+  };
+  var b = function (x, n) { return x.toLocaleString('tr-TR', { minimumFractionDigits: n, maximumFractionDigits: n }); };
+  var hesapla = function () {
+    var gg = oku(g.value), aa = oku(a.value);
+    if (!isFinite(gg) || !isFinite(aa) || aa <= 0 || aa > 1000) { s.textContent = '—'; return; }
+    var saf = gg * aa / 1000;
+    s.innerHTML = b(saf * f, 2) + ' ₺<small>İçindeki saf gümüş: ' + b(saf, 2) + ' g</small>';
+  };
+  g.addEventListener('input', hesapla); a.addEventListener('input', hesapla); hesapla();
+})();
+</script>
+{% endif %}
+{% endblock %}

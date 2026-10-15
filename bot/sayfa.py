@@ -8,7 +8,7 @@ yöntemi, paylaşım takvimi ve kaynaklarla yeniden yazar. Gümüş rehberi ayr�
 yalnızca başlıklar görünür, başlığa dokununca açılır; Instagram'da yayımlanmış bölümler ve ayrıntılı
 bilgi (bot/ayrintili.py). Ana sayfa şişmesin diye rehberden orada yalnızca bir bağlantı kartı var
 (Rıdvan, 14 Ekim 2026). Ayrıca WhatsApp/Instagram bağlantı önizlemesi için og.png (1200×630),
-fontlar ve sitemap.xml üretir. GitHub Pages her yayında siteyi baştan kurduğu için sayfa her
+fontlar, sitemap.xml ve Google Search Console doğrulama dosyasını üretir. GitHub Pages her yayında siteyi baştan kurduğu için sayfa her
 çalıştırmada yeniden üretilir.
 
 Fiyatlar veri/gecmis.json kayıtlarından gelir (hafta içi her paylaşımın değeri); MetalCharts
@@ -28,11 +28,15 @@ import bilgi  # noqa: E402
 import main as bot  # noqa: E402
 import ayrintili  # noqa: E402
 import program as prg  # noqa: E402
+import dar_sayfalar  # noqa: E402
 
 GRAFIK_GUN = 30        # grafikteki en fazla iş günü
 TABLO_GUN = 10         # tablodaki en fazla iş günü
 REHBER_SAATI = (13, 45)  # rehber bölümü o gün bu saatten sonra sayfaya girer (~14:00 paylaşımı)
 TL_MIKTARLAR = [1000, 5000, 10000, 50000]
+# Google Search Console sahiplik doğrulaması (URL ön eki mülkü, HTML dosyası yöntemi; 15 Ekim 2026).
+# Site her yayında baştan kurulduğu için dosya her çalıştırmada yazılır; kaldırılırsa doğrulama düşer.
+GOOGLE_DOGRULAMA = "googleade97aa5989bb9eb.html"
 GRAM_MIKTARLAR = [(1, "1 gram"), (10, "10 gram"), (100, "100 gram"), (1000, "1 kilogram")]
 
 
@@ -113,6 +117,36 @@ def _program(simdi, kayit_gunleri):
         return None
 
 
+def _tanitim(program):
+    """Google'dan gelen ziyaretçiye ilk temasta hesabın kısa tanıtımı (Rıdvan, 15 Ekim 2026: "benzersiz
+    hizmetlerimiz ilk temasta kısaca tanıtılmalı; Instagram hesabını takip etmeye teşvik edici olmalı").
+    Saat ve günler elle yazılmaz, botun takviminden (bot/program.py) alınır; takvimde olmayan hizmet
+    kartta görünmez. Takvim okunamazsa kart da çıkmaz."""
+    if not program:
+        return None
+
+    def bul(anahtar):
+        return next((s for s in program["satirlar"] if anahtar in s["ne"]), None)
+
+    def gun(s):
+        return s["zaman"].split(" ~")[0]
+
+    # Az ve öz (Rıdvan, 15 Ekim 08:46): tek satır. Pazar yapay zekâ yorumu adıyla yer alır (15 Ekim 08:17:
+    # "tanıtım kartında şimdi yer almalı"); yorum kapalıysa satırda görünmez.
+    satir = [f"{program['guncelleme']} fiyat"]
+    haftalik = bul("Haftalık özet")
+    if haftalik:
+        satir.append(f"{gun(haftalik)} haftalık özet")
+    # 15 Ekim 20:18 (Rıdvan, 2. seçenek): "Her gün fiyat, her pazar derin yorum" · "Pazar üst düzey yapay
+    # zekâ analizi". "En gelişmiş" ya da "uzman" denmez (doğrulanamaz / yasal metinle çelişir); model adı
+    # sitede yazılmaz (Rıdvan 20:27: "riske girmeyelim"). Yorum takvimde yoksa başlık eski hâline döner.
+    yorum = bul("yapay zekâ yorumu") if program.get("yorum") else None
+    if yorum:
+        satir.append(f"{gun(yorum)} üst düzey yapay zekâ analizi")
+    baslik = "Her gün fiyat, her pazar derin yorum" if yorum else "Gümüşü her gün saatinde takip edin"
+    return {"baslik": baslik, "satir": satir}
+
+
 def _ayrintili(simdi):
     """Ayrıntılı rehber (bot/ayrintili.py). Gözden geçirme tarihi geçtiyse uyarı verir ve sayfada not gösterir."""
     eski = simdi.date() > ayrintili.SONRAKI_GOZDEN_GECIRME
@@ -150,7 +184,9 @@ def _rehber(simdi):
         if gun < bugun or (gun == bugun and saat_gecti):
             b = bilgi.BOLUMLER[no - 1]
             yayimlanan.append({"no": no, "tarih": _kisa_tarih(gun), "baslik": b["baslik"], "alt": b["alt"],
-                               "sayfalar": b["sayfalar"]})
+                               "sayfalar": b["sayfalar"],
+                               # bölümün kendi sayfası, rehber/ altında (bot/dar_sayfalar.py)
+                               "adres": f"{no}-{dar_sayfalar.adres_parcasi(b['baslik'])}/"})
     return sorted(yayimlanan, key=lambda b: b["no"])
 
 
@@ -173,7 +209,7 @@ def veri_hazirla(gecmis, simdi=None):
 
     program = _program(simdi, [g for g, _ in kayitlar])
     rehber = _rehber(simdi)
-    hesap = bot.hesap_adi() or "@gumusagtr"
+    hesap = bot.hesap_adi()
     url = site_adresi()
     guncelleme = _tarih(gun, son.get("saat"))
     gram_deg = bot.degisim(gram, once["gram"]) if once else None
@@ -204,12 +240,13 @@ def veri_hazirla(gecmis, simdi=None):
         "rehber": rehber,
         "ayrintili": _ayrintili(simdi),
         "program": program,
+        "tanitim": _tanitim(program),
         "kaynak": _kaynaklar(),
         "yil": simdi.year,
     }
 
 
-def uret(cikti, gecmis, simdi=None):
+def uret(cikti, gecmis, simdi=None, euro=None):
     from jinja2 import Environment, FileSystemLoader
 
     v = veri_hazirla(gecmis, simdi)
@@ -225,13 +262,25 @@ def uret(cikti, gecmis, simdi=None):
         if f.suffix in (".woff2", ".txt"):
             shutil.copy2(f, fontlar / f.name)
 
+    # Dar aramalar için sayfalar (hesap/, gecmis/, rehber bölümleri; bot/dar_sayfalar.py). Hata verirse
+    # ana sayfa ve rehber yine yayınlanır, yalnızca uyarı çıkar.
+    harita = []
+    try:
+        harita, dar = dar_sayfalar.uret(cikti, env, v, gecmis, euro)
+        v["dar_sayi"] = len(dar)
+    except Exception as e:
+        print(f"::warning::Dar arama sayfaları üretilemedi: {type(e).__name__}: {e}")
+
     gun = (simdi or datetime.now(bot.TR_SAAT)).date().isoformat()
+    satirlar = [(v["url"], gun, "daily"), (v["url"] + "rehber/", gun, "weekly")]
+    satirlar += [(adres, son, "daily" if "/hesap/" in adres or adres.endswith("/gecmis/") else "weekly")
+                 for adres, son in harita]
     (cikti / "sitemap.xml").write_text(
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-        f'<url><loc>{v["url"]}</loc><lastmod>{gun}</lastmod><changefreq>daily</changefreq></url>'
-        f'<url><loc>{v["url"]}rehber/</loc><lastmod>{gun}</lastmod><changefreq>weekly</changefreq></url>'
-        '</urlset>\n', encoding="utf-8")
+        + "".join(f"<url><loc>{a}</loc><lastmod>{s}</lastmod><changefreq>{c}</changefreq></url>" for a, s, c in satirlar)
+        + '</urlset>\n', encoding="utf-8")
+    (cikti / GOOGLE_DOGRULAMA).write_text(f"google-site-verification: {GOOGLE_DOGRULAMA}", encoding="utf-8")
 
     # Bağlantı önizlemesi (WhatsApp, Instagram DM): güncel fiyatlı görsel
     try:
@@ -249,7 +298,11 @@ def main():
     cikti = Path(a.cikti) if os.path.isabs(a.cikti) else bot.KOK / a.cikti
     cikti.mkdir(parents=True, exist_ok=True)
     try:
-        v = uret(cikti, ornek_gecmis() if a.ornek else bot.gecmis_oku())
+        if a.ornek:   # örnek kayıtlar; euro kuru örnek (EUR/USD ≈ 1,16), ağa çıkılmaz
+            gecmis = ornek_gecmis()
+            v = uret(cikti, gecmis, euro={k["kur_tarihi"]: k["dolar"] * 1.16 for k in gecmis.values()})
+        else:
+            v = uret(cikti, bot.gecmis_oku())
     except bot.VeriYok as e:
         print(f"::warning::{e}")
         return

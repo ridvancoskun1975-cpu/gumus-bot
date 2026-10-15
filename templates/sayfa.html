@@ -18,6 +18,7 @@
 <meta name="twitter:card" content="summary_large_image">
 {% endblock %}
 {% block icerik %}
+{% from "tanitim.html" import kart with context %}
 {%- macro deg(d, ek="") -%}
 {%- if d -%}<span class="deg {{ d.yon }}"><span aria-hidden="true">{{ d.isaret }}</span> {{ d.metin }}{{ ek }}</span>{%- endif -%}
 {%- endmacro -%}
@@ -38,6 +39,7 @@
       <a class="dugme ikincil" href="{{ whatsapp }}">WhatsApp'ta paylaş</a>
     </div>
   </section>
+  {{ kart() }}
 
   <section id="hesap-makinesi" aria-labelledby="h-hesap">
     <h2 id="h-hesap">Hesap makinesi</h2>
@@ -61,6 +63,10 @@
         <tbody>{% for s in gram_tablo %}<tr><td>{{ s.ad }}</td><td class="s">{{ s.tl }} ₺</td></tr>{% endfor %}</tbody>
       </table>
     </div>
+    <a class="kart-bag" href="hesap/" style="margin-top: 16px">
+      <span><b>Bütün hesaplar</b><small>100 gram, 1 kg, 1.000 ₺, ons, dolar, euro, altın–gümüş oranı, hurda</small></span>
+      <span class="ok" aria-hidden="true">→</span>
+    </a>
   </section>
 
   <section id="son-gunler" aria-labelledby="h-son">
@@ -88,7 +94,7 @@
             <td class="s">{{ s.gram }}</td><td class="s">{{ deg(s.deg) if s.deg else '—' }}</td></tr>{% endfor %}
       </tbody>
     </table>
-    <p class="not">Her iş gününün son değeri{% if program %} (genelde {{ program.son_deger_saati }} paylaşımı){% endif %}. Kayıtlar {{ ilk_kayit }} günü başladı.</p>
+    <p class="not">Her iş gününün son değeri{% if program %} (genelde {{ program.son_deger_saati }} paylaşımı){% endif %}. Kayıtlar {{ ilk_kayit }} günü başladı. <a href="gecmis/">Bütün geçmiş fiyatlar →</a></p>
   </section>
 
   <section id="hesaplama" aria-labelledby="h-nasil">
@@ -123,7 +129,6 @@
     </table>
     <p class="not">Saatler yaklaşıktır (Türkiye saati); takvim botun ayarlarından her paylaşımda yeniden üretilir.</p>
     {% endif %}
-    <div class="dugmeler"><a class="dugme" href="{{ instagram }}">{{ hesap }} hesabını takip et</a></div>
   </section>
 
   <section id="kaynaklar" aria-labelledby="h-kaynak">
@@ -131,7 +136,7 @@
     <ul class="duz yasal">
       <li>Metal fiyatları (ons gümüş, ons altın): <a href="{{ kaynak.metal_url }}">{{ kaynak.metal_ad }}</a>. Veriler gecikmeli ya da hatalı olabilir.</li>
       <li>Dolar/TL: {% if kaynak.kur_ecb %}Avrupa Merkez Bankası (ECB) referans kurlarından EUR çaprazıyla hesaplanmıştır, {% endif %}<a href="{{ kaynak.kur_url }}">{{ kaynak.kur_ad }}</a> üzerinden ({{ kur_tarihi }} kuru).</li>
-      {% if program and program.yorum %}<li>Pazar yorumları fiyat ve kur verileri ile haftanın haberlerinden yapay zekâ ile üretilir; tahmindir, hata içerebilir ve uzman incelemesinden geçmez. Haber kaynakları her yorumun açıklamasında yazar.</li>{% endif %}
+      {% if program and program.yorum %}<li>Pazar yorumları fiyat ve kur verileri ile haftanın haberlerinden yapay zekâ ile üretilir. Tahmindir: hata içerebilir, eksik ya da güncel olmayabilir ve uzman incelemesinden geçmez; bilgileri kendiniz doğrulamadan dayanak almayın. Haber kaynakları her yorumun açıklamasında yazar.</li>{% endif %}
       <li>Bu sayfa ve hesaptaki tüm paylaşımlar yalnızca bilgi amaçlıdır; alım-satım önerisi içermez ve yatırım danışmanlığı kapsamında değildir. Yatırım danışmanlığı, SPK'dan yetkili kuruluşlarla imzalanan sözleşmeyle verilir.</li>
       <li>Değerler mali durumunuza ve risk tercihlerinize göre hazırlanmamıştır; yalnızca bunlara dayanarak karar vermeyin.</li>
       <li>Bu hesap DM'den tavsiye vermez, para ya da yatırım istemez. Hesap adına size yazanlara itibar etmeyin.</li>

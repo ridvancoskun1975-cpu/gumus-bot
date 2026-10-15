@@ -19,6 +19,7 @@
 {% endblock %}
 
 {% block icerik %}
+{% from "tanitim.html" import kart with context %}
   <a class="geri" href="../">← Gram gümüş fiyatı ve hesap makinesi</a>
 
   <section aria-labelledby="h-rehber" style="padding-top: 14px">
@@ -40,6 +41,7 @@
         {% if s.maddeler %}<ul class="duz">{% for m in s.maddeler %}<li>{{ m }}</li>{% endfor %}</ul>{% endif %}
         {% if s.kaynak %}<p class="kaynak">{{ s.kaynak }}</p>{% endif %}
         {% endfor %}
+        {% if b.adres %}<p style="margin: 10px 0 0"><a href="{{ b.adres }}">Bu bölümün sayfası →</a></p>{% endif %}
         <p class="kaynak">Bölüm #{{ b.no }} · Instagram'da {{ b.tarih }}{% if program and program.rehber_hikaye %} · Öne çıkanlar › Rehber{% endif %}</p>
       </div>
     </details>
@@ -70,7 +72,7 @@
     <p class="not">Ayrıntılı bilgideki rakamlar {{ ayrintili.kaynak_donemi }} ve her başlıkta belirtilen kaynaklara dayanır; son doğrulama {{ ayrintili.gozden_gecirme }}.</p>
     {% endif %}
     <p class="not">Bilgi amaçlıdır, yatırım tavsiyesi değildir.</p>
-    <div class="dugmeler"><a class="dugme" href="{{ instagram }}">{{ hesap }} hesabını takip et</a></div>
+    {{ kart() }}
   </section>
 {% endblock %}
 

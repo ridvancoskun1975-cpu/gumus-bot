@@ -44,8 +44,6 @@ jobs:
           restore-keys: gecmis-
 
       - name: Bilgi sayfasını üret
-        env:
-          HESAP_ADI: ${{ vars.HESAP_ADI }}
         run: |
           python bot/sayfa.py --cikti site
           test -f site/og.png && grep -q "Gram gümüş fiyatı" site/index.html && grep -q "Gümüş rehberi" site/rehber/index.html

@@ -1,0 +1,50 @@
+{#- Rehber bölümünün kendi sayfası (bot/dar_sayfalar.py → site/rehber/<no>-<adres>/). Bölümün sorusu
+    ("Ons nedir?", "Külçede 999 ne demek?") aramada doğrudan karşılık bulsun diye. Rehberin başlıklı
+    sayfası (site/rehber/) olduğu gibi kalır. -#}
+{% extends "taban.html" %}
+{% block bas %}
+<title>{{ s.title }}</title>
+<meta name="description" content="{{ s.desc }}">
+<link rel="canonical" href="{{ url }}{{ s.yol }}">
+<meta property="og:type" content="article">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:site_name" content="Gümüş · {{ hesap }}">
+<meta property="og:title" content="{{ s.title }}">
+<meta property="og:description" content="{{ s.desc }}">
+<meta property="og:url" content="{{ url }}{{ s.yol }}">
+<meta property="og:image" content="{{ url }}og.png?v={{ surum }}">
+<meta name="twitter:card" content="summary_large_image">
+{% endblock %}
+{% block stil %}
+.yol { margin-top: 16px; font-size: 14px; color: var(--soluk); }
+.yol a { color: var(--soluk); }
+.sayfa h2 { font-size: 20px; margin: 22px 0 8px; }
+.sayfa .buyuk { font: 800 28px 'JetBrains Mono', ui-monospace, monospace; }
+.komsu { display: grid; gap: 8px; margin-top: 18px; }
+{% endblock %}
+{% block icerik %}
+{% from "tanitim.html" import kart with context %}
+{% set b = s.bolum %}
+  <nav class="yol" aria-label="Konum"><a href="{{ kok }}">Gram gümüş fiyatı</a> › <a href="{{ kok }}rehber/">Gümüş rehberi</a> › #{{ b.no }}</nav>
+  <article class="sayfa" style="padding-top: 12px">
+    <h1 style="font-size: 30px">{{ b.baslik }}</h1>
+    <p class="soluk" style="margin: 8px 0 0">{{ b.alt }}</p>
+    {% for p in b.sayfalar %}
+    <h2>{{ p.baslik }}</h2>
+    {% if p.buyuk %}<div><span class="buyuk">{{ p.buyuk }}</span> <span class="soluk">{{ p.buyuk_alt }}</span></div>{% endif %}
+    {% if p.formul %}<div class="formul">{{ p.formul }}</div>{% endif %}
+    {% if p.tablo %}<table><tbody>{% for e, d in p.tablo %}<tr><td>{{ e }}</td><td class="s">{{ d }}</td></tr>{% endfor %}</tbody></table>{% endif %}
+    {% if p.maddeler %}<ul class="duz">{% for m in p.maddeler %}<li>{{ m }}</li>{% endfor %}</ul>{% endif %}
+    {% if p.kaynak %}<p class="not">{{ p.kaynak }}</p>{% endif %}
+    {% endfor %}
+    <p class="not">Gümüş rehberi #{{ b.no }} · Instagram'da {{ b.tarih }}. Güncel gram gümüş: <a href="{{ kok }}">{{ gram }} ₺</a> ({{ guncelleme_kisa }}).</p>
+    {{ kart() }}
+    <div class="komsu">
+      {% if s.onceki %}<a class="kart-bag" href="{{ kok }}{{ s.onceki[1] }}"><span><small>Önceki bölüm</small><b>{{ s.onceki[0] }}</b></span><span class="ok" aria-hidden="true">←</span></a>{% endif %}
+      {% if s.sonraki %}<a class="kart-bag" href="{{ kok }}{{ s.sonraki[1] }}"><span><small>Sonraki bölüm</small><b>{{ s.sonraki[0] }}</b></span><span class="ok" aria-hidden="true">→</span></a>{% endif %}
+      <a class="kart-bag" href="{{ kok }}rehber/"><span><small>Gümüş rehberi</small><b>Bütün bölümler ve ayrıntılı bilgi</b></span><span class="ok" aria-hidden="true">→</span></a>
+    </div>
+    <p class="not">Bilgi amaçlıdır, yatırım tavsiyesi değildir.</p>
+    <div class="dugmeler"><a class="dugme ikincil" href="{{ kok }}hesap/">Hesap makinesi</a></div>
+  </article>
+{% endblock %}

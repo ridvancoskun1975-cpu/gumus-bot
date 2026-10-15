@@ -1,0 +1,62 @@
+{#- Geçmiş fiyatlar (bot/dar_sayfalar.py → site/gecmis/ ve site/gecmis/YYYY-AA/): botun günlük kayıtları.
+    s.ay varsa tek ayın sayfası, yoksa genel sayfa (dün, aylık özet, son günler). -#}
+{% extends "taban.html" %}
+{% block bas %}
+<title>{{ s.title }}</title>
+<meta name="description" content="{{ s.desc }}">
+<link rel="canonical" href="{{ url }}{{ s.yol }}">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:site_name" content="Gümüş · {{ hesap }}">
+<meta property="og:title" content="{{ s.title }}">
+<meta property="og:description" content="{{ s.desc }}">
+<meta property="og:url" content="{{ url }}{{ s.yol }}">
+<meta property="og:image" content="{{ url }}og.png?v={{ surum }}">
+<meta name="twitter:card" content="summary_large_image">
+{% endblock %}
+{% block stil %}
+.yol { margin-top: 16px; font-size: 14px; color: var(--soluk); }
+.yol a { color: var(--soluk); }
+.tablo-kap { overflow-x: auto; }
+.tablo-kap td, .tablo-kap th { white-space: nowrap; }
+{% endblock %}
+{% block icerik %}
+{% from "tanitim.html" import kart with context %}
+{%- macro deg(d) -%}
+{%- if d -%}<span class="deg {{ d.yon }}"><span aria-hidden="true">{{ d.isaret }}</span> {{ d.metin }}</span>{%- endif -%}
+{%- endmacro -%}
+  <nav class="yol" aria-label="Konum"><a href="{{ kok }}">Gram gümüş fiyatı</a> › {% if s.ay %}<a href="{{ kok }}gecmis/">Geçmiş fiyatlar</a> › {{ s.ay.ad }}{% else %}Geçmiş fiyatlar{% endif %}</nav>
+  <section aria-labelledby="baslik" style="padding-top: 12px">
+    <h1 id="baslik" style="font-size: 28px">{{ s.h1 }}</h1>
+    {% if s.ay %}
+    <p class="soluk" style="margin: 8px 0 0">Açılış {{ s.ay.acilis }} ₺ · kapanış {{ s.ay.kapanis }} ₺ {{ deg(s.ay.deg) }} · en yüksek {{ s.ay.yuksek }} ₺ · en düşük {{ s.ay.dusuk }} ₺ · {{ s.ay.gun }} iş günü kaydı.{% if s.ay.kismi %} Kayıtlar bu ay başladığı için ay kısmidir; değişim ilk kayda göredir.{% endif %}</p>
+    {% else %}
+    <p class="soluk" style="margin: 8px 0 0">Son: <b style="color: var(--yazi)">{{ gram }} ₺</b> ({{ s.son_gun }}).{% if s.dun %} Bir önceki iş günü ({{ s.dun.tarih }}): <b style="color: var(--yazi)">{{ s.dun.gram }} ₺</b>.{% endif %}</p>
+    {% endif %}
+  </section>
+  {{ kart() }}
+
+  {% if not s.ay and s.aylar %}
+  <section aria-labelledby="h-aylar">
+    <h2 id="h-aylar">Aylık özet</h2>
+    <div class="tablo-kap"><table>
+      <thead><tr><th>Ay</th><th class="s">Kapanış</th><th class="s">Değişim</th><th class="s">En yüksek</th><th class="s">En düşük</th></tr></thead>
+      <tbody>{% for a in s.aylar %}<tr><td><a href="{{ kok }}{{ a.yol }}">{{ a.ad }}</a></td><td class="s">{{ a.kapanis }} ₺</td><td class="s">{{ deg(a.deg) }}</td><td class="s">{{ a.yuksek }}</td><td class="s">{{ a.dusuk }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+  </section>
+  {% endif %}
+
+  <section aria-labelledby="h-gun">
+    <h2 id="h-gun">{% if s.ay %}Gün gün{% else %}Son günler{% endif %}</h2>
+    <div class="tablo-kap"><table>
+      <thead><tr><th>Tarih</th><th class="s">Gram (₺)</th><th class="s">Değişim</th><th class="s">Ons ($)</th><th class="s">Dolar/TL</th></tr></thead>
+      <tbody>{% for r in s.satirlar %}<tr><td><span class="sayi">{{ r.tarih }}</span> <span class="soluk">{{ r.gun }}</span></td><td class="s">{{ r.gram }}</td><td class="s">{{ deg(r.deg) if r.deg else '—' }}</td><td class="s">{{ r.ons }}</td><td class="s">{{ r.dolar }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    <p class="not">Her iş gününün son değeri (genelde akşam paylaşımı). Kayıtlar {{ s.ilk }} günü başladı; daha eskisi yok. Gram = ons × dolar/TL ÷ 31,1035; dolar/TL ECB referans kuru.</p>
+  </section>
+
+  <section aria-label="Kaynaklar">
+    <p class="not">Kaynak: metal fiyatları <a href="{{ kaynak.metal_url }}">{{ kaynak.metal_ad }}</a>; dolar/TL <a href="{{ kaynak.kur_url }}">{{ kaynak.kur_ad }}</a> (ECB). Bilgi amaçlıdır, yatırım tavsiyesi değildir.</p>
+    <div class="dugmeler"><a class="dugme ikincil" href="{{ kok }}hesap/">Hesap makinesi</a></div>
+  </section>
+{% endblock %}

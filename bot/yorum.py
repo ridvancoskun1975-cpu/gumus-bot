@@ -43,7 +43,6 @@ YANIT_SINIRI = 64000
 # Bir çağrı için en uzun bekleme (sn). Akışta sunucu ara ara "ping" gönderir; bu süre iki parça
 # arasındaki en uzun sessizliktir, çağrının toplam süresi değil.
 ZAMAN_ASIMI = 600
-MODEL_ADI = "Claude, Anthropic"
 
 HASHTAG = "#gümüş #gümüşyatırımı #gümüşfiyatları #değerlimetaller #emtia"
 
@@ -604,12 +603,13 @@ UYARI = ("Burada yer alan yatırım bilgi, yorum ve tavsiyeleri yatırım danı�
 
 
 def _nasil_hazirlandi(gelismeler):
+    # Model ve şirket adı yazılmaz (Rıdvan, 15 Ekim 2026 20:31: "Kaldır"); "yapay zekâ ile" yeterli.
     if gelismeler:
         dayanak = ("Yorumlar aşağıdaki fiyat ve kur verileri ile yapay zekânın pazar sabahı web aramasıyla "
-                   f"derlediği haftanın haberlerinden ({MODEL_ADI}) otomatik üretilir; haber özetleri ayrıca "
+                   "derlediği haftanın haberlerinden otomatik üretilir; haber özetleri ayrıca "
                    "doğrulanmaz ve yayından önce bir uzman tarafından incelenmez.")
     else:
-        dayanak = (f"Yorumlar aşağıdaki fiyat ve kur verilerinden yapay zekâ ({MODEL_ADI}) ile otomatik üretilir; "
+        dayanak = ("Yorumlar aşağıdaki fiyat ve kur verilerinden yapay zekâ ile otomatik üretilir; "
                    "yayından önce bir uzman tarafından incelenmez. Bu hafta haber taraması yapılamadığı için "
                    "yalnızca geçmiş fiyat ve kur hareketlerine dayanır.")
     return (f"Nasıl hazırlandı: {dayanak} Her vadede verilere göre ağır basan yön ve gücü belirtilir; bu bir "
