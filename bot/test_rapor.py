@@ -56,6 +56,10 @@ m = medya(15, (9, 0), "REELS")   # öncesinde kayıt yok
 m["caption"] = "Gram gümüş 88 ₺\nGüncel gümüş fiyatları · 15.10.2026"
 rapor.paylasim_adlari([m], satirlar)
 esit(m["_ad"], "Fiyat Reels'i", "açıklamadan ad")
+m = medya(16, (11, 3), "REELS")
+m["caption"] = "…\nAyrıntılar (durum, olası seyir, izlenecekler) profildeki kaydırmalı gönderide →"
+rapor.paylasim_adlari([m], [])
+esit(m["_ad"], "Pazar yorumu Reels", "pazar Reels'i açıklamadan")
 
 # günlük takipçi: dönem öncesi son kayıt başlangıç olur
 g = rapor.gunluk_takipci(satirlar, date(2026, 10, 13), date(2026, 10, 15))

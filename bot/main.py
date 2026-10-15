@@ -730,7 +730,8 @@ def aciklama_yaz(v, tur):
             + (f"değişimler {v['baz_metin']}dır (günlük kayıtlar o gün başladı; önceki haftaya ait kayıt yok).\n"
                if v["kismi"] else "değişimler önceki haftanın son değerine göredir.\n")
             + "Sizce gümüş gelecek hafta ne yöne gider? Yorumlara yazın 👇\n"
-            f"{PAYLASIM_SATIRI + chr(10) if v.get('buyuk_hareket') else ''}\n"
+            + (f"{v['pazar_hatirlatma']['kalin']} · {v['pazar_hatirlatma']['metin']}\n" if v.get("pazar_hatirlatma") else "")
+            + f"{PAYLASIM_SATIRI + chr(10) if v.get('buyuk_hareket') else ''}\n"
             "Bilgi amaçlıdır, yatırım tavsiyesi değildir.\n\n"
             f"{_kaynak_satirlari(v)}\n\n"
             f"{hashtag_sec(tur)}"
@@ -785,7 +786,8 @@ def gorsel_uret(tur, veri, png_yolu):
     gecici.write_text(html, encoding="utf-8")
     boyut = {"reels": (1080, 1920), "kapak": (1080, 1920), "post": (1080, 1350), "hafta": (1080, 1350), "yasal": (1080, 1350),
              "bilgi": (1080, 1350), "yorum": (1080, 1350), "ay": (1080, 1350), "kisa": (1080, 1920), "ozel": (1080, 1920),
-             "kart-gram": (1080, 1920), "kart-parite": (1080, 1920), "sayfa-og": (1200, 630)}[tur]
+             "kart-gram": (1080, 1920), "kart-parite": (1080, 1920), "sayfa-og": (1200, 630),
+             "yorum-reels": (1080, 1920)}[tur]
     # Instagram görsel gönderilerde yalnızca JPEG kabul ediyor; uzantı .jpg ise JPEG kaydedilir.
     jpeg = {"quality": 92} if Path(png_yolu).suffix.lower() in (".jpg", ".jpeg") else {}
     try:
@@ -874,7 +876,7 @@ def hareketli_video_uret(tur, veri, mp4_yolu, sure=7):
              "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-r", str(VIDEO_FPS),
              "-c:a", "aac", "-b:a", "128k", "-shortest", "-movflags", "+faststart", str(mp4_yolu)]
     boyut = {"reels": (1080, 1920), "kisa": (1080, 1920), "ozel": (1080, 1920),
-             "kart-gram": (1080, 1920), "kart-parite": (1080, 1920)}.get(tur, (1080, 1350))
+             "kart-gram": (1080, 1920), "kart-parite": (1080, 1920), "yorum-reels": (1080, 1920)}.get(tur, (1080, 1350))
     try:
         with sync_playwright() as p:
             kwargs = {"executable_path": os.environ["CHROME_YOLU"]} if os.environ.get("CHROME_YOLU") else {}
@@ -1083,6 +1085,8 @@ def _yayinla(cikti, taban_url):
             print("Bağlantı:", _istek("GET", sonuc["id"], fields="permalink").get("permalink"))
         except Exception as e:
             print(f"Uyarı: bağlantı alınamadı ({e})", file=sys.stderr)
+        if meta.get("reels"):
+            yorum_reelsi(kullanici_id, meta["reels"], taban_url)
         if meta.get("hikayeler"):
             if REHBER_HIKAYE_OTOMATIK:
                 rehber_hikayeleri(kullanici_id, meta, taban_url)
@@ -1149,6 +1153,22 @@ def rehber_hikayeleri(kullanici_id, meta, taban_url):
         print(f"::warning::Rehber hikâyesi yarıda kaldı: {len(paylasilan)}/{len(urller)} video paylaşıldı ({e}). "
               f"Tamamlamak için paylaşılan videoları hikâyeden silip Run workflow → tür: hikaye, "
               f"konu: {meta['konu']}, deneme kapalı.")
+
+
+def yorum_reelsi(kullanici_id, reels, taban_url):
+    """Pazar yorumunun Reels'i ve aynı videonun hikâyesi. Kaydırmalı gönderi zaten paylaşıldığı için HER hata
+    (geçici engel dahil) yalnızca uyarı verir: yayinla() baştan denerse kaydırmalı ikinci kez gitmesin."""
+    try:
+        video_url = taban_url.rstrip("/") + "/" + reels["dosya"]
+        _url_hazir_mi(video_url)
+        k = _reels_konteyneri(kullanici_id, video_url, reels, taban_url)
+        sonuc = _istek("POST", f"{kullanici_id}/media_publish", creation_id=k["id"])
+        print(f"Pazar Reels'i paylaşıldı (medya id {sonuc.get('id')})")
+    except Exception as e:
+        print(f"::warning::Pazar Reels'i paylaşılamadı ({type(e).__name__}: {e}); kaydırmalı gönderi paylaşıldı. "
+              "Reels'i sonradan göndermek için Claude'a yaz.")
+        return
+    hikaye_paylas(kullanici_id, video_url)
 
 
 def hikaye_paylas(kullanici_id, video_url):
@@ -1535,7 +1555,9 @@ def yorum_hazirla(cikti, ornek):
         dosyalar.append(jpg.name)
     kaynaklar = _kaynak_satirlari(veri).replace(f"\nMüzik: {muzik_kunyesi()}", "")
     metin = yorum.aciklama(veri, yz, kaynaklar, gelismeler)
+    reels = yorum_reels_uret(cikti, veri, metin, damga) if YORUM_REELS else None
     (cikti / "meta.json").write_text(json.dumps({"tur": "yorum", "dosyalar": dosyalar, "aciklama": metin,
+                                                 "reels": reels,
                                                  "yorum": yz, "istatistik": ist, "gelismeler": gelismeler,
                                                  "son_veri": {"tarih": son_gun, **son}},
                                                 ensure_ascii=False, indent=2, default=str), encoding="utf-8")
@@ -1544,7 +1566,34 @@ def yorum_hazirla(cikti, ornek):
     (cikti / "index.html").write_text("<!doctype html><meta charset='utf-8'><title>Gümüş bot</title>"
                                       + "".join(f"<p><a href='{d}'>{d}</a></p>" for d in dosyalar), encoding="utf-8")
     print(metin)
-    print(f"\nÜretilen dosyalar ({len(metin)} karakter açıklama):", *dosyalar, sep="\n")
+    print(f"\nÜretilen dosyalar ({len(metin)} karakter açıklama):", *dosyalar,
+          *([reels["dosya"], reels["kapak"]] if reels else []), sep="\n")
+
+
+# Pazar yorumunun kısa Reels'i (Rıdvan, 15 Ekim 2026 21:25: "Reels bence şart"): kaydırmalı gönderiyle AYNI
+# çalıştırmada, gönderiden hemen sonra paylaşılır ve aynı video hikâyeye de konur. Kaydırmalı gönderi tam metni
+# taşır; Reels kapaktaki özeti (tarih, gram, üç vadenin ağır basan yönü) 12 sn'de gösterir ve profile çağırır.
+# Reels üretilemez ya da paylaşılamazsa kaydırmalı gönderi yine gider (yalnızca uyarı). Kapatmak için False.
+YORUM_REELS = True
+YORUM_REELS_SN = 12
+
+
+def yorum_reels_uret(cikti, veri, metin, damga):
+    """Pazar Reels'inin videosu, kapağı ve açıklaması. Hata verirse None (kaydırmalı gönderi etkilenmez)."""
+    try:
+        mp4 = cikti / f"yorum-reels-{damga}.mp4"
+        if not hareketli_video_uret("yorum-reels", veri, mp4, sure=YORUM_REELS_SN):
+            raise RuntimeError("şablonda hareket yok")
+        kapak = cikti / f"kapak-yorum-reels-{damga}.jpg"
+        gorsel_uret("yorum-reels", veri, kapak)
+    except Exception as e:
+        print(f"::warning::Pazar Reels'i üretilemedi ({type(e).__name__}: {e}); yalnızca kaydırmalı gönderi gidecek.")
+        return None
+    # Açıklama kaydırmalıyla aynı (uyarılar, kaynaklar, etiketler); yalnızca "kaydırın" yerine profile yönlendirir.
+    reels_metin = metin.replace("Ayrıntılar görsellerde, kaydırın →",
+                                "Ayrıntılar (durum, olası seyir, izlenecekler) profildeki kaydırmalı gönderide →")
+    return {"dosya": mp4.name, "kapak": kapak.name, "kapak_ms": int((YORUM_REELS_SN - 0.5) * 1000),
+            "aciklama": reels_metin}
 
 
 def kart_hazirla(cikti, konu, ornek):
@@ -1601,6 +1650,27 @@ def _baslik_ozeti(veri):
     return None
 
 
+# Cumartesi haftalık özetinde ertesi günün pazar yorumu hatırlatması (Rıdvan, 15 Ekim 2026 21:28: "Cumartesi
+# için pazar derin analizi kaçırmayın benzeri bir hatırlatma"). Görselde (Reels ve hikâyesi) ve açıklamada.
+# Yalnızca bugün cumartesiyse ve yarın pazar yorumu takvimdeyse çıkar (boş söz verilmez).
+PAZAR_HATIRLATMA = {"kalin": "Yarın ~11:00", "metin": "Pazar derin analizi: kısa, orta ve uzun vade. Kaçırmayın."}
+
+
+def pazar_yorumu_yarin(bugun=None):
+    """Bugün cumartesi ve yarın pazar yorumu paylaşılacak mı (paylas.yml'de yorum çalışması + kayıt kuralı)."""
+    bugun = bugun or datetime.now(TR_SAAT).date()
+    if bugun.weekday() != 5:
+        return False
+    try:
+        import program
+        kayitlar = {date.fromisoformat(k) for k in gecmis_oku()}
+        p = program.program(datetime.now(TR_SAAT), kayitlar, HIKAYE_TURLERI)
+        return bool(p.get("yorum")) and program.ilk_yorum(bugun, kayitlar) == bugun + timedelta(days=1)
+    except Exception as e:
+        print(f"::warning::Pazar hatırlatması denetlenemedi ({type(e).__name__}: {e}); hatırlatma yazılmadı.")
+        return False
+
+
 def hazirla(tur, cikti, ornek, konu=None):
     cikti.mkdir(parents=True, exist_ok=True)
     (cikti / "meta.json").unlink(missing_ok=True)   # eski bir paylaşım yanlışlıkla tekrar gitmesin
@@ -1644,6 +1714,8 @@ def hazirla(tur, cikti, ornek, konu=None):
     hesap = hesap_adi()
     hazirlayici = {"hafta": haftalik_veri_hazirla, "ay": aylik_veri_hazirla}.get(tur, veri_hazirla)
     veri = hazirlayici(fiyat, hesap)
+    if tur == "hafta":
+        veri["pazar_hatirlatma"] = PAZAR_HATIRLATMA if (ornek or pazar_yorumu_yarin()) else None
 
     damga = datetime.now(TR_SAAT).strftime("%Y%m%d-%H%M")
     # Özel günde (eşik aşıldı / en az bir aylık en yüksek) aynı paylaşım özel görselle gider.

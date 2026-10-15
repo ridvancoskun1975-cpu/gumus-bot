@@ -1,0 +1,114 @@
+{% from "makrolar.html" import ag_etiketi, degisim, yon_isareti %}<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Gümüş Görünümü Reels</title>
+<style>{% include "ortak.css" %}
+/* Pazar yorumunun kısa Reels'i (1080×1920, 12 sn; Rıdvan 15 Ekim 2026: "Reels bence şart").
+   Kaydırmalı gönderinin kapağındaki bilgiler: tarih, gram fiyatı, üç vadenin ağır basan yönü ve özeti.
+   Ayrıntı (durum, olası seyir, izlenecek) kaydırmalı gönderide kalır. Profil ızgarası ortadaki 3:4 alanı
+   (y 240–1680) gösterir; alt ~300 px'i Reels arayüzü kapatır, bu yüzden çağrı ve uyarı onun üstünde. */
+.yr { position: relative; width: 1080px; height: 1920px; box-sizing: border-box; background: var(--zemin);
+  color: var(--yazi); font-family: 'Archivo', sans-serif; overflow: hidden; }
+.yr .kenar { position: absolute; left: 90px; right: 90px; display: flex; justify-content: space-between; align-items: center; }
+.yr .seri { gap: 14px; font-size: 28px; }
+.yr .blok { position: absolute; left: 90px; right: 90px; }
+.yr .yz { display: inline-flex; align-items: center; gap: 14px; border: 3px solid var(--vurgu); border-radius: 999px;
+  padding: 12px 26px; font-size: 28px; font-weight: 700; letter-spacing: 3px; color: var(--vurgu); }
+.yr .yz i { width: 12px; height: 12px; border-radius: 50%; background: var(--vurgu); display: inline-block; }
+.yr h1 { font-size: 118px; letter-spacing: -4px; line-height: 0.95; margin-top: 30px; text-wrap: balance; }
+.yr .tarih { margin-top: 24px; font-size: 40px; }
+.yr .fiyat-blok { border-top: 3px solid var(--cizgi); padding-top: 30px; }
+.yr .kucuk-baslik { font-size: 28px; font-weight: 700; letter-spacing: 4px; color: var(--soluk); }
+.yr .fiyat-satir { display: flex; align-items: baseline; gap: 16px; margin-top: 8px; }
+.yr .fiyat { font-size: 150px; font-weight: 800; line-height: 1; letter-spacing: -6px; }
+.yr .birim { font-size: 78px; font-weight: 700; color: var(--vurgu); }
+.yr .fiyat-alt { display: flex; align-items: center; gap: 18px; margin-top: 14px; font-size: 30px; }
+.yr .vade { display: grid; grid-template-columns: 250px 1fr; gap: 26px; align-items: center; padding: 26px 0;
+  border-top: 3px solid var(--cizgi); }
+.yr .vade:last-child { border-bottom: 3px solid var(--cizgi); }
+.yr .vade-ad b { display: block; font-size: 38px; font-weight: 800; }
+.yr .vade-ad span { font-size: 26px; color: var(--soluk); }
+.yr .vade-ozet { margin-top: 8px; font-size: 40px; font-weight: 600; line-height: 1.18; text-wrap: balance; }
+.yr .yon { display: inline-flex; align-items: center; gap: 12px; font-weight: 800; }
+.yr .yon.artis { color: var(--artis); }
+.yr .yon.dusus { color: var(--dusus); }
+.yr .yon.dusus svg { transform: rotate(180deg); }
+.yr .yon small { font-size: 0.72em; font-weight: 600; color: var(--soluk); }
+.yr .cagri { display: inline-flex; align-items: center; gap: 18px; font-size: 42px; font-weight: 800;
+  padding: 22px 34px; border-radius: 999px; background: var(--yazi); color: var(--zemin); transform-origin: 0 50%; }
+.yr .saat { margin-top: 18px; font-size: 32px; color: var(--soluk); }
+</style>
+</head>
+<body>
+<div class="yr">
+  <div class="isik" aria-hidden="true"></div>
+  <div class="kenar" style="top: 110px">
+    <div class="etiket seri"><span id="nokta" class="nokta" style="width: 14px; height: 14px"></span><span>GÜMÜŞ GÖRÜNÜMÜ · HER PAZAR</span></div>
+    {{ ag_etiketi(104, 118, '10px 12px', 18, 40, 15) }}
+  </div>
+
+  <div class="blok" id="baslik" style="top: 270px">
+    <div class="yz"><i></i>YAPAY ZEKÂ İLE ÜRETİLMİŞTİR</div>
+    <h1>Kısa, orta ve uzun vade</h1>
+    <div class="tarih">{{ tarih }} · {{ gun }}</div>
+  </div>
+
+  <div class="blok fiyat-blok" id="fiyat" style="top: 720px">
+    <div class="kucuk-baslik">GRAM GÜMÜŞ</div>
+    <div class="fiyat-satir"><span class="fiyat sayi">{{ gram }}</span><span class="birim">₺</span></div>
+    <div class="fiyat-alt">{{ degisim(gram_deg, 42, 32) }}<span class="soluk">haftalık · {{ veri_ani }}</span></div>
+  </div>
+
+  <div class="blok" style="top: 1040px">
+    {% for v in vadeler %}
+    <div class="vade" id="vade{{ loop.index }}">
+      <div class="vade-ad"><b>{{ v.ad }}</b><span>{{ v.ufuk }}</span></div>
+      <div>
+        {{ yon_isareti(v.yorum, 34, 26) }}
+        <div class="vade-ozet">{{ v.yorum.ozet }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="blok" id="cagri" style="top: 1500px">
+    <span class="cagri">Ayrıntılı yorum profilde <span aria-hidden="true">→</span></span>
+    <div class="saat">Her pazar ~11:00 · kaydırmalı gönderide durum, olası seyir ve izlenecekler</div>
+  </div>
+
+  <div class="kenar" style="bottom: 110px">
+    <b style="font-size: 34px">{{ hesap }}</b>
+    <span class="soluk" style="font-size: 26px">Yapay zekâ yorumudur, yatırım tavsiyesi değildir.</span>
+  </div>
+</div>
+<script>
+// Hareket: bot her kare için window.kare(t) çağırır; çağrılmazsa sayfa son hâlde kalır (kapak bu hâlden).
+// Başlık ve "yapay zekâ ile üretilmiştir" ilk kareden görünür; fiyat 0,6 sn'de, vadeler 2,4 / 4,0 / 5,6 sn'de,
+// profile çağrı 8,4 sn'de gelir.
+(function () {
+  const $ = id => document.getElementById(id);
+  const baslik = $('baslik'), fiyat = $('fiyat'), cagri = $('cagri'), nokta = $('nokta');
+  const vadeler = [1, 2, 3].map(i => $('vade' + i)).filter(Boolean);
+  const isik = document.querySelector('.isik');
+  const yumusak = p => 1 - Math.pow(1 - Math.min(Math.max(p, 0), 1), 3);
+  const ara = (t, a, b) => yumusak((t - a) / (b - a));
+  const goster = (el, q, dx, dy) => { el.style.opacity = q; el.style.transform = `translate(${(1 - q) * dx}px, ${(1 - q) * dy}px)`; };
+
+  window.kare = function (t) {
+    baslik.style.transform = `translateY(${(1 - ara(t, 0, 0.6)) * 24}px)`;
+    goster(fiyat, ara(t, 0.6, 1.2), 0, 40);
+    vadeler.forEach((v, i) => goster(v, ara(t, 2.4 + 1.6 * i, 3.0 + 1.6 * i), 60, 0));
+    const g = ara(t, 8.4, 8.9);
+    cagri.style.opacity = g;
+    cagri.firstElementChild.style.transform = `scale(${(0.9 + 0.1 * g) * (1 + (t > 8.9 ? 0.03 * (0.5 - 0.5 * Math.cos(2 * Math.PI * (t - 8.9) / 1.2)) : 0))})`;
+    if (nokta) nokta.style.opacity = 0.35 + 0.65 * (0.5 + 0.5 * Math.cos(2 * Math.PI * t / 1.2));
+    if (isik) {
+      const r = (t - 7.0) / 1.3;
+      isik.style.transform = r >= 0 && r <= 1 ? `translateX(${-140 + 280 * r}%)` : 'translateX(-140%)';
+    }
+  };
+})();
+</script>
+</body>
+</html>

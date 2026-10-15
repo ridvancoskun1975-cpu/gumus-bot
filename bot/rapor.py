@@ -196,6 +196,9 @@ def paylasim_adlari(medyalar, satirlar):
 
 def aciklamadan_ad(m):
     a = (m.get("caption") or "").lower()
+    # Pazar yorumunun Reels'i kaydırmalıyla aynı çalıştırmada gider; tek takipçi kaydı kaydırmalıya eşlenir.
+    if "profildeki kaydırmalı gönderide" in a:
+        return "Pazar yorumu Reels"
     for anahtar, ad in (("haftalık gümüş özeti", "Haftalık özet"), ("aylık gümüş özeti", "Aylık özet"),
                         ("günün gümüş özeti", "Günlük özet"), ("güncel gümüş fiyatları", "Fiyat Reels'i"),
                         ("yasal bilgilendirme", "Yasal bilgilendirme")):
