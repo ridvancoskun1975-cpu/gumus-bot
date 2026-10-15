@@ -1,34 +1,13 @@
-{#- İlk temasta kısa tanıtım ve Instagram'a davet (Rıdvan, 15 Ekim 2026). Bütün sayfalarda aynı.
-    Saatler v.tanitim'den (bot/sayfa.py → _tanitim(), botun takviminden); elle yazılmaz.
-    kok: sitenin köküne göreli yol. -#}
-{% macro serit() -%}
-{%- if tanitim %}
-<p class="davet-serit"><b>{{ hesap }}</b> · {{ tanitim.serit }} · <a href="{{ instagram }}">Takip et →</a></p>
-{%- endif %}
-{%- endmacro %}
-
-{% macro kart(kok="") -%}
+{#- İlk temasta kısa tanıtım ve Instagram'a davet (Rıdvan, 15 Ekim 2026). Bütün sayfalarda aynı, sayfa başına bir kez.
+    Az ve öz (Rıdvan, 15 Ekim 08:46, "B" seçeneği): başlık, tek satır hizmet, tek düğme. Sayfada başka takip daveti
+    olmaz (üst bardaki küçük "Takip et" hariç).
+    Saat ve günler v.tanitim'den (bot/sayfa.py → _tanitim(), botun takviminden); elle yazılmaz. -#}
+{% macro kart() -%}
 {%- if tanitim %}
 <aside class="davet" aria-labelledby="davet-baslik">
-  <p class="etiket">{{ hesap }} · yalnızca gümüş</p>
-  <h2 id="davet-baslik">Gümüşü her gün saatinde, tek yerden takip edin</h2>
-  {%- if tanitim.one %}
-  <div class="davet-one">
-    <p class="etiket">Öne çıkan · {{ tanitim.one.zaman }}</p>
-    <b>Pazar yorumu: hangi yön ağır basıyor?</b>
-    <p>Yapay zekâ haftanın fiyat verisini ve haberlerini okur; kısa, orta ve uzun vadede yükselişin mi düşüşün mü ağır bastığını gücüyle ve kaynaklarıyla yazar. Değerlendirmedir; al-sat önerisi değildir.</p>
-  </div>
-  {%- endif %}
-  <ul>
-    {%- for h in tanitim.hizmet %}
-    <li><span class="zaman">{{ h.zaman }}</span> · {{ h.ne }}</li>
-    {%- endfor %}
-  </ul>
-  <p class="davet-not">Kaynağı açık: uluslararası ons fiyatı ve ECB kuru. Ücretsiz; bilgi verir, yatırım tavsiyesi vermez.</p>
-  <div class="davet-alt">
-    <a class="dugme" href="{{ instagram }}">Instagram'da takip et</a>
-    <span>Fiyat her iş günü akışınıza gelsin. Bu sayfa da her paylaşımda kendiliğinden güncellenir.</span>
-  </div>
+  <h2 id="davet-baslik">Gümüşü her gün saatinde takip edin</h2>
+  <p class="davet-satir">{% for h in tanitim.satir %}<span>{{ h }}</span>{% if not loop.last %} · {% endif %}{% endfor %}</p>
+  <a class="dugme" href="{{ instagram }}">Instagram'da takip et</a>
 </aside>
 {%- endif %}
 {%- endmacro %}

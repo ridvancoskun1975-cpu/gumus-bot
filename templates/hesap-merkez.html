@@ -36,9 +36,8 @@
   text-decoration: none; color: var(--yazi); }
 {% endblock %}
 {% block icerik %}
-{% from "tanitim.html" import serit, kart with context %}
+{% from "tanitim.html" import kart with context %}
   <nav class="yol" aria-label="Konum"><a href="{{ kok }}">Gram gümüş fiyatı</a> › Hesaplar</nav>
-  {{ serit() }}
   <section aria-labelledby="baslik" style="padding-top: 12px">
     <h1 id="baslik" style="font-size: 28px">{{ s.h1 }}</h1>
     <p class="soluk" style="margin: 8px 0 0">1 gram saf gümüş = <b style="color: var(--yazi)">{{ gram }} ₺</b> · {{ guncelleme }}. Anlık (canlı) fiyat değildir.</p>
@@ -73,7 +72,6 @@
     <h2 class="etiket">Gümüş rehberi</h2>
     <ul class="liste"><li><a href="{{ kok }}rehber/">Ons, ayar, parite, fiyat farkı: bütün bölümler</a></li></ul>
     <p class="not">Bilgi amaçlıdır, yatırım tavsiyesi değildir.</p>
-    <div class="dugmeler"><a class="dugme" href="{{ instagram }}">{{ hesap }} hesabını takip et</a></div>
   </section>
 {% endblock %}
 {% block betik %}

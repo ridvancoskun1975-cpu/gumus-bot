@@ -21,12 +21,11 @@
 .tablo-kap td, .tablo-kap th { white-space: nowrap; }
 {% endblock %}
 {% block icerik %}
-{% from "tanitim.html" import serit, kart with context %}
+{% from "tanitim.html" import kart with context %}
 {%- macro deg(d) -%}
 {%- if d -%}<span class="deg {{ d.yon }}"><span aria-hidden="true">{{ d.isaret }}</span> {{ d.metin }}</span>{%- endif -%}
 {%- endmacro -%}
   <nav class="yol" aria-label="Konum"><a href="{{ kok }}">Gram gümüş fiyatı</a> › {% if s.ay %}<a href="{{ kok }}gecmis/">Geçmiş fiyatlar</a> › {{ s.ay.ad }}{% else %}Geçmiş fiyatlar{% endif %}</nav>
-  {{ serit() }}
   <section aria-labelledby="baslik" style="padding-top: 12px">
     <h1 id="baslik" style="font-size: 28px">{{ s.h1 }}</h1>
     {% if s.ay %}
@@ -58,6 +57,6 @@
 
   <section aria-label="Kaynaklar">
     <p class="not">Kaynak: metal fiyatları <a href="{{ kaynak.metal_url }}">{{ kaynak.metal_ad }}</a>; dolar/TL <a href="{{ kaynak.kur_url }}">{{ kaynak.kur_ad }}</a> (ECB). Bilgi amaçlıdır, yatırım tavsiyesi değildir.</p>
-    <div class="dugmeler"><a class="dugme" href="{{ instagram }}">{{ hesap }} hesabını takip et</a><a class="dugme ikincil" href="{{ kok }}hesap/">Hesap makinesi</a></div>
+    <div class="dugmeler"><a class="dugme ikincil" href="{{ kok }}hesap/">Hesap makinesi</a></div>
   </section>
 {% endblock %}

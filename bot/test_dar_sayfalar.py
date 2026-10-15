@@ -5,7 +5,8 @@
   - site haritasındaki her adresin dosyası var, her sayfa site haritasında;
   - site içi bütün bağlantılar var olan bir sayfaya gidiyor (kırık bağlantı yok);
   - rakamlar tutarlı: 100 gram = 100 × gram fiyatı, 1000 TL = 1000 ÷ gram fiyatı, 925 ayar = × 0,925;
-  - hiçbir sayfada "canlı" ya da "anlık" fiyat iddiası yok (yalnızca "Anlık (canlı) fiyat değildir").
+  - hiçbir sayfada "canlı" ya da "anlık" fiyat iddiası yok (yalnızca "Anlık (canlı) fiyat değildir");
+  - tanıtım kartı her sayfada bir kez, kısa (160 harfi geçmez); başka takip daveti yok; yasal not var.
 """
 import re
 import sys
@@ -123,14 +124,20 @@ def main():
         html = (cikti / "index.html").read_text(encoding="utf-8")
         kontrol('href="hesap/"' in html and 'href="gecmis/"' in html, "ana sayfada hesap/geçmiş bağlantısı yok")
         kontrol((cikti / "googleade97aa5989bb9eb.html").exists(), "Search Console doğrulama dosyası yok")
-        # İlk temasta tanıtım kartı ve Instagram daveti her sayfada (Rıdvan, 15 Ekim 2026)
+        # İlk temasta tanıtım kartı her sayfada, az ve öz, sayfa başına tek davet (Rıdvan, 15 Ekim 2026)
         for f in dosyalar:
             html = (cikti / f).read_text(encoding="utf-8")
-            kontrol('class="davet"' in html and "Instagram'da takip et" in html, f"tanıtım kartı yok: {f}")
-            kontrol("Pazar yorumu: hangi yön ağır basıyor?" in html and "al-sat önerisi değildir" in html,
-                    f"kartta pazar yorumu (ve yasal satırı) yok: {f}")
-            if f not in ("index.html", "rehber/index.html"):
-                kontrol('class="davet-serit"' in html, f"üstteki davet satırı yok: {f}")
+            kontrol(html.count('class="davet"') == 1 and html.count(">Instagram'da takip et<") == 1,
+                    f"tanıtım kartı yok ya da birden çok: {f}")
+            kontrol("hesabını takip et</a>" not in html and "davet-serit" not in html,
+                    f"karttan başka takip daveti var (tek davet olmalı): {f}")
+            kart = re.search(r'<aside class="davet".*?</aside>', html, re.S)
+            if kart:
+                yazi = " ".join(re.sub(r"<[^>]+>", " ", kart.group(0)).split())
+                kontrol("Pazar yapay zekâ yorumu" in yazi, f"kartta pazar yorumu yok: {f}")
+                kontrol(len(yazi) <= 160, f"kart uzun ({len(yazi)} harf; az ve öz olmalı): {f} → {yazi}")
+            kontrol("yatırım tavsiyesi değildir" in html or "yatırım danışmanlığı kapsamında değildir" in html,
+                    f"yasal not yok: {f}")
 
         print(f"{len(dosyalar)} sayfa, {len(harita)} site haritası adresi")
     if HATA:

@@ -128,20 +128,19 @@ def _tanitim(program):
     def bul(anahtar):
         return next((s for s in program["satirlar"] if anahtar in s["ne"]), None)
 
-    hizmet = [{"zaman": program["guncelleme"], "ne": "gram gümüş fiyatı ve günün özeti"}]
-    for anahtar, kisa in (("Haftalık özet", "haftalık özet ve grafik"),
-                          ("Gümüş rehberi", "Gümüş rehberi, sade ve kaynaklı")):
-        s = bul(anahtar)
-        if s:
-            hizmet.append({"zaman": s["zaman"], "ne": kisa})
-    # Öne çıkan: pazar yapay zekâ yorumu (Rıdvan, 15 Ekim 08:17: "tanıtım kartında şimdi yer almalı").
-    # Yasal çerçeve yorumun kendisiyle aynı: değerlendirmedir, al-sat önerisi değildir.
+    def gun(s):
+        return s["zaman"].split(" ~")[0]
+
+    # Az ve öz (Rıdvan, 15 Ekim 08:46): tek satır. Pazar yapay zekâ yorumu adıyla yer alır (15 Ekim 08:17:
+    # "tanıtım kartında şimdi yer almalı"); yorum kapalıysa satırda görünmez.
+    satir = [f"{program['guncelleme']} fiyat"]
+    haftalik = bul("Haftalık özet")
+    if haftalik:
+        satir.append(f"{gun(haftalik)} haftalık özet")
     yorum = bul("yapay zekâ yorumu") if program.get("yorum") else None
-    one = {"zaman": yorum["zaman"]} if yorum else None
-    serit = f"{program['guncelleme']} gram gümüş fiyatı"
     if yorum:
-        serit += f", {yorum['zaman'].split(' ~')[0].lower()} yapay zekâ yorumu"
-    return {"hizmet": hizmet, "one": one, "serit": serit + " Instagram'da"}
+        satir.append(f"{gun(yorum)} yapay zekâ yorumu")
+    return {"satir": satir}
 
 
 def _ayrintili(simdi):

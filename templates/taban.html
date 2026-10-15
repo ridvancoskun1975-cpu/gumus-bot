@@ -131,23 +131,12 @@ details { scroll-margin-top: 90px; }
 .yasal li { color: var(--soluk); }
 footer { border-top: 1px solid var(--cizgi); margin-top: 34px; padding: 20px 0 40px; color: var(--soluk); font-size: 14px; }
 footer p { margin: 6px 0; }
-/* İlk temasta tanıtım ve Instagram daveti (templates/tanitim.html) */
-.davet { margin: 26px 0 4px; padding: 18px 16px; background: var(--kart); border: 1px solid rgba(201, 209, 218, 0.38);
+/* İlk temasta tanıtım ve Instagram daveti (templates/tanitim.html): az ve öz, sayfa başına bir kez */
+.davet { margin: 26px 0 4px; padding: 16px; background: var(--kart); border: 1px solid rgba(201, 209, 218, 0.38);
   border-radius: 14px; }
-.davet h2 { font-size: 20px; margin: 6px 0 10px; text-wrap: balance; }
-.davet-one { margin: 0 0 14px; padding: 12px 14px; background: var(--zemin); border: 1px solid var(--cizgi); border-radius: 10px; }
-.davet-one .etiket { font-size: 12px; letter-spacing: 2px; }
-.davet-one b { display: block; font-size: 17px; margin: 4px 0 4px; }
-.davet-one p:last-child { margin: 0; color: var(--soluk); font-size: 14px; line-height: 1.45; }
-.davet ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
-.davet li { font-size: 15px; line-height: 1.4; }
-.davet .zaman { color: var(--soluk); font-variant-numeric: tabular-nums; }
-.davet-not { color: var(--soluk); font-size: 14px; margin: 12px 0 0; }
-.davet-alt { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: 14px; }
-.davet-alt span { color: var(--soluk); font-size: 14px; flex: 1 1 14em; min-width: 0; }
-.davet-serit { margin: 10px 0 0; padding: 8px 12px; background: var(--kart); border: 1px solid var(--cizgi); border-radius: 10px;
-  color: var(--soluk); font-size: 14px; line-height: 1.4; }
-.davet-serit b { color: var(--yazi); }
+.davet h2 { font-size: 20px; margin: 0 0 6px; text-wrap: balance; }
+.davet-satir { margin: 0 0 14px; color: var(--soluk); font-size: 15px; line-height: 1.5; }
+.davet-satir span { display: inline-block; }   /* madde ortadan bölünmesin; sığmazsa kendi içinde kırılır */
 {% block stil %}{% endblock %}
 </style>
 </head>

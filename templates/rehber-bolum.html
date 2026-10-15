@@ -23,10 +23,9 @@
 .komsu { display: grid; gap: 8px; margin-top: 18px; }
 {% endblock %}
 {% block icerik %}
-{% from "tanitim.html" import serit, kart with context %}
+{% from "tanitim.html" import kart with context %}
 {% set b = s.bolum %}
   <nav class="yol" aria-label="Konum"><a href="{{ kok }}">Gram gümüş fiyatı</a> › <a href="{{ kok }}rehber/">Gümüş rehberi</a> › #{{ b.no }}</nav>
-  {{ serit() }}
   <article class="sayfa" style="padding-top: 12px">
     <h1 style="font-size: 30px">{{ b.baslik }}</h1>
     <p class="soluk" style="margin: 8px 0 0">{{ b.alt }}</p>
@@ -46,6 +45,6 @@
       <a class="kart-bag" href="{{ kok }}rehber/"><span><small>Gümüş rehberi</small><b>Bütün bölümler ve ayrıntılı bilgi</b></span><span class="ok" aria-hidden="true">→</span></a>
     </div>
     <p class="not">Bilgi amaçlıdır, yatırım tavsiyesi değildir.</p>
-    <div class="dugmeler"><a class="dugme" href="{{ instagram }}">{{ hesap }} hesabını takip et</a><a class="dugme ikincil" href="{{ kok }}hesap/">Hesap makinesi</a></div>
+    <div class="dugmeler"><a class="dugme ikincil" href="{{ kok }}hesap/">Hesap makinesi</a></div>
   </article>
 {% endblock %}
