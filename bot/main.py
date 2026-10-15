@@ -1576,8 +1576,9 @@ def yorum_hazirla(cikti, ornek):
 # gönderiden hemen sonra paylaşılır ve aynı video hikâyeye de konur. Reels üretilemez ya da paylaşılamazsa
 # kaydırmalı gönderi yine gider (yalnızca uyarı). Kapatmak için False.
 YORUM_REELS = True
-# Rıdvan 21:59: "21 sn olsun, 3 sn giriş 6 sn sayfalar". 5. bir süre eklenirse kapanış sahnesi de çıkar.
-YORUM_REELS_SAHNELER = (3, 6, 6, 6)   # sn: kapak, kısa, orta, uzun vade (toplam 21 sn)
+# Rıdvan 21:59: "3 sn giriş 6 sn sayfalar"; 22:05: "Giriş çok kısa oldu. Hepsi 8 saniye olsun".
+# 5. bir süre eklenirse kapanış sahnesi de çıkar.
+YORUM_REELS_SAHNELER = (8, 8, 8, 8)   # sn: kapak, kısa, orta, uzun vade (toplam 32 sn)
 
 
 def yorum_reels_uret(cikti, veri, metin, damga):
