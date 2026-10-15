@@ -1,22 +1,24 @@
-"""Haftalık kartlar: hafta içi ~10:00 Reels'inin yerine haftada bir gün giden iki kart (büyüme planı, Faz 2).
+"""Haftalık kartlar (büyüme planı, Faz 2): hafta içi iki gün ~12:00'de AYRI bir Reels.
 
-- Çarşamba ~10:00: "Kaç gram eder?" — 1.000 / 5.000 / 10.000 ₺ kaç gram gümüş; 100 gram ve 1 kilogram kaç ₺.
-- Cuma ~10:00: "Altın–gümüş" — 1 gram altın kaç gram gümüş eder (altın/gümüş paritesi), gram altın ve gram
+- Çarşamba ~12:00: "Kaç gram eder?" — 1.000 / 5.000 / 10.000 ₺ kaç gram gümüş; 100 gram ve 1 kilogram kaç ₺.
+- Cuma ~12:00: "Altın–gümüş" — 1 gram altın kaç gram gümüş eder (altın/gümüş paritesi), gram altın ve gram
   gümüş TL değeri, önceki haftaların kapanış paritesiyle.
 
-Paylaşım sayısı artmaz: kart o günün ~10:00 Reels'inin yerine gider (aynı çalıştırma, aynı tür "reels", aynı
-günlük fiyat kaydı). Kartta da o anki gram fiyatı ve değişimi yazar. Özel gün (eşik / en yüksek) ya da büyük
-hareket günü (%2) olağan Reels gider; kart o hafta atlanır, böyle günlerde fiyatın kendisi haberdir.
+TAAHHÜT (Rıdvan, 15 Ekim 2026): "Hafta içi her gün 2 kere gümüş gram fiyatı verilecek." ~10:00 Reels ve ~20:00
+özet her iş günü olduğu gibi gider; kartlar onların yerine geçmez, onlara eklenir (o gün 3 paylaşım, rehber ya
+da aylık özete denk gelirse 4; günlük sınır 4). Kart günlük fiyat kaydı yazmaz.
 
 Gösterilen her sayı o anki fiyattan ve botun günlük kayıtlarından hesaplanır; tahmin yok.
-Önizleme ve elle deneme: KART=gram|parite|yok ortam değişkeni günü ezer (iş akışında Run workflow → tür: reels,
-konu: gram ya da parite).
+Elle ya da önizleme: Run workflow → tür: kart, konu: gram / parite (boşsa günün kartı).
+Kontrol işi için: python3 bot/kart.py bugun → "gram", "parite" ya da boş.
 """
-import os
-from datetime import date, timedelta
+import sys
+from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo
 
 # Python hafta günü (pazartesi 0) → kart
 KART_GUNLERI = {2: "gram", 4: "parite"}
+KART_BASLANGIC = date(2026, 10, 21)   # ilk kart (çarşamba); ilk hafta (13–16 Ekim) zaten kalabalık
 KART_ADI = {"gram": "Kaç gram eder?", "parite": "Altın–gümüş"}
 KART_ETIKET = {"gram": "KAÇ GRAM EDER?", "parite": "ALTIN – GÜMÜŞ"}   # görselin ve kapağın üst etiketi
 TL_MIKTARLAR = [1000, 5000, 10000]
@@ -29,18 +31,11 @@ HASHTAG = {
 AYLAR_KISA = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"]
 
 
-def kart_turu(gun, veri):
-    """Bugün kart gidecek mi: "gram", "parite" ya da None. KART ortam değişkeni günü ezer."""
-    zorla = os.environ.get("KART", "").strip().lower()
-    if zorla in ("yok", "hayir", "0"):
+def bugunun_karti(gun):
+    """Bugün hangi kart gidecek: "gram", "parite" ya da None."""
+    if gun < KART_BASLANGIC:
         return None
-    kart = zorla if zorla in KART_ADI else KART_GUNLERI.get(gun.weekday())
-    if not kart:
-        return None
-    if veri.get("ozel") or veri.get("buyuk_hareket"):
-        print(f"Kart atlandı ({KART_ADI[kart]}): bugün özel gün ya da büyük hareket var, olağan Reels gidiyor.")
-        return None
-    return kart
+    return KART_GUNLERI.get(gun.weekday())
 
 
 def haftalik_pariteler(gecmis_parite, bugun, en_cok=HAFTA_SAYISI):
@@ -113,16 +108,21 @@ def tr_sayi_bir(x):
     return f"{x:,.1f}".replace(",", "§").replace(".", ",").replace("§", ".")
 
 
-def aciklama(v, ilk_satir, kaynaklar):
-    """Kartın Instagram açıklaması. İlk satır öteki fiyat paylaşımlarıyla aynı ("Gram gümüş fiyatı bugün: …")."""
+def aciklama(v, kaynaklar):
+    """Kartın Instagram açıklaması. İlk satır aranan soruyla ve rakamla başlar (Instagram araması ilk satıra bakar)."""
     if v["kart"] == "gram":
+        ilk_satir = (f"1.000 ₺ kaç gram gümüş eder? Bugün {v['tl_tablo'][0]['gram']} gram "
+                     f"(gram gümüş {v['gram']} ₺, {v['gram_deg']['isaret']} {v['gram_deg']['metin']})")
         govde = (
             "".join(f"{s['tl']} ₺ ≈ {s['gram']} gram gümüş\n" for s in v["tl_tablo"])
             + "".join(f"{s['ad']} ≈ {s['tl']} ₺\n" for s in v["gram_tablo"])
             + "\nGram fiyatı ons gümüş ve dolar/TL'den hesaplanır; kuyumcu ve bankalarda işçilik, vergi ve "
             "alış-satış farkı yüzünden fiyat farklıdır. Başka tutarlar için hesap makinesi biyografideki bağlantıda.\n"
+            "Gram gümüşteki değişim önceki iş gününe göredir.\n"
         )
     else:
+        ilk_satir = (f"1 gram altın kaç gram gümüş eder? Bugün {tr_sayi_bir(v['parite_sayi'])} gram "
+                     f"(gram altın {v['gram_altin']} ₺, gram gümüş {v['gram']} ₺)")
         d = v["parite_hafta_deg"]
         haftalar = [s for s in v["haftalar"] if not s.get("bugun")]
         govde = (
@@ -139,9 +139,16 @@ def aciklama(v, ilk_satir, kaynaklar):
         f"{ilk_satir}\n"
         f"{KART_ADI[v['kart']]} · {v['tarih']} · {v['saat']}\n\n"
         f"{govde}"
-        f"Gram gümüşteki değişim önceki iş gününe göredir.{' ' + v['baslik_notu'] if v.get('baslik_notu') else ''}\n"
         "Kaydedin, lazım olunca bakarsınız.\n\n"
         "Bilgi amaçlıdır, yatırım tavsiyesi değildir.\n\n"
         f"{kaynaklar}\n\n"
         f"{HASHTAG[v['kart']]}"
     )
+
+
+if __name__ == "__main__":
+    if sys.argv[1:] == ["bugun"]:
+        print(bugunun_karti(datetime.now(ZoneInfo("Europe/Istanbul")).date()) or "")
+    else:
+        print("Kullanım: python3 bot/kart.py bugun", file=sys.stderr)
+        sys.exit(2)

@@ -12,15 +12,18 @@ on:
     # gider (bot/aylik.py; ilki 2 Kasım 2026). İkisi de yoksa "kontrol" işi birkaç saniyede biter.
     - cron: '50 10 * * 1-5'
     - cron: '50 10 * * 6'     # Cumartesi 13:50 TR -> Rehberden kısa Reels (bot/bilgi.py → kisa_takvim)
+    # Çarşamba ve cuma 11:50 TR -> haftalık kart (bot/kart.py): çarşamba "Kaç gram eder?", cuma altın–gümüş.
+    # 10:00 Reels ve 20:00 özetin YERİNE DEĞİL, onlara ek (taahhüt: hafta içi her gün 2 kez gram fiyatı).
+    - cron: '50 8 * * 3,5'
   workflow_dispatch:
     inputs:
       tur:
         description: "Ne üretilsin?"
         type: choice
-        options: [reels, post, hafta, ay, yasal, bilgi, kisa, yorum, hikaye]
+        options: [reels, post, hafta, ay, yasal, bilgi, kisa, yorum, hikaye, kart]
         default: reels
       konu:
-        description: "bilgi, kisa, hikaye: rehber bölüm no (bilgi/kisa için boşsa bugünün bölümü; hikaye için zorunlu). reels: gram ya da parite = haftalık kart, yok = kartsız (boşsa güne göre)."
+        description: "bilgi, kisa, hikaye: rehber bölüm no (bilgi/kisa için boşsa bugünün bölümü; hikaye için zorunlu). kart: gram ya da parite (boşsa günün kartı)."
         type: string
         default: ""
       deneme:
@@ -73,6 +76,8 @@ jobs:
             tur=bilgi
           elif [ "${{ github.event.schedule }}" = "50 10 * * 6" ]; then
             tur=kisa
+          elif [ "${{ github.event.schedule }}" = "50 8 * * 3,5" ]; then
+            tur=kart
           else
             tur=reels
           fi
@@ -105,6 +110,15 @@ jobs:
               echo "Bugün kısa Reels takviminde bölüm yok; çalışma atlandı."
             else
               echo "Bugünün kısa Reels bölümü: $bolum"
+            fi
+          fi
+          if [ "$tur" = "kart" ] && [ -z "$KONU" ]; then
+            kart=$(python3 bot/kart.py bugun)
+            if [ -z "$kart" ]; then
+              calis=false
+              echo "Bugün haftalık kart yok; çalışma atlandı."
+            else
+              echo "Bugünün kartı: $kart"
             fi
           fi
           echo "tur=$tur" >> "$GITHUB_OUTPUT"
@@ -182,8 +196,7 @@ jobs:
         run: |
           ek=()
           case "${{ needs.kontrol.outputs.tur }}" in
-            bilgi|kisa|hikaye) if [ -n "$KONU" ]; then ek=(--konu "$KONU"); fi ;;
-            reels) if [ -n "$KONU" ]; then export KART="$KONU"; fi ;;   # haftalık kart (bot/kart.py) elle: gram / parite / yok
+            bilgi|kisa|hikaye|kart) if [ -n "$KONU" ]; then ek=(--konu "$KONU"); fi ;;
           esac
           python bot/main.py hazirla --tur "${{ needs.kontrol.outputs.tur }}" --cikti site "${ek[@]}"
           if [ -f site/meta.json ]; then

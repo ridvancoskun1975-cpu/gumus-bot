@@ -1,5 +1,4 @@
 """bot/kart.py sınamaları (ağ yok, tarayıcı yok). Çalıştır: python bot/test_kart.py"""
-import os
 import sys
 from datetime import date, timedelta
 from pathlib import Path
@@ -17,22 +16,31 @@ def esit(a, b, ad):
     gecen += 1
 
 
-os.environ.pop("KART", None)
 CARSAMBA, PERSEMBE, CUMA = date(2026, 10, 21), date(2026, 10, 22), date(2026, 10, 23)
-olagan = {"ozel": None, "buyuk_hareket": None}
+
+# ---------------------------------------------------------------- taahhüt: hafta içi her gün 2 kez gram fiyatı
+# Rıdvan (15 Ekim 2026): "Hafta içi her gün 2 kere gümüş gram fiyatı verilecek." Kart Reels'in ya da özetin
+# yerine geçmez; ayrı bir zamanlı çalışmadır.
+import program  # noqa: E402
+zamanlar = program.cronlar()
+turler = {c: t for c, t in zamanlar}
+esit(turler.get("50 6 * * 1-5"), "reels", "taahhüt: hafta içi her gün ~10:00 Reels")
+esit(turler.get("50 16 * * 1-5"), "post", "taahhüt: hafta içi her gün ~20:00 özet")
+esit(sum(1 for _, t in zamanlar if t in ("reels", "post")), 2, "fiyat paylaşımları yalnızca bu ikisi")
+kart_cron = [c for c, t in zamanlar if t == "kart"]
+esit(len(kart_cron), 1, "kartın kendi zamanlı çalışması var")
+esit(kart_cron[0] in ("50 6 * * 1-5", "50 16 * * 1-5"), False, "kart Reels ya da özetle aynı çalışma değil")
+(saat, dk), gunler = program.cron_coz(kart_cron[0])
+esit((saat, dk, gunler), (11, 50, {2, 4}), "kart çarşamba ve cuma 11:50 TR")
+esit(program.KAYIT_TURLERI, ("reels", "post"), "günlük fiyat kaydını yalnızca Reels ve özet yazar")
 
 # ---------------------------------------------------------------- hangi gün kart
-esit(kart.kart_turu(CARSAMBA, olagan), "gram", "çarşamba Kaç gram eder?")
-esit(kart.kart_turu(CUMA, olagan), "parite", "cuma altın–gümüş")
-esit(kart.kart_turu(PERSEMBE, olagan), None, "perşembe kart yok")
-esit(kart.kart_turu(date(2026, 10, 19), olagan), None, "pazartesi kart yok")
-esit(kart.kart_turu(CARSAMBA, {"ozel": {"tur": "esik"}, "buyuk_hareket": None}), None, "özel günde kart atlanır")
-esit(kart.kart_turu(CUMA, {"ozel": None, "buyuk_hareket": {"metin": "x"}}), None, "büyük harekette kart atlanır")
-os.environ["KART"] = "parite"
-esit(kart.kart_turu(PERSEMBE, olagan), "parite", "KART ortam değişkeni günü ezer")
-os.environ["KART"] = "yok"
-esit(kart.kart_turu(CARSAMBA, olagan), None, "KART=yok kartı kapatır")
-os.environ.pop("KART")
+esit(kart.bugunun_karti(CARSAMBA), "gram", "çarşamba Kaç gram eder?")
+esit(kart.bugunun_karti(CUMA), "parite", "cuma altın–gümüş")
+esit(kart.bugunun_karti(PERSEMBE), None, "perşembe kart yok")
+esit(kart.bugunun_karti(date(2026, 10, 19)), None, "pazartesi kart yok")
+esit(kart.bugunun_karti(date(2026, 10, 16)), None, "başlangıçtan (21 Ekim) önce kart yok")
+esit(kart.bugunun_karti(date(2026, 10, 14)), None, "başlangıçtan önceki çarşamba da yok")
 
 # ---------------------------------------------------------------- Kaç gram eder?
 v = kart.gram_karti({"gram": 96.42}, main.tr_sayi)
@@ -66,17 +74,21 @@ v = kart.parite_karti({"gram": 96.42, "parite": 85.6, "gecmis_parite": {}}, main
 esit((v["hafta_yok"], v["parite_hafta_deg"], len(v["haftalar"])), (True, None, 1), "önceki hafta yoksa yalnız bugün")
 
 # ---------------------------------------------------------------- açıklama
-v = {**kart.gram_karti({"gram": 96.42}, main.tr_sayi), "tarih": "21 Ekim 2026", "saat": "10:03", "gram": "96,42"}
-a = kart.aciklama(v, "Gram gümüş fiyatı bugün: 96,42 ₺ (▲ %0,44)", "KAYNAKLAR")
-esit(a.splitlines()[0], "Gram gümüş fiyatı bugün: 96,42 ₺ (▲ %0,44)", "ilk satır öteki paylaşımlarla aynı")
-esit(a.splitlines()[1], "Kaç gram eder? · 21 Ekim 2026 · 10:03", "ikinci satır kart adı")
+v = {**kart.gram_karti({"gram": 96.42}, main.tr_sayi), "tarih": "21 Ekim 2026", "saat": "12:03", "gram": "96,42",
+     "gram_deg": main.degisim(96.42, 96.0)}
+a = kart.aciklama(v, "KAYNAKLAR")
+esit(a.splitlines()[0], "1.000 ₺ kaç gram gümüş eder? Bugün 10,37 gram (gram gümüş 96,42 ₺, ▲ %0,44)",
+     "ilk satır aranan soru ve rakam")
+esit(a.splitlines()[1], "Kaç gram eder? · 21 Ekim 2026 · 12:03", "ikinci satır kart adı")
 esit("Bilgi amaçlıdır, yatırım tavsiyesi değildir." in a, True, "uyarı var")
 esit(a.endswith(kart.HASHTAG["gram"]), True, "etiketler sonda")
 esit(len(kart.HASHTAG["gram"].split()), 5, "en çok 5 etiket (gram)")
 esit(len(kart.HASHTAG["parite"].split()), 5, "en çok 5 etiket (parite)")
 esit(len(a) < 2200, True, "açıklama 2200 karakterin altında")
-v = {**kart.parite_karti(f, main.tr_sayi, main.degisim, CUMA), "tarih": "23 Ekim 2026", "saat": "10:03", "gram": "96,42"}
-a = kart.aciklama(v, "Gram gümüş fiyatı bugün: 96,42 ₺ (▲ %0,44)", "KAYNAKLAR")
+v = {**kart.parite_karti(f, main.tr_sayi, main.degisim, CUMA), "tarih": "23 Ekim 2026", "saat": "12:03", "gram": "96,42"}
+a = kart.aciklama(v, "KAYNAKLAR")
+esit(a.splitlines()[0], "1 gram altın kaç gram gümüş eder? Bugün 85,6 gram (gram altın 8.254 ₺, gram gümüş 96,42 ₺)",
+     "ilk satır (altın–gümüş)")
 esit("1 gram altın ≈ 85,6 gram gümüş" in a, True, "parite satırı")
 esit("16 Eki kapanışına göre ▲ %0,59" in a, True, "geçen haftaya göre")
 esit("Önceki haftaların kapanışı: 9 Eki 83,6 · 16 Eki 85,1" in a, True, "önceki haftalar")
