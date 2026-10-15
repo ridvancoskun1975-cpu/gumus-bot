@@ -1174,20 +1174,15 @@ def token_yenile():
 
 # ---------------------------------------------------------------- giriş
 
-HESAP_VARSAYILAN = "gumusagtr"   # Instagram kullanıcı adı okunamazsa görselde bu yazar
+# Instagram kullanıcı adı: görsellerde, kapaklarda ve bilgi sayfasında (takip düğmesi) bu yazar.
+# Tek kaynak burası; ad değişirse yalnızca bu satır değişir (15 Ekim 2026: gumusagtr → gunlukgumus).
+# Instagram'a kullanıcı adı sorulmaz (13 Ekim engelinden beri gereksiz istek yapılmıyor); GitHub'daki
+# HESAP_ADI değişkeni artık okunmaz. HESAP_ADI ortam değişkeni yalnızca yerel denemeler içindir.
+HESAP_VARSAYILAN = "gunlukgumus"
 
 
 def hesap_adi():
-    hesap = os.environ.get("HESAP_ADI", "").strip()
-    if not hesap and os.environ.get("IG_TOKEN"):
-        try:
-            hesap = hesap_bilgisi().get("username", "")
-        except Exception as e:
-            # Instagram geçici olarak yanıt vermezse görsel hesap adı olmadan üretilmesin
-            # Bağlantı hatalarının metninde istek adresi (ve anahtar) geçebilir; yalnızca hata türü yazılır
-            ileti = str(e) if isinstance(e, RuntimeError) else type(e).__name__
-            print(f"::warning::Kullanıcı adı Instagram'dan alınamadı, varsayılan kullanılıyor ({ileti})")
-            hesap = HESAP_VARSAYILAN
+    hesap = os.environ.get("HESAP_ADI", "").strip() or HESAP_VARSAYILAN
     return ("@" + hesap.lstrip("@")) if hesap else ""
 
 

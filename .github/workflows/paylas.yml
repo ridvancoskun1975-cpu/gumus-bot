@@ -186,7 +186,6 @@ jobs:
         timeout-minutes: ${{ needs.kontrol.outputs.tur == 'yorum' && 35 || 5 }}
         env:
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
-          HESAP_ADI: ${{ vars.HESAP_ADI }}
           METALCHARTS_KEY: ${{ secrets.METALCHARTS_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}   # yalnızca pazar yorumu kullanır
           YZ_MODEL: ${{ vars.YZ_MODEL }}                         # boşsa claude-opus-5-5
@@ -212,8 +211,6 @@ jobs:
         if: steps.uret.outputs.devam == 'true'
         continue-on-error: true
         timeout-minutes: 2
-        env:
-          HESAP_ADI: ${{ vars.HESAP_ADI }}
         run: python bot/sayfa.py --cikti site
 
       # Takipçi sayısı yalnızca sana özel gumus-kayit deposuna (takipci.md) yazılır.
@@ -226,7 +223,6 @@ jobs:
         env:
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
           KAYIT_PAT: ${{ secrets.KAYIT_PAT }}
-          HESAP_ADI: ${{ vars.HESAP_ADI }}
           DENEME: ${{ github.event_name == 'workflow_dispatch' && inputs.deneme }}
         run: python bot/kayit.py --tur "${{ needs.kontrol.outputs.tur }}"
 

@@ -205,7 +205,7 @@ def veri_hazirla(gecmis, simdi=None):
 
     program = _program(simdi, [g for g, _ in kayitlar])
     rehber = _rehber(simdi)
-    hesap = bot.hesap_adi() or "@gumusagtr"
+    hesap = bot.hesap_adi()
     url = site_adresi()
     guncelleme = _tarih(gun, son.get("saat"))
     gram_deg = bot.degisim(gram, once["gram"]) if once else None
