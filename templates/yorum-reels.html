@@ -48,19 +48,18 @@
     {{ ag_etiketi(104, 118, '10px 12px', 18, 40, 15) }}
   </div>
 
-  <div class="blok" id="baslik" style="top: 270px">
-    <div class="yz"><i></i>YAPAY ZEKÂ İLE ÜRETİLMİŞTİR</div>
-    <h1>Kısa, orta ve uzun vade</h1>
+  <div class="blok" id="baslik" style="top: 250px">
+    <h1 style="margin-top: 0">Kısa, orta ve uzun vade</h1>
     <div class="tarih">{{ tarih }} · {{ gun }}</div>
   </div>
 
-  <div class="blok fiyat-blok" id="fiyat" style="top: 720px">
+  <div class="blok fiyat-blok" id="fiyat" style="top: 600px">
     <div class="kucuk-baslik">GRAM GÜMÜŞ</div>
     <div class="fiyat-satir"><span class="fiyat sayi">{{ gram }}</span><span class="birim">₺</span></div>
     <div class="fiyat-alt">{{ degisim(gram_deg, 42, 32) }}<span class="soluk">haftalık · {{ veri_ani }}</span></div>
   </div>
 
-  <div class="blok" style="top: 1040px">
+  <div class="blok" style="top: 930px">
     {% for v in vadeler %}
     <div class="vade" id="vade{{ loop.index }}">
       <div class="vade-ad"><b>{{ v.ad }}</b><span>{{ v.ufuk }}</span></div>
@@ -72,19 +71,22 @@
     {% endfor %}
   </div>
 
-  <div class="blok" id="cagri" style="top: 1500px">
+  {#- Yapay zekâ ibaresi altta, küçük (Rıdvan, 15 Ekim 21:38) ama ilk kareden görünür ve Reels/hikâye arayüzünün
+      kapattığı alt şeridin (~1640 px'ten aşağısı) üstünde. -#}
+  <div class="blok soluk" id="yz-not" style="top: 1405px; font-size: 27px">Yapay zekâ ile üretilmiştir · yatırım tavsiyesi değildir.</div>
+
+  <div class="blok" id="cagri" style="top: 1470px">
     <span class="cagri">Ayrıntılı yorum profilde <span aria-hidden="true">→</span></span>
-    <div class="saat">Her pazar ~11:00 · kaydırmalı gönderide durum, olası seyir ve izlenecekler</div>
+    <div class="saat">Her pazar ~11:00</div>
   </div>
 
   <div class="kenar" style="bottom: 110px">
     <b style="font-size: 34px">{{ hesap }}</b>
-    <span class="soluk" style="font-size: 26px">Yapay zekâ yorumudur, yatırım tavsiyesi değildir.</span>
   </div>
 </div>
 <script>
 // Hareket: bot her kare için window.kare(t) çağırır; çağrılmazsa sayfa son hâlde kalır (kapak bu hâlden).
-// Başlık ve "yapay zekâ ile üretilmiştir" ilk kareden görünür; fiyat 0,6 sn'de, vadeler 2,4 / 4,0 / 5,6 sn'de,
+// Başlık ve alttaki "yapay zekâ ile üretilmiştir" notu ilk kareden görünür; fiyat 0,6 sn'de, vadeler 2,4 / 4,0 / 5,6 sn'de,
 // profile çağrı 8,4 sn'de gelir.
 (function () {
   const $ = id => document.getElementById(id);
