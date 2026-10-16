@@ -198,6 +198,52 @@ for tur, sablon, senaryo, hafta_, d in ornekler:
     esit(f"{sablon} gorilsizde maskot yok", 'class="maskot"' in env.get_template(f"{sablon}.html").render(**yok), False)
     # yerleşim: bütün hâller kendi kutusunda fiyat ve yazılarla çakışmaz
     esit(f"{sablon}/{d} yerleşim temiz", main.goril_yerlesimi_denetle(sablon, v), None)
+# kapak (profil ızgarası; Rıdvan 16 Ekim 2026): gorilli günde videodaki hâl kapakta da, gorilsizde kapak aynı
+from playwright.sync_api import sync_playwright  # noqa: E402
+
+
+def kapak_olc(v, tur, gun=None):
+    k = main.kapak_verisi(tur, v)
+    if gun:
+        k["kapak_gun"] = gun
+    html = env.get_template("kapak.html").render(**{**v, **k})
+    gecici = main.SABLONLAR / "_kapak_sinama.html"
+    gecici.write_text(html, encoding="utf-8")
+    try:
+        with sync_playwright() as p:
+            t = p.chromium.launch()
+            sf = t.new_page(viewport={"width": 1080, "height": 1920})
+            sf.goto(gecici.as_uri())
+            sf.evaluate("document.fonts.ready")
+            sf.wait_for_timeout(300)
+            r = sf.evaluate("""() => { const m = document.querySelector('.kapak-goril svg'); if (!m) return null;
+                const b = m.getBoundingClientRect(), f = document.querySelector('.fiyat-satir').getBoundingClientRect();
+                const y = s => { const r = document.createRange(); r.selectNodeContents(document.querySelector(s)); return r.getBoundingClientRect(); };
+                const kes = (a, c) => a.left < c.right && a.right > c.left && a.top < c.bottom && a.bottom > c.top;
+                return {h: b.height, ust: b.top, alt: b.bottom, sag: b.right, fiyat_ust: f.top,
+                        carpar: ['.tur', '.gun', '.gun-alt'].some(s => kes(b, y('.kapak ' + s)))}; }""")
+            t.close()
+            return r
+    finally:
+        gecici.unlink(missing_ok=True)
+
+
+for tur, senaryo, hafta_, d, gun, en_az in (("post", "goril-istif", None, "istif", None, 280),
+                                            ("reels", "goril-sevinen", None, "sevinen", None, 280),
+                                            ("hafta", None, None, "gezinen", None, 150),
+                                            ("post", "goril-istif", None, "istif", "29 Temmuz", 150),
+                                            ("post", "esik", None, "ozel", None, 150)):
+    v = ornek_veri(tur, senaryo, hafta_, d)
+    r = kapak_olc(v, tur, gun)
+    esit(f"kapak/{tur}/{d}/{gun}: goril var", r is not None, True)
+    esit(f"kapak/{tur}/{d}/{gun}: yeterince büyük ({r['h']:.0f} px)", r["h"] >= en_az, True)
+    esit(f"kapak/{tur}/{d}/{gun}: fiyatın üstünde", r["alt"] <= r["fiyat_ust"] + 1, True)
+    esit(f"kapak/{tur}/{d}/{gun}: ızgara kırpımında (y 240–1680)", r["ust"] >= 240 and r["alt"] <= 1680, True)
+    esit(f"kapak/{tur}/{d}/{gun}: tarih yazılarına binmez", r["carpar"], False)
+    yok = dict(v, **main.GORIL_YOK)
+    ham = {k: deger for k, deger in v.items() if k not in main.GORIL_YOK}
+    esit(f"kapak/{tur} gorilsiz çıktı aynı", env.get_template("kapak.html").render(**{**yok, **main.kapak_verisi(tur, yok)}),
+         env.get_template("kapak.html").render(**{**ham, **main.kapak_verisi(tur, ham)}))
 print(f"Şablon ve yerleşim: {sayac} sınama geçti.")
 
 # büyük fiyat: goril rakama biner → denetim yakalar ve okunur özet verir (paylaşımı durdurmaz; Rıdvan, 16 Ekim 22:43)

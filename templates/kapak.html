@@ -75,6 +75,9 @@
       {% if not buyuk_hareket %}<span class="hesap">{{ hesap }}</span>{% endif %}
     </div>
     {% endif %}
+    {#- Goril maskotu (bot/goril.py; Rıdvan 16 Ekim 2026: ızgarada da görünsün): videodaki hâlin durağan pozu, sağda,
+        tarih satırı ile fiyat arasındaki boşlukta. Yer yazılara göre ölçülür; sığmazsa (150 px'ten az) kapakta çıkmaz. -#}
+    {% if maskot %}<div class="maskot kapak-goril" aria-hidden="true" style="position: absolute; right: -6px; top: 0; width: 0; height: 0">{% include maskot %}</div>{% endif %}
   </div>
 
   <div class="alt-kenar">
@@ -82,5 +85,27 @@
     <span>Bilgi amaçlıdır, yatırım tavsiyesi değildir.</span>
   </div>
 </div>
+{% if maskot %}<script>
+// Goril için en büyük boş alanı seçer: (A) tarih yazılarının sağı (kısa ay adında büyük), (B) tarih satırının altı.
+(function () {
+  const yerlestir = () => {
+    const m = document.querySelector('.kapak-goril');
+    if (!m) return;
+    const kutu = s => document.querySelector(s).getBoundingClientRect();
+    const yazi = s => { const r = document.createRange(); r.selectNodeContents(document.querySelector(s)); return r.getBoundingClientRect(); };
+    const orta = kutu('.kapak .orta'), fiyat = kutu('.kapak .fiyat-satir');
+    const altY = fiyat.top - 4, sag = orta.right + 6, oran = 320 / 350;
+    const solA = Math.max(yazi('.kapak .tur').right, yazi('.kapak .gun').right, yazi('.kapak .gun-alt').right) + 28;
+    const hA = Math.min(330, altY - orta.top, (sag - solA) / oran);
+    const hB = Math.min(330, altY - (kutu('.kapak .gun-alt').bottom + 14));
+    const h = Math.max(hA, hB);
+    if (h < 150) { m.remove(); return; }
+    m.style.top = (altY - h - orta.top) + 'px';
+    m.style.height = h + 'px';
+    m.style.width = (h * oran) + 'px';
+  };
+  document.fonts.ready.then(yerlestir);
+})();
+</script>{% endif %}
 </body>
 </html>
