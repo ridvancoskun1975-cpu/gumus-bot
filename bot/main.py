@@ -117,8 +117,36 @@ def kota_kalan(kota):
     return min(adaylar) if adaylar else None
 
 
+def son_kayitli_fiyat():
+    """Botun en son kaydettiği ons gümüş ve ons altın: günlük kayıtlar (gecmis.json) ile gün içi noktaların
+    (gun_ici.json) en yenisi. Yoksa None. Deneme çalıştırmaları MetalCharts yerine bunu kullanır."""
+    adaylar = []
+    for gun, k in gecmis_oku().items():
+        if isinstance(k, dict) and k.get("gumus") and k.get("altin"):
+            adaylar.append((gun, k.get("saat", "00:00"), k))
+    for gun, noktalar in gun_ici_oku().get("gunler", {}).items():
+        for k in noktalar if isinstance(noktalar, list) else []:
+            if isinstance(k, dict) and k.get("gumus") and k.get("altin"):
+                adaylar.append((gun, k.get("saat", "00:00"), k))
+    if not adaylar:
+        return None
+    gun, saat, k = max(adaylar, key=lambda a: (a[0], a[1]))
+    return {"gumus": float(k["gumus"]), "altin": float(k["altin"]), "etiket": f"{gun} {saat}"}
+
+
 def metal_fiyatlari():
-    """MetalCharts'tan ons gümüş (XAG) ve ons altın (XAU) spot fiyatı, USD."""
+    """MetalCharts'tan ons gümüş (XAG) ve ons altın (XAU) spot fiyatı, USD.
+
+    Deneme çalıştırması (DENEME=true; paylas.yml'de elle "deneme" işaretli) MetalCharts'a istek atmaz, aylık
+    hak harcamaz: fiyat botun son kaydından alınır (Rıdvan, 16 Ekim 2026: aylık hak yalnızca zamanlı işlere).
+    Hiç kayıt yoksa (önbellek silinmişse) uyarıyla MetalCharts'a gidilir."""
+    if _deneme_mi():
+        kayit = son_kayitli_fiyat()
+        if kayit:
+            print(f"Deneme: MetalCharts'a istek atılmadı (hak harcanmadı); fiyat botun son kaydından: {kayit['etiket']}.")
+            return {s: {"fiyat": kayit[a], "yuzde24": 0.0, "eski": False, "zaman": kayit["etiket"]}
+                    for s, a in (("XAG", "gumus"), ("XAU", "altin"))}
+        print("::warning::Deneme: kayıtlı fiyat yok; MetalCharts'tan alınıyor (1 hak harcanır).")
     anahtar = os.environ.get("METALCHARTS_KEY", "").strip()
     if not anahtar:
         raise VeriYok("METALCHARTS_KEY tanımlı değil (GitHub → Settings → Secrets and variables → Actions).")
@@ -221,9 +249,10 @@ def ecb_gecmisi(gun_sayisi=400):
 
 def metal_gecmisi():
     """MetalCharts günlük geçmişi (1 yıl). Yalnızca ücretli planlarda var; ücretsiz planda 403 döner
-    (MetalCharts'a göre reddedilen istekler aylık hakka sayılmaz) ve None döndürülür."""
+    (MetalCharts'a göre reddedilen istekler aylık hakka sayılmaz) ve None döndürülür.
+    Deneme çalıştırmasında istek atılmaz (botun kendi kayıtları kullanılır)."""
     anahtar = os.environ.get("METALCHARTS_KEY", "").strip()
-    if not anahtar:
+    if not anahtar or _deneme_mi():
         return None
     sonuc = {}
     for sembol in ("XAG", "XAU"):
@@ -409,7 +438,9 @@ def fiyatlari_al(kaydet=True, kaynak=None):
         gram_once = gumus_once * dolar_once / ONS_GRAM
         parite_once = altin_once / gumus_once
 
-    if kaydet and bugun.weekday() < 5:
+    # Deneme günlük kaydı yazmaz: fiyatı zaten kayıttan geliyor ve günün gerçek kaydını bozmasın
+    # (eskiden 20:00'den sonra main'de deneme yapmak ertesi günün "önceki gün" değerini değiştiriyordu).
+    if kaydet and bugun.weekday() < 5 and not _deneme_mi():
         gecmis_yaz(gecmis, bugun, {"saat": simdi.strftime("%H:%M"), "gumus": gumus, "altin": altin,
                                     "dolar": dolar, "kur_tarihi": kur_tarihi.isoformat(), "gram": gram})
     return {
@@ -1839,7 +1870,11 @@ def kapanis_fiyati(ecb):
     Hafta sonu piyasa kapalı olduğu için bu, haftanın kapanış fiyatıdır (cuma New York kapanışı ≈
     cumartesi 00:00 TR); cuma 20:00 kaydından sonraki saatleri de kapsar. Kayıt dosyasına yazılmaz,
     yalnızca yorumda kullanılır (günlük ve haftalık paylaşımlar 20:00 kayıtlarıyla tutarlı kalsın).
+    Deneme çalıştırmasında istek atılmaz: botun son kaydı kullanılır (yorum zaten o yola düşer).
     """
+    if _deneme_mi():
+        print("Deneme: kapanış fiyatı için MetalCharts'a istek atılmadı; botun son kaydı kullanılacak.")
+        return None
     try:
         metal = metal_fiyatlari()
     except Exception as e:
