@@ -697,6 +697,26 @@ def buyuk_hareket(d, zaman, esik):
     return {"yon": d["yon"], "metin": f"Gümüş {zaman} %{tr_sayi(abs(d['yuzde']), 1)} {fiil}"}
 
 
+# Parite satırı (Rıdvan, 16 Ekim 2026): görselde paritenin altında, ne anlama geldiğini söyleyen tek cümle; rakam
+# zaten satırda. Gümüş yatırımcısının gözünden ama "altına karşı" (rehber #4: parite düşerse gümüş altına göre
+# pahalanmış demektir). Gümüşün TL fiyatı düştüğü günde de doğru: kıyas altınla.
+def parite_cumlesi(d, zaman):
+    """d = parite_degisimi() sonucu; zaman "bugün" / "bu hafta" / "bu ay". Görseldeki gibi 2 ondalığa yuvarlanır."""
+    y = round(d["yuzde"], 2)
+    if y == 0:
+        return f"Gümüşün altına karşı değeri {zaman} değişmedi"
+    return f"Gümüş {zaman} altına karşı değer {'kazandı' if y < 0 else 'kaybetti'}"
+
+
+def parite_degisimi(simdi, once):
+    """degisim() gibi; ok rengi gümüş yatırımcısının gözünden: parite düşerse yeşil, yükselirse kırmızı, %0,00 gri.
+    Okun yönü (▼/▲) değişmez, yalnızca rengi."""
+    d = degisim(simdi, once)
+    y = round(d["yuzde"], 2)
+    d["renk"] = "soluk" if y == 0 else ("artis" if y < 0 else "dusus")   # %0,00: gri (ne iyi ne kötü)
+    return d
+
+
 def degisim(simdi, once):
     yuzde = (simdi / once - 1) * 100
     yon = "dusus" if yuzde < 0 else "artis"
@@ -723,7 +743,8 @@ def veri_hazirla(f, hesap):
         "gram_deg": degisim(f["gram"], f["gram_once"]),
         "buyuk_hareket": buyuk_hareket(degisim(f["gram"], f["gram_once"]), "bugün", BUYUK_HAREKET_GUNLUK),
         "parite": tr_sayi(f["parite"], 1),
-        "parite_deg": degisim(f["parite"], f["parite_once"]),
+        "parite_deg": parite_degisimi(f["parite"], f["parite_once"]),
+        "parite_cumle": parite_cumlesi(parite_degisimi(f["parite"], f["parite_once"]), "bugün"),
         "dolar": tr_sayi(f["dolar"], 2),
         "dolar_deg": degisim(f["dolar"], f["dolar_once"]),
         "kur_tarihi": f"{kur_gunu.day} {AYLAR[kur_gunu.month - 1]}",
@@ -820,6 +841,7 @@ def haftalik_veri_hazirla(f, hesap):
     v["en_yuksek"] = tr_sayi(max(degerler), 2)
     v["en_dusuk"] = tr_sayi(min(degerler), 2)
     v["kaynak_satiri"] = kaynak_satiri(f, "Haftanın")
+    v["parite_cumle"] = parite_cumlesi(v["parite_deg"], "bu hafta")
 
     # Grafik: gram gümüşün günlük değerleri, önceki haftanın son değeri kesikli çizgi (kısmi haftada çizgi yok)
     gen, yuk, kenar, yan = 904, 230, 30, 64
@@ -869,6 +891,7 @@ def aylik_veri_hazirla(f, hesap):
     v["en_dusuk_gun"] = f"{gunler[i_az].day} {AYLAR[gunler[i_az].month - 1]}"
     v["gun_sayisi"] = len(gunler)
     v["kaynak_satiri"] = kaynak_satiri(f, "Ayın")
+    v["parite_cumle"] = parite_cumlesi(v["parite_deg"], "bu ay")
 
     # Grafik: ayın her iş günü; önceki ayın son değeri kesikli çizgi (kısmi ayda yok)
     gen, yuk, ust, alt, yan = 904, 320, 56, 76, 14   # altta en düşük etiketine ve tarihlere yer

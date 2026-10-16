@@ -56,7 +56,7 @@
   <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; border-top: 2px solid var(--cizgi); padding-top: 28px">
     <div class="satir" style="display: flex; flex-direction: column; gap: 6px">
       <b style="font-size: 30px">Altın / Gümüş paritesi</b>
-      <span class="soluk" style="font-size: 22px">1 ons altın = ? ons gümüş</span>
+      <span class="soluk" style="font-size: 22px">{{ parite_cumle or "1 ons altın = ? ons gümüş" }}</span>
       <div style="display: flex; align-items: baseline; gap: 14px; margin-top: 6px">
         <span class="sayi vurgu" style="font-size: 58px; font-weight: 700">{{ parite }}</span>
         {{ degisim(parite_deg, 26, 18) }}

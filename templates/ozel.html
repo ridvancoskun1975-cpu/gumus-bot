@@ -74,6 +74,7 @@
         <span class="sayi vurgu" style="font-size: 54px; font-weight: 700">{{ parite }}</span>
         {{ degisim(parite_deg, 24, 17) }}
       </div>
+      {% if parite_cumle %}<span class="soluk" style="font-size: 20px">{{ parite_cumle }}</span>{% endif %}
     </div>
     <div class="satir" style="display: flex; flex-direction: column; gap: 4px">
       <b style="font-size: 28px">Dolar / TL <span class="soluk" style="font-weight: 400; font-size: 22px">· ECB · {{ kur_tarihi }}</span></b>

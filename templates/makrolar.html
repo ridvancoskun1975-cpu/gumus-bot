@@ -1,5 +1,5 @@
 {% macro degisim(d, yazi, ok) -%}
-<span class="degisim {{ d.yon }}" style="font-size: {{ yazi }}px">
+<span class="degisim {{ d.yon }}" style="font-size: {{ yazi }}px{% if d.renk %}; color: var(--{{ d.renk }}){% endif %}">
   <svg width="{{ ok }}" height="{{ ok }}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 L22 20 H2 Z" fill="currentColor"></path></svg>
   <span class="sayi">{{ d.metin }}</span>
 </span>

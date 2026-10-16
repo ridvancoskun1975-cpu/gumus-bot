@@ -69,7 +69,10 @@
       <span class="sayi" style="font-size: 52px; font-weight: 700">{{ en_dusuk }} <span class="vurgu" style="font-size: 34px">₺</span></span>
     </div>
     <div class="satir">
-      <span class="soluk" style="font-size: 24px">Altın / gümüş paritesi</span>
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span class="soluk" style="font-size: 24px">Altın / gümüş paritesi</span>
+        {% if parite_cumle %}<span class="soluk" style="font-size: 20px">{{ parite_cumle }}</span>{% endif %}
+      </div>
       <div style="display: flex; align-items: baseline; gap: 14px">
         <span class="sayi vurgu" style="font-size: 52px; font-weight: 700">{{ parite }}</span>
         {{ degisim(parite_deg, 26, 18) }}
