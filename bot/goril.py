@@ -1,10 +1,10 @@
 """Goril maskotu: kurallar ve sabitler (Rıdvan, 16 Ekim 2026).
 
-Hafta içi akşam özetinde (`post`) ve cumartesi haftalık özette (`hafta`) fiyatın sağında, değişime göre 5 hâlden
-biri çıkar. Çizimler ve hareketleri templates/goril/<hâl>.svg ve .js; şablonlar `{% if maskot %}` ile içerir.
+Hafta içi sabah Reels'inde (`reels`, 19 Ekim 2026'dan; Rıdvan 16 Ekim 22:25 "sabaha şimdi koy"), akşam özetinde
+(`post`) ve cumartesi haftalık özette (`hafta`) fiyatın sağında, değişime göre 5 hâlden biri çıkar. Çizimler ve hareketleri templates/goril/<hâl>.svg ve .js; şablonlar `{% if maskot %}` ile içerir.
 
 Yüzde: görseldeki okla aynı değer (2 ondalığa yuvarlanmış mutlak değişim).
-  Akşam özeti (önceki iş gününe göre):
+  Sabah Reels'i ve akşam özeti (önceki iş gününe göre; ikisinde aynı kural):
     özel gün (bot/baslik.py: yuvarlak eşik ilk kez aşıldı ya da en az 1 aylık en yüksek) → ozel (parti şapkalı)
     büyük hareket manşeti (%2; main.BUYUK_HAREKET_GUNLUK) → sevinen / uzulen
     %0,50 – %2 (iki yönde)  → gezinen
@@ -15,9 +15,11 @@ Hâl manşetle aynı karardan (buyuk_hareket) türetilir; goril, rakam ve manşe
 İstifleyici yönden bağımsızdır (sakin gün); külçe dizmek fiyatın yönüne bağlanmaz.
 
 Goril GORIL_BASLANGIC'ten itibaren her gün çıkar (Rıdvan, 16 Ekim 2026 12:3x: "daha erken başlayalım", ölçüm
-"her gün goril"; gorilsiz kıyas 13–15 Ekim akşamları). Sabah Reels'i (ölçümde karşılaştırma: akşam ÷ sabah oranı),
-aylık özet, rehber, kart ve pazar yorumunda goril yok; pazar yorumunda hiçbir zaman.
-Açıklamaya yalnız sevinen hâlde 2. satır eklenir (SATIR); 1. satır (arama için fiyat satırı) değişmez.
+"her gün goril"; gorilsiz kıyas 13–15 Ekim akşamları). Sabah Reels'i 16 Ekim'e kadar karşılaştırma grubuydu
+(gorilsiz sabahlar 13–16 Ekim); Rıdvan 16 Ekim 22:25'te sabaha da istedi. Aylık özet, rehber, kart ve pazar
+yorumunda goril yok; pazar yorumunda hiçbir zaman.
+Açıklamaya yalnız sevinen hâlde 2. satır eklenir (SATIR); 1. satır (arama için fiyat satırı) değişmez. Sabah
+satırında "bugün" yok (gün daha başlamadı; parite cümlesindeki kararla aynı).
 
 Güvenlik: main.py gorilli görseli ayrı süreçte, SURE_SINIRI saniyede ve yerleşim denetimiyle üretir; herhangi
 bir sorun olursa aynı paylaşım bugünkü gibi gorilsiz çıkar. Kapatmak için GORIL_ACIK = False.
@@ -29,10 +31,11 @@ from datetime import date
 
 GORIL_ACIK = True
 GORIL_BASLANGIC = date(2026, 10, 16)           # ilk akşam 16 Ekim, ilk cumartesi 17 Ekim
-TURLER = ("post", "hafta")
-SAKIN_ESIK = {"post": 0.5, "hafta": 1.25}      # %: bunun altı istifleyici
+TURLER = ("reels", "post", "hafta")
+GUNLUK = ("reels", "post")                     # hafta içi, önceki iş gününe göre; özel gün hâli var
+SAKIN_ESIK = {"reels": 0.5, "post": 0.5, "hafta": 1.25}   # %: bunun altı istifleyici
 DURUMLAR = ("ozel", "sevinen", "istif", "gezinen", "uzulen")
-SATIR = {"post": "🦍 Goril bugün sevinçli", "hafta": "🦍 Goril bu hafta sevinçli"}
+SATIR = {"reels": "🦍 Goril bu sabah sevinçli", "post": "🦍 Goril bugün sevinçli", "hafta": "🦍 Goril bu hafta sevinçli"}
 YOK = {"goril": None, "maskot": None, "maskot_js": None, "goril_satiri": ""}
 ETIKET_AYRAC = " · goril: "                    # takipci.md'deki paylaşım adına eklenir (bot/kayit.py)
 SURE_SINIRI = 120                              # sn: gorilli üretim bu sürede bitmezse gorilsiz üretilir
@@ -46,9 +49,9 @@ def durum(v, tur, gun):
     """Bu paylaşımın goril hâli ya da None (goril yok). v: main.veri_hazirla / haftalik_veri_hazirla çıktısı."""
     if tur not in TURLER or not aktif_mi(gun):
         return None
-    if tur == "post" and gun.weekday() >= 5:
+    if tur in GUNLUK and gun.weekday() >= 5:
         return None
-    if tur == "post" and v.get("ozel"):
+    if tur in GUNLUK and v.get("ozel"):
         return "ozel"
     b = v.get("buyuk_hareket")
     if b:
@@ -63,7 +66,7 @@ def _zorlanan(v, tur, ornek):
     z = (os.environ.get("GORIL_ZORLA", "").strip() if ornek else "") or os.environ.get("GORIL_DENEME", "").strip()
     if tur not in TURLER or z not in DURUMLAR:
         return None
-    if z == "ozel" and (tur != "post" or not v.get("ozel")):
+    if z == "ozel" and (tur not in GUNLUK or not v.get("ozel")):
         return None
     return z
 

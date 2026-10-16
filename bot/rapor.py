@@ -6,7 +6,7 @@ Kullanım (iş akışı çağırır):
 Varsayılan dönem: dünden geriye 7 gün (pazartesi sabahı çalışınca geçen pazartesi–pazar).
 Rapor her paylaşımın ulaştığı kişi, görüntülenme, beğeni, yorum, kaydetme ve paylaşma sayılarını,
 Reels ile gönderiyi karşılaştırmasını, hesaba ulaşanların ne kadarının takip etmeyenlerden geldiğini,
-günlere göre takipçi değişimini ve goril maskotunun hâllerine göre akşam özetlerini (bot/goril.py) içerir.
+günlere göre takipçi değişimini ve goril maskotunun hâllerine göre akşam özetlerini ve sabah Reels'lerini (bot/goril.py) içerir.
 
 Bot deposu ve iş akışı günlükleri herkese açık: bu betik hiçbir sayıyı günlüğe yazmaz. Rakamlar
 yalnızca özel depodaki raporlar/<bitiş tarihi>.md dosyasında durur. DENEME=true ise dosya adı
@@ -285,21 +285,21 @@ GORIL_ADI = {"yok": "goril yok", "istif": "istifleyici", "gezinen": "gezinen", "
 
 
 def goril_bolumu(medyalar):
-    """Goril hâllerine göre akşam özetleri (ve aynı günün sabah Reels'ine oranı) ile haftalık özetler.
-    Dönemde akşam ya da haftalık özet yoksa boş liste."""
+    """Goril hâllerine göre akşam özetleri (ve aynı günün sabah Reels'ine oranı), sabah Reels'leri ve haftalık
+    özetler. Dönemde bunların hiçbiri yoksa boş liste."""
     aksam = [m for m in medyalar if m.get("_ad") == "Günlük özet"]
     hafta = [m for m in medyalar if m.get("_ad") == "Haftalık özet"]
-    if not aksam and not hafta:
+    sabahlar = [m for m in medyalar if m.get("_ad") == "Fiyat Reels'i"]
+    if not aksam and not hafta and not any(m.get("_goril") for m in sabahlar):
         return []
     sabah = {}
-    for m in medyalar:
-        if m.get("_ad") == "Fiyat Reels'i":
-            sabah.setdefault(m["_zaman"].date(), m)       # günün ilk fiyat Reels'i
+    for m in sorted(sabahlar, key=lambda x: x["_zaman"]):
+        sabah.setdefault(m["_zaman"].date(), m)           # günün ilk fiyat Reels'i
     sat = ["## Goril", "",
-           "Akşam özetinin aynı günün sabah fiyat Reels'ine oranı asıl ölçüdür: sabah Reels'inde goril yok, "
-           "iki paylaşım aynı günün kitlesini görür. Goril 16 Ekim akşamı başladı; gorilsiz akşamlar yalnız "
-           "13–15 Ekim (hesabın ilk günleri, tanıdık etkileşimi yüksek), bu yüzden kıyas zayıftır ve hâller arası "
-           "fark da izlenir. Sayılar küçükken tek tek günler gürültülüdür.", ""]
+           "Goril 16 Ekim akşamı başladı; 19 Ekim'den beri sabah Reels'inde de var (Rıdvan, 16 Ekim). Gorilsiz kıyas "
+           "yalnız hesabın ilk günleri: akşamlar 13–15 Ekim, sabahlar 13–16 Ekim (tanıdık etkileşimi yüksek), bu "
+           "yüzden zayıftır; asıl izlenen hâller arası fark. Akşam ÷ sabah oranı 19 Ekim'den önce gorilli akşamı "
+           "gorilsiz sabahla, sonra iki gorilli paylaşımı kıyaslar. Sayılar küçükken tek tek günler gürültülüdür.", ""]
     if aksam:
         sat += ["**Akşam özeti (hafta içi)**", "",
                 "| Goril | Gün | Ort. görüntülenme | Ort. ulaşılan | Akşam ÷ sabah (görüntülenme) | "
@@ -326,6 +326,20 @@ def goril_bolumu(medyalar):
             sat.append(f"| {ad} | {len(liste)} | {sayi(_ort(liste, 'views'))} | {sayi(_ort(liste, 'reach'))} | "
                        f"{_oran(oranlar['views'])} | {_oran(oranlar['reach'])} | {saniye(izl)} | "
                        f"{sayi(_top(liste, 'saved'))} | {sayi(_top(liste, 'shares'))} |")
+        sat.append("")
+    if any(m.get("_goril") for m in sabahlar):
+        sat += ["**Sabah Reels'i (hafta içi)**", "",
+                "| Goril | Gün | Ort. görüntülenme | Ort. ulaşılan | Ort. izlenme | Kaydetme | Paylaşma |",
+                "|---|---|---|---|---|---|---|"]
+        gruplar = {}
+        for m in sabahlar:
+            gruplar.setdefault(m.get("_goril") or "yok", []).append(m)
+        for h in GORIL_SIRA:
+            if h in gruplar:
+                liste = gruplar[h]
+                sat.append(f"| {GORIL_ADI.get(h, h)} | {len(liste)} | {sayi(_ort(liste, 'views'))} | "
+                           f"{sayi(_ort(liste, 'reach'))} | {saniye(_ort(liste, 'ig_reels_avg_watch_time'))} | "
+                           f"{sayi(_top(liste, 'saved'))} | {sayi(_top(liste, 'shares'))} |")
         sat.append("")
     if hafta:
         sat += ["**Haftalık özet (cumartesi)**", "",

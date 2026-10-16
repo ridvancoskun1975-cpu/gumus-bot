@@ -18,7 +18,7 @@
   </div>
 
   <div class="kahraman" style="gap: 12px; padding-top: 44px; position: relative">
-    {#- Goril maskotu (bot/goril.py): yalnız hafta içi akşam özeti ve cumartesi haftalık özet -#}
+    {#- Goril maskotu (bot/goril.py): hafta içi sabah Reels'i ve akşam özeti, cumartesi haftalık özet -#}
     {% if maskot %}<div class="maskot" aria-hidden="true" style="position: absolute; right: -14px; bottom: -68px; width: 300px; height: 328px">{% include maskot %}</div>{% endif %}
     {% if buyuk_hareket %}{{ manset(buyuk_hareket, 40, 30) }}{% elif gun_baslik %}{{ gun_basligi(gun_baslik, 38, 26) }}{% else %}
     <div class="kahraman-baslik" style="font-size: 36px">GRAM GÜMÜŞ</div>

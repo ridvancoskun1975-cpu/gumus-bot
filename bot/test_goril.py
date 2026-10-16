@@ -63,8 +63,14 @@ esit("ilk gün var", goril.durum(v, "post", ILK), "sevinen")
 esit("cumartesi akşam özeti yok", goril.durum(v, "post", CMT), None)
 esit("pazar akşam özeti yok", goril.durum(v, "post", PAZAR), None)
 esit("ilk cumartesi var", goril.durum(v_kur(6.0, 5.0), "hafta", date(2026, 10, 17)), "sevinen")
-for tur in ("reels", "ay", "bilgi", "kisa", "yorum", "hikaye", "kart", "yasal"):
+for tur in ("ay", "bilgi", "kisa", "yorum", "hikaye", "kart", "yasal"):
     esit(f"{tur} türünde goril yok", goril.durum(v, tur, SAL), None)
+# sabah Reels'i (Rıdvan, 16 Ekim 2026 22:25): akşamla aynı kural, hafta sonu yok, özel gün var
+for y, beklenen in aksam:
+    esit(f"sabah {y:+}", goril.durum(v_kur(y, 2.0), "reels", SAL), beklenen)
+esit("sabah özel gün", goril.durum(v_kur(0.2, 2.0, ozel={"tur": "esik"}), "reels", SAL), "ozel")
+esit("cumartesi sabah Reels'i yok", goril.durum(v, "reels", CMT), None)
+esit("sabah başlangıçtan önce yok", goril.durum(v, "reels", ONCE), None)
 eski = goril.GORIL_ACIK
 goril.GORIL_ACIK = False
 esit("kapatma anahtarı", goril.durum(v, "post", SAL), None)
@@ -89,7 +95,10 @@ for d in goril.DURUMLAR:
 os.environ["GORIL_ZORLA"] = "uzulen"
 esit("GORIL_ZORLA yalnız örnekle", goril.sablon_verisi(v, "post", ONCE)["goril"], None)
 esit("GORIL_ZORLA örnekle, tarih öncesi de", goril.sablon_verisi(v, "post", ONCE, ornek=True)["goril"], "uzulen")
-esit("GORIL_ZORLA reels'te çalışmaz", goril.sablon_verisi(v, "reels", SAL, ornek=True)["goril"], None)
+esit("GORIL_ZORLA sabah Reels'inde de", goril.sablon_verisi(v, "reels", SAL, ornek=True)["goril"], "uzulen")
+esit("sabah sevinen satırı", goril.sablon_verisi(v_kur(3.0, 2.0), "reels", SAL)["goril_satiri"],
+     "🦍 Goril bu sabah sevinçli\n")
+esit("sabah satırında 'bugün' yok", "bugün" in goril.SATIR["reels"], False)
 os.environ["GORIL_ZORLA"] = "ozel"
 esit("özel gün zorlaması özel veri ister", goril.sablon_verisi(v, "post", SAL, ornek=True)["goril"], "sevinen")
 esit("özel gün zorlaması haftalıkta yok", goril.sablon_verisi(v_kur(1.0, 5.0, ozel={"tur": "esik"}), "hafta", CMT,
@@ -152,7 +161,8 @@ def ornek_veri(tur, senaryo=None, hafta=None, zorla=None):
 
 
 # açıklama: 1. satır değişmez, 2. satır yalnız sevinen
-for tur, senaryo, hafta_, d in (("post", "goril-sevinen", None, "sevinen"), ("post", "goril-uzulen", None, "uzulen"),
+for tur, senaryo, hafta_, d in (("reels", "goril-sevinen", None, "sevinen"), ("reels", "goril-istif", None, "istif"),
+                                ("post", "goril-sevinen", None, "sevinen"), ("post", "goril-uzulen", None, "uzulen"),
                                 ("post", "goril-istif", None, "istif"), ("hafta", None, "sevinen", "sevinen"),
                                 ("hafta", None, "istif", "istif")):
     v = ornek_veri(tur, senaryo, hafta_, d)
@@ -171,6 +181,9 @@ for tur, senaryo, hafta_, d in (("post", "goril-sevinen", None, "sevinen"), ("po
 env = Environment(loader=FileSystemLoader(str(main.SABLONLAR)), autoescape=True)
 ornekler = [("post", "post", "goril-" + d, None, d) for d in ("sevinen", "uzulen", "gezinen", "istif")]
 ornekler += [("post", "ozel", "esik", None, "ozel")]
+ornekler += [("reels", "reels", "goril-" + d, None, d) for d in ("sevinen", "uzulen", "gezinen", "istif")]
+ornekler += [("reels", "reels", None, None, d) for d in ("sevinen", "gezinen")]   # 3 haneli fiyat (100 ₺ üstü)
+ornekler += [("reels", "ozel", "esik", None, "ozel")]
 ornekler += [("hafta", "hafta", None, h, d) for h, d in (("sevinen", "sevinen"), ("uzulen", "uzulen"),
                                                          ("istif", "istif"), (None, "gezinen"))]
 for tur, sablon, senaryo, hafta_, d in ornekler:

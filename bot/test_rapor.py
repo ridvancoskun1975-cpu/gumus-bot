@@ -127,4 +127,23 @@ rapor.paylasim_adlari([m], satirlar)
 esit("## Goril" in rapor.rapor_yaz([m], {}, satirlar, date(2026, 10, 22), date(2026, 10, 22), "", [], False,
                                    datetime(2026, 10, 23, 9, 5, tzinfo=TR)), False, "özet yoksa goril bölümü yok")
 
+# ---- sabah Reels'inde goril (19 Ekim 2026'dan): hâl eki ayrılır, sabah tablosu çıkar, tür bölünmez
+satirlar = [("2026-10-19", "09:57", "Reels · goril: gezinen", 30), ("2026-10-20", "09:56", "Reels · goril: istif", 31),
+            ("2026-10-21", "09:55", "Reels · goril: istif", 33), ("2026-10-16", "09:55", "Reels", 29)]
+ms = [medya(19, (10, 0), "REELS", reach=200, views=400, ig_reels_avg_watch_time=4000),
+      medya(20, (9, 59), "REELS", reach=100, views=200, saved=1),
+      medya(21, (9, 58), "REELS", reach=300, views=100, shares=2),
+      medya(16, (9, 58), "REELS", reach=90, views=90)]
+rapor.paylasim_adlari(ms, satirlar)
+esit([(m["_ad"], m["_goril"]) for m in ms],
+     [("Fiyat Reels'i", "gezinen"), ("Fiyat Reels'i", "istif"), ("Fiyat Reels'i", "istif"), ("Fiyat Reels'i", None)],
+     "sabah Reels'inde hâl eki ayrılır")
+metin = rapor.rapor_yaz(ms, {}, satirlar, date(2026, 10, 16), date(2026, 10, 22), "@gunlukgumus", [], False,
+                        datetime(2026, 10, 23, 9, 5, tzinfo=TR))
+icinde("**Sabah Reels'i (hafta içi)**", metin, "sabah tablosu")
+icinde("| goril yok | 1 | 90 | 90 |", metin, "gorilsiz sabah satırı")
+icinde("| istifleyici | 2 | 150 | 200 |", metin, "istifleyici sabah satırı")
+icinde("| gezinen | 1 | 400 | 200 | 4,0 sn |", metin, "gezinen sabah satırı")
+icinde("| Fiyat Reels'i | 4 |", metin, "hâl eki sabah türünü bölmez")
+
 print(f"test_rapor: {gecen} sınama geçti")

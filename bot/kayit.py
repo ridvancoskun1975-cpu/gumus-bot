@@ -172,7 +172,7 @@ def paylasim_adi(tur, deneme=False, meta_yolu="site/meta.json"):
                 ad += SESLI_EK
         except Exception:
             pass
-    if tur in ("post", "hafta"):
+    if tur in ("reels", "post", "hafta"):
         try:
             meta = json.loads(Path(meta_yolu).read_text(encoding="utf-8"))
             if meta.get("tur") == tur and meta.get("goril"):

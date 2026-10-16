@@ -35,7 +35,7 @@ on:
         type: boolean
         default: false
       goril:
-        description: "Goril önizlemesi (yalnız deneme açıkken, post ve hafta türünde): bu hâl çizilir"
+        description: "Goril önizlemesi (yalnız deneme açıkken, reels, post ve hafta türünde): bu hâl çizilir"
         type: choice
         options: [yok, sevinen, uzulen, gezinen, istif]
         default: yok

@@ -1075,7 +1075,7 @@ def aciklama_yaz(v, tur):
     g, p, d = v["gram_deg"], v["parite_deg"], v["dolar_deg"]
     return (
         f"{_ilk_satir(v, 'bugün')}\n"
-        f"{v.get('goril_satiri', '') if tur == 'post' else ''}"
+        f"{v.get('goril_satiri', '') if tur in ('post', 'reels') else ''}"
         f"{baslik} · {v['tarih']} · {v['saat']}\n"
         f"{_ozet_ek(v) if tur == 'post' else ''}\n"
         f"Altın/Gümüş paritesi: {v['parite']} ({p['isaret']} {p['metin']})\n"
@@ -1354,7 +1354,7 @@ def goril_yerlesimi_denetle(sablon, veri):
         with sync_playwright() as p:
             kwargs = {"executable_path": os.environ["CHROME_YOLU"]} if os.environ.get("CHROME_YOLU") else {}
             tarayici = p.chromium.launch(**kwargs)
-            boyut = (1080, 1920) if sablon == "ozel" else (1080, 1350)
+            boyut = (1080, 1920) if sablon in ("ozel", "reels") else (1080, 1350)
             sayfa = tarayici.new_page(viewport={"width": boyut[0], "height": boyut[1]})
             sayfa.goto(gecici.as_uri())
             sayfa.evaluate("document.fonts.ready")
