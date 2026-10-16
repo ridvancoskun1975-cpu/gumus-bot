@@ -3,7 +3,7 @@
 Ses Google'ın Gemini metinden konuşma servisinden gelir (ücretsiz kota; Google üretilen sesin sahipliğini
 iddia etmez, ticari kullanım serbest). Resmî olmayan yollar (Edge sesi, Google Çeviri sesi) kullanılmaz.
 
-Anahtar: önce ortam değişkeni GEMINI_API_KEY; yoksa özel gumus-kayit deposundaki ANAHTAR_DOSYASI
+Anahtar: ortam değişkeni GEMINI_API_KEY (iş akışı aynı adlı GitHub sırrından verir); yoksa özel gumus-kayit deposundaki ANAHTAR_DOSYASI
 (iş akışı KAYIT_PAT ile okur; anahtar bu herkese açık depoya ve günlüklere hiç yazılmaz).
 
 Her parça (soru, cevap, cümle, çağrı) ayrı istenir; böylece her sesin süresi bilinir ve görseldeki

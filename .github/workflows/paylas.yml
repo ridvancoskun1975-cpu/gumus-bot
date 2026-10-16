@@ -199,18 +199,23 @@ jobs:
           key: gunici-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: gunici-
 
-      # Rehber kısa Reels'inin kadın sesi seslendirmesi (bot/ses.py): anahtar yalnızca özel gumus-kayit
-      # deposunda durur, günlükte gizlenir. Alınamazsa Reels bugünkü gibi yalnızca müzikle üretilir.
+      # Rehber kısa Reels'inin kadın sesi seslendirmesi (bot/ses.py): anahtar GEMINI_API_KEY sırrında
+      # (Rıdvan, 16 Ekim 2026), yoksa özel gumus-kayit deposunda; günlükte gizlenir. Alınamazsa Reels
+      # bugünkü gibi yalnızca müzikle üretilir.
       - name: Seslendirme anahtarı
         if: needs.kontrol.outputs.tur == 'kisa'
         continue-on-error: true
         timeout-minutes: 1
         env:
+          GEMINI_SIRRI: ${{ secrets.GEMINI_API_KEY }}
           KAYIT_PAT: ${{ secrets.KAYIT_PAT }}
         run: |
-          a=$(curl -fsS -H "Authorization: Bearer $KAYIT_PAT" -H "Accept: application/vnd.github.raw" \
-                "https://api.github.com/repos/ridvancoskun1975-cpu/gumus-kayit/contents/anahtarlar/gemini.txt" \
-                2>/dev/null | tr -d '[:space:]') || a=""
+          a=$(printf '%s' "$GEMINI_SIRRI" | tr -d '[:space:]')
+          if [ -z "$a" ]; then
+            a=$(curl -fsS -H "Authorization: Bearer $KAYIT_PAT" -H "Accept: application/vnd.github.raw" \
+                  "https://api.github.com/repos/ridvancoskun1975-cpu/gumus-kayit/contents/anahtarlar/gemini.txt" \
+                  2>/dev/null | tr -d '[:space:]') || a=""
+          fi
           if [ -n "$a" ]; then
             echo "::add-mask::$a"
             echo "GEMINI_API_KEY=$a" >> "$GITHUB_ENV"
