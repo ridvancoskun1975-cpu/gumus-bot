@@ -709,6 +709,14 @@ def parite_cumlesi(d, zaman):
     return f"Gümüş {zaman} altına karşı değer {'kazandı' if y < 0 else 'kaybetti'}"
 
 
+def gorsel_parite_cumlesi(veri, tur):
+    """Parite cümlesi yalnız akşam özeti, haftalık ve aylık özette (Rıdvan, 16 Ekim 2026: "bugün" bütün günü kapsar,
+    sabah erken). Sabah Reels'i önceki akşamın kaydıyla kıyaslar, gün henüz bitmedi; orada eski tanım satırı
+    ("1 ons altın kaç ons gümüş eder") kalır. Reels takip etmeyenlere de ulaştığı için tanım yeni gelene yarar.
+    Aynı kural sabah özel gün görseline de uyar."""
+    return None if tur == "reels" else veri.get("parite_cumle")
+
+
 def degisim(simdi, once):
     yuzde = (simdi / once - 1) * 100
     yon = "dusus" if yuzde < 0 else "artis"
@@ -2175,6 +2183,7 @@ def hazirla(tur, cikti, ornek, konu=None):
     if tur == "hafta":
         veri["pazar_hatirlatma"] = PAZAR_HATIRLATMA if (ornek or pazar_yorumu_yarin()) else None
 
+    veri["parite_cumle"] = gorsel_parite_cumlesi(veri, tur)
     veri.update(goril_alanlari(veri, tur, ornek))
     damga = datetime.now(TR_SAAT).strftime("%Y%m%d-%H%M")
     # Özel günde (eşik aşıldı / en az bir aylık en yüksek) aynı paylaşım özel görselle gider.

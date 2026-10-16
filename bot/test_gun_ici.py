@@ -129,6 +129,11 @@ kontrol(main.veri_hazirla(main.ornek_fiyatlar(), "x")["parite_cumle"].startswith
 kontrol(main.haftalik_veri_hazirla(main.ornek_haftalik(), "x")["parite_cumle"].startswith("Gümüş bu hafta"), "haftalık veri")
 kontrol(main.aylik_veri_hazirla(main.ornek_aylik(), "x")["parite_cumle"].startswith("Gümüş bu ay"), "aylık veri")
 kontrol("renk" not in main.veri_hazirla(main.ornek_fiyatlar(), "x")["parite_deg"], "ok rengi standart (ters çevrilmez)")
+vg = main.veri_hazirla(main.ornek_fiyatlar(), "x")
+kontrol(main.gorsel_parite_cumlesi(vg, "reels") is None, "sabah Reels'inde cümle yok (tanım satırı kalır)")
+kontrol(main.gorsel_parite_cumlesi(vg, "post") == vg["parite_cumle"], "akşam özetinde cümle var")
+kontrol(main.gorsel_parite_cumlesi(main.haftalik_veri_hazirla(main.ornek_haftalik(), "x"), "hafta").startswith("Gümüş bu hafta"),
+        "haftalıkta cümle var")
 
 # --- 6) Kota başlıkları -----------------------------------------------------------------------------------
 kontrol(main.kota_kalan({"x-ratelimit-limit": "200", "x-ratelimit-remaining": "143"}) == 143, "aylık eş")
