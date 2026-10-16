@@ -634,7 +634,7 @@ def yayim_listesi():
     return sorted(liste)
 
 
-# Kısa Reels (rehber bölümünden 12 sn'lik video): her cumartesi ~14:00, bölüm sırasıyla.
+# Kısa Reels (rehber bölümünden ~15-20 sn'lik sesli video; bot/ses.py): her cumartesi ~14:00, bölüm sırasıyla.
 # Cumartesi n → bölüm n; bölüm o tarihte rehberde yayımlanmış olmalı (her zaman öyle: rehber
 # haftada en az 2 bölüm ilerler). Bölümler bitince kısa Reels de durur.
 KISA_BASLANGIC = date(2026, 10, 17)

@@ -30,7 +30,7 @@ import requests
 SES_ACIK = True                       # False: kısa Reels yalnızca müzikle (bugünkü gibi)
 MODEL = "gemini-3.8-flash-tts"
 YEDEK_MODEL = "gemini-3.8-flash-lite-tts"   # ana model kota/servis hatası verirse
-SES = "Kore"                          # önizlemeden sonra Rıdvan'ın seçtiği kadın sesi
+SES = "Sulafat"                       # Rıdvan seçti (16 Ekim 2026, 3 önizlemeden "Ses 2"; sıcak ton)
 USLUP = ("Warm, trustworthy female narrator. Natural Istanbul Turkish, calm medium pace, "
          "clear articulation, like a friendly finance explainer on Instagram. No exaggeration.")
 URL = "https://generativelanguage.googleapis.com/v1beta/interactions"
