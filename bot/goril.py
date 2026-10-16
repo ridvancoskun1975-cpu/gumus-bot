@@ -36,8 +36,6 @@ SATIR = {"post": "🦍 Goril bugün sevinçli", "hafta": "🦍 Goril bu hafta se
 YOK = {"goril": None, "maskot": None, "maskot_js": None, "goril_satiri": ""}
 ETIKET_AYRAC = " · goril: "                    # takipci.md'deki paylaşım adına eklenir (bot/kayit.py)
 SURE_SINIRI = 120                              # sn: gorilli üretim bu sürede bitmezse gorilsiz üretilir
-YASAL_CUMLE = ("Paylaşımlardaki goril karakteri yalnızca o günün fiyat hareketini gösterir; "
-               "alım ya da satım işareti değildir.")
 
 
 def aktif_mi(gun):
