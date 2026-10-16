@@ -9,8 +9,8 @@ Rakamlar örnek ya da sabit değerlerdir (güncel fiyat içermez), bu yüzden Me
 
 Komut satırı: python bot/bilgi.py bugun  → bugünün bölüm numarasını yazar (yoksa boş)
               python bot/bilgi.py takvim → bütün takvimi yazar
-              python bot/bilgi.py kisa   → bugün (cumartesi) kısa Reels'i yapılacak bölüm (yoksa boş)
-              python bot/bilgi.py kisa-takvim → kısa Reels takvimi
+              python bot/bilgi.py arsiv  → bugün rehber arşivi Reels'i yapılacak bölüm (yoksa boş; ARSIV_REELS)
+              python bot/bilgi.py arsiv-takvim → rehber arşivi Reels'i günleri
 """
 import sys
 from datetime import date, datetime, timedelta
@@ -634,33 +634,27 @@ def yayim_listesi():
     return sorted(liste)
 
 
-# Kısa Reels (rehber bölümünden ~15-20 sn'lik sesli video; bot/ses.py): her cumartesi ~14:00, bölüm sırasıyla.
-# Cumartesi n → bölüm n; bölüm o tarihte rehberde yayımlanmış olmalı (her zaman öyle: rehber
-# haftada en az 2 bölüm ilerler). Bölümler bitince kısa Reels de durur.
-KISA_BASLANGIC = date(2026, 10, 17)
-# Takvim dışında elle paylaşılan kısa Reels: {bölüm no: TR tarihi}. 13 Ekim 2026 akşamı rehber 1-2
-# ile birlikte paylaşıldı; cumartesi takvimi bunlardan sonraki bölümle başlar.
-ONCEDEN_KISA = {
-    1: "2026-10-13",
-    2: "2026-10-13",
+# Rehber arşivi Reels'i (Rıdvan, 17 Ekim 2026 00:44 "öneriyi uygula"): rehber günü sesli Reels'i #6 ile (19 Ekim)
+# başladı; ondan önce yayımlanan #3–#5'in hiç Reels'i yoktu (onları taşıyacak cumartesi kısa Reels'i 16 Ekim'de
+# kaldırıldı). Her biri bir kez, rehber olmayan bir hafta içi günü ~14:00'te (13:50 rehber çalışması) bölümün
+# tamamını okuyan sesli Reels olarak gider: yalnız Reels, kaydırmalı ve hikâye videosu zaten paylaşıldı
+# (main.kisa_hazirla). Günler rehber, aylık özet ve hafta sonu dışında; kart günü (çarşamba) 4 paylaşım eder.
+# #1–#2'nin 13 Ekim'de sessiz kısa Reels'i var, listede yok. Elle: Run workflow → tür: kisa, konu: <no>.
+ARSIV_REELS = {
+    "2026-10-22": 3,
+    "2026-10-26": 4,
+    "2026-10-28": 5,
 }
 
 
-def kisa_takvim():
-    """{"YYYY-AA-GG": bölüm no} — kısa Reels günleri (cumartesi)."""
-    yayim = {no: gun for gun, no in yayim_listesi()}
-    t, gun, no = {}, KISA_BASLANGIC, max(ONCEDEN_KISA, default=0) + 1
-    while no <= len(BOLUMLER):
-        if no in yayim and yayim[no] < gun:
-            t[gun.isoformat()] = no
-            no += 1
-        gun += timedelta(days=7)
-    return t
+def arsiv_takvim():
+    """{"YYYY-AA-GG": bölüm no} — rehber arşivi Reels'i günleri."""
+    return dict(sorted(ARSIV_REELS.items()))
 
 
-def bugunun_kisa_bolumu(gun=None):
+def bugunun_arsiv_bolumu(gun=None):
     gun = gun or datetime.now(ZoneInfo("Europe/Istanbul")).date()
-    return kisa_takvim().get(gun.isoformat())
+    return arsiv_takvim().get(gun.isoformat())
 
 
 def bugunun_bolumu(gun=None):
@@ -695,10 +689,10 @@ if __name__ == "__main__":
         for g, n in yayim_listesi():
             elle = "" if zamanli.get(g.isoformat()) == n else "  (elle)"
             print(g, GUNLER[g.weekday()], n, BOLUMLER[n - 1]["baslik"] + elle)
-    elif komut == "kisa-takvim":
-        for g, n in kisa_takvim().items():
+    elif komut == "arsiv-takvim":
+        for g, n in arsiv_takvim().items():
             print(g, GUNLER[date.fromisoformat(g).weekday()], n, BOLUMLER[n - 1]["baslik"])
-    elif komut == "kisa":
-        print(bugunun_kisa_bolumu() or "")
+    elif komut == "arsiv":
+        print(bugunun_arsiv_bolumu() or "")
     else:
         print(bugunun_bolumu() or "")

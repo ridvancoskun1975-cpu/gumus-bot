@@ -45,6 +45,7 @@ for no, b in enumerate(bilgi.BOLUMLER, 1):
 # Tam okuma: ekrandaki simge ve birimler okunur
 for ham, beklenen in (("Dolar/TL 50,00 ₺", "dolar kuru 50,00 lira"), ("19,3 g/cm³", "santimetreküpte 19,3 gram"),
                       ("%50+", "yüzde 50'den fazla"), ("±%10", "artı eksi yüzde 10"), ("#1", "1 numara"),
+                      ("1.000 ons (±%10)", "1.000 ons (artı eksi yüzde 10)"),
                       ("Au ÷ Ag", "altın bölü gümüş"), ("~147 kat", "yaklaşık 147 kat"), ("1–4 hafta", "1 ile 4 hafta"),
                       ("Ons gümüş 50,00 $", "Ons gümüş 50,00 dolar"), ("1 kg", "1 kilogram"), ("147×", "147 kat"),
                       ("Parite 80 → 1 ons altın = 80 ons gümüş", "Parite 80, 1 ons altın eşittir 80 ons gümüş")):
@@ -206,6 +207,27 @@ adim = next(a_ for a_ in akis["jobs"]["uret"]["steps"] if a_.get("name") == "Ses
 dogrula("'bilgi'" in adim["if"] and "'kisa'" in adim["if"], f"anahtar adımı koşulu: {adim['if']}")
 dogrula(not any(c.get("cron") == "50 10 * * 6" for c in akis[True]["schedule"]), "cumartesi kısa Reels zamanlaması yok")
 
+# Rehber arşivi Reels'i günleri (bilgi.ARSIV_REELS, Rıdvan 17 Ekim 2026): hafta içi; rehber ya da aylık özet günü
+# değil; bölüm o günden önce yayımlanmış ve rehber günü sesli Reels'inden (#6) önce; günlük sınır (4) aşılmaz
+from datetime import date  # noqa: E402
+import aylik  # noqa: E402
+import kart  # noqa: E402
+yayim = {no: g for g, no in bilgi.yayim_listesi()}
+for g, no in bilgi.arsiv_takvim().items():
+    gun = date.fromisoformat(g)
+    dogrula(gun.weekday() < 5, f"arşiv günü hafta içi: {g}")
+    dogrula(g not in bilgi.takvim(), f"arşiv günü rehber günü olmamalı: {g}")
+    dogrula(gun != aylik.ozet_gunu(gun.year, gun.month), f"arşiv günü aylık özet günü olmamalı: {g}")
+    dogrula(yayim[no] < gun and no < 6, f"bölüm #{no} önceden yayımlanmış, sesli rehber Reels'i yok: {g}")
+    dogrula(2 + (1 if kart.bugunun_karti(gun) else 0) + 1 <= 4, f"günlük sınır: {g}")
+dogrula(sorted(bilgi.arsiv_takvim().values()) == [3, 4, 5], f"arşiv bölümleri: {bilgi.arsiv_takvim()}")
+dogrula(bilgi.bugunun_arsiv_bolumu(date(2026, 10, 22)) == 3 and bilgi.bugunun_arsiv_bolumu(date(2026, 10, 24)) is None,
+        "bugünün arşiv bölümü")
+tur_adimi = next(a_ for a_ in akis["jobs"]["kontrol"]["steps"] if a_.get("id") == "tur")["run"]
+dogrula("bot/bilgi.py arsiv" in tur_adimi and "tur=kisa" in tur_adimi, "13:50 çalışması rehbersiz günde arşivi seçer")
+for is_ in ("uret",):
+    dogrula("'kisa'" in str(akis["jobs"][is_]["timeout-minutes"]), "kisa türüne de uzun süre (tam okuma)")
+
 # ---------------------------------------------------------------- kayıt adı
 with tempfile.TemporaryDirectory() as d:
     m = Path(d) / "meta.json"
@@ -245,18 +267,33 @@ if gecici_muzik:   # yerelde müzik yok: müzikli karışımı da sınamak için
 gercek = ses.seslendir
 os.environ["GEMINI_API_KEY"] = "sahte"
 try:
+    # Rehber arşivi Reels'i (tür kisa; Rıdvan 17 Ekim 2026): yalnız Reels, bölümün TAMAMI okunur, hikâye gitmez
     ses.seslendir = yapay_ses
     with tempfile.TemporaryDirectory() as d:
         d = Path(d)
         main.kisa_hazirla(d, 3)
         meta = json.loads((d / "meta.json").read_text(encoding="utf-8"))
-        sn, ses_var = sure_olc(d / meta["dosya"])
+        b3 = bilgi.BOLUMLER[2]
+        dogrula(meta["tur"] == "kisa" and meta["dosya"].endswith(".mp4"), f"arşiv Reels: {meta.get('dosya')}")
+        dogrula("hikayeler" not in meta and "hikaye_videolari" not in meta and "dosyalar" not in meta,
+                "arşiv Reels'inde hikâye ve kaydırmalı yok")
+        dogrula(meta["kapak"].endswith("-reels-kapak.jpg") and (d / meta["kapak"]).exists(), "Reels kapağı (Dokunun'suz)")
         dogrula(meta["seslendirme"] == ses.SES, f"meta seslendirme: {meta['seslendirme']}")
-        dogrula(ses.ACIKLAMA_SATIRI in meta["aciklama"], "açıklamada seslendirme satırı olmalı")
-        dogrula(ses_var and 12 <= sn <= 25, f"seslendirmeli video süresi {sn}")
-        dogrula(abs(meta["kapak_ms"] / 1000 - (sn - 0.5)) < 0.3, "kapak anı videonun sonuna yakın")
-        dogrula(not list(d.glob("_ses-*")), "ara ses dosyası silinmeli")
-        dogrula(meta["ses_metni"]["soru"] == ses.OKUMA[3][0], "okunan metin metada")
+        dogrula(isinstance(meta["ses_metni"], list) and len(meta["ses_metni"]) >= 3, "kare kare okuma metni")
+        tum = " ".join(meta["ses_metni"])
+        for sf in b3["sayfalar"]:
+            dogrula(ses.okunur(sf["baslik"]) in tum, f"sayfa başlığı okunur: {sf['baslik']}")
+            for mm in sf.get("maddeler", []):
+                dogrula(ses.okunur(mm).rstrip(".") in tum, f"madde okunur: {mm[:40]}")
+        a_ = meta["aciklama"]
+        dogrula(a_.startswith(b3["baslik"] + " Kısa cevap:") and ses.ACIKLAMA_SATIRI in a_ and "Müzik:" in a_,
+                "açıklama rehber günü Reels'iyle aynı biçimde")
+        dogrula(len(a_) <= 2200, "açıklama sınırı")
+        sn, ses_var = sure_olc(d / meta["dosya"])
+        dogrula(ses_var and sn > 3 + 4 * (len(meta["ses_metni"]) - 1), f"tam okuma uzun sürer ({sn:.0f} sn)")
+        dogrula(not list(d.glob("*-hikaye-*.jpg")), "hikâye kareleri yayına çıkmaz")
+        dogrula(not list(d.glob("_ses-*")) and not list(d.glob("_reels-*")), "ara dosyalar kalmaz")
+        dogrula(kayit.paylasim_adi("kisa", meta_yolu=d / "meta.json") == "Rehber Reels · sesli", "kayıt adı")
     os.environ["DENEME"] = "true"
     modeller_ = []
     ses.seslendir = lambda *a, model=None, **k: (modeller_.append(model), yapay_ses(*a, **k))[1]
@@ -264,7 +301,6 @@ try:
         main.kisa_hazirla(Path(d), 3)
         dogrula(set(modeller_) == {ses.YEDEK_MODEL}, f"elle denemede yalnızca yedek model: {set(modeller_)}")
     del os.environ["DENEME"]
-    ses.seslendir = yapay_ses
 
     def bozuk(*a, **k):
         raise ses.SesHatasi("kota doldu")
@@ -275,9 +311,34 @@ try:
         main.kisa_hazirla(d, 3)
         meta = json.loads((d / "meta.json").read_text(encoding="utf-8"))
         sn, ses_var = sure_olc(d / meta["dosya"])
-        dogrula(meta["seslendirme"] is None, "hata olunca seslendirme yok")
+        dogrula(meta["seslendirme"] is None and meta["ses_metni"] is None, "hata olunca seslendirme yok")
         dogrula(ses.ACIKLAMA_SATIRI not in meta["aciklama"], "sessizde seslendirme satırı olmamalı")
-        dogrula(abs(sn - 12) < 0.2 and ses_var, f"yedek yol: 12 sn müzikli video ({sn})")
+        dogrula(ses_var and sn >= 9 and abs((sn - 3) % 6) < 0.3, f"yedek yol: kapak 3 + kare 6 sn, müzikli ({sn})")
+        dogrula(kayit.paylasim_adi("kisa", meta_yolu=d / "meta.json") == "Rehber Reels", "sessiz kayıt adı")
+    ses.seslendir = yapay_ses
+
+    # Reels hiç üretilemezse arşiv günü paylaşım atlanır (yedek gönderi yok; kaydırmalı ve hikâye zaten gitti)
+    gercek_uret = main.rehber_reels_tam_uret
+    main.rehber_reels_tam_uret = lambda *a, **k: (_ for _ in ()).throw(RuntimeError("deneme hatası"))
+    try:
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            main.kisa_hazirla(d, 3)
+            dogrula(not (d / "meta.json").exists(), "Reels yoksa paylaşım yok")
+            dogrula(not list(d.glob("*.jpg")) and not list(d.glob("*.mp4")), f"artık dosya yok: {list(d.iterdir())}")
+    finally:
+        main.rehber_reels_tam_uret = gercek_uret
+
+    # Zamanlı çalışma: konu verilmezse bugünün arşiv bölümü; arşiv günü değilse hiçbir şey üretilmez
+    with tempfile.TemporaryDirectory() as d:
+        d = Path(d)
+        gercek_bugun = bilgi.bugunun_arsiv_bolumu
+        bilgi.bugunun_arsiv_bolumu = lambda gun=None: None
+        try:
+            main.hazirla("kisa", d, False)
+            dogrula(not (d / "meta.json").exists(), "arşiv günü değilse paylaşım yok")
+        finally:
+            bilgi.bugunun_arsiv_bolumu = gercek_bugun
 
     # Rehber günü (Rıdvan, 16–17 Ekim 2026): kaydırmalı yerine bölümün TAMAMINI okuyan sesli Reels,
     # hikâyeye müzikli rehber videosu

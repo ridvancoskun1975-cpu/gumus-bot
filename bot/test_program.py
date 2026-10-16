@@ -67,6 +67,13 @@ kontrol("rehber satırı sesli Reels ve hikâye",
         satir(p(2026, 10, 14, rehber_hikaye=True), "Gümüş rehberi")["ne"] == "Gümüş rehberi (sesli Reels ve hikâye)")
 kontrol("rehber Reels kapalıyken kaydırmalı", prg.program(datetime(2026, 10, 14, 9, tzinfo=TR), rehber_reels=False,
         rehber_hikaye=True)["satirlar"][1]["ne"] == "Gümüş rehberi (kaydırmalı gönderi ve hikâye)")
+# Rehber arşivi Reels'i (Rıdvan 17 Ekim 2026): #3–#5 birer kez; geçen günler satırdan düşer
+kontrol("arşiv Reels'i rehber satırında",
+        "önceki bölümlerin sesli Reels'i: 22 Ekim #3, 26 Ekim #4, 28 Ekim #5" in satir(p(2026, 10, 17), "Gümüş rehberi")["ek"])
+kontrol("arşiv: 22 Ekim öğleden sonra yalnız kalanlar",
+        "önceki bölümlerin sesli Reels'i: 26 Ekim #4, 28 Ekim #5" in satir(p(2026, 10, 22, 15), "Gümüş rehberi")["ek"])
+kontrol("arşiv bitince satır yok",
+        not any("önceki bölümlerin" in e for e in satir(p(2026, 10, 29), "Gümüş rehberi")["ek"]))
 kontrol("14 Ekim: aylık 2 Kasım", "2 Kasım Pazartesi" in " ".join(satir(a, "Aylık")["ek"]))
 kontrol("14 Ekim: ECB ~17:00 (yaz saati)", a["ecb"]["saat"] == "~17:00", a["ecb"])
 kontrol("güncelleme saatleri", a["guncelleme"] == "Hafta içi ~10:00 ve ~20:00" and a["son_deger_saati"] == "~20:00")

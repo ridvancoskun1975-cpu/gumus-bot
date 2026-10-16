@@ -33,6 +33,10 @@
   yalnızca müzikle paylaşmaya düşmeli; bu yedek yol kaldırılmaz. Ücretsiz kota günde ~10 okuma/model, modeller ayrı:
   denemeler yalnızca yedek modelle (Rıdvan, 16 Ekim 2026), ana model paylaşıma kalır; rehber günü 14:00'ten önce
   aynı gün art arda deneme yapma (yedeğin kotası da paylaşımın güvencesi). Yeni rehber bölümü eklenince `ses.OKUMA`'ya satır ekle.
+- Rehber arşivi Reels'i (Rıdvan, 17 Ekim 2026 "öneriyi uygula"): sesli rehber Reels'inden önce yayımlanan #3–#5 birer
+  kez, rehbersiz hafta içi günü ~14:00'te aynı tam okumalı sesli Reels olarak gider (`bot/bilgi.py` → `ARSIV_REELS`:
+  22, 26, 28 Ekim; tür `kisa`). Yalnız Reels: kaydırmalı ve hikâye tekrar gitmez; Reels üretilemezse o gün paylaşım
+  yok. Tarih ya da bölüm değişecekse önce Rıdvan'a sor.
 - "Rehber" öne çıkanının standardı (Rıdvan, 14 Ekim 2026): her bölüm tek video; öne çıkandaki sıra önemli değil,
   eksik olmaması önemli. Tek tek kare olarak giden eski #1–#2 yerine videoları 18 Ekim'de paylaşılır, eski
   kareleri Rıdvan siler. Rehber hikâyesini elle kareler hâlinde paylaşma.

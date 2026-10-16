@@ -339,7 +339,8 @@ def okunur(metin):
     for a_, b_ in (("~", " yaklaşık "), ("÷", " bölü "), ("×", " çarpı "), ("=", " eşittir "), ("→", ", "),
                    ("₺", " lira"), ("/", " "), ("·", ","), ("•", ","), ("#", "")):
         m = m.replace(a_, b_)
-    m = re.sub(r"\s+([,.;:!?])", r"\1", m)
+    m = re.sub(r"\s+([,.;:!?)])", r"\1", m)
+    m = re.sub(r"\(\s+", "(", m)
     return re.sub(r"\s+", " ", m).strip()
 
 

@@ -4,7 +4,7 @@ Bilgi sayfasının her yeri her zaman güncel kalsın diye (Rıdvan, 14 Ekim 202
 her zaman güncel kalmalı.") sayfadaki saatler, günler ve takvim buradan gelir:
 - saatler ve günler: .github/workflows/paylas.yml içindeki cron satırları ve "Türü belirle" adımındaki
   cron → tür eşlemesi (eşlemede olmayan cron reels'tir, iş akışındaki "else" gibi)
-- rehber, kısa Reels ve aylık özet günleri: bot/bilgi.py → takvim(), kisa_takvim(); bot/aylik.py
+- rehber, rehber arşivi Reels'i ve aylık özet günleri: bot/bilgi.py → takvim(), arsiv_takvim(); bot/aylik.py
 - haftalık kart günleri (ayrı paylaşım; Reels ve özete ek): bot/kart.py → KART_GUNLERI, KART_BASLANGIC
 - hikâyeye de giden türler: bot/main.py → HIKAYE_TURLERI (rehber bölümleri her zaman hikâyeye de gider)
 - ilk haftalık özet ve ilk pazar yorumu: günlük kayıtların başladığı güne göre (botun kendi kurallarıyla)
@@ -50,7 +50,7 @@ TUR_ADI = {
     "ay": "Aylık özet ve grafik",
     "yorum": "Kısa, orta ve uzun vade yapay zekâ yorumu",
     "bilgi": "Gümüş rehberi",
-    "kisa": "Rehberden kısa video",
+    "kisa": "Rehber Reels'i (önceki bölüm)",
     "kart": '"Kaç gram eder?" (çarşamba) ve altın–gümüş (cuma) kartı',
 }
 TUR_BICIM = {   # Instagram'daki biçim
@@ -276,6 +276,12 @@ def program(simdi=None, kayit_gunleri=(), hikaye_turleri=None, rehber_saati=(13,
                 zaman, ekler = f"{gun_metni(gunler)} {saat}", ["şimdilik sıradaki bölüm yok"]
             if rehber_hikaye:
                 ekler.append("bölümler Instagram'da Öne çıkanlar › Rehber'de de toplanır")
+            arsiv = [(date.fromisoformat(g), n) for g, n in bilgi.arsiv_takvim().items()
+                     if date.fromisoformat(g) > bugun
+                     or (date.fromisoformat(g) == bugun and (simdi.hour, simdi.minute) < rehber_saati)]
+            if arsiv:
+                ekler.append("önceki bölümlerin sesli Reels'i: "
+                             + ", ".join(f"{g.day} {AYLAR[g.month - 1]} #{n}" for g, n in arsiv))
             satirlar.append({"sira": sira, "zaman": zaman, "ne": ad("bilgi"), "ek": ekler})
             g_ay = siradaki_aylik(bugun, kayitlar)
             if g_ay:
@@ -284,13 +290,7 @@ def program(simdi=None, kayit_gunleri=(), hikaye_turleri=None, rehber_saati=(13,
                                                         f"sıradaki: {tek_tarih(g_ay)}"]})
             continue
         ek = []
-        if tur == "kisa":
-            gelecek = [date.fromisoformat(g) for g, _ in sorted(bilgi.kisa_takvim().items())
-                       if date.fromisoformat(g) >= bugun]
-            k = bilgi.kisa_takvim()
-            ek = [f"sıradaki: {tek_tarih(gelecek[0])} (rehber #{k[gelecek[0].isoformat()]})" if gelecek
-                  else "yeni rehber bölümleri eklenince devam eder"]
-        elif tur == "hafta":
+        if tur == "hafta":
             ilk = ilk_haftalik(bugun, kayitlar)
             sonraki_cmt = bugun + timedelta(days=(5 - bugun.weekday()) % 7)
             if ilk and ilk > sonraki_cmt:

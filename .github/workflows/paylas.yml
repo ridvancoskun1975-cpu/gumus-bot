@@ -11,7 +11,8 @@ on:
     # (ilk hafta her gün, sonra salı ve perşembe). Rehber olmayan günlerden ayın ilk iş günü aylık özet
     # gider (bot/aylik.py; ilki 2 Kasım 2026). İkisi de yoksa "kontrol" işi birkaç saniyede biter.
     # Rehber günü akışa sesli Reels gider (kaydırmalının yerine; main.REHBER_REELS), hikâyeye müzikli rehber videosu.
-    # Cumartesi kısa Reels'i 16 Ekim 2026'da kaldırıldı (Rıdvan); elle: Run workflow → tür: kisa, konu: <no>.
+    # Rehber ve aylık özet yoksa rehber arşivi günü olabilir (bot/bilgi.py → ARSIV_REELS; #3–#5 birer kez):
+    # tür kisa, yalnız sesli Reels. Cumartesi kısa Reels'i 16 Ekim 2026'da kaldırıldı (Rıdvan).
     - cron: '50 10 * * 1-5'
     # Çarşamba ve cuma 11:50 TR -> haftalık kart (bot/kart.py): çarşamba "Kaç gram eder?", cuma altın–gümüş.
     # 10:00 Reels ve 20:00 özetin YERİNE DEĞİL, onlara ek (taahhüt: hafta içi her gün 2 kez gram fiyatı).
@@ -24,7 +25,7 @@ on:
         options: [reels, post, hafta, ay, yasal, bilgi, kisa, yorum, hikaye, kart]
         default: reels
       konu:
-        description: "bilgi, kisa, hikaye: rehber bölüm no (bilgi/kisa için boşsa bugünün bölümü; hikaye için zorunlu). kart: gram ya da parite (boşsa günün kartı)."
+        description: "bilgi, kisa, hikaye: rehber bölüm no (boşsa bilgi için bugünün rehberi, kisa için bugünün arşiv Reels'i; hikaye için zorunlu). kart: gram ya da parite (boşsa günün kartı)."
         type: string
         default: ""
       deneme:
@@ -41,7 +42,7 @@ on:
         options: [yok, sevinen, uzulen, gezinen, istif]
         default: yok
       ses:
-        description: "Seslendirme önizlemesi (yalnız deneme açıkken, kisa türünde): kadın sesi adı, ör. Kore. Boş = seçili ses"
+        description: "Seslendirme önizlemesi (yalnız deneme açıkken, bilgi ve kisa türünde): kadın sesi adı, ör. Kore. Boş = seçili ses"
         type: string
         default: ""
 
@@ -95,12 +96,17 @@ jobs:
             if [ -z "$bolum" ]; then
               ay=""
               if [ "${{ github.event_name }}" = "schedule" ]; then ay=$(python3 bot/aylik.py bugun); fi
+              arsiv=""
+              if [ "${{ github.event_name }}" = "schedule" ]; then arsiv=$(python3 bot/bilgi.py arsiv); fi
               if [ "$ay" = "ay" ]; then
                 tur=ay
                 echo "Bugün rehber yok, aylık özet günü."
+              elif [ -n "$arsiv" ]; then
+                tur=kisa
+                echo "Bugün rehber yok, rehber arşivi Reels'i günü: bölüm $arsiv (yalnız sesli Reels)."
               else
                 calis=false
-                echo "Bugün takvimde bilgi gönderisi ya da aylık özet yok; çalışma atlandı."
+                echo "Bugün takvimde bilgi gönderisi, aylık özet ya da arşiv Reels'i yok; çalışma atlandı."
               fi
             else
               echo "Bugünün rehber bölümü: $bolum"
@@ -112,12 +118,12 @@ jobs:
             exit 1
           fi
           if [ "$tur" = "kisa" ] && [ -z "$KONU" ]; then
-            bolum=$(python3 bot/bilgi.py kisa)
+            bolum=$(python3 bot/bilgi.py arsiv)
             if [ -z "$bolum" ]; then
               calis=false
-              echo "Bugün kısa Reels takviminde bölüm yok; çalışma atlandı."
+              echo "Bugün rehber arşivi Reels'i günü değil; çalışma atlandı (elle: konu ver)."
             else
-              echo "Bugünün kısa Reels bölümü: $bolum"
+              echo "Bugünün rehber arşivi Reels'i: bölüm $bolum"
             fi
           fi
           if [ "$tur" = "kart" ] && [ -z "$KONU" ]; then
@@ -151,7 +157,7 @@ jobs:
     if: needs.kontrol.outputs.calis == 'true'
     runs-on: ubuntu-24.04   # sabit sürüm: ubuntu-latest 19 Ekim 2026 itibarıyla Ubuntu 26e geçiyor
     # Pazar yorumu Opus 5.5 "ekstra yüksek" çabayla yazılır; düşünme dakikalar sürebilir, süre geniş.
-    timeout-minutes: ${{ needs.kontrol.outputs.tur == 'yorum' && 45 || needs.kontrol.outputs.tur == 'bilgi' && 25 || 15 }}
+    timeout-minutes: ${{ needs.kontrol.outputs.tur == 'yorum' && 45 || (needs.kontrol.outputs.tur == 'bilgi' || needs.kontrol.outputs.tur == 'kisa') && 25 || 15 }}
     outputs:
       devam: ${{ steps.uret.outputs.devam }}
       tur: ${{ needs.kontrol.outputs.tur }}
@@ -198,7 +204,7 @@ jobs:
           key: gunici-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: gunici-
 
-      # Rehber Reels'inin (rehber günü ve elle kisa) kadın sesi seslendirmesi (bot/ses.py): anahtar GEMINI_API_KEY sırrında
+      # Rehber Reels'inin (rehber günü bilgi, arşiv günü kisa) kadın sesi seslendirmesi (bot/ses.py): anahtar GEMINI_API_KEY sırrında
       # (Rıdvan, 16 Ekim 2026), yoksa özel gumus-kayit deposunda; günlükte gizlenir. Alınamazsa Reels
       # bugünkü gibi yalnızca müzikle üretilir.
       - name: Seslendirme anahtarı
@@ -224,8 +230,8 @@ jobs:
 
       - name: Görseli / videoyu üret
         id: uret
-        # rehber günü: bölümün tamamı kare kare seslendirilir (Gemini dakikalık sınırında bekleme olabilir)
-        timeout-minutes: ${{ needs.kontrol.outputs.tur == 'yorum' && 35 || needs.kontrol.outputs.tur == 'bilgi' && 15 || 5 }}
+        # rehber ve arşiv Reels'i: bölümün tamamı kare kare seslendirilir (Gemini dakikalık sınırında bekleme olabilir)
+        timeout-minutes: ${{ needs.kontrol.outputs.tur == 'yorum' && 35 || (needs.kontrol.outputs.tur == 'bilgi' || needs.kontrol.outputs.tur == 'kisa') && 15 || 5 }}
         env:
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
           METALCHARTS_KEY: ${{ secrets.METALCHARTS_KEY }}
