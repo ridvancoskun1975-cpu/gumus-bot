@@ -699,22 +699,14 @@ def buyuk_hareket(d, zaman, esik):
 
 # Parite satırı (Rıdvan, 16 Ekim 2026): görselde paritenin altında, ne anlama geldiğini söyleyen tek cümle; rakam
 # zaten satırda. Gümüş yatırımcısının gözünden ama "altına karşı" (rehber #4: parite düşerse gümüş altına göre
-# pahalanmış demektir). Gümüşün TL fiyatı düştüğü günde de doğru: kıyas altınla.
+# pahalanmış demektir). Gümüşün TL fiyatı düştüğü günde de doğru: kıyas altınla. Okun rengi bilerek standart kalır
+# (düşüş kırmızı, yükseliş yeşil; Rıdvan: "herkesin gördüğü alıştığı standart bu"), cümle anlamı söyler.
 def parite_cumlesi(d, zaman):
-    """d = parite_degisimi() sonucu; zaman "bugün" / "bu hafta" / "bu ay". Görseldeki gibi 2 ondalığa yuvarlanır."""
+    """d = degisim() sonucu; zaman "bugün" / "bu hafta" / "bu ay". Görseldeki gibi 2 ondalığa yuvarlanır."""
     y = round(d["yuzde"], 2)
     if y == 0:
         return f"Gümüşün altına karşı değeri {zaman} değişmedi"
     return f"Gümüş {zaman} altına karşı değer {'kazandı' if y < 0 else 'kaybetti'}"
-
-
-def parite_degisimi(simdi, once):
-    """degisim() gibi; ok rengi gümüş yatırımcısının gözünden: parite düşerse yeşil, yükselirse kırmızı, %0,00 gri.
-    Okun yönü (▼/▲) değişmez, yalnızca rengi."""
-    d = degisim(simdi, once)
-    y = round(d["yuzde"], 2)
-    d["renk"] = "soluk" if y == 0 else ("artis" if y < 0 else "dusus")   # %0,00: gri (ne iyi ne kötü)
-    return d
 
 
 def degisim(simdi, once):
@@ -743,8 +735,8 @@ def veri_hazirla(f, hesap):
         "gram_deg": degisim(f["gram"], f["gram_once"]),
         "buyuk_hareket": buyuk_hareket(degisim(f["gram"], f["gram_once"]), "bugün", BUYUK_HAREKET_GUNLUK),
         "parite": tr_sayi(f["parite"], 1),
-        "parite_deg": parite_degisimi(f["parite"], f["parite_once"]),
-        "parite_cumle": parite_cumlesi(parite_degisimi(f["parite"], f["parite_once"]), "bugün"),
+        "parite_deg": degisim(f["parite"], f["parite_once"]),
+        "parite_cumle": parite_cumlesi(degisim(f["parite"], f["parite_once"]), "bugün"),
         "dolar": tr_sayi(f["dolar"], 2),
         "dolar_deg": degisim(f["dolar"], f["dolar_once"]),
         "kur_tarihi": f"{kur_gunu.day} {AYLAR[kur_gunu.month - 1]}",

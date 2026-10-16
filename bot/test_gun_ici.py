@@ -117,6 +117,19 @@ a.update({"ons": 60.0, "ons_once": 55.0, "dolar": 50.2, "dolar_once": 49.3})
 ay = main.aciklama_yaz(main.aylik_veri_hazirla(a, "gunlukgumus"), "ay")
 kontrol("\nAyın kaynağı: ons gümüş ▲ %9,1 · dolar/TL ▲ %1,8\n\n" in ay, "aylık: kaynak satırı")
 
+# --- 5b) Parite cümlesi (Rıdvan, 16 Ekim 2026): görselde paritenin altında; ok renkleri standart kalır
+pc = main.parite_cumlesi
+kontrol(pc(main.degisim(72.41, 72.84), "bugün") == "Gümüş bugün altına karşı değer kazandı", "parite düştü")
+kontrol(pc(main.degisim(73.10, 72.84), "bugün") == "Gümüş bugün altına karşı değer kaybetti", "parite yükseldi")
+kontrol(pc(main.degisim(72.840001, 72.84), "bugün") == "Gümüşün altına karşı değeri bugün değişmedi", "%0,00")
+kontrol(pc(main.degisim(70.0, 72.0), "bu hafta") == "Gümüş bu hafta altına karşı değer kazandı", "haftalık")
+kontrol(pc(main.degisim(75.0, 72.0), "bu ay") == "Gümüş bu ay altına karşı değer kaybetti", "aylık")
+kontrol(main.veri_hazirla(main.ornek_fiyatlar(), "x")["parite_cumle"].startswith("Gümüş bugün altına karşı"),
+        "günlük veride cümle var")
+kontrol(main.haftalik_veri_hazirla(main.ornek_haftalik(), "x")["parite_cumle"].startswith("Gümüş bu hafta"), "haftalık veri")
+kontrol(main.aylik_veri_hazirla(main.ornek_aylik(), "x")["parite_cumle"].startswith("Gümüş bu ay"), "aylık veri")
+kontrol("renk" not in main.veri_hazirla(main.ornek_fiyatlar(), "x")["parite_deg"], "ok rengi standart (ters çevrilmez)")
+
 # --- 6) Kota başlıkları -----------------------------------------------------------------------------------
 kontrol(main.kota_kalan({"x-ratelimit-limit": "200", "x-ratelimit-remaining": "143"}) == 143, "aylık eş")
 kontrol(main.kota_kalan({"x-ratelimit-limit": "10", "x-ratelimit-remaining": "9"}) is None,
