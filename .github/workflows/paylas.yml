@@ -198,11 +198,11 @@ jobs:
           key: gunici-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: gunici-
 
-      # Rehber kısa Reels'inin kadın sesi seslendirmesi (bot/ses.py): anahtar GEMINI_API_KEY sırrında
+      # Rehber Reels'inin (rehber günü ve elle kisa) kadın sesi seslendirmesi (bot/ses.py): anahtar GEMINI_API_KEY sırrında
       # (Rıdvan, 16 Ekim 2026), yoksa özel gumus-kayit deposunda; günlükte gizlenir. Alınamazsa Reels
       # bugünkü gibi yalnızca müzikle üretilir.
       - name: Seslendirme anahtarı
-        if: needs.kontrol.outputs.tur == 'kisa'
+        if: needs.kontrol.outputs.tur == 'kisa' || needs.kontrol.outputs.tur == 'bilgi'
         continue-on-error: true
         timeout-minutes: 1
         env:
@@ -219,7 +219,7 @@ jobs:
             echo "::add-mask::$a"
             echo "GEMINI_API_KEY=$a" >> "$GITHUB_ENV"
           else
-            echo "::warning::Seslendirme anahtarı alınamadı; kısa Reels yalnızca müzikle üretilecek."
+            echo "::warning::Seslendirme anahtarı alınamadı; rehber Reels'i yalnızca müzikle üretilecek."
           fi
 
       - name: Görseli / videoyu üret

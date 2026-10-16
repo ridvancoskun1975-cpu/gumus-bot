@@ -1851,7 +1851,8 @@ def bilgi_hazirla(cikti, konu=None):
     (cikti / "index.html").write_text("<!doctype html><meta charset='utf-8'><title>Gümüş bot</title>"
                                       + "".join(f"<p><a href='{d}'>{d}</a></p>" for d in dosyalar), encoding="utf-8")
     print(metin)
-    print(f"\nÜretilen dosyalar ({len(metin)} karakter açıklama; {'sesli Reels' if reels else 'kaydırmalı'}):",
+    bicim = ("sesli Reels" if reels["seslendirme"] else "Reels, yalnızca müzik") if reels else "kaydırmalı"
+    print(f"\nÜretilen dosyalar ({len(metin)} karakter açıklama; {bicim}):",
           *dosyalar, sep="\n")
     if hikayeler:
         print(f"Hikâye kareleri ({len(hikayeler)}):", *hikayeler, sep="\n")
@@ -1952,7 +1953,7 @@ def kisa_seslendirmesi(konu, bolum, cikti):
         return ses.kisa_seslendir(konu, bolum, cikti, ses=os.environ.get("SES_ADI", "").strip() or ses.SES,
                                   deneme=_deneme_mi())   # denemede yalnızca yedek model (ana kota paylaşıma)
     except Exception as e:
-        print(f"::warning::Seslendirme yapılamadı ({type(e).__name__}: {str(e)[:200]}); kısa Reels yalnızca müzikle gidiyor.")
+        print(f"::warning::Seslendirme yapılamadı ({type(e).__name__}: {str(e)[:200]}); rehber Reels'i yalnızca müzikle gidiyor.")
         return None
 
 

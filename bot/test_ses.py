@@ -182,6 +182,13 @@ try:
 finally:
     ses.seslendir = gercek_s
 
+# İş akışı anahtarı hem rehber günü (bilgi) hem elle kısa Reels (kisa) çalıştırmasında almalı
+import yaml  # noqa: E402
+akis = yaml.safe_load((main.KOK / ".github" / "workflows" / "paylas.yml").read_text(encoding="utf-8"))
+adim = next(a_ for a_ in akis["jobs"]["uret"]["steps"] if a_.get("name") == "Seslendirme anahtarı")
+dogrula("'bilgi'" in adim["if"] and "'kisa'" in adim["if"], f"anahtar adımı koşulu: {adim['if']}")
+dogrula(not any(c.get("cron") == "50 10 * * 6" for c in akis[True]["schedule"]), "cumartesi kısa Reels zamanlaması yok")
+
 # ---------------------------------------------------------------- kayıt adı
 with tempfile.TemporaryDirectory() as d:
     m = Path(d) / "meta.json"
