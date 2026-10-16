@@ -668,14 +668,23 @@ def bugunun_bolumu(gun=None):
     return takvim().get(gun.isoformat())
 
 
-def aciklama(no):
+def aciklama(no, reels=False, ek=(), muzik=None):
+    """Rehber gönderisinin açıklaması. reels=True: sesli Reels (main.REHBER_REELS): ilk satırda kısa cevap,
+    bölümün tamamı yine açıklamada; ek (seslendirme notu) uyarıdan önce, müzik künyesi sonda."""
     b = BOLUMLER[no - 1]
-    parcalar = [f"{b['baslik']} | Gümüş rehberi #{no}", b["alt"]]
+    if reels:
+        parcalar = [f"{b['baslik']} Kısa cevap: {b['buyuk']}, {b['buyuk_alt']} | Gümüş rehberi #{no}", b["alt"]]
+    else:
+        parcalar = [f"{b['baslik']} | Gümüş rehberi #{no}", b["alt"]]
     parcalar += [_sayfa_metni(s) for s in b["sayfalar"]]
-    son = "Kaydedin, lazım olunca bakarsınız."
+    son = ("Bölümün tamamı yukarıda ve profildeki Rehber öne çıkanında; kaydedin, lazım olunca bakarsınız."
+           if reels else "Kaydedin, lazım olunca bakarsınız.")
     if no < len(BOLUMLER):
         son += f" Sıradaki bölüm: {BOLUMLER[no]['baslik']}"
-    parcalar += [son, b["soru"], "Bilgi amaçlıdır, yatırım tavsiyesi değildir.", b["hashtag"]]
+    parcalar += [son, b["soru"], *ek, "Bilgi amaçlıdır, yatırım tavsiyesi değildir."]
+    if muzik:
+        parcalar.append(f"Müzik: {muzik}")
+    parcalar.append(b["hashtag"])
     return "\n\n".join(parcalar)
 
 

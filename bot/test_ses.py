@@ -254,6 +254,66 @@ try:
         dogrula(meta["seslendirme"] is None, "hata olunca seslendirme yok")
         dogrula(ses.ACIKLAMA_SATIRI not in meta["aciklama"], "sessizde seslendirme satırı olmamalı")
         dogrula(abs(sn - 12) < 0.2 and ses_var, f"yedek yol: 12 sn müzikli video ({sn})")
+
+    # Rehber günü (Rıdvan, 16 Ekim 2026 23:4x): kaydırmalı yerine sesli Reels, hikâyeye müzikli rehber videosu
+    ses.seslendir = yapay_ses
+    with tempfile.TemporaryDirectory() as d:
+        d = Path(d)
+        main.bilgi_hazirla(d, 7)
+        meta = json.loads((d / "meta.json").read_text(encoding="utf-8"))
+        dogrula("dosyalar" not in meta and meta["dosya"].endswith(".mp4"), f"rehber günü Reels: {meta.get('dosya')}")
+        dogrula((d / meta["kapak"]).exists() and meta["kapak_ms"] > 0, "rehber Reels kapağı")
+        dogrula(meta["seslendirme"] == ses.SES, "rehber Reels sesli")
+        dogrula(meta["hikaye_videolari"] and all((d / v).exists() for v in meta["hikaye_videolari"]),
+                "müzikli rehber hikâye videosu yine üretilir")
+        a_ = meta["aciklama"]
+        dogrula(a_.startswith(bilgi.BOLUMLER[6]["baslik"] + " Kısa cevap:"), "açıklama kısa cevapla başlar")
+        dogrula(ses.ACIKLAMA_SATIRI in a_ and "Müzik:" in a_ and "kaydırmalı" not in a_, "açıklama satırları")
+        dogrula(all(bilgi._sayfa_metni(sf) in a_ for sf in bilgi.BOLUMLER[6]["sayfalar"]), "bölümün tamamı açıklamada")
+        dogrula(len(a_) <= 2200, "açıklama sınırı")
+        sn, ses_var = sure_olc(d / meta["dosya"])
+        dogrula(ses_var and 12 <= sn <= 25, f"rehber Reels süresi {sn}")
+        dogrula(kayit.paylasim_adi("bilgi", meta_yolu=d / "meta.json") == "Rehber Reels · sesli", "kayıt adı")
+        dogrula(not list(d.glob("_ses-*")), "ara ses dosyası kalmaz")
+
+    # Reels üretilemezse aynı gün eski kaydırmalı gönderi gider
+    gercek_uret = main.rehber_reels_uret
+    main.rehber_reels_uret = lambda *a, **k: (_ for _ in ()).throw(RuntimeError("deneme hatası"))
+    try:
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            main.bilgi_hazirla(d, 7)
+            meta = json.loads((d / "meta.json").read_text(encoding="utf-8"))
+            dogrula(len(meta.get("dosyalar", [])) == len(bilgi.BOLUMLER[6]["sayfalar"]) + 1 and "dosya" not in meta,
+                    "yedek yol: kaydırmalı")
+            dogrula(meta["aciklama"] == bilgi.aciklama(7), "yedek yolda eski açıklama")
+            dogrula(kayit.paylasim_adi("bilgi", meta_yolu=d / "meta.json") == "Rehber", "yedek yolda kayıt adı")
+    finally:
+        main.rehber_reels_uret = gercek_uret
+
+    # Yayın: rehber Reels'i Reels olarak gider, ardından müzikli rehber hikâyesi; Reels'in kendisi hikâyeye gitmez
+    olaylar = []
+    yedek = {k: getattr(main, k) for k in ("_url_hazir_mi", "hesap_bilgisi", "_reels_konteyneri", "_istek",
+                                            "rehber_hikayeleri", "hikaye_paylas")}
+    main._url_hazir_mi = lambda *a, **k: True
+    main.hesap_bilgisi = lambda: {"user_id": "1"}
+    main._reels_konteyneri = lambda kid, url, meta, taban: (olaylar.append(("reels", url.rsplit("/", 1)[1])), {"id": "k"})[1]
+    main._istek = lambda yontem, yol, **p: (olaylar.append(("istek", yol)), {"id": "m"})[1]
+    main.rehber_hikayeleri = lambda kid, meta, taban: olaylar.append(("rehber-hikaye", tuple(meta["hikaye_videolari"])))
+    main.hikaye_paylas = lambda kid, url: olaylar.append(("hikaye", url))
+    try:
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            (d / "meta.json").write_text(json.dumps({"tur": "bilgi", "konu": 7, "dosya": "bilgi7-x.mp4", "kapak": "k.jpg",
+                                                     "kapak_ms": 15000, "aciklama": "x", "hikayeler": ["h1.png"],
+                                                     "hikaye_videolari": ["bilgi7-x-hikaye-video-1.mp4"]}), encoding="utf-8")
+            main._yayinla(d, "https://ornek/")
+        dogrula(olaylar[0] == ("reels", "bilgi7-x.mp4"), f"önce Reels: {olaylar}")
+        dogrula(("rehber-hikaye", ("bilgi7-x-hikaye-video-1.mp4",)) in olaylar, "sonra müzikli rehber hikâyesi")
+        dogrula(not any(o[0] == "hikaye" for o in olaylar), "Reels'in kendisi hikâyeye gitmez")
+    finally:
+        for k, v in yedek.items():
+            setattr(main, k, v)
 finally:
     ses.seslendir = gercek
     del os.environ["GEMINI_API_KEY"]

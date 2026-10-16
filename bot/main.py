@@ -1628,12 +1628,7 @@ def _yayinla(cikti, taban_url):
             print(f"Uyarı: bağlantı alınamadı ({e})", file=sys.stderr)
         if meta.get("reels"):
             yorum_reelsi(kullanici_id, meta["reels"], taban_url)
-        if meta.get("hikayeler"):
-            if REHBER_HIKAYE_OTOMATIK:
-                rehber_hikayeleri(kullanici_id, meta, taban_url)
-            else:
-                print(f"Rehber #{meta['konu']} hikâye videosu otomatik paylaşılmadı (REHBER_HIKAYE_OTOMATIK "
-                      f"kapalı). İstersen: Run workflow → tür: hikaye, konu: {meta['konu']}, deneme kapalı.")
+        _rehber_hikayesi_sonra(kullanici_id, meta, taban_url)
         return
     medya_url = taban_url.rstrip("/") + "/" + meta["dosya"]
     _url_hazir_mi(medya_url)
@@ -1647,6 +1642,17 @@ def _yayinla(cikti, taban_url):
     print(f"Paylaşıldı: {meta['tur']} (medya id {sonuc.get('id')})")
     if meta["tur"] in HIKAYE_TURLERI and meta["dosya"].endswith(".mp4"):
         hikaye_paylas(kullanici_id, medya_url)
+    _rehber_hikayesi_sonra(kullanici_id, meta, taban_url)   # rehber Reels'inden sonra müzikli rehber hikâyesi
+
+
+def _rehber_hikayesi_sonra(kullanici_id, meta, taban_url):
+    if not meta.get("hikayeler"):
+        return
+    if REHBER_HIKAYE_OTOMATIK:
+        rehber_hikayeleri(kullanici_id, meta, taban_url)
+    else:
+        print(f"Rehber #{meta['konu']} hikâye videosu otomatik paylaşılmadı (REHBER_HIKAYE_OTOMATIK "
+              f"kapalı). İstersen: Run workflow → tür: hikaye, konu: {meta['konu']}, deneme kapalı.")
 
 
 # Rehber gönderisinden sonra aynı bölüm hikâyeye tek müzikli video olarak gider (14 Ekim 2026 21:23, Rıdvan:
@@ -1769,8 +1775,15 @@ def yasal_hazirla(cikti):
     print(f"\nÜretilen dosyalar ({len(yasal.ACIKLAMA)} karakter açıklama):", *dosyalar, sep="\n")
 
 
+# Rehber günü akışa giden: sesli Reels (Rıdvan, 16 Ekim 2026 23:4x: "Yerine geçsin" — salı/perşembe kaydırmalı
+# gönderinin yerine kadın sesiyle seslendirilmiş Reels; hikâyeye giden rehber videosu müzikli kalır; cumartesi
+# kısa Reels'i kaldırıldı). Reels üretilemezse aynı gün eski kaydırmalı gönderi gider. False: hep kaydırmalı.
+REHBER_REELS = True
+
+
 def bilgi_hazirla(cikti, konu=None):
-    """Gümüş rehberi bölümü: kapak + 3 sayfa, kaydırmalı görsel gönderi. Fiyat verisi kullanmaz.
+    """Gümüş rehberi bölümü: sesli Reels (REHBER_REELS) ya da kapak + 3 sayfa kaydırmalı gönderi, ve aynı bölümün
+    müzikli hikâye videosu. Fiyat verisi kullanmaz.
 
     konu verilmezse bugünün bölümü bilgi.takvim()'den seçilir; takvimde yoksa paylaşım atlanır.
     """
@@ -1787,15 +1800,28 @@ def bilgi_hazirla(cikti, konu=None):
     sonraki = bilgi.BOLUMLER[konu]["baslik"] if konu < len(bilgi.BOLUMLER) else None
     hesap = hesap_adi()
     damga = datetime.now(TR_SAAT).strftime("%Y%m%d-%H%M")
-    toplam = len(b["sayfalar"]) + 1
+    reels = None
+    if REHBER_REELS:
+        try:
+            reels = rehber_reels_uret(cikti, konu, damga, ad="bilgi")
+        except Exception as e:
+            print(f"::warning::Rehber Reels'i üretilemedi ({type(e).__name__}: {str(e)[:200]}); "
+                  "bugün kaydırmalı gönderi gidiyor.")
+            for f in cikti.glob(f"*bilgi{konu}-{damga}*.mp4"):
+                f.unlink(missing_ok=True)
     dosyalar = []
-    for sayfa in range(toplam):
-        jpg = cikti / f"bilgi{konu}-{damga}-{sayfa + 1}.jpg"
-        gorsel_uret("bilgi", {"b": b, "no": konu, "sayfa": sayfa,
-                              "toplam_sayfa": toplam, "sonraki": sonraki, "seri": bilgi.SERI,
-                              "hesap": hesap}, jpg)
-        dosyalar.append(jpg.name)
-    metin = bilgi.aciklama(konu)
+    if reels:
+        metin = bilgi.aciklama(konu, reels=True, ek=_reels_ek_satirlari(reels["seslendirme"]),
+                               muzik=muzik_kunyesi())
+    else:
+        toplam = len(b["sayfalar"]) + 1
+        for sayfa in range(toplam):
+            jpg = cikti / f"bilgi{konu}-{damga}-{sayfa + 1}.jpg"
+            gorsel_uret("bilgi", {"b": b, "no": konu, "sayfa": sayfa,
+                                  "toplam_sayfa": toplam, "sonraki": sonraki, "seri": bilgi.SERI,
+                                  "hesap": hesap}, jpg)
+            dosyalar.append(jpg.name)
+        metin = bilgi.aciklama(konu)
     if len(metin) > 2200:
         raise RuntimeError(f"Açıklama Instagram sınırını aşıyor ({len(metin)} > 2200 karakter)")
     # Aynı bölümün 9:16 hikâye kareleri ve onlardan müzikli hikâye videosu: video gönderiden sonra hikâyeye
@@ -1812,15 +1838,21 @@ def bilgi_hazirla(cikti, konu=None):
             hikaye_videolari = rehber_hikaye_videosu_uret(cikti, hikayeler, konu, damga)
         except Exception as e:
             print(f"::warning::Rehber hikâye videosu üretilemedi, gönderi hikâyesiz gidecek: {e}")
-    (cikti / "meta.json").write_text(json.dumps({"tur": "bilgi", "konu": konu, "dosyalar": dosyalar,
-                                                 "hikayeler": hikayeler, "hikaye_videolari": hikaye_videolari,
-                                                 "aciklama": metin},
-                                                ensure_ascii=False, indent=2),
-                                     encoding="utf-8")
+    meta = {"tur": "bilgi", "konu": konu, "hikayeler": hikayeler, "hikaye_videolari": hikaye_videolari,
+            "aciklama": metin}
+    if reels:
+        sl = reels["seslendirme"]
+        meta.update({"dosya": reels["dosya"], "kapak": reels["kapak"], "kapak_ms": int((reels["sure"] - 0.5) * 1000),
+                     "seslendirme": sl["ses"] if sl else None, "ses_metni": sl["metin"] if sl else None})
+        dosyalar = [reels["dosya"], reels["kapak"]]
+    else:
+        meta["dosyalar"] = dosyalar
+    (cikti / "meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
     (cikti / "index.html").write_text("<!doctype html><meta charset='utf-8'><title>Gümüş bot</title>"
                                       + "".join(f"<p><a href='{d}'>{d}</a></p>" for d in dosyalar), encoding="utf-8")
     print(metin)
-    print(f"\nÜretilen dosyalar ({len(metin)} karakter açıklama):", *dosyalar, sep="\n")
+    print(f"\nÜretilen dosyalar ({len(metin)} karakter açıklama; {'sesli Reels' if reels else 'kaydırmalı'}):",
+          *dosyalar, sep="\n")
     if hikayeler:
         print(f"Hikâye kareleri ({len(hikayeler)}):", *hikayeler, sep="\n")
     if hikaye_videolari:
@@ -1924,13 +1956,13 @@ def kisa_seslendirmesi(konu, bolum, cikti):
         return None
 
 
-def kisa_hazirla(cikti, konu):
-    """Gümüş rehberi bölümünden kısa Reels (~12 sn; seslendirmeyle ~15-20 sn): soru → büyük cevap → tek cümle → profile çağrı.
+def rehber_reels_uret(cikti, konu, damga, ad="kisa"):
+    """Gümüş rehberi bölümünden sesli Reels videosu ve kapağı: soru → büyük cevap → tek cümle → profile çağrı.
 
-    Metin bölümün kendisinden gelir (başlık, alt başlık, büyük rakam, ilk sayfanın formülü ve ilk
-    maddesi); ayrıca yazılmaz. Açıklama bölümün tam metnini taşır. Seslendirme açıksa (bot/ses.py) kadın sesi
-    soruyu, cevabı, cümleyi ve çağrıyı okur; her öğe kendi sesiyle gelir, video sesin süresine uzar.
-    """
+    Metin bölümün kendisinden gelir (başlık, alt başlık, büyük rakam, ilk sayfanın formülü ve ilk maddesi).
+    Seslendirme açıksa (bot/ses.py) kadın sesi soruyu, cevabı, cümleyi ve çağrıyı okur; her öğe kendi sesiyle
+    gelir, video sesin süresine uzar (~15–20 sn). Ses alınamazsa 12 sn, yalnızca müzikle üretilir.
+    Dönüş: {"dosya", "kapak", "sure", "seslendirme"} (seslendirme None olabilir)."""
     import bilgi
     import ses
     if not 1 <= konu <= len(bilgi.BOLUMLER):
@@ -1941,8 +1973,7 @@ def kisa_hazirla(cikti, konu):
     veri = {"b": b, "no": konu, "seri": bilgi.SERI, "hesap": hesap_adi(),
             "sayi": json.dumps(sayi, ensure_ascii=False) if sayi else "",
             "formul": ilk_sayfa.get("formul"), "cumle": (ilk_sayfa.get("maddeler") or [b["alt"]])[0]}
-    damga = datetime.now(TR_SAAT).strftime("%Y%m%d-%H%M")
-    mp4 = cikti / f"kisa{konu}-{damga}.mp4"
+    mp4 = cikti / f"{ad}{konu}-{damga}.mp4"
     seslendirme = kisa_seslendirmesi(konu, b, cikti)
     sure = seslendirme["sure"] if seslendirme else ses.VARSAYILAN_SURE
     veri["zaman"] = seslendirme["zaman"] if seslendirme else ses.VARSAYILAN_ZAMAN
@@ -1950,9 +1981,9 @@ def kisa_hazirla(cikti, konu):
         if seslendirme:
             try:
                 uretildi = hareketli_video_uret("kisa", veri, mp4, sure=sure, seslendirme=seslendirme["wav"])
-            except Exception as e:   # yedek yol: seslendirmeli video olmazsa bugünkü gibi yalnızca müzik
+            except Exception as e:   # yedek yol: seslendirmeli video olmazsa yalnızca müzik
                 print(f"::warning::Seslendirmeli video üretilemedi ({type(e).__name__}: {str(e)[:200]}); "
-                      "kısa Reels yalnızca müzikle gidiyor.")
+                      "rehber Reels'i yalnızca müzikle gidiyor.")
                 seslendirme, sure, veri["zaman"] = None, ses.VARSAYILAN_SURE, ses.VARSAYILAN_ZAMAN
                 uretildi = hareketli_video_uret("kisa", veri, mp4, sure=sure)
         else:
@@ -1960,15 +1991,33 @@ def kisa_hazirla(cikti, konu):
     finally:
         (cikti / f"_ses-kisa{konu}.wav").unlink(missing_ok=True)   # ara dosya yayına çıkmasın
     if not uretildi:
-        raise RuntimeError("Kısa Reels üretilemedi (şablonda hareket yok)")
-    kapak = cikti / f"kapak-kisa{konu}-{damga}.jpg"
+        raise RuntimeError("Rehber Reels'i üretilemedi (şablonda hareket yok)")
+    kapak = cikti / f"kapak-{ad}{konu}-{damga}.jpg"
     gorsel_uret("kisa", veri, kapak)
+    if seslendirme:
+        print(f"Seslendirme: {seslendirme['ses']} ({seslendirme['model']}), {sure} sn, parçalar {seslendirme['parca_sn']}")
+    return {"dosya": mp4.name, "kapak": kapak.name, "sure": sure, "seslendirme": seslendirme}
 
+
+def _reels_ek_satirlari(seslendirme):
+    """Rehber Reels'i açıklamasının uyarı satırından önceki ekleri: seslendirme notu."""
+    import ses
+    return [ses.ACIKLAMA_SATIRI] if seslendirme else []
+
+
+def kisa_hazirla(cikti, konu):
+    """Elle kısa Reels (Run workflow → tür: kisa, konu: <no>). Zamanlı cumartesi kısa Reels'i 16 Ekim 2026'da
+    kaldırıldı (Rıdvan: sesli rehber Reels'i yalnız rehber günlerinde, bkz. bilgi_hazirla)."""
+    import bilgi
+    if not 1 <= konu <= len(bilgi.BOLUMLER):
+        raise RuntimeError(f"Konu 1-{len(bilgi.BOLUMLER)} arasında olmalı (verilen: {konu})")
+    b = bilgi.BOLUMLER[konu - 1]
+    damga = datetime.now(TR_SAAT).strftime("%Y%m%d-%H%M")
+    r = rehber_reels_uret(cikti, konu, damga)
     parcalar = [f"{b['baslik']} Kısa cevap: {b['buyuk']}, {b['buyuk_alt']} | Gümüş rehberi #{konu}", b["alt"]]
     parcalar += [bilgi._sayfa_metni(s) for s in b["sayfalar"]]
-    parcalar += ["Bölümün kaydırmalı hâli profilde; kaydedin, lazım olunca bakarsınız."]
-    if seslendirme:
-        parcalar.append(ses.ACIKLAMA_SATIRI)
+    parcalar += ["Bölümün tamamı profilde, Rehber öne çıkanında; kaydedin, lazım olunca bakarsınız."]
+    parcalar += _reels_ek_satirlari(r["seslendirme"])
     parcalar.append("Bilgi amaçlıdır, yatırım tavsiyesi değildir.")
     kunye = muzik_kunyesi()
     if kunye:
@@ -1977,15 +2026,14 @@ def kisa_hazirla(cikti, konu):
     metin = "\n\n".join(parcalar)
     if len(metin) > 2200:
         raise RuntimeError(f"Açıklama Instagram sınırını aşıyor ({len(metin)} > 2200 karakter)")
-    (cikti / "meta.json").write_text(json.dumps({"tur": "kisa", "konu": konu, "dosya": mp4.name, "aciklama": metin,
-                                                 "kapak_ms": int((sure - 0.5) * 1000), "kapak": kapak.name,
-                                                 "seslendirme": seslendirme["ses"] if seslendirme else None,
-                                                 "ses_metni": seslendirme["metin"] if seslendirme else None},
+    sl = r["seslendirme"]
+    (cikti / "meta.json").write_text(json.dumps({"tur": "kisa", "konu": konu, "dosya": r["dosya"], "aciklama": metin,
+                                                 "kapak_ms": int((r["sure"] - 0.5) * 1000), "kapak": r["kapak"],
+                                                 "seslendirme": sl["ses"] if sl else None,
+                                                 "ses_metni": sl["metin"] if sl else None},
                                                 ensure_ascii=False, indent=2), encoding="utf-8")
-    if seslendirme:
-        print(f"Seslendirme: {seslendirme['ses']} ({seslendirme['model']}), {sure} sn, parçalar {seslendirme['parca_sn']}")
     print(metin)
-    print(f"\nÜretilen dosya: {mp4}")
+    print(f"\nÜretilen dosya: {cikti / r['dosya']}")
 
 
 def _zaman_coz(zaman):

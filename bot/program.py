@@ -211,7 +211,7 @@ def siradaki_aylik(bugun, kayitlar):
 # ---------------------------------------------------------------- program
 
 def program(simdi=None, kayit_gunleri=(), hikaye_turleri=None, rehber_saati=(13, 45), rehber_hikaye=None,
-            yorum_reels=None):
+            yorum_reels=None, rehber_reels=None):
     """Sayfa için hazır program.
 
     Döndürür: {"satirlar": [{"zaman", "ne", "ek": [satır, …]}], "guncelleme": "Hafta içi ~10:00 ve ~20:00",
@@ -230,10 +230,16 @@ def program(simdi=None, kayit_gunleri=(), hikaye_turleri=None, rehber_saati=(13,
         if yorum_reels is None:
             # Pazar yorumu 15 Ekim 2026'dan beri kaydırmalının yanında 32 sn Reels ve hikâye olarak da gider
             yorum_reels = getattr(bot, "YORUM_REELS", False)
+    if rehber_reels is None:
+        import main as bot
+        # Rehber günü 16 Ekim 2026'dan beri kaydırmalı yerine sesli Reels (main.REHBER_REELS)
+        rehber_reels = getattr(bot, "REHBER_REELS", False)
     hikaye_turleri = set(hikaye_turleri) | ({"bilgi"} if rehber_hikaye else set())
 
     def ad(tur):
         bicim = TUR_BICIM.get(tur, "")
+        if tur == "bilgi" and rehber_reels:
+            bicim = "sesli Reels"
         if tur == "yorum" and yorum_reels:
             bicim = f"{bicim}, Reels ve hikâye" if bicim else "Reels ve hikâye"
         elif tur in hikaye_turleri:

@@ -61,8 +61,12 @@ kontrol("ilk haftalık 17 Ekim (kayıtlar 13 Ekim'de başladı, önceki hafta bo
 kontrol("önceki haftalar kayıtlıyken boş hafta özet vermez",
         prg.ilk_haftalik(date(2026, 10, 14), {date(2026, 10, 1), date(2026, 10, 13), date(2026, 10, 14)}) == date(2026, 10, 24)
         and prg.ilk_haftalik(date(2026, 10, 14), {date(2026, 9, 30)}) == date(2026, 10, 24))
-# Cumartesi rehber Reels'i 17 Ekim 2026'da kaldırıldı (Rıdvan: "Cumartesi rehber olmayacak")
-kontrol("cumartesi rehber Reels'i satırı yok", not any(s_["ne"].startswith("Rehberden kısa") for s_ in a["satirlar"]))
+# Cumartesi kısa Reels'i 16 Ekim 2026'da kaldırıldı (Rıdvan); rehber günü sesli Reels + hikâye
+kontrol("cumartesi kısa Reels satırı yok", not any(s_["ne"].startswith("Rehberden kısa") for s_ in a["satirlar"]))
+kontrol("rehber satırı sesli Reels ve hikâye",
+        satir(p(2026, 10, 14, rehber_hikaye=True), "Gümüş rehberi")["ne"] == "Gümüş rehberi (sesli Reels ve hikâye)")
+kontrol("rehber Reels kapalıyken kaydırmalı", prg.program(datetime(2026, 10, 14, 9, tzinfo=TR), rehber_reels=False,
+        rehber_hikaye=True)["satirlar"][1]["ne"] == "Gümüş rehberi (kaydırmalı gönderi ve hikâye)")
 kontrol("14 Ekim: aylık 2 Kasım", "2 Kasım Pazartesi" in " ".join(satir(a, "Aylık")["ek"]))
 kontrol("14 Ekim: ECB ~17:00 (yaz saati)", a["ecb"]["saat"] == "~17:00", a["ecb"])
 kontrol("güncelleme saatleri", a["guncelleme"] == "Hafta içi ~10:00 ve ~20:00" and a["son_deger_saati"] == "~20:00")

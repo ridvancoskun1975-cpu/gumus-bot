@@ -165,11 +165,14 @@ def paylasim_adi(tur, deneme=False, meta_yolu="site/meta.json"):
     haftalık raporda ayrı tür olarak görünür, sessizlerle kıyaslanır). meta.json yoksa, okunamazsa ya da
     goril/ses yoksa ad bugünkü gibi kalır."""
     ad = ETIKET.get(tur, tur)
-    if tur == "kisa":
+    if tur in ("kisa", "bilgi"):
         try:
             meta = json.loads(Path(meta_yolu).read_text(encoding="utf-8"))
-            if meta.get("tur") == "kisa" and meta.get("seslendirme"):
-                ad += SESLI_EK
+            if meta.get("tur") == tur:
+                if tur == "bilgi" and str(meta.get("dosya", "")).endswith(".mp4"):
+                    ad = ETIKET["kisa"]          # rehber günü sesli Reels (main.REHBER_REELS): "Rehber Reels"
+                if meta.get("seslendirme"):
+                    ad += SESLI_EK
         except Exception:
             pass
     if tur in ("reels", "post", "hafta"):

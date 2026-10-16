@@ -10,8 +10,9 @@ on:
     # Hafta içi 13:50 TR -> Gümüş rehberi (bilgi). Hangi gün hangi bölüm: bot/bilgi.py → takvim()
     # (ilk hafta her gün, sonra salı ve perşembe). Rehber olmayan günlerden ayın ilk iş günü aylık özet
     # gider (bot/aylik.py; ilki 2 Kasım 2026). İkisi de yoksa "kontrol" işi birkaç saniyede biter.
+    # Rehber günü akışa sesli Reels gider (kaydırmalının yerine; main.REHBER_REELS), hikâyeye müzikli rehber videosu.
+    # Cumartesi kısa Reels'i 16 Ekim 2026'da kaldırıldı (Rıdvan); elle: Run workflow → tür: kisa, konu: <no>.
     - cron: '50 10 * * 1-5'
-    # Cumartesi rehber Reels'i 17 Ekim 2026'da kaldırıldı (Rıdvan: "Cumartesi rehber olmayacak").
     # Çarşamba ve cuma 11:50 TR -> haftalık kart (bot/kart.py): çarşamba "Kaç gram eder?", cuma altın–gümüş.
     # 10:00 Reels ve 20:00 özetin YERİNE DEĞİL, onlara ek (taahhüt: hafta içi her gün 2 kez gram fiyatı).
     - cron: '50 8 * * 3,5'

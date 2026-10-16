@@ -25,11 +25,13 @@
   paylaşım durmaz, goril kalır ve Rıdvan'a bildirilir (gece kontrolü; Rıdvan, 16 Ekim 2026 22:43).
 - Rehber hikâyesi kareler tek tek değil, tek müzikli video olarak gider (kapak 3 sn, kare 6 sn), rehber gönderisiyle
   aynı çalıştırmada (`bot/main.py` → `REHBER_HIKAYE_OTOMATIK = True`); hikâye kalabalık olmamalı.
-- Cumartesi rehber Reels'i yok (Rıdvan, 17 Ekim 2026: "Cumartesi rehber olmayacak"). Rehber Reels'i kadın sesiyle seslendirilir: ses **Sulafat** (Rıdvan, 16 Ekim 2026, 3
-  önizlemeden seçti; README → "Rehber Reels seslendirmesi", `bot/ses.py`). Rehber hikâye videoları sesli değil,
-  müzikli kalır. Ses, üslup ya da okunan metin değişecekse önce önizleme ve onay. Seslendirmenin her hatası Reels'i
+- Rehber günü (salı ve perşembe ~14:00) akışa kaydırmalı gönderinin yerine kadın sesiyle seslendirilmiş Reels gider,
+  hikâyeye müzikli rehber videosu; cumartesi kısa Reels'i kaldırıldı (Rıdvan, 16 Ekim 2026 23:4x: "Kaydırmalı rehber
+  kimse bakmaz"; `bot/main.py` → `REHBER_REELS`). Ses **Sulafat** (Rıdvan, 16 Ekim 2026, 3 önizlemeden seçti; README →
+  "Rehber Reels seslendirmesi", `bot/ses.py`). Rehber hikâye videoları sesli değil, müzikli kalır. Reels üretilemezse
+  o gün kaydırmalı gider; bu yedek yol kaldırılmaz. Ses, üslup ya da okunan metin değişecekse önce önizleme ve onay. Seslendirmenin her hatası Reels'i
   yalnızca müzikle paylaşmaya düşmeli; bu yedek yol kaldırılmaz. Ücretsiz kota günde ~10 okuma/model, modeller ayrı:
-  denemeler yalnızca yedek modelle (Rıdvan, 16 Ekim 2026), ana model paylaşıma kalır; cumartesi 14:00'ten önce
+  denemeler yalnızca yedek modelle (Rıdvan, 16 Ekim 2026), ana model paylaşıma kalır; rehber günü 14:00'ten önce
   aynı gün art arda deneme yapma (yedeğin kotası da paylaşımın güvencesi). Yeni rehber bölümü eklenince `ses.OKUMA`'ya satır ekle.
 - "Rehber" öne çıkanının standardı (Rıdvan, 14 Ekim 2026): her bölüm tek video; öne çıkandaki sıra önemli değil,
   eksik olmaması önemli. Tek tek kare olarak giden eski #1–#2 yerine videoları 18 Ekim'de paylaşılır, eski
