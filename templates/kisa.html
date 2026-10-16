@@ -81,23 +81,25 @@
   const ara = (t, a, b) => yumusak((t - a) / (b - a));
   const goster = (el, q, dy) => { el.style.opacity = q; el.style.transform = `translateY(${(1 - q) * dy}px)`; };
 
+  // Geliş anları (sn): sessiz Reels'te sabit; seslendirmede her öğe kendi sesiyle gelir (bot/ses.py → zamanla).
+  const Z = {{ (zaman if zaman is defined else {"cevap": 1.6, "aciklama": 3.6, "cagri": 8.0, "isik": 6.2}) | tojson }};
   window.kare = function (t) {
     // Soru ilk kareden görünür (hafif kayarak yerine oturur)
     soru.style.transform = `translateY(${(1 - ara(t, 0, 0.6)) * 24}px)`;
-    // Büyük cevap 1,6 sn'de gelir; sayıysa 1,6–2,8 sn sayar
-    const c = ara(t, 1.6, 2.1);
+    // Büyük cevap Z.cevap'ta gelir (sessizde 1,6 sn); sayıysa 1,2 sn sayar
+    const c = ara(t, Z.cevap, Z.cevap + 0.5);
     cevap.style.opacity = c;
     cevap.style.transform = `scale(${0.92 + 0.08 * c})`;
-    if (sayac) dev.textContent = t >= 2.8 ? metin : sayac(ara(t, 1.6, 2.8));
-    // Açıklama cümlesi 3,6 sn'de
-    goster(aciklama, ara(t, 3.6, 4.2), 40);
-    // Profile çağrı 8 sn'de gelir ve hafifçe atar
-    const g = ara(t, 8, 8.5);
+    if (sayac) dev.textContent = t >= Z.cevap + 1.2 ? metin : sayac(ara(t, Z.cevap, Z.cevap + 1.2));
+    // Açıklama cümlesi Z.aciklama'da (sessizde 3,6 sn)
+    goster(aciklama, ara(t, Z.aciklama, Z.aciklama + 0.6), 40);
+    // Profile çağrı Z.cagri'da (sessizde 8 sn) gelir ve hafifçe atar
+    const g = ara(t, Z.cagri, Z.cagri + 0.5);
     cagri.style.opacity = g;
-    cagri.firstElementChild.style.transform = `scale(${(0.9 + 0.1 * g) * (1 + (t > 8.5 ? 0.03 * (0.5 - 0.5 * Math.cos(2 * Math.PI * (t - 8.5) / 1.2)) : 0))})`;
+    cagri.firstElementChild.style.transform = `scale(${(0.9 + 0.1 * g) * (1 + (t > Z.cagri + 0.5 ? 0.03 * (0.5 - 0.5 * Math.cos(2 * Math.PI * (t - Z.cagri - 0.5) / 1.2)) : 0))})`;
     if (nokta) nokta.style.opacity = 0.35 + 0.65 * (0.5 + 0.5 * Math.cos(2 * Math.PI * t / 1.2));
     if (isik) {
-      const r = (t - 6.2) / 1.3;
+      const r = (t - Z.isik) / 1.3;
       isik.style.transform = r >= 0 && r <= 1 ? `translateX(${-140 + 280 * r}%)` : 'translateX(-140%)';
     }
   };

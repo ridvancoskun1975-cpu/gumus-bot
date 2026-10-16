@@ -33,6 +33,7 @@ DOSYA = "takipci.md"
 ETIKET = {"reels": "Reels", "post": "Günlük özet", "hafta": "Haftalık özet", "ay": "Aylık özet",
           "bilgi": "Rehber", "kisa": "Rehber Reels", "yorum": "Pazar yorumu",
           "hikaye": "Rehber hikâyesi", "kart": "Haftalık kart"}
+SESLI_EK = " · sesli"   # seslendirmeli rehber kısa Reels'i
 SATIR = re.compile(r"^\|\s*(\d{4}-\d{2}-\d{2})\s*\|\s*(\d{2}:\d{2})\s*\|\s*([^|]*?)\s*\|\s*(\d+)\s*\|")
 
 
@@ -160,8 +161,17 @@ def dosyayi_olustur(satirlar, hesap):
 
 def paylasim_adi(tur, deneme=False, meta_yolu="site/meta.json"):
     """Tablodaki paylaşım adı. Gorilli akşam/haftalık özette hâl eklenir (bot/goril.py → etiket_ekle):
-    'Günlük özet · goril: istif'. meta.json yoksa, okunamazsa ya da goril yoksa ad bugünkü gibi kalır."""
+    'Günlük özet · goril: istif'. Seslendirmeli rehber kısa Reels'i 'Rehber Reels · sesli' olur (bot/ses.py;
+    haftalık raporda ayrı tür olarak görünür, sessizlerle kıyaslanır). meta.json yoksa, okunamazsa ya da
+    goril/ses yoksa ad bugünkü gibi kalır."""
     ad = ETIKET.get(tur, tur)
+    if tur == "kisa":
+        try:
+            meta = json.loads(Path(meta_yolu).read_text(encoding="utf-8"))
+            if meta.get("tur") == "kisa" and meta.get("seslendirme"):
+                ad += SESLI_EK
+        except Exception:
+            pass
     if tur in ("post", "hafta"):
         try:
             meta = json.loads(Path(meta_yolu).read_text(encoding="utf-8"))

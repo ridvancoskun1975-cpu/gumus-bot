@@ -1170,7 +1170,45 @@ def _ses_girdisi(sure):
     return ["-f", "lavfi", "-i", "anullsrc=r=44100:cl=stereo"], []
 
 
-def hareketli_video_uret(tur, veri, mp4_yolu, sure=7):
+def _ses_kazanci(wav):
+    """Seslendirme izinin -16 LUFS'a çıkması için gereken kazanç (dB); ölçülemezse 0."""
+    import re
+    try:
+        r = subprocess.run([ffmpeg_yolu(), "-hide_banner", "-nostats", "-i", str(wav), "-af",
+                            "loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json", "-f", "null", "-"],
+                           capture_output=True, text=True, timeout=120)
+        olcum = json.loads(re.findall(r"\{[^{}]*\}", r.stderr)[-1])
+        return max(-12.0, min(18.0, -16.0 - float(olcum["input_i"])))
+    except Exception as e:
+        print(f"Uyarı: seslendirme yüksekliği ölçülemedi ({type(e).__name__}); kazanç 0 dB", file=sys.stderr)
+        return 0.0
+
+
+def _seslendirme_girdisi(sure, wav):
+    """Seslendirmeli video için ses girdileri ve filter_complex parçası ([a] çıkışı).
+
+    Ses -16 LUFS'a getirilir; müzik (varsa) altında kısık çalar ve konuşma sırasında ayrıca kısılır
+    (sidechain), konuşma araları müzikle dolar. Video girdisi 0. sıradadır."""
+    kazanc = _ses_kazanci(wav)
+    ses_zinciri = f"aresample=44100,aformat=sample_fmts=fltp:channel_layouts=stereo,volume={kazanc:.2f}dB"
+    muzik = KOK / "assets" / "muzik.mp3"
+    son = f"alimiter=limit=0.89,afade=t=out:st={sure - 1.5}:d=1.5[a]"
+    if not muzik.exists():
+        print("Uyarı: assets/muzik.mp3 yok, video yalnızca seslendirmeyle üretiliyor", file=sys.stderr)
+        return ["-i", str(wav)], f"[1:a]{ses_zinciri},apad,{son}"
+    girdi = ["-stream_loop", "-1", "-i", str(muzik), "-i", str(wav)]
+    filtre = ("[1:a]loudnorm=I=-16:TP=-1.5:LRA=11,aresample=44100,aformat=sample_fmts=fltp:channel_layouts=stereo,"
+              f"volume={SESLI_MUZIK_SEVIYE},afade=t=in:d=0.5[m];"
+              f"[2:a]{ses_zinciri},apad,asplit=2[v1][vs];"
+              "[m][vs]sidechaincompress=threshold=0.03:ratio=5:attack=20:release=450[md];"
+              f"[md][v1]amix=inputs=2:duration=first:normalize=0,{son}")
+    return girdi, filtre
+
+
+SESLI_MUZIK_SEVIYE = 0.45   # seslendirmede müziğin payı (1 = sessiz Reels'teki yükseklik; ~-7 dB)
+
+
+def hareketli_video_uret(tur, veri, mp4_yolu, sure=7, seslendirme=None):
     """Şablonda window.kare(t) varsa her kareyi tarayıcıda çizip sesli video üretir.
 
     Şablon hareket tanımlamıyorsa False döner; o zaman durağan video_uret() kullanılır.
@@ -1185,11 +1223,16 @@ def hareketli_video_uret(tur, veri, mp4_yolu, sure=7):
         return False
     gecici = SABLONLAR / f"_hareket_{tur}.html"
     gecici.write_text(html, encoding="utf-8")
-    ses, ses_filtre = _ses_girdisi(sure)
     goruntu = (f"scale=1080:-2,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color={ZEMIN_RENGI},format=yuv420p")
+    if seslendirme:
+        ses, ses_filtre = _seslendirme_girdisi(sure, seslendirme)
+        akis = ["-filter_complex", f"[0:v]{goruntu}[v];{ses_filtre}", "-map", "[v]", "-map", "[a]"]
+    else:
+        ses, ses_filtre = _ses_girdisi(sure)
+        akis = ["-vf", goruntu, *ses_filtre]
     komut = [ffmpeg_yolu(), "-y", "-loglevel", "error",
              "-f", "image2pipe", "-framerate", str(VIDEO_FPS), "-c:v", "mjpeg", "-i", "-", *ses,
-             "-t", str(sure), "-vf", goruntu, *ses_filtre,
+             "-t", str(sure), *akis,
              "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-r", str(VIDEO_FPS),
              "-c:a", "aac", "-b:a", "128k", "-shortest", "-movflags", "+faststart", str(mp4_yolu)]
     boyut = {"reels": (1080, 1920), "kisa": (1080, 1920), "ozel": (1080, 1920),
@@ -1831,13 +1874,28 @@ def _sayilabilir(metin):
     return [m.group(1), m.group(2), m.group(3)] if m else None
 
 
+def kisa_seslendirmesi(konu, bolum, cikti):
+    """Kısa Reels'in kadın sesi seslendirmesi (bot/ses.py). Kapalıysa ya da herhangi bir hata olursa None
+    döner ve Reels bugünkü gibi yalnızca müzikle üretilir. SES_ADI ile başka ses denenebilir (önizleme)."""
+    import ses
+    if not ses.SES_ACIK or os.environ.get("SES_KAPALI"):
+        return None
+    try:
+        return ses.kisa_seslendir(konu, bolum, cikti, ses=os.environ.get("SES_ADI", "").strip() or ses.SES)
+    except Exception as e:
+        print(f"::warning::Seslendirme yapılamadı ({type(e).__name__}: {str(e)[:200]}); kısa Reels yalnızca müzikle gidiyor.")
+        return None
+
+
 def kisa_hazirla(cikti, konu):
-    """Gümüş rehberi bölümünden kısa Reels (~12 sn): soru → büyük cevap → tek cümle → profile çağrı.
+    """Gümüş rehberi bölümünden kısa Reels (~12 sn; seslendirmeyle ~15-20 sn): soru → büyük cevap → tek cümle → profile çağrı.
 
     Metin bölümün kendisinden gelir (başlık, alt başlık, büyük rakam, ilk sayfanın formülü ve ilk
-    maddesi); ayrıca yazılmaz. Açıklama bölümün tam metnini taşır.
+    maddesi); ayrıca yazılmaz. Açıklama bölümün tam metnini taşır. Seslendirme açıksa (bot/ses.py) kadın sesi
+    soruyu, cevabı, cümleyi ve çağrıyı okur; her öğe kendi sesiyle gelir, video sesin süresine uzar.
     """
     import bilgi
+    import ses
     if not 1 <= konu <= len(bilgi.BOLUMLER):
         raise RuntimeError(f"Konu 1-{len(bilgi.BOLUMLER)} arasında olmalı (verilen: {konu})")
     b = bilgi.BOLUMLER[konu - 1]
@@ -1848,16 +1906,33 @@ def kisa_hazirla(cikti, konu):
             "formul": ilk_sayfa.get("formul"), "cumle": (ilk_sayfa.get("maddeler") or [b["alt"]])[0]}
     damga = datetime.now(TR_SAAT).strftime("%Y%m%d-%H%M")
     mp4 = cikti / f"kisa{konu}-{damga}.mp4"
-    sure = 12
-    if not hareketli_video_uret("kisa", veri, mp4, sure=sure):
+    seslendirme = kisa_seslendirmesi(konu, b, cikti)
+    sure = seslendirme["sure"] if seslendirme else ses.VARSAYILAN_SURE
+    veri["zaman"] = seslendirme["zaman"] if seslendirme else ses.VARSAYILAN_ZAMAN
+    try:
+        if seslendirme:
+            try:
+                uretildi = hareketli_video_uret("kisa", veri, mp4, sure=sure, seslendirme=seslendirme["wav"])
+            except Exception as e:   # yedek yol: seslendirmeli video olmazsa bugünkü gibi yalnızca müzik
+                print(f"::warning::Seslendirmeli video üretilemedi ({type(e).__name__}: {str(e)[:200]}); "
+                      "kısa Reels yalnızca müzikle gidiyor.")
+                seslendirme, sure, veri["zaman"] = None, ses.VARSAYILAN_SURE, ses.VARSAYILAN_ZAMAN
+                uretildi = hareketli_video_uret("kisa", veri, mp4, sure=sure)
+        else:
+            uretildi = hareketli_video_uret("kisa", veri, mp4, sure=sure)
+    finally:
+        (cikti / f"_ses-kisa{konu}.wav").unlink(missing_ok=True)   # ara dosya yayına çıkmasın
+    if not uretildi:
         raise RuntimeError("Kısa Reels üretilemedi (şablonda hareket yok)")
     kapak = cikti / f"kapak-kisa{konu}-{damga}.jpg"
     gorsel_uret("kisa", veri, kapak)
 
     parcalar = [f"{b['baslik']} Kısa cevap: {b['buyuk']}, {b['buyuk_alt']} | Gümüş rehberi #{konu}", b["alt"]]
     parcalar += [bilgi._sayfa_metni(s) for s in b["sayfalar"]]
-    parcalar += ["Bölümün kaydırmalı hâli profilde; kaydedin, lazım olunca bakarsınız.",
-                 "Bilgi amaçlıdır, yatırım tavsiyesi değildir."]
+    parcalar += ["Bölümün kaydırmalı hâli profilde; kaydedin, lazım olunca bakarsınız."]
+    if seslendirme:
+        parcalar.append(ses.ACIKLAMA_SATIRI)
+    parcalar.append("Bilgi amaçlıdır, yatırım tavsiyesi değildir.")
     kunye = muzik_kunyesi()
     if kunye:
         parcalar.append(f"Müzik: {kunye}")
@@ -1866,8 +1941,12 @@ def kisa_hazirla(cikti, konu):
     if len(metin) > 2200:
         raise RuntimeError(f"Açıklama Instagram sınırını aşıyor ({len(metin)} > 2200 karakter)")
     (cikti / "meta.json").write_text(json.dumps({"tur": "kisa", "konu": konu, "dosya": mp4.name, "aciklama": metin,
-                                                 "kapak_ms": int((sure - 0.5) * 1000), "kapak": kapak.name},
+                                                 "kapak_ms": int((sure - 0.5) * 1000), "kapak": kapak.name,
+                                                 "seslendirme": seslendirme["ses"] if seslendirme else None,
+                                                 "ses_metni": seslendirme["metin"] if seslendirme else None},
                                                 ensure_ascii=False, indent=2), encoding="utf-8")
+    if seslendirme:
+        print(f"Seslendirme: {seslendirme['ses']}, {sure} sn, parçalar {seslendirme['parca_sn']}")
     print(metin)
     print(f"\nÜretilen dosya: {mp4}")
 
