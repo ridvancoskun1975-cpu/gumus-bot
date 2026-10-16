@@ -844,7 +844,7 @@ def haftalik_veri_hazirla(f, hesap):
     v["parite_cumle"] = parite_cumlesi(v["parite_deg"], "bu hafta")
 
     # Grafik: gram gümüşün günlük değerleri, önceki haftanın son değeri kesikli çizgi (kısmi haftada çizgi yok)
-    gen, yuk, kenar, yan = 904, 230, 30, 64
+    gen, yuk, kenar, yan = 904, 150, 30, 64      # yükseklik 230 → 150: büyüyen yazılara yer (16 Ekim 2026)
     tum = degerler + ([] if v["kismi"] else [f["gram_once"]])
     alt_s, ust_s = min(tum), max(tum)
     aralik = (ust_s - alt_s) or 1
