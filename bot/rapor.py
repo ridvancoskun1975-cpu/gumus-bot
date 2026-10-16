@@ -5,8 +5,8 @@ Kullanım (iş akışı çağırır):
 
 Varsayılan dönem: dünden geriye 7 gün (pazartesi sabahı çalışınca geçen pazartesi–pazar).
 Rapor her paylaşımın ulaştığı kişi, görüntülenme, beğeni, yorum, kaydetme ve paylaşma sayılarını,
-Reels ile gönderiyi karşılaştırmasını, hesaba ulaşanların ne kadarının takip etmeyenlerden geldiğini
-ve günlere göre takipçi değişimini içerir.
+Reels ile gönderiyi karşılaştırmasını, hesaba ulaşanların ne kadarının takip etmeyenlerden geldiğini,
+günlere göre takipçi değişimini ve goril maskotunun hâllerine göre akşam özetlerini (bot/goril.py) içerir.
 
 Bot deposu ve iş akışı günlükleri herkese açık: bu betik hiçbir sayıyı günlüğe yazmaz. Rakamlar
 yalnızca özel depodaki raporlar/<bitiş tarihi>.md dosyasında durur. DENEME=true ise dosya adı
@@ -31,6 +31,7 @@ import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import kayit  # noqa: E402  (takipci.md biçimi ve özel depo adresi tek yerde)
+import goril  # noqa: E402  (takipci.md'deki " · goril: <hâl>" eki; yalnız standart kütüphane)
 
 TR_SAAT = ZoneInfo("Europe/Istanbul")
 IG_API = kayit.IG_API
@@ -176,21 +177,44 @@ def takipci_satirlari():
     return kayit.satirlari_oku(metin)
 
 
+# Instagram geçici engelinde paylaşım kayıttan 150 dk sonra gidebilir: bu özetler saatle değil günüyle eşlenir.
+GUNE_GORE = ("Günlük özet", "Haftalık özet")
+
+
 def paylasim_adlari(medyalar, satirlar):
-    """Her gönderiye takipci.md'deki paylaşım adını eşler. Kayıt üretim işinde, Instagram'a
-    gönderilmeden birkaç dakika önce düşer: gönderiden önceki en yakın kayıt (en çok 25 dk) seçilir.
-    Eşleşmezse açıklamadan, o da olmazsa Reels/Gönderi."""
-    gercek = [(datetime.strptime(f"{s[0]} {s[1]}", "%Y-%m-%d %H:%M").replace(tzinfo=TR_SAAT), s[2])
-              for s in satirlar if "(deneme)" not in s[2]]
+    """Her gönderiye takipci.md'deki paylaşım adını ve goril hâlini (_goril; yoksa None) eşler. Kayıt üretim
+    işinde, Instagram'a gönderilmeden önce düşer. Açıklamasından akşam ya da haftalık özet olduğu anlaşılan
+    gönderi, aynı gün kendisinden önceki en yakın aynı adlı kayıtla eşlenir. Diğerlerinde gönderiden önceki
+    en yakın kayıt (en çok 25 dk) seçilir. Eşleşmezse ad açıklamadan, o da olmazsa Reels/Gönderi."""
+    gercek = []
+    for s in satirlar:
+        if "(deneme)" in s[2]:
+            continue
+        ad, hal = goril.etiket_ayir(s[2])
+        gercek.append((datetime.strptime(f"{s[0]} {s[1]}", "%Y-%m-%d %H:%M").replace(tzinfo=TR_SAAT), ad, hal))
     kullanilan = set()
-    for m in sorted(medyalar, key=lambda x: x["_zaman"]):
-        adaylar = [(z, i) for i, (z, _) in enumerate(gercek) if i not in kullanilan
+    sirali = sorted(medyalar, key=lambda x: x["_zaman"])
+    for m in sirali:
+        m["_ad"], m["_goril"] = None, None
+        ozet = aciklamadan_ad(m)
+        if ozet not in GUNE_GORE:
+            continue
+        adaylar = [(z, i) for i, (z, ad, _) in enumerate(gercek) if i not in kullanilan and ad == ozet
+                   and z.date() == m["_zaman"].date() and (z - m["_zaman"]).total_seconds() / 60 <= 2]
+        if adaylar:
+            _, i = max(adaylar)
+            kullanilan.add(i)
+            m["_ad"], m["_goril"] = ozet, gercek[i][2]
+    for m in sirali:
+        if m["_ad"]:
+            continue
+        adaylar = [(z, i) for i, (z, _, _) in enumerate(gercek) if i not in kullanilan
                    and -25 <= (z - m["_zaman"]).total_seconds() / 60 <= 2]
         ad = None
         if adaylar:
             _, i = max(adaylar)
             kullanilan.add(i)
-            ad = gercek[i][1]
+            ad, m["_goril"] = gercek[i][1], gercek[i][2]
         m["_ad"] = RAPOR_ADI.get(ad, ad) if ad else aciklamadan_ad(m)
 
 
@@ -251,6 +275,71 @@ def _top(liste, anahtar):
     return sum(degerler) if degerler else None
 
 
+def _oran(x):
+    return "—" if x is None else f"{x:.2f}".replace(".", ",")
+
+
+GORIL_SIRA = ("yok", "istif", "gezinen", "sevinen", "uzulen", "ozel")
+GORIL_ADI = {"yok": "goril yok", "istif": "istifleyici", "gezinen": "gezinen", "sevinen": "sevinen",
+             "uzulen": "üzülen", "ozel": "özel gün"}
+
+
+def goril_bolumu(medyalar):
+    """Goril hâllerine göre akşam özetleri (ve aynı günün sabah Reels'ine oranı) ile haftalık özetler.
+    Dönemde akşam ya da haftalık özet yoksa boş liste."""
+    aksam = [m for m in medyalar if m.get("_ad") == "Günlük özet"]
+    hafta = [m for m in medyalar if m.get("_ad") == "Haftalık özet"]
+    if not aksam and not hafta:
+        return []
+    sabah = {}
+    for m in medyalar:
+        if m.get("_ad") == "Fiyat Reels'i":
+            sabah.setdefault(m["_zaman"].date(), m)       # günün ilk fiyat Reels'i
+    sat = ["## Goril", "",
+           "Akşam özetinin aynı günün sabah fiyat Reels'ine oranı asıl ölçüdür: sabah Reels'inde goril yok, "
+           "iki paylaşım aynı günün kitlesini görür. Goril 16 Ekim akşamı başladı; gorilsiz akşamlar yalnız "
+           "13–15 Ekim (hesabın ilk günleri, tanıdık etkileşimi yüksek), bu yüzden kıyas zayıftır ve hâller arası "
+           "fark da izlenir. Sayılar küçükken tek tek günler gürültülüdür.", ""]
+    if aksam:
+        sat += ["**Akşam özeti (hafta içi)**", "",
+                "| Goril | Gün | Ort. görüntülenme | Ort. ulaşılan | Akşam ÷ sabah (görüntülenme) | "
+                "Akşam ÷ sabah (ulaşılan) | Ort. izlenme | Kaydetme | Paylaşma |",
+                "|---|---|---|---|---|---|---|---|---|"]
+        gruplar = {}
+        for m in aksam:
+            gruplar.setdefault(m.get("_goril") or "yok", []).append(m)
+        gorilli = [m for m in aksam if m.get("_goril")]
+        satirlar_ = [(GORIL_ADI.get(h, h), gruplar[h]) for h in GORIL_SIRA if h in gruplar]
+        if gorilli and len(gruplar) > 1:
+            satirlar_.append(("gorilli (hepsi)", gorilli))
+        for ad, liste in satirlar_:
+            oranlar = {}
+            for olcu in ("views", "reach"):
+                o = []
+                for m in liste:
+                    s_ = sabah.get(m["_zaman"].date())
+                    a, b = m["_ist"].get(olcu), s_ and s_["_ist"].get(olcu)
+                    if a is not None and b:
+                        o.append(a / b)
+                oranlar[olcu] = sum(o) / len(o) if o else None
+            izl = _ort(liste, "ig_reels_avg_watch_time")
+            sat.append(f"| {ad} | {len(liste)} | {sayi(_ort(liste, 'views'))} | {sayi(_ort(liste, 'reach'))} | "
+                       f"{_oran(oranlar['views'])} | {_oran(oranlar['reach'])} | {saniye(izl)} | "
+                       f"{sayi(_top(liste, 'saved'))} | {sayi(_top(liste, 'shares'))} |")
+        sat.append("")
+    if hafta:
+        sat += ["**Haftalık özet (cumartesi)**", "",
+                "| Gün | Goril | Görüntülenme | Ulaşılan | Ort. izlenme | Kaydetme | Paylaşma |",
+                "|---|---|---|---|---|---|---|"]
+        for m in sorted(hafta, key=lambda x: x["_zaman"]):
+            i = m["_ist"]
+            sat.append(f"| {_kisa_zaman(m['_zaman'])} | {GORIL_ADI.get(m.get('_goril') or 'yok')} | "
+                       f"{sayi(i.get('views'))} | {sayi(i.get('reach'))} | {saniye(i.get('ig_reels_avg_watch_time'))} | "
+                       f"{sayi(i.get('saved'))} | {sayi(i.get('shares'))} |")
+        sat.append("")
+    return sat
+
+
 def gunluk_takipci(satirlar, bas, bit):
     """Her günün son kaydı ve bir önceki güne göre değişim: [(gün, takipçi, değişim)]."""
     gun_sonu = {}
@@ -272,7 +361,9 @@ def gunluk_takipci(satirlar, bas, bit):
 
 def rapor_yaz(medyalar, hesap, satirlar, bas, bit, hesap_adi, uyarilar, deneme, simdi):
     sat = []
-    baslik = f"# Haftalık Instagram raporu · {hesap_adi}" if hesap_adi else "# Haftalık Instagram raporu"
+    gun_sayisi = (bit - bas).days + 1
+    baslik = "# Haftalık Instagram raporu" if gun_sayisi == 7 else f"# Instagram raporu ({gun_sayisi} gün)"
+    baslik += f" · {hesap_adi}" if hesap_adi else ""
     sat += [baslik, "",
             f"**{tarih_tr(bas)} – {tarih_tr(bit)} {bit.year}**"
             + (" · örnek (deneme) rapor" if deneme else "")
@@ -368,6 +459,9 @@ def rapor_yaz(medyalar, hesap, satirlar, bas, bit, hesap_adi, uyarilar, deneme, 
                        f"{sayi(_top(liste, 'saved'))} | {sayi(_top(liste, 'shares'))} |")
         sat.append("")
 
+    # --- goril
+    sat += goril_bolumu(medyalar)
+
     # --- tek tek
     if medyalar:
         sat += ["## Tek tek paylaşımlar", "",
@@ -379,7 +473,8 @@ def rapor_yaz(medyalar, hesap, satirlar, bas, bit, hesap_adi, uyarilar, deneme, 
                 son_hucre = saniye(i.get("ig_reels_avg_watch_time"))
             else:
                 son_hucre = f"{sayi(i.get('follows'))} takip" if i.get("follows") is not None else "—"
-            sat.append(f"| {_kisa_zaman(m['_zaman'])} | [{m['_ad']}]({m.get('permalink', '')}) | {sayi(i.get('reach'))} | "
+            ad = m["_ad"] + (f" · goril: {GORIL_ADI.get(m['_goril'], m['_goril'])}" if m.get("_goril") else "")
+            sat.append(f"| {_kisa_zaman(m['_zaman'])} | [{ad}]({m.get('permalink', '')}) | {sayi(i.get('reach'))} | "
                        f"{sayi(i.get('views'))} | {sayi(i.get('likes'))} | {sayi(i.get('comments'))} | "
                        f"{sayi(i.get('saved'))} | {sayi(i.get('shares'))} | {son_hucre} |")
         sat.append("")
@@ -434,7 +529,8 @@ def calistir(bit, gun, deneme):
 
     from main import hesap_adi   # görsellerdeki kullanıcı adıyla aynı
     metin = rapor_yaz(medyalar, hesap, satirlar, bas, bit, hesap_adi(), ig.uyarilar, deneme, simdi)
-    yol = f"raporlar/{bit.isoformat()}{'-deneme' if deneme else ''}.md"
+    # 7 günden farklı dönem (ör. 4 haftalık goril değerlendirmesi) haftalık raporun üstüne yazılmaz
+    yol = f"raporlar/{bit.isoformat()}{'' if gun == 7 else f'-{gun}gun'}{'-deneme' if deneme else ''}.md"
     ozel_depoya_yaz(yol, metin, f"Haftalık rapor: {bas.isoformat()} – {bit.isoformat()}"
                                 + (" (deneme)" if deneme else ""))
     # Yalnızca sayı içermeyen durum bilgisi: bu günlük herkese açık.

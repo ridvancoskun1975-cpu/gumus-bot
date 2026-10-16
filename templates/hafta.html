@@ -4,35 +4,38 @@
 <meta charset="utf-8">
 <title>Gümüş Haftalık Özet</title>
 <style>{% include "ortak.css" %}
-.grafik-etiket { font-size: 22px; fill: var(--soluk); font-family: 'Archivo', sans-serif; }
-.grafik-deger { font-size: 22px; fill: var(--yazi); font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+.grafik-etiket { font-size: 27px; fill: var(--soluk); font-family: 'Archivo', sans-serif; }
+.grafik-deger { font-size: 26px; fill: var(--yazi); font-family: 'JetBrains Mono', monospace; font-weight: 600; }
 </style>
 </head>
 <body>
-<div class="sahne" style="position: relative; width: 1080px; height: 1350px; padding: 80px 88px">
+<div class="sahne" style="position: relative; width: 1080px; height: 1350px; padding: 68px 88px 72px">
   <div class="isik" aria-hidden="true"></div>
   <div class="ust">
-    <div class="ust-sol" style="gap: 16px">
-      <div class="etiket" style="gap: 12px; font-size: 26px"><span id="nokta" class="nokta" style="width: 12px; height: 12px"></span><span>HAFTALIK ÖZET</span></div>
-      <h1 style="font-size: 120px; letter-spacing: -3px">Gümüş</h1>
-      <div class="tarih mono" style="font-size: 30px">{{ aralik }}</div>
+    <div class="ust-sol" style="gap: 10px">
+      <div class="etiket" style="gap: 12px; font-size: 32px"><span id="nokta" class="nokta" style="width: 12px; height: 12px"></span><span>HAFTALIK ÖZET</span></div>
+      <h1 style="font-size: 92px; letter-spacing: -3px">Gümüş</h1>
+      <div class="tarih mono" style="font-size: 36px">{{ aralik }}</div>
     </div>
     {{ ag_etiketi(128, 146, '12px 14px', 22, 48, 18) }}
   </div>
 
-  <div class="kahraman" style="gap: 10px; padding-top: 32px">
+  <div class="kahraman" style="gap: 8px; padding-top: 22px; position: relative">
+    {#- Goril maskotu (bot/goril.py): yalnız hafta içi akşam özeti ve cumartesi haftalık özet -#}
+    {% if maskot %}<div class="maskot" aria-hidden="true" style="position: absolute; right: -14px; bottom: 48px; width: 226px; height: 247px">{% include maskot %}</div>{% endif %}
     {% if buyuk_hareket %}{{ manset(buyuk_hareket, 38, 28) }}{% else %}
-    <div class="kahraman-baslik" style="font-size: 28px">GRAM GÜMÜŞ · <span style="text-transform: uppercase">{{ son_an }}</span></div>
+    <div class="kahraman-baslik" style="font-size: 34px">GRAM GÜMÜŞ · <span style="text-transform: uppercase">{{ son_an }}</span></div>
     {% endif %}
     <div class="kahraman-satir" style="gap: 20px">
       <div class="kahraman-sayi-kolon" style="gap: 6px">
-        <span id="fiyat-deg" style="display: inline-flex; transform-origin: 100% 100%">{{ degisim(gram_deg, 36, 26) }}</span>
-        <span id="fiyat" class="kahraman-sayi sayi" style="font-size: 150px; letter-spacing: -5px"
+        <span id="fiyat-deg" style="display: inline-flex; transform-origin: 100% 100%">{{ degisim(gram_deg, 42, 30) }}</span>
+        <span id="fiyat" class="kahraman-sayi sayi" style="font-size: 140px; letter-spacing: -5px"
               data-hedef="{{ gram_sayi }}" data-once="{{ gram_once_sayi }}">{{ gram }}</span>
       </div>
       <span class="kahraman-birim" style="font-size: 64px; padding-bottom: 18px">₺</span>
     </div>
-    <div class="soluk" style="font-size: 26px">{{ baz_gorsel }} · en yüksek {{ en_yuksek }} ₺ · en düşük {{ en_dusuk }} ₺</div>
+    {#- İki kısa satır: büyük yazıda tek satır sağdaki gorille çakışırdı -#}
+    <div class="soluk" style="font-size: 30px; line-height: 1.25">{{ baz_gorsel }}<br>en yüksek {{ en_yuksek }} ₺ · en düşük {{ en_dusuk }} ₺</div>
   </div>
 
   {% set gr = grafik %}
@@ -51,32 +54,44 @@
     {% endfor %}
   </svg>
 
-  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; border-top: 2px solid var(--cizgi); padding-top: 28px">
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; border-top: 2px solid var(--cizgi); padding-top: 24px; align-items: stretch">
     <div class="satir" style="display: flex; flex-direction: column; gap: 6px">
-      <b style="font-size: 30px">Altın / Gümüş paritesi</b>
-      <span class="soluk" style="font-size: 22px">1 ons altın = ? ons gümüş</span>
-      <div style="display: flex; align-items: baseline; gap: 14px; margin-top: 6px">
-        <span class="sayi vurgu" style="font-size: 58px; font-weight: 700">{{ parite }}</span>
-        {{ degisim(parite_deg, 26, 18) }}
+      <b style="font-size: 34px">Altın / Gümüş paritesi</b>
+      <span class="soluk" style="font-size: 30px; line-height: 1.2; text-wrap: balance">{{ parite_cumle or "1 ons altın = ? ons gümüş" }}</span>
+      <div style="display: flex; align-items: baseline; gap: 14px; margin-top: auto; padding-top: 6px">
+        <span class="sayi vurgu" style="font-size: 60px; font-weight: 700">{{ parite }}</span>
+        {{ degisim(parite_deg, 32, 22) }}
       </div>
     </div>
     <div class="satir" style="display: flex; flex-direction: column; gap: 6px">
-      <b style="font-size: 30px">Dolar / TL</b>
-      <span class="soluk" style="font-size: 22px">ECB referans kuru · {{ kur_tarihi }}</span>
-      <div style="display: flex; align-items: baseline; gap: 10px; margin-top: 6px">
-        <span class="sayi" style="font-size: 58px; font-weight: 700">{{ dolar }}</span>
-        <span class="vurgu" style="font-size: 36px; font-weight: 700">₺</span>
-        {{ degisim(dolar_deg, 26, 18) }}
+      <b style="font-size: 34px">Dolar / TL</b>
+      <span class="soluk" style="font-size: 30px; line-height: 1.2; text-wrap: balance">ECB kuru · {{ kur_tarihi }}</span>
+      <div style="display: flex; align-items: baseline; gap: 10px; margin-top: auto; padding-top: 6px">
+        <span class="sayi" style="font-size: 60px; font-weight: 700">{{ dolar }}</span>
+        <span class="vurgu" style="font-size: 38px; font-weight: 700">₺</span>
+        {{ degisim(dolar_deg, 32, 22) }}
       </div>
     </div>
   </div>
 
   {% if pazar_hatirlatma %}
   {#- Ertesi günün pazar yorumu hatırlatması. Kural (Rıdvan, 15 Ekim 2026): her cumartesi -#}
-  <div id="hatirlatma" style="align-self: flex-start; display: inline-flex; align-items: center; gap: 14px; border: 2px solid var(--vurgu);
-       border-radius: 999px; padding: 12px 26px; font-size: 26px; color: var(--yazi)">
-    <span class="nokta" style="width: 12px; height: 12px"></span><span><b>{{ pazar_hatirlatma.kalin }}</b> · {{ pazar_hatirlatma.metin }}</span>
+  {#- Tek satır (Rıdvan, 16 Ekim 2026: iki satırda çerçevenin sağı boş kalıyordu). 27 px'te 904 px'e sığar;
+      yazı uzarsa aşağıdaki betik 24 px'e kadar küçültür, satır yine kırılmaz. -#}
+  <div id="hatirlatma" style="align-self: flex-start; display: inline-flex; align-items: center; gap: 12px; border: 2px solid var(--vurgu);
+       border-radius: 28px; padding: 10px 18px; font-size: 27px; line-height: 1.25; color: var(--yazi); white-space: nowrap;
+       max-width: 100%; box-sizing: border-box; overflow: hidden">
+    <span class="nokta" style="width: 12px; height: 12px; flex: none"></span><span><b>{{ pazar_hatirlatma.kalin }}</b> · {{ pazar_hatirlatma.metin }}</span>
   </div>
+  <script>(function () {
+    var h = document.getElementById("hatirlatma");
+    function sigdir() {   // yazı tipi yüklendikten sonra ölçülür (yedek yazı tipi daha geniş)
+      var b = 27; h.style.fontSize = b + "px";
+      while (h.scrollWidth > h.clientWidth + 1 && b > 24) { b -= 0.5; h.style.fontSize = b + "px"; }
+    }
+    sigdir();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(sigdir);
+  })();</script>
   {% endif %}
   <div class="alt" style="border-top: 2px solid var(--cizgi); padding-top: 24px">
     <b style="font-size: 32px">{{ hesap }}</b>
@@ -87,5 +102,6 @@
   </div>
 </div>
 <script>{% include "hareket.js" %}</script>
+{% if maskot_js %}<script>{% include maskot_js %}</script>{% endif %}
 </body>
 </html>

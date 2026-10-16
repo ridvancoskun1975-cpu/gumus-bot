@@ -10,50 +10,53 @@
   <div class="isik" aria-hidden="true"></div>
   <div class="ust">
     <div class="ust-sol" style="gap: 18px">
-      <div class="etiket" style="gap: 12px; font-size: 26px"><span id="nokta" class="nokta" style="width: 12px; height: 12px"></span><span>GÜNLÜK ÖZET</span></div>
+      <div class="etiket" style="gap: 12px; font-size: 34px"><span id="nokta" class="nokta" style="width: 12px; height: 12px"></span><span>GÜNLÜK ÖZET</span></div>
       <h1 style="font-size: 132px; letter-spacing: -3px">Gümüş</h1>
-      <div class="tarih mono" style="font-size: 30px">{{ tarih }} · {{ saat }}</div>
+      <div class="tarih mono" style="font-size: 38px">{{ tarih }} · {{ saat }}</div>
     </div>
     {{ ag_etiketi(128, 146, '12px 14px', 22, 48, 18) }}
   </div>
 
-  <div class="kahraman" style="gap: 12px; padding-top: 44px">
+  <div class="kahraman" style="gap: 12px; padding-top: 44px; position: relative">
+    {#- Goril maskotu (bot/goril.py): yalnız hafta içi akşam özeti ve cumartesi haftalık özet -#}
+    {% if maskot %}<div class="maskot" aria-hidden="true" style="position: absolute; right: -14px; bottom: -68px; width: 300px; height: 328px">{% include maskot %}</div>{% endif %}
     {% if buyuk_hareket %}{{ manset(buyuk_hareket, 40, 30) }}{% elif gun_baslik %}{{ gun_basligi(gun_baslik, 38, 26) }}{% else %}
-    <div class="kahraman-baslik" style="font-size: 30px">GRAM GÜMÜŞ</div>
+    <div class="kahraman-baslik" style="font-size: 36px">GRAM GÜMÜŞ</div>
     {% endif %}
     <div class="kahraman-satir" style="gap: 20px">
       <div class="kahraman-sayi-kolon" style="gap: 6px">
-        <span id="fiyat-deg" style="display: inline-flex; transform-origin: 100% 100%">{{ degisim(gram_deg, 36, 26) }}</span>
+        <span id="fiyat-deg" style="display: inline-flex; transform-origin: 100% 100%">{{ degisim(gram_deg, 44, 30) }}</span>
         <span id="fiyat" class="kahraman-sayi sayi" style="font-size: 170px; letter-spacing: -5px"
               data-hedef="{{ gram_sayi }}" data-once="{{ gram_once_sayi }}">{{ gram }}</span>
       </div>
       <span class="kahraman-birim" style="font-size: 72px; padding-bottom: 20px">₺</span>
     </div>
-    <div class="soluk" style="font-size: 28px">{% if gun_baslik and not buyuk_hareket %}Gram gümüş · Türk lirası · önceki güne göre{% else %}Türk lirası · 1 gram · önceki güne göre{% endif %}</div>
+    {#- Kısa tutulur: büyük yazıda sağdaki gorille çakışmasın (₺ işareti zaten fiyatın yanında) -#}
+    <div class="soluk" style="font-size: 34px">{% if gun_baslik and not buyuk_hareket %}Gram gümüş · önceki güne göre{% else %}1 gram · önceki güne göre{% endif %}</div>
   </div>
 
-  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; border-top: 2px solid var(--cizgi); padding-top: 32px">
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; border-top: 2px solid var(--cizgi); padding-top: 32px; align-items: stretch">
     <div class="satir" style="display: flex; flex-direction: column; gap: 6px">
-      <b style="font-size: 32px">Altın / Gümüş paritesi</b>
-      <span class="soluk" style="font-size: 24px">1 ons altın = ? ons gümüş</span>
-      <div style="display: flex; align-items: baseline; gap: 14px; margin-top: 8px">
-        <span class="sayi vurgu" style="font-size: 64px; font-weight: 700">{{ parite }}</span>
-        {{ degisim(parite_deg, 28, 20) }}
+      <b style="font-size: 36px">Altın / Gümüş paritesi</b>
+      <span class="soluk" style="font-size: 32px; line-height: 1.2; text-wrap: balance">{{ parite_cumle or "1 ons altın = ? ons gümüş" }}</span>
+      <div style="display: flex; align-items: baseline; gap: 14px; margin-top: auto; padding-top: 8px">
+        <span class="sayi vurgu" style="font-size: 68px; font-weight: 700">{{ parite }}</span>
+        {{ degisim(parite_deg, 34, 24) }}
       </div>
     </div>
     <div class="satir" style="display: flex; flex-direction: column; gap: 6px">
-      <b style="font-size: 32px">Dolar / TL</b>
-      <span class="soluk" style="font-size: 24px">ECB referans kuru · {{ kur_tarihi }}</span>
-      <div style="display: flex; align-items: baseline; gap: 10px; margin-top: 8px">
-        <span class="sayi" style="font-size: 64px; font-weight: 700">{{ dolar }}</span>
-        <span class="vurgu" style="font-size: 40px; font-weight: 700">₺</span>
-        {{ degisim(dolar_deg, 28, 20) }}
+      <b style="font-size: 36px">Dolar / TL</b>
+      <span class="soluk" style="font-size: 32px; line-height: 1.2; text-wrap: balance">ECB kuru · {{ kur_tarihi }}</span>
+      <div style="display: flex; align-items: baseline; gap: 10px; margin-top: auto; padding-top: 8px">
+        <span class="sayi" style="font-size: 68px; font-weight: 700">{{ dolar }}</span>
+        <span class="vurgu" style="font-size: 42px; font-weight: 700">₺</span>
+        {{ degisim(dolar_deg, 34, 24) }}
       </div>
     </div>
   </div>
 
   <div class="alt" style="border-top: 2px solid var(--cizgi); padding-top: 28px">
-    <b style="font-size: 32px">{{ hesap }}</b>
+    <b style="font-size: 34px">{{ hesap }}</b>
     <div class="alt-sag soluk" style="font-size: 22px">
       <span>Bilgi amaçlıdır, yatırım tavsiyesi değildir.</span>
       <span>Metal fiyatları: {{ kaynak_metal }}</span>
@@ -61,5 +64,6 @@
   </div>
 </div>
 <script>{% include "hareket.js" %}</script>
+{% if maskot_js %}<script>{% include maskot_js %}</script>{% endif %}
 </body>
 </html>

@@ -1,0 +1,139 @@
+<svg id="goril-ozel" viewBox="0 -100 320 450" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <defs>
+    <radialGradient id="go-isik" cx="50%" cy="58%" r="50%">
+      <stop offset="0" stop-color="#5BC98C" stop-opacity="0.32"/>
+      <stop offset="0.6" stop-color="#5BC98C" stop-opacity="0.09"/>
+      <stop offset="1" stop-color="#5BC98C" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="go-gumus" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F2F5F8"/>
+      <stop offset="1" stop-color="#A9B3BE"/>
+    </linearGradient>
+    <linearGradient id="go-kulce-on" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#D5DBE2"/>
+      <stop offset="1" stop-color="#8E98A4"/>
+    </linearGradient>
+    <!-- tek külçe (yan görünüş): alt kenarın ortası (0,0) -->
+    <g id="go-kulce">
+      <path d="M-33 0 L33 0 L28 -12 L-28 -12 Z" fill="url(#go-kulce-on)"/>
+      <path d="M-28 -12 L28 -12 L24 -16 L-24 -16 Z" fill="#F2F5F8"/>
+      <path d="M-18 -7 L-8 -7" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+    </g>
+  </defs>
+
+  <g id="go-hepsi">
+    <ellipse id="go-isik-el" cx="160" cy="190" rx="160" ry="170" fill="url(#go-isik)"/>
+
+    <!-- havai fişekler (betik doldurur) -->
+    <g id="go-fisekler"></g>
+
+    <!-- yer gölgesi -->
+    <ellipse cx="160" cy="347" rx="136" ry="8" fill="#000000" opacity="0.45"/>
+
+    <!-- külçe kürsüsü: istifçinin yığını, goril tepesine çıkmış -->
+    <defs>
+      <clipPath id="go-kursu-kes">
+        <rect x="124" y="308" width="72" height="21"/>
+        <rect x="38" y="329" width="244" height="21"/>
+      </clipPath>
+    </defs>
+    <g id="go-kursu" class="goril-beden">
+      <use href="#go-kulce" transform="translate(74 350) scale(1.3)"/>
+      <use href="#go-kulce" transform="translate(160 350) scale(1.3)"/>
+      <use href="#go-kulce" transform="translate(246 350) scale(1.3)"/>
+      <use href="#go-kulce" transform="translate(117 329) scale(1.3)"/>
+      <use href="#go-kulce" transform="translate(203 329) scale(1.3)"/>
+      <g clip-path="url(#go-kursu-kes)">
+        <path id="go-kursu-parilti" d="M0 0 L12 0 L-2 44 L-14 44 Z" fill="#FFFFFF" opacity="0"/>
+      </g>
+    </g>
+
+    <!-- goril: kürsünün üstünde -->
+    <g id="go-yer" transform="translate(0 -33) translate(160 341) scale(0.95) translate(-160 -341)">
+      <g id="go-goril" class="goril-beden">
+        <!-- bacaklar -->
+        <g fill="#3B4149">
+          <path d="M104 282 C96 304 98 324 110 332 L146 332 C150 318 148 300 142 286 Z"/>
+          <path d="M216 282 C224 304 222 324 210 332 L174 332 C170 318 172 300 178 286 Z"/>
+        </g>
+        <g fill="#6F7680">
+          <ellipse cx="124" cy="333" rx="26" ry="8"/>
+          <ellipse cx="196" cy="333" rx="26" ry="8"/>
+        </g>
+
+        <!-- gövde -->
+        <path d="M98 160 C66 168 56 226 70 266 C80 296 116 310 160 310 C204 310 240 296 250 266 C264 226 254 168 222 160 Z" fill="#454C55"/>
+        <!-- gümüş sırt: yanlara taşan gümüş post -->
+        <path d="M70 212 C62 240 66 270 84 290 C98 304 120 310 140 311 Q132 297 120 298 Q116 284 104 286 Q102 272 92 272 Q92 258 84 255 Q86 242 78 238 Q80 225 70 212 Z" fill="url(#go-gumus)"/>
+        <path d="M250 212 C258 240 254 270 236 290 C222 304 200 310 180 311 Q188 297 200 298 Q204 284 216 286 Q218 272 228 272 Q228 258 236 255 Q234 242 242 238 Q240 225 250 212 Z" fill="url(#go-gumus)"/>
+        <!-- göğüs -->
+        <g id="go-gogus">
+          <path d="M116 186 C124 176 152 176 160 190 C168 176 196 176 204 186 C212 198 210 228 196 240 C184 250 168 246 160 236 C152 246 136 250 124 240 C110 228 108 198 116 186 Z" fill="#7A818B"/>
+          <path d="M160 194 L160 232" stroke="#5E656F" stroke-width="3" stroke-linecap="round"/>
+        </g>
+        <path d="M134 262 q26 12 52 0" stroke="#5E656F" stroke-width="3" stroke-linecap="round" fill="none"/>
+
+        <!-- kollar (yol ve yumruk konumunu betik çizer) -->
+        <g id="go-kol-sol">
+          <path class="go-kol-dis" d="M110 178 Q58 236 136 210" stroke="#2B3037" stroke-width="47" stroke-linecap="round" fill="none"/>
+          <path class="go-kol-ic" d="M110 178 Q58 236 136 210" stroke="#454C55" stroke-width="40" stroke-linecap="round" fill="none"/>
+          <path class="go-kol-isik" d="" stroke="#C9D1DA" stroke-width="5" stroke-linecap="round" fill="none" opacity="0.55"/>
+          <g class="go-yumruk" transform="translate(136 210)">
+            <ellipse rx="21" ry="17" fill="#5E656F"/>
+            <g stroke="#454C55" stroke-width="3" stroke-linecap="round"><path d="M-9 -9 l0 9"/><path d="M0 -10 l0 10"/><path d="M9 -9 l0 9"/></g>
+          </g>
+        </g>
+        <g id="go-kol-sag">
+          <path class="go-kol-dis" d="M210 178 Q262 236 184 210" stroke="#2B3037" stroke-width="47" stroke-linecap="round" fill="none"/>
+          <path class="go-kol-ic" d="M210 178 Q262 236 184 210" stroke="#454C55" stroke-width="40" stroke-linecap="round" fill="none"/>
+          <path class="go-kol-isik" d="" stroke="#C9D1DA" stroke-width="5" stroke-linecap="round" fill="none" opacity="0.55"/>
+          <g class="go-yumruk" transform="translate(184 210)">
+            <ellipse rx="21" ry="17" fill="#5E656F"/>
+            <g stroke="#454C55" stroke-width="3" stroke-linecap="round"><path d="M-9 -9 l0 9"/><path d="M0 -10 l0 10"/><path d="M9 -9 l0 9"/></g>
+          </g>
+        </g>
+
+        <!-- göğse vuruş: yumruğun çevresinde yayılan halka -->
+        <circle id="go-darbe-sol" cx="138" cy="208" r="18" fill="none" stroke="#FFFFFF" stroke-width="5" opacity="0"/>
+        <circle id="go-darbe-sag" cx="182" cy="208" r="18" fill="none" stroke="#FFFFFF" stroke-width="5" opacity="0"/>
+
+        <!-- baş -->
+        <g id="go-bas">
+          <path d="M124 150 C118 126 128 104 148 96 C154 90 166 90 172 96 C192 104 202 126 196 150 C194 170 182 180 160 180 C138 180 126 170 124 150 Z" fill="#454C55"/>
+          <path d="M132 136 C132 122 144 116 160 120 C176 116 188 122 188 136 C194 150 190 172 160 176 C130 172 126 150 132 136 Z" fill="#7A818B"/>
+          <path d="M130 128 C138 118 152 118 160 126 C168 118 182 118 190 128 C184 126 176 127 170 132 L150 132 C144 127 136 126 130 128 Z" fill="#353B43"/>
+          <!-- sıkılmış, coşkulu gözler -->
+          <g stroke="#121418" stroke-width="3.5" stroke-linecap="round" fill="none">
+            <path d="M139 138 q6 -7 12 0"/>
+            <path d="M169 138 q6 -7 12 0"/>
+          </g>
+          <path d="M150 146 C150 140 170 140 170 146 C170 152 162 154 160 151 C158 154 150 152 150 146 Z" fill="#4C535C"/>
+          <circle cx="155" cy="147" r="2.2" fill="#121418"/>
+          <circle cx="165" cy="147" r="2.2" fill="#121418"/>
+          <!-- kükreme: kocaman açık ağız (göğüs yumruklarken) -->
+          <g id="go-agiz-kukre">
+            <ellipse cx="160" cy="166" rx="14" ry="12" fill="#121418"/>
+            <path d="M148 159 C154 156.5 166 156.5 172 159 L170 163 C164 161.5 156 161.5 150 163 Z" fill="#FFFFFF"/>
+            <path d="M151 173 C155 169 165 169 169 173 C165 177 155 177 151 173 Z" fill="#F07A6A"/>
+          </g>
+          <!-- kocaman gülüş (zafer pozunda) -->
+          <g id="go-agiz-gulus" opacity="0">
+            <path d="M140 156 C146 154 174 154 180 156 C180 168 172 174 160 174 C148 174 140 168 140 156 Z" fill="#121418"/>
+            <path d="M143 157 C150 156 170 156 177 157 L176 161 L144 161 Z" fill="#FFFFFF"/>
+            <path d="M150 170 C154 165 166 165 170 170 C166 173 154 173 150 170 Z" fill="#F07A6A"/>
+          </g>
+          <circle cx="137" cy="153" r="4" fill="#F07A6A" opacity="0.35"/>
+          <circle cx="183" cy="153" r="4" fill="#F07A6A" opacity="0.35"/>
+          <!-- parti şapkası (Rıdvan, 16 Ekim 2026: özel günde şapkalı) -->
+          <g id="go-sapka" transform="rotate(-12 160 96)">
+            <path d="M144 98 L160 52 L176 98 Z" fill="#5BC98C"/>
+            <path d="M151 78 L169 78" stroke="#EDEFF2" stroke-width="4" stroke-linecap="round"/>
+            <path d="M147 90 L173 90" stroke="#EDEFF2" stroke-width="4" stroke-linecap="round"/>
+            <path d="M142 98 Q160 104 178 98" stroke="#2E7D57" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <circle cx="160" cy="51" r="6" fill="#EDEFF2"/>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

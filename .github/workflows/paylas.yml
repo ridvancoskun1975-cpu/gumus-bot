@@ -34,6 +34,11 @@ on:
         description: "Günlük sınırı aşmaya Rıdvan sohbette onay verdi (yalnızca o açıkça onaylarsa işaretle)"
         type: boolean
         default: false
+      goril:
+        description: "Goril önizlemesi (yalnız deneme açıkken, post ve hafta türünde): bu hâl çizilir"
+        type: choice
+        options: [yok, sevinen, uzulen, gezinen, istif]
+        default: yok
 
 permissions:
   contents: read
@@ -181,6 +186,15 @@ jobs:
           key: gecmis-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: gecmis-
 
+      # Gün içi noktalar (akşam özetindeki "Gün içi: en düşük … · en yüksek …" satırı) ayrı dosyada ve ayrı
+      # önbellekte: yalnızca fiyat alan çalıştırmalar (Reels, özet, kart) ve kaydet.yml yazar.
+      - name: Gün içi kayıtları getir
+        uses: actions/cache/restore@v4
+        with:
+          path: veri/gun_ici.json
+          key: gunici-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: gunici-
+
       - name: Görseli / videoyu üret
         id: uret
         timeout-minutes: ${{ needs.kontrol.outputs.tur == 'yorum' && 35 || 5 }}
@@ -192,6 +206,9 @@ jobs:
           YZ_CABA: ${{ vars.YZ_CABA }}                           # boşsa xhigh (ekstra yüksek)
           API_HARCAMA_DOSYA: ${{ runner.temp }}/api-harcama.jsonl  # pazar yorumunun token/arama sayıları
           KONU: ${{ inputs.konu }}
+          DENEME: ${{ github.event_name == 'workflow_dispatch' && inputs.deneme }}   # denemede gün içi nokta yazılmaz
+          # Goril hâlini zorlar (bot/goril.py); yalnız paylaşmayan elle denemede, başlangıç tarihinden önce de.
+          GORIL_DENEME: ${{ github.event_name == 'workflow_dispatch' && inputs.deneme && inputs.goril != 'yok' && inputs.goril || '' }}
         run: |
           ek=()
           case "${{ needs.kontrol.outputs.tur }}" in
@@ -244,6 +261,15 @@ jobs:
         with:
           path: veri/gecmis.json
           key: gecmis-${{ github.run_id }}-${{ github.run_attempt }}
+
+      # Yalnızca bu çalıştırma gün içi nokta yazdıysa (fiyat alan, deneme olmayan): başka işler eski dosyayı
+      # yeniden yazıp bir kaydı silmesin.
+      - name: Gün içi kayıtları sakla
+        if: always() && hashFiles('veri/gun_ici_degisti.txt') != ''
+        uses: actions/cache/save@v4
+        with:
+          path: veri/gun_ici.json
+          key: gunici-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Önizleme olarak sakla
         if: steps.uret.outputs.devam == 'true'

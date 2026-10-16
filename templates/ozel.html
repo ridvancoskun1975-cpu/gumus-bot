@@ -29,7 +29,9 @@
     {{ ag_etiketi(120, 136, '11px 13px', 20, 46, 16) }}
   </div>
 
-  <div class="kahraman" style="gap: 10px; padding-top: 34px">
+  <div class="kahraman" style="gap: 10px; padding-top: 34px; position: relative">
+    {#- Goril maskotu (bot/goril.py): yalnız hafta içi akşam özeti ve cumartesi haftalık özet -#}
+    {% if maskot %}<div class="maskot" aria-hidden="true" style="position: absolute; right: -16px; bottom: -6px; width: 262px; height: 368px">{% include maskot %}</div>{% endif %}
     <div class="kahraman-satir" style="gap: 18px">
       <div class="kahraman-sayi-kolon" style="gap: 6px">
         <span id="fiyat-deg" style="display: inline-flex; transform-origin: 100% 100%">{{ degisim(gram_deg, 38, 26) }}</span>
@@ -72,6 +74,7 @@
         <span class="sayi vurgu" style="font-size: 54px; font-weight: 700">{{ parite }}</span>
         {{ degisim(parite_deg, 24, 17) }}
       </div>
+      {% if parite_cumle %}<span class="soluk" style="font-size: 20px">{{ parite_cumle }}</span>{% endif %}
     </div>
     <div class="satir" style="display: flex; flex-direction: column; gap: 4px">
       <b style="font-size: 28px">Dolar / TL <span class="soluk" style="font-weight: 400; font-size: 22px">· ECB · {{ kur_tarihi }}</span></b>
@@ -92,5 +95,6 @@
   </div>
 </div>
 <script>{% include "hareket.js" %}</script>
+{% if maskot_js %}<script>{% include maskot_js %}</script>{% endif %}
 </body>
 </html>

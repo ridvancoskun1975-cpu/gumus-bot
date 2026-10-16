@@ -7,6 +7,9 @@ on:
       bitis:
         description: "Raporun son günü (YYYY-AA-GG); boş = dün"
         required: false
+      gun:
+        description: "Kaç günlük (boş = 7; goril değerlendirmesi için 28)"
+        required: false
       deneme:
         description: "Deneme (dosya adı -deneme ile biter)"
         type: boolean
@@ -33,4 +36,5 @@ jobs:
           KAYIT_PAT: ${{ secrets.KAYIT_PAT }}
           DENEME: ${{ inputs.deneme || false }}
           BITIS: ${{ inputs.bitis }}
-        run: python bot/rapor.py ${BITIS:+--bitis "$BITIS"}
+          GUN: ${{ inputs.gun }}
+        run: python bot/rapor.py ${BITIS:+--bitis "$BITIS"} ${GUN:+--gun "$GUN"}

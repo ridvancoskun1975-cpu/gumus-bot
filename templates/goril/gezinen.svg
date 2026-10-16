@@ -1,0 +1,87 @@
+<svg id="goril-gezinen" viewBox="0 0 320 350" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <defs>
+    <radialGradient id="gz-isik" cx="50%" cy="58%" r="50%">
+      <stop offset="0" stop-color="#C9D1DA" stop-opacity="0.15"/>
+      <stop offset="0.6" stop-color="#C9D1DA" stop-opacity="0.05"/>
+      <stop offset="1" stop-color="#C9D1DA" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="gz-gumus" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F2F5F8"/>
+      <stop offset="1" stop-color="#A9B3BE"/>
+    </linearGradient>
+  </defs>
+
+  <ellipse cx="160" cy="205" rx="160" ry="145" fill="url(#gz-isik)"/>
+
+  <!-- yürürken goril sahnede kayar (betik) -->
+  <g id="gz-yer">
+    <ellipse id="gz-golge" cx="160" cy="338" rx="92" ry="9" fill="#000000" opacity="0.45"/>
+
+    <!-- bacaklar: sırayla kalkar -->
+    <g id="gz-bacak-sol" class="goril-beden">
+      <path d="M104 282 C96 304 98 324 110 332 L146 332 C150 318 148 300 142 286 Z" fill="#3B4149"/>
+      <ellipse cx="124" cy="333" rx="26" ry="8" fill="#6F7680"/>
+    </g>
+    <g id="gz-bacak-sag" class="goril-beden">
+      <path d="M216 282 C224 304 222 324 210 332 L174 332 C170 318 172 300 178 286 Z" fill="#3B4149"/>
+      <ellipse cx="196" cy="333" rx="26" ry="8" fill="#6F7680"/>
+    </g>
+
+    <!-- üst beden: adımlarla iki yana salınır -->
+    <g id="gz-ust" class="goril-beden">
+      <path d="M98 160 C66 168 56 226 70 266 C80 296 116 310 160 310 C204 310 240 296 250 266 C264 226 254 168 222 160 Z" fill="#454C55"/>
+      <!-- gümüş post -->
+      <path d="M70 212 C62 240 66 270 84 290 C98 304 120 310 140 311 Q132 297 120 298 Q116 284 104 286 Q102 272 92 272 Q92 258 84 255 Q86 242 78 238 Q80 225 70 212 Z" fill="url(#gz-gumus)"/>
+      <path d="M250 212 C258 240 254 270 236 290 C222 304 200 310 180 311 Q188 297 200 298 Q204 284 216 286 Q218 272 228 272 Q228 258 236 255 Q234 242 242 238 Q240 225 250 212 Z" fill="url(#gz-gumus)"/>
+      <!-- göğüs -->
+      <path d="M116 186 C124 176 152 176 160 190 C168 176 196 176 204 186 C212 198 210 228 196 240 C184 250 168 246 160 236 C152 246 136 250 124 240 C110 228 108 198 116 186 Z" fill="#7A818B"/>
+      <path d="M160 194 L160 232" stroke="#5E656F" stroke-width="3" stroke-linecap="round"/>
+      <path d="M134 262 q26 12 52 0" stroke="#5E656F" stroke-width="3" stroke-linecap="round" fill="none"/>
+
+      <!-- uzun kollar aşağı sarkar, yürürken sallanır -->
+      <g id="gz-kol-sol">
+        <path d="M106 182 Q50 222 48 284" stroke="#2B3037" stroke-width="47" stroke-linecap="round" fill="none"/>
+        <path d="M106 182 Q50 222 48 284" stroke="#454C55" stroke-width="40" stroke-linecap="round" fill="none"/>
+        <path d="M80 188 Q42 216 38 252" stroke="#C9D1DA" stroke-width="5" stroke-linecap="round" fill="none" opacity="0.55"/>
+        <ellipse cx="48" cy="290" rx="19" ry="16" fill="#5E656F"/>
+        <g stroke="#454C55" stroke-width="3" stroke-linecap="round"><path d="M40 294 l0 8"/><path d="M48 295 l0 9"/><path d="M56 294 l0 8"/></g>
+      </g>
+      <g id="gz-kol-sag">
+        <path d="M214 182 Q270 222 272 284" stroke="#2B3037" stroke-width="47" stroke-linecap="round" fill="none"/>
+        <path d="M214 182 Q270 222 272 284" stroke="#454C55" stroke-width="40" stroke-linecap="round" fill="none"/>
+        <path d="M240 188 Q278 216 282 252" stroke="#C9D1DA" stroke-width="5" stroke-linecap="round" fill="none" opacity="0.55"/>
+        <ellipse cx="272" cy="290" rx="19" ry="16" fill="#5E656F"/>
+        <g stroke="#454C55" stroke-width="3" stroke-linecap="round"><path d="M264 294 l0 8"/><path d="M272 295 l0 9"/><path d="M280 294 l0 8"/></g>
+      </g>
+
+      <!-- baş: ilk karakter, sakin bakış -->
+      <g id="gz-bas">
+        <path d="M124 150 C118 126 128 104 148 96 C154 90 166 90 172 96 C192 104 202 126 196 150 C194 170 182 180 160 180 C138 180 126 170 124 150 Z" fill="#454C55"/>
+        <path d="M132 136 C132 122 144 116 160 120 C176 116 188 122 188 136 C194 150 190 172 160 176 C130 172 126 150 132 136 Z" fill="#7A818B"/>
+        <path d="M130 128 C138 118 152 118 160 126 C168 118 182 118 190 128 C184 126 176 127 170 132 L150 132 C144 127 136 126 130 128 Z" fill="#353B43"/>
+        <g id="gz-gozler">
+          <ellipse cx="145" cy="140" rx="6.5" ry="6" fill="#EDEFF2"/>
+          <ellipse cx="175" cy="140" rx="6.5" ry="6" fill="#EDEFF2"/>
+          <g id="gz-gozbebek" fill="#121418">
+            <circle cx="145" cy="140.5" r="3.6"/>
+            <circle cx="175" cy="140.5" r="3.6"/>
+          </g>
+          <path d="M137 137.5 Q145 139.2 153 137.5 L153 132.5 L137 132.5 Z" fill="#7A818B"/>
+          <path d="M167 137.5 Q175 139.2 183 137.5 L183 132.5 L167 132.5 Z" fill="#7A818B"/>
+          <path d="M138 137.6 Q145 139.2 152 137.6" stroke="#353B43" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+          <path d="M168 137.6 Q175 139.2 182 137.6" stroke="#353B43" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+        </g>
+        <g id="gz-kirpma" opacity="0" stroke="#121418" stroke-width="3" stroke-linecap="round" fill="none">
+          <path d="M139 140 q6 3 12 0"/>
+          <path d="M169 140 q6 3 12 0"/>
+        </g>
+        <path d="M150 146 C150 140 170 140 170 146 C170 152 162 154 160 151 C158 154 150 152 150 146 Z" fill="#4C535C"/>
+        <circle cx="155" cy="147" r="2.2" fill="#121418"/>
+        <circle cx="165" cy="147" r="2.2" fill="#121418"/>
+        <path d="M147 161 Q160 169 173 161" stroke="#121418" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+        <circle cx="137" cy="155" r="4" fill="#F07A6A" opacity="0.22"/>
+        <circle cx="183" cy="155" r="4" fill="#F07A6A" opacity="0.22"/>
+      </g>
+    </g>
+  </g>
+</svg>

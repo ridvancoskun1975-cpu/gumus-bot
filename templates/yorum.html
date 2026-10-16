@@ -5,40 +5,40 @@
 <title>Gümüş Görünümü</title>
 <style>{% include "ortak.css" %}
 .govde { flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 0; }
-.seri { gap: 12px; font-size: 24px; }
+.seri { gap: 12px; font-size: 30px; }
 .yz { display: inline-flex; align-items: center; gap: 12px; align-self: flex-start; border: 2px solid var(--vurgu);
-  border-radius: 999px; padding: 10px 22px; font-size: 24px; font-weight: 700; letter-spacing: 3px; color: var(--vurgu); }
+  border-radius: 999px; padding: 10px 22px; font-size: 28px; font-weight: 700; letter-spacing: 2px; color: var(--vurgu); }
 .yz i { width: 10px; height: 10px; border-radius: 50%; background: var(--vurgu); display: inline-block; }
 h1 { letter-spacing: -3px; line-height: 0.95; }
-.kapak-fiyat { border-top: 2px solid var(--cizgi); padding-top: 30px; }
-.kucuk-baslik { font-size: 24px; font-weight: 700; letter-spacing: 3px; color: var(--soluk); }
+.kapak-fiyat { border-top: 2px solid var(--cizgi); padding-top: 24px; }
+.kucuk-baslik { font-size: 30px; font-weight: 700; letter-spacing: 3px; color: var(--soluk); }
 .fiyat-satir { display: flex; align-items: baseline; gap: 14px; margin-top: 10px; }
-.fiyat { font-size: 140px; font-weight: 800; line-height: 1; letter-spacing: -6px; }
+.fiyat { font-size: 124px; font-weight: 800; line-height: 1; letter-spacing: -6px; }
 .birim { font-size: 72px; font-weight: 700; color: var(--vurgu); }
-.fiyat-alt { display: flex; align-items: center; gap: 18px; margin-top: 16px; font-size: 28px; }
+.fiyat-alt { display: flex; align-items: center; gap: 18px; margin-top: 16px; font-size: 32px; }
 .vade-listesi { display: flex; flex-direction: column; }
-.vade-satir { display: grid; grid-template-columns: 250px 1fr; gap: 24px; align-items: center; padding: 22px 0;
+.vade-satir { display: grid; grid-template-columns: 270px 1fr; gap: 24px; align-items: center; padding: 15px 0;
   border-top: 2px solid var(--cizgi); }
 .vade-satir:last-child { border-bottom: 2px solid var(--cizgi); }
 .vade-ad { display: flex; flex-direction: column; gap: 4px; }
-.vade-ad b { font-size: 32px; font-weight: 800; }
-.vade-ad span { font-size: 22px; color: var(--soluk); }
+.vade-ad b { font-size: 36px; font-weight: 800; }
+.vade-ad span { font-size: 30px; color: var(--soluk); }
 .vade-ozet { font-size: var(--ozet, 38px); font-weight: 600; line-height: 1.2; text-wrap: balance; }
 
 .no { font-size: 32px; font-weight: 600; color: var(--vurgu); letter-spacing: 2px; }
-h2 { margin: 4px 0 0; font-size: 96px; line-height: 1; font-weight: 800; letter-spacing: -3px; }
+h2 { margin: 4px 0 0; font-size: 88px; line-height: 1; font-weight: 800; letter-spacing: -3px; }
 .ufuk { font-size: 34px; color: var(--soluk); margin-top: 10px; }
-.veri { margin-top: 30px; border-top: 2px solid var(--cizgi); border-bottom: 2px solid var(--cizgi); padding: 18px 0 20px; }
+.veri { margin-top: 24px; border-top: 2px solid var(--cizgi); border-bottom: 2px solid var(--cizgi); padding: 18px 0 20px; }
 .hucreler { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 12px; }
-.hucre > span { display: block; font-size: 24px; color: var(--soluk); margin-bottom: 8px; }
+.hucre > span:not(.degisim) { display: block; font-size: 30px; color: var(--soluk); margin-bottom: 6px; }
 .bos { font-size: 40px; font-weight: 700; color: var(--soluk); }
-.veri-not { margin-top: 12px; font-size: 22px; color: var(--soluk); line-height: 1.3; }
-.yz-blok { margin-top: 30px; }
+.veri-not { margin-top: 10px; font-size: 28px; color: var(--soluk); line-height: 1.25; }
+.yz-blok { margin-top: 24px; }
 .yon { display: inline-flex; align-items: center; gap: 10px; font-weight: 800; }
 .yon.artis { color: var(--artis); }
 .yon.dusus { color: var(--dusus); }
 .yon.dusus svg { transform: rotate(180deg); }
-.yon small { font-size: 0.72em; font-weight: 600; color: var(--soluk); }
+.yon small { font-size: 0.86em; font-weight: 600; color: var(--soluk); }
 .yz-blok .kucuk-baslik { margin-bottom: 8px; }
 .metin { font-size: var(--metin, 42px); line-height: 1.3; font-weight: 500; text-wrap: pretty; }
 .izle { color: var(--vurgu); font-weight: 700; }
@@ -55,9 +55,9 @@ h2 { margin: 4px 0 0; font-size: 96px; line-height: 1; font-weight: 800; letter-
   <div class="govde" id="govde" data-degisken="--ozet" data-en-buyuk="38" data-en-kucuk="30" style="justify-content: space-evenly">
     <div>
       <div class="yz"><i></i>ÜST DÜZEY YAPAY ZEKÂ İLE ÜRETİLMİŞTİR</div>
-      <h1 style="font-size: 100px; margin-top: 24px; text-wrap: balance">Kısa, orta ve uzun vade</h1>
+      <h1 style="font-size: 90px; margin-top: 18px; text-wrap: balance">Kısa, orta ve uzun vade</h1>
       <div class="tarih" style="margin-top: 22px; font-size: 36px">{{ tarih }} · {{ gun }}</div>
-      {% if dayanak %}<div class="soluk" style="margin-top: 10px; font-size: 26px">Dayanak: {{ dayanak }}</div>{% endif %}
+      {% if dayanak %}<div class="soluk" style="margin-top: 10px; font-size: 30px">Dayanak: {{ dayanak }}</div>{% endif %}
     </div>
     <div class="kapak-fiyat">
       <div class="kucuk-baslik">GRAM GÜMÜŞ</div>
@@ -69,7 +69,7 @@ h2 { margin: 4px 0 0; font-size: 96px; line-height: 1; font-weight: 800; letter-
       <div class="vade-satir">
         <div class="vade-ad"><b>{{ v.ad }}</b><span>{{ v.ufuk }}</span></div>
         <div>
-          {{ yon_isareti(v.yorum, 30, 22) }}
+          {{ yon_isareti(v.yorum, 32, 24) }}
           <div class="vade-ozet" style="margin-top: 6px">{{ v.yorum.ozet }}</div>
         </div>
       </div>
@@ -88,7 +88,7 @@ h2 { margin: 4px 0 0; font-size: 96px; line-height: 1; font-weight: 800; letter-
   {% set v = vadeler[sayfa - 1] %}
   <div class="ust" style="align-items: center">
     <div class="etiket seri"><span class="nokta" style="width: 12px; height: 12px"></span><span>GÜMÜŞ GÖRÜNÜMÜ · YAPAY ZEKÂ</span></div>
-    <span class="mono soluk" style="font-size: 26px">{{ '%02d' % (sayfa + 1) }} / {{ '%02d' % toplam }}</span>
+    <span class="mono soluk" style="font-size: 30px">{{ '%02d' % (sayfa + 1) }} / {{ '%02d' % toplam }}</span>
   </div>
 
   <div class="govde" id="govde" data-degisken="--metin" data-en-buyuk="42" data-en-kucuk="34">
