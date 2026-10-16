@@ -10,48 +10,48 @@
   <div class="isik" aria-hidden="true"></div>
   <div class="ust">
     <div class="ust-sol" style="gap: 20px">
-      <div class="etiket" style="gap: 14px; font-size: 28px"><span id="nokta" class="nokta" style="width: 14px; height: 14px"></span><span>GÜNCEL FİYAT</span></div>
+      <div class="etiket" style="gap: 14px; font-size: 34px"><span id="nokta" class="nokta" style="width: 14px; height: 14px"></span><span>GÜNCEL FİYAT</span></div>
       <h1 style="font-size: 168px; letter-spacing: -4px">Gümüş</h1>
-      <div class="tarih mono" style="font-size: 34px">{{ tarih }} · {{ saat }}</div>
+      <div class="tarih mono" style="font-size: 40px">{{ tarih }} · {{ saat }}</div>
     </div>
     {{ ag_etiketi(150, 170, '14px 16px', 26, 58, 20) }}
   </div>
 
   <div class="kahraman" style="gap: 16px; padding-top: 56px">
     {% if buyuk_hareket %}{{ manset(buyuk_hareket, 46, 34) }}{% elif gun_baslik %}{{ gun_basligi(gun_baslik, 42, 28) }}{% else %}
-    <div class="kahraman-baslik" style="font-size: 36px">GRAM GÜMÜŞ</div>
+    <div class="kahraman-baslik" style="font-size: 40px">GRAM GÜMÜŞ</div>
     {% endif %}
     <div class="kahraman-satir" style="gap: 20px">
       <div class="kahraman-sayi-kolon" style="gap: 8px">
-        <span id="fiyat-deg" style="display: inline-flex; transform-origin: 100% 100%">{{ degisim(gram_deg, 40, 28) }}</span>
+        <span id="fiyat-deg" style="display: inline-flex; transform-origin: 100% 100%">{{ degisim(gram_deg, 46, 32) }}</span>
         <span id="fiyat" class="kahraman-sayi sayi" style="font-size: 156px; letter-spacing: -5px"
               data-hedef="{{ gram_sayi }}" data-once="{{ gram_once_sayi }}">{{ gram }}</span>
       </div>
       <span class="kahraman-birim" style="font-size: 64px; padding-bottom: 18px">₺</span>
     </div>
-    <div class="soluk" style="font-size: 32px">{% if gun_baslik and not buyuk_hareket %}Gram gümüş · Türk lirası · önceki güne göre{% else %}Türk lirası · 1 gram · önceki güne göre{% endif %}</div>
+    <div class="soluk" style="font-size: 38px">{% if gun_baslik and not buyuk_hareket %}Gram gümüş · Türk lirası · önceki güne göre{% else %}Türk lirası · 1 gram · önceki güne göre{% endif %}</div>
   </div>
 
   <div style="display: flex; flex-direction: column">
     <div class="satir" style="display: flex; justify-content: space-between; align-items: center; padding: 40px 0; border-top: 2px solid var(--cizgi)">
       <div style="display: flex; flex-direction: column; gap: 8px">
         <b style="font-size: 42px">Altın / Gümüş paritesi</b>
-        <span class="soluk" style="font-size: 28px">{{ parite_cumle or "1 ons altın kaç ons gümüş eder" }}</span>
+        <span class="soluk" style="font-size: 34px; line-height: 1.2; text-wrap: balance">{{ parite_cumle or "1 ons altın kaç ons gümüş eder" }}</span>
       </div>
       <div style="display: flex; align-items: baseline; gap: 16px">
         <span class="sayi vurgu" style="font-size: 80px; font-weight: 700">{{ parite }}</span>
-        {{ degisim(parite_deg, 30, 22) }}
+        {{ degisim(parite_deg, 36, 26) }}
       </div>
     </div>
     <div class="satir" style="display: flex; justify-content: space-between; align-items: center; padding: 40px 0; border-top: 2px solid var(--cizgi); border-bottom: 2px solid var(--cizgi)">
       <div style="display: flex; flex-direction: column; gap: 8px">
         <b style="font-size: 42px">Dolar / TL</b>
-        <span class="soluk" style="font-size: 28px">ECB referans kuru · {{ kur_tarihi }}</span>
+        <span class="soluk" style="font-size: 34px; line-height: 1.2; text-wrap: balance">ECB kuru · {{ kur_tarihi }}</span>
       </div>
       <div style="display: flex; align-items: baseline; gap: 12px">
         <span class="sayi" style="font-size: 80px; font-weight: 700">{{ dolar }}</span>
         <span class="vurgu" style="font-size: 46px; font-weight: 700">₺</span>
-        {{ degisim(dolar_deg, 30, 22) }}
+        {{ degisim(dolar_deg, 36, 26) }}
       </div>
     </div>
   </div>
