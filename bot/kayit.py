@@ -14,10 +14,12 @@ Gerekenler (GitHub Secrets):
 """
 import argparse
 import base64
+import json
 import os
 import re
 import sys
 from datetime import date, datetime, timedelta
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import requests
@@ -156,12 +158,27 @@ def dosyayi_olustur(satirlar, hesap):
 
 # ---------------------------------------------------------------- akış
 
+def paylasim_adi(tur, deneme=False, meta_yolu="site/meta.json"):
+    """Tablodaki paylaşım adı. Gorilli akşam/haftalık özette hâl eklenir (bot/goril.py → etiket_ekle):
+    'Günlük özet · goril: istif'. meta.json yoksa, okunamazsa ya da goril yoksa ad bugünkü gibi kalır."""
+    ad = ETIKET.get(tur, tur)
+    if tur in ("post", "hafta"):
+        try:
+            meta = json.loads(Path(meta_yolu).read_text(encoding="utf-8"))
+            if meta.get("tur") == tur and meta.get("goril"):
+                import goril
+                ad = goril.etiket_ekle(ad, meta["goril"])
+        except Exception:
+            pass
+    return ad + (" (deneme)" if deneme else "")
+
+
 def kaydet(tur, deneme=False, simdi=None):
     sayi, kullanici = hesap_bilgisi()
     hesap = os.environ.get("HESAP_ADI", "").strip() or kullanici
     hesap = ("@" + hesap.lstrip("@")) if hesap else ""
     simdi = simdi or datetime.now(TR_SAAT)
-    paylasim = ETIKET.get(tur, tur) + (" (deneme)" if deneme else "")
+    paylasim = paylasim_adi(tur, deneme)
     yeni = (simdi.strftime("%Y-%m-%d"), simdi.strftime("%H:%M"), paylasim, sayi)
     for _ in range(3):
         metin, sha = dosyayi_al()

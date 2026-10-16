@@ -1,0 +1,135 @@
+<svg id="goril-sevinen" viewBox="0 0 320 350" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <defs>
+    <radialGradient id="sv-isik" cx="50%" cy="56%" r="50%">
+      <stop offset="0" stop-color="#5BC98C" stop-opacity="0.30"/>
+      <stop offset="0.6" stop-color="#5BC98C" stop-opacity="0.08"/>
+      <stop offset="1" stop-color="#5BC98C" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="sv-gumus" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F2F5F8"/>
+      <stop offset="1" stop-color="#A9B3BE"/>
+    </linearGradient>
+    <linearGradient id="sv-kulce-ust" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#E9EDF1"/>
+      <stop offset="0.5" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#C9D1DA"/>
+    </linearGradient>
+    <linearGradient id="sv-kulce-on" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#C9D1DA"/>
+      <stop offset="1" stop-color="#8E98A4"/>
+    </linearGradient>
+  </defs>
+
+  <g id="gr-hepsi">
+  <!-- yeşil sevinç ışığı -->
+  <ellipse id="gr-isik" cx="160" cy="200" rx="160" ry="150" fill="url(#sv-isik)"/>
+
+  <!-- konfeti (videoda yağar; durağan görselde bu konumlarda durur) -->
+  <g id="gr-konfeti">
+    <g class="gr-k" data-x="39" data-y="72" data-h="1.0"><rect x="34" y="70" width="10" height="5" rx="1.5" fill="#5BC98C" transform="rotate(-30 39 72)"/></g>
+    <g class="gr-k" data-x="275" data-y="60" data-h="0.8"><rect x="270" y="58" width="10" height="5" rx="1.5" fill="#C9D1DA" transform="rotate(25 275 60)"/></g>
+    <g class="gr-k" data-x="26" data-y="152" data-h="1.2"><rect x="22" y="150" width="9" height="5" rx="1.5" fill="#C9D1DA" transform="rotate(40 26 152)"/></g>
+    <g class="gr-k" data-x="292" data-y="142" data-h="0.9"><rect x="288" y="140" width="9" height="5" rx="1.5" fill="#5BC98C" transform="rotate(-20 292 142)"/></g>
+    <g class="gr-k" data-x="66" data-y="32" data-h="1.1"><rect x="62" y="30" width="8" height="4" rx="1.5" fill="#C9D1DA" transform="rotate(15 66 32)"/></g>
+    <g class="gr-k" data-x="254" data-y="18" data-h="1.3"><rect x="250" y="16" width="8" height="4" rx="1.5" fill="#5BC98C" transform="rotate(-45 254 18)"/></g>
+    <g class="gr-k" data-x="46" data-y="112" data-h="0.7"><circle cx="46" cy="112" r="3.5" fill="#5BC98C"/></g>
+    <g class="gr-k" data-x="280" data-y="100" data-h="1.0"><circle cx="280" cy="100" r="3.5" fill="#EDEFF2"/></g>
+    <g class="gr-k" data-x="300" data-y="196" data-h="0.85"><circle cx="300" cy="196" r="3" fill="#C9D1DA"/></g>
+    <g class="gr-k" data-x="294" data-y="224" data-h="0.75"><path d="M287 230 l7 -12 l7 12 z" fill="#5BC98C" opacity="0.85"/></g>
+  </g>
+
+  <!-- pırıltılar -->
+  <g fill="#FFFFFF">
+    <path class="gr-p" data-x="96" data-y="22" data-f="0" d="M96 10 l3 9 l9 3 l-9 3 l-3 9 l-3 -9 l-9 -3 l9 -3 z"/>
+    <path class="gr-p" data-x="232" data-y="44.7" data-f="0.4" d="M232 36 l2.2 6.5 l6.5 2.2 l-6.5 2.2 l-2.2 6.5 l-2.2 -6.5 l-6.5 -2.2 l6.5 -2.2 z"/>
+    <path class="gr-p" data-x="160" data-y="7" data-f="0.7" d="M160 0 l1.8 5.2 l5.2 1.8 l-5.2 1.8 l-1.8 5.2 l-1.8 -5.2 l-5.2 -1.8 l5.2 -1.8 z" opacity="0.8"/>
+  </g>
+
+  <!-- sallanma çizgileri -->
+  <g stroke="#EDEFF2" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.75">
+    <g id="gr-cizgi-sol"><path d="M52 100 q-12 10 -8 26"/><path d="M38 94 q-14 14 -9 34"/></g>
+    <g id="gr-cizgi-sag"><path d="M268 100 q12 10 8 26"/><path d="M282 94 q14 14 9 34"/></g>
+  </g>
+
+  <!-- yer gölgesi -->
+  <ellipse id="gr-golge" cx="160" cy="338" rx="92" ry="9" fill="#000000" opacity="0.45"/>
+
+  <g id="gr-govde" class="goril-beden">
+    <!-- bacaklar -->
+    <g fill="#3B4149">
+      <path d="M104 282 C96 304 98 324 110 332 L146 332 C150 318 148 300 142 286 Z"/>
+      <path d="M216 282 C224 304 222 324 210 332 L174 332 C170 318 172 300 178 286 Z"/>
+    </g>
+    <g fill="#6F7680">
+      <ellipse cx="124" cy="333" rx="26" ry="8"/>
+      <ellipse cx="196" cy="333" rx="26" ry="8"/>
+    </g>
+
+    <!-- gövde -->
+    <path d="M98 160 C66 168 56 226 70 266 C80 296 116 310 160 310 C204 310 240 296 250 266 C264 226 254 168 222 160 Z" fill="#454C55"/>
+
+    <!-- gümüş sırt: yanlara taşan gümüş post -->
+    <path d="M70 212 C62 240 66 270 84 290 C98 304 120 310 140 311 Q132 297 120 298 Q116 284 104 286 Q102 272 92 272 Q92 258 84 255 Q86 242 78 238 Q80 225 70 212 Z" fill="url(#sv-gumus)"/>
+    <path d="M250 212 C258 240 254 270 236 290 C222 304 200 310 180 311 Q188 297 200 298 Q204 284 216 286 Q218 272 228 272 Q228 258 236 255 Q234 242 242 238 Q240 225 250 212 Z" fill="url(#sv-gumus)"/>
+
+    <!-- göğüs -->
+    <path d="M116 186 C124 176 152 176 160 190 C168 176 196 176 204 186 C212 198 210 228 196 240 C184 250 168 246 160 236 C152 246 136 250 124 240 C110 228 108 198 116 186 Z" fill="#7A818B"/>
+    <path d="M160 194 L160 232" stroke="#5E656F" stroke-width="3" stroke-linecap="round"/>
+    <path d="M134 262 q26 12 52 0" stroke="#5E656F" stroke-width="3" stroke-linecap="round" fill="none"/>
+
+    <!-- kollar (yukarıda, külçeyi tutuyor): videoda omuzdan uzayıp kısalır -->
+    <g id="gr-kollar">
+      <g stroke="#2B3037" stroke-width="47" stroke-linecap="round" fill="none">
+        <path d="M110 178 Q58 130 102 72"/>
+        <path d="M210 178 Q262 130 218 72"/>
+      </g>
+      <g stroke="#454C55" stroke-width="40" stroke-linecap="round" fill="none">
+        <path d="M110 178 Q58 130 102 72"/>
+        <path d="M210 178 Q262 130 218 72"/>
+      </g>
+      <g stroke="#C9D1DA" stroke-width="5" stroke-linecap="round" fill="none" opacity="0.55">
+        <path d="M88 160 Q66 136 76 110"/>
+        <path d="M232 160 Q254 136 244 110"/>
+      </g>
+    </g>
+
+    <!-- külçe ve eller: kollarla birlikte iner kalkar -->
+    <g id="gr-ust">
+      <path d="M86 50 L234 50 L222 84 L98 84 Z" fill="url(#sv-kulce-on)"/>
+      <path d="M100 30 L220 30 L234 50 L86 50 Z" fill="url(#sv-kulce-ust)"/>
+      <path d="M86 50 L234 50" stroke="#8E98A4" stroke-width="1.5"/>
+      <rect x="128" y="34" width="64" height="13" rx="3" fill="none" stroke="#9AA3AE" stroke-width="1.5"/>
+      <text x="160" y="44.5" text-anchor="middle" font-family="Archivo, sans-serif" font-weight="800" font-size="11" fill="#6B7480" letter-spacing="1">999,9</text>
+      <text x="160" y="76" text-anchor="middle" font-family="Archivo, sans-serif" font-weight="800" font-size="26" fill="#3B4149">Ag</text>
+      <path id="gr-parilti" d="M108 36 L124 36" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" opacity="0.9"/>
+      <g fill="#5E656F">
+        <ellipse cx="100" cy="80" rx="22" ry="17"/>
+        <ellipse cx="220" cy="80" rx="22" ry="17"/>
+      </g>
+      <g stroke="#454C55" stroke-width="3" stroke-linecap="round">
+        <path d="M90 70 l0 10"/><path d="M100 68 l0 11"/><path d="M110 70 l0 10"/>
+        <path d="M210 70 l0 10"/><path d="M220 68 l0 11"/><path d="M230 70 l0 10"/>
+      </g>
+    </g>
+
+    <!-- baş (tepe ibiği olan goril kafası): videoda sağa sola sallanır -->
+    <g id="gr-bas">
+      <path d="M124 150 C118 126 128 104 148 96 C154 90 166 90 172 96 C192 104 202 126 196 150 C194 170 182 180 160 180 C138 180 126 170 124 150 Z" fill="#454C55"/>
+      <path d="M132 136 C132 122 144 116 160 120 C176 116 188 122 188 136 C194 150 190 172 160 176 C130 172 126 150 132 136 Z" fill="#7A818B"/>
+      <path d="M130 128 C138 118 152 118 160 126 C168 118 182 118 190 128 C184 126 176 127 170 132 L150 132 C144 127 136 126 130 128 Z" fill="#353B43"/>
+      <g stroke="#121418" stroke-width="3.5" stroke-linecap="round" fill="none">
+        <path d="M139 138 q6 -7 12 0"/>
+        <path d="M169 138 q6 -7 12 0"/>
+      </g>
+      <path d="M150 146 C150 140 170 140 170 146 C170 152 162 154 160 151 C158 154 150 152 150 146 Z" fill="#4C535C"/>
+      <circle cx="155" cy="147" r="2.2" fill="#121418"/>
+      <circle cx="165" cy="147" r="2.2" fill="#121418"/>
+      <path d="M140 156 C146 154 174 154 180 156 C180 168 172 174 160 174 C148 174 140 168 140 156 Z" fill="#121418"/>
+      <path d="M143 157 C150 156 170 156 177 157 L176 161 L144 161 Z" fill="#FFFFFF"/>
+      <path d="M150 170 C154 165 166 165 170 170 C166 173 154 173 150 170 Z" fill="#F07A6A"/>
+      <circle cx="137" cy="153" r="4" fill="#F07A6A" opacity="0.35"/>
+      <circle cx="183" cy="153" r="4" fill="#F07A6A" opacity="0.35"/>
+    </g>
+  </g>
+  </g>
+</svg>

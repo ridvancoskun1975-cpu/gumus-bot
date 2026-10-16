@@ -359,15 +359,25 @@ def ornek_aylik(kismi=False):
     return f
 
 
+# Haftalık özet örnekleri (ORNEK_HAFTA=<ad>, goril önizlemeleri için): (günlük değerler, önceki haftanın son değeri)
+ORNEK_HAFTALAR = {
+    "sevinen": ([100.62, 101.94, 101.18, 102.49, 103.79], 98.0),        # +%5,91
+    "uzulen": ([103.1, 101.9, 100.4, 99.2, 97.6], 104.0),               # −%6,15
+    "istif": ([100.2, 100.9, 100.4, 100.7, 100.6], 100.1),              # +%0,50
+}
+
+
 def ornek_haftalik(kismi=False):
     f = ornek_fiyatlar()
     f["son_saat"] = "20:00"
+    degerler, once = ORNEK_HAFTALAR.get(os.environ.get("ORNEK_HAFTA", "").strip(),
+                                        ([100.62, 101.94, 101.18, 102.49, 103.79], 99.85))
     f["gunluk"] = [{"tarih": t, "gram": v} for t, v in
-                   [("2026-10-05", 100.62), ("2026-10-06", 101.94), ("2026-10-07", 101.18),
-                    ("2026-10-08", 102.49), ("2026-10-09", 103.79)]]
+                   zip(["2026-10-05", "2026-10-06", "2026-10-07", "2026-10-08", "2026-10-09"], degerler)]
+    f["gram"] = degerler[-1]
     if kismi:                                   # kayıtlar hafta ortasında başlamış: salı–cuma, baz salı
         f["gunluk"] = f["gunluk"][1:]
-    f["gram_once"] = f["gunluk"][0]["gram"] if kismi else 99.85
+    f["gram_once"] = f["gunluk"][0]["gram"] if kismi else once
     f.update({"kismi": kismi, "baz_tarih": f["gunluk"][0]["tarih"] if kismi else "2026-10-02"})
     return f
 
@@ -398,6 +408,12 @@ ORNEK_SENARYOLAR = {
     "esik-alti": [101.0, 100.6, 100.9, 100.2, 100.3, 99.58],             # 100 liranın altına indi
     "esik": [96.1, 96.9, 97.4, 96.8, 97.9, 98.6, 98.2, 99.12, 100.42],   # özel: 100 lirayı aştı
     "zirve": [99.0] + [round(v + 0.9 * math.sin(i / 2.1), 2) for i, v in enumerate(_DUZ * 5)] + [96.84],   # özel: son 1 ayın en yükseği
+    # Goril önizlemeleri (GORIL_ZORLA ile): hâle uyan değişim, özel gün çıkmasın diye yakın geçmişte daha yüksek değer
+    "goril-sevinen": _DUZ * 3 + [101.0, 95.2, 98.44],                    # +%3,40
+    "goril-uzulen": _DUZ * 3 + [95.3, 92.35],                            # −%3,10
+    "goril-gezinen": _DUZ * 3 + [97.0, 95.3, 94.54],                     # −%0,80
+    "goril-istif": _DUZ * 3 + [97.0, 95.3, 95.49],                       # +%0,20
+    "goril-buyuk": [x * 13 for x in _DUZ * 3 + [101.0, 95.2, 98.44]],    # +%3,40, 1.279,72 ₺: goril sığmaz, gorilsiz
 }
 
 
@@ -427,8 +443,10 @@ BUYUK_HAREKET_HAFTALIK = 5.0  # haftalık özet: önceki haftanın son değerine
 
 
 def buyuk_hareket(d, zaman, esik):
-    """d = degisim() sonucu. Eşik aşılmadıysa None."""
-    if abs(d["yuzde"]) < esik:
+    """d = degisim() sonucu. Eşik aşılmadıysa None.
+    Görseldeki gibi 2 ondalığa yuvarlanmış değere bakar: görselde %2,00 yazıyorsa manşet de çıkar (Rıdvan,
+    16 Ekim 2026; rakam, manşet ve goril hep uyumlu)."""
+    if round(abs(d["yuzde"]), 2) < esik:
         return None
     fiil = "yükseldi" if d["yon"] == "artis" else "düştü"
     return {"yon": d["yon"], "metin": f"Gümüş {zaman} %{tr_sayi(abs(d['yuzde']), 1)} {fiil}"}
@@ -722,6 +740,7 @@ def aciklama_yaz(v, tur):
         g, p, d = v["gram_deg"], v["parite_deg"], v["dolar_deg"]
         return (
             f"{_ilk_satir(v, 'bu hafta')}\n"
+            f"{v.get('goril_satiri', '')}"
             f"Haftalık gümüş özeti · {v['aralik']}\n\n"
             f"Haftanın en yükseği: {v['en_yuksek']} ₺ · en düşüğü: {v['en_dusuk']} ₺\n"
             f"Altın/Gümüş paritesi: {v['parite']} ({p['isaret']} {p['metin']})\n"
@@ -762,6 +781,7 @@ def aciklama_yaz(v, tur):
     g, p, d = v["gram_deg"], v["parite_deg"], v["dolar_deg"]
     return (
         f"{_ilk_satir(v, 'bugün')}\n"
+        f"{v.get('goril_satiri', '') if tur == 'post' else ''}"
         f"{baslik} · {v['tarih']} · {v['saat']}\n\n"
         f"Altın/Gümüş paritesi: {v['parite']} ({p['isaret']} {p['metin']})\n"
         f"Dolar/TL: {v['dolar']} ₺ ({d['isaret']} {d['metin']})\n\n"
@@ -926,6 +946,151 @@ def video_uret(png_yolu, mp4_yolu, sure=7):
              "-c:a", "aac", "-b:a", "128k", "-shortest", "-movflags", "+faststart", str(mp4_yolu)]
     subprocess.run(komut, check=True)
 
+
+# ---------------------------------------------------------------- goril maskotu (kurallar: bot/goril.py)
+
+GORIL_YOK = {"goril": None, "maskot": None, "maskot_js": None, "goril_satiri": ""}
+# Gorilin üstüne binmemesi gereken öğeler. Metin öğelerinde kutunun değil yazının kendisi ölçülür.
+GORIL_KORUNAN_METIN = ["#fiyat", ".kahraman-birim", ".kahraman-baslik", ".kahraman > .soluk", ".alt", ".etiket",
+                       ".tarih", ".ozel-manset", "h1", ".satir"]
+GORIL_KORUNAN_KUTU = ["#fiyat-deg", "#manset", "#gun-baslik", ".ag", ".grafik-deger"]
+GORIL_DENETIM_ANLARI = tuple(i / 10 for i in range(101))   # 10 sn'lik videonun her 0,1 sn'si
+
+
+def goril_alanlari(veri, tur, ornek=False):
+    """Şablon alanları. Goril modülünde ya da kuralda herhangi bir hata "goril yok" sayılır: diğer paylaşımlar ve
+    gorilsiz fiyat paylaşımı hiç etkilenmez."""
+    try:
+        import goril
+        return goril.sablon_verisi(veri, tur, datetime.now(TR_SAAT).date(), ornek)
+    except Exception as e:
+        print(f"::warning::Goril hâli belirlenemedi, gorilsiz devam ediliyor: {type(e).__name__}: {e}")
+        return dict(GORIL_YOK)
+
+
+def goril_yerlesimi_denetle(sablon, veri):
+    """Gorilin bedeni (class="goril-beden") durağan pozda ya da videonun her 0,1 sn'sinde fiyat, ₺, rozet, manşet,
+    alt satırlar, Ag rozeti, uyarı satırı gibi öğelerle kesişirse, hiç ölçülemezse ya da fiyat görünmüyorsa
+    RuntimeError verir (o zaman paylaşım gorilsiz üretilir). Saydam (giriş öncesi) parçalar sayılmaz."""
+    from jinja2 import Environment, FileSystemLoader
+    from playwright.sync_api import sync_playwright
+
+    html = Environment(loader=FileSystemLoader(str(SABLONLAR)), autoescape=True).get_template(f"{sablon}.html").render(**veri)
+    gecici = SABLONLAR / f"_goril_denetim_{sablon}.html"
+    gecici.write_text(html, encoding="utf-8")
+    olc = """([metinler, kutular]) => {
+      const kes = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+      const korunan = [];
+      metinler.forEach(s => document.querySelectorAll(s).forEach(e => {
+        if (e.closest('.maskot')) return;
+        const r = document.createRange(); r.selectNodeContents(e); const b = r.getBoundingClientRect();
+        if (b.width > 0 && b.height > 0) korunan.push([s, b]); }));
+      kutular.forEach(s => document.querySelectorAll(s).forEach(e => {
+        if (e.closest('.maskot')) return;
+        const b = e.getBoundingClientRect(); if (b.width > 0 && b.height > 0) korunan.push([s, b]); }));
+      const fiyat = document.getElementById('fiyat');
+      if (!fiyat || fiyat.getBoundingClientRect().width === 0) return {hata: 'fiyat görünmüyor'};
+      const sv = document.querySelector('.maskot svg');
+      if (!sv) return {hata: 'maskot yok'};
+      const kb = sv.getBoundingClientRect(), vb = sv.viewBox.baseVal;
+      const olcek = Math.min(kb.width / vb.width, kb.height / vb.height);
+      let g = null;
+      sv.querySelectorAll('.goril-beden').forEach(grup => grup.querySelectorAll('path,ellipse,circle,rect,use,polygon').forEach(e => {
+        const b = e.getBoundingClientRect(); if (b.width === 0 && b.height === 0) return;
+        const cs = getComputedStyle(e);
+        if (cs.visibility === 'hidden' || cs.display === 'none') return;
+        let o = 1;                                  // görünmeyen (saydam) parça sayılmaz
+        for (let a = e; a && a !== sv.parentNode; a = a.parentNode) o *= parseFloat(getComputedStyle(a).opacity);
+        if (o < 0.05) return;
+        const p = (cs.stroke && cs.stroke !== 'none') ? (parseFloat(cs.strokeWidth) || 0) / 2 * olcek : 0;
+        const r = {left: b.left - p, top: b.top - p, right: b.right + p, bottom: b.bottom + p};
+        g = g ? {left: Math.min(g.left, r.left), top: Math.min(g.top, r.top), right: Math.max(g.right, r.right),
+                 bottom: Math.max(g.bottom, r.bottom)} : r; }));
+      if (!g) return {carpan: [], goril: null};   // bu anda görünmüyor (giriş öncesi)
+      const carpan = korunan.filter(([s, b]) => kes(g, b)).map(([s]) => s);
+      return {carpan, goril: [Math.round(g.left), Math.round(g.top), Math.round(g.right), Math.round(g.bottom)]};
+    }"""
+    try:
+        with sync_playwright() as p:
+            kwargs = {"executable_path": os.environ["CHROME_YOLU"]} if os.environ.get("CHROME_YOLU") else {}
+            tarayici = p.chromium.launch(**kwargs)
+            boyut = (1080, 1920) if sablon == "ozel" else (1080, 1350)
+            sayfa = tarayici.new_page(viewport={"width": boyut[0], "height": boyut[1]})
+            sayfa.goto(gecici.as_uri())
+            sayfa.evaluate("document.fonts.ready")
+            sayfa.wait_for_timeout(200)
+            hareket = sayfa.evaluate("typeof window.kare === 'function'")
+            goruldu = False
+            # önce durağan poz (görsel ve durağan video), sonra hareketin anları
+            for t in ((None,) + GORIL_DENETIM_ANLARI if hareket else (None,)):
+                if t is not None:
+                    sayfa.evaluate(f"window.kare({t})")
+                s = sayfa.evaluate(olc, [GORIL_KORUNAN_METIN, GORIL_KORUNAN_KUTU])
+                if s.get("hata"):
+                    raise RuntimeError(f"goril denetimi: {s['hata']}")
+                if s["carpan"]:
+                    an = "durağan pozda" if t is None else f"{t} sn'de"
+                    raise RuntimeError(f"goril {an} şunlarla çakışıyor: {', '.join(sorted(set(s['carpan'])))}")
+                goruldu = goruldu or bool(s["goril"])
+            tarayici.close()
+            if not goruldu:
+                raise RuntimeError("goril denetimi: goril bedeni hiçbir anda ölçülemedi")
+    finally:
+        gecici.unlink(missing_ok=True)
+
+
+def goril_ciz(girdi, sonuc):
+    """Ayrı süreçte çalışır (goril_ile_uret çağırır): denetim, gorilli görsel ve video."""
+    import pickle
+    d = pickle.loads(Path(girdi).read_bytes())
+    png, mp4 = Path(d["png"]), Path(d["mp4"])
+    goril_yerlesimi_denetle(d["sablon"], d["veri"])
+    gorsel_uret(d["sablon"], d["veri"], png)
+    hareketli = hareketli_video_uret(d["sablon"], d["veri"], mp4, sure=d["sure"])
+    if not hareketli:
+        video_uret(png, mp4, sure=d["sure"])
+    Path(sonuc).write_text(json.dumps({"hareketli": bool(hareketli)}), encoding="utf-8")
+
+
+def goril_ile_uret(sablon, veri, png, mp4, sure):
+    """Gorilli görsel ve videoyu ayrı süreçte, süre sınırıyla üretir. Başarılıysa True. Hata, takılma, süre aşımı
+    ya da yerleşim sorununda False döner ve yarım dosyaları siler; o zaman hazirla() bugünkü gibi gorilsiz üretir.
+    Goril hiçbir zaman fiyat paylaşımını durdurmaz (taahhüt: hafta içi her gün 2 kez gram fiyatı)."""
+    import pickle
+    import signal
+    try:
+        import goril
+        sinir = goril.SURE_SINIRI
+    except Exception:
+        sinir = 120
+    girdi, sonuc = png.with_suffix(".goril.pkl"), png.with_suffix(".goril.json")
+    kod = None
+    try:
+        girdi.write_bytes(pickle.dumps({"sablon": sablon, "veri": veri, "png": str(png), "mp4": str(mp4), "sure": sure}))
+        p = subprocess.Popen([sys.executable, str(Path(__file__).resolve()), "goril-ciz",
+                              "--girdi", str(girdi), "--sonuc", str(sonuc)], start_new_session=True)
+        try:
+            kod = p.wait(timeout=sinir)
+        except subprocess.TimeoutExpired:
+            os.killpg(p.pid, signal.SIGKILL)
+            p.wait()
+            print(f"::warning::Goril {sinir} sn içinde çizilemedi; paylaşım gorilsiz üretiliyor.")
+        else:
+            if kod != 0:
+                print("::warning::Goril çizilemedi (yukarıdaki hata); paylaşım gorilsiz üretiliyor.")
+    except Exception as e:
+        print(f"::warning::Goril süreci başlatılamadı ({type(e).__name__}: {e}); paylaşım gorilsiz üretiliyor.")
+    finally:
+        girdi.unlink(missing_ok=True)
+    tamam = kod == 0 and sonuc.exists() and png.exists() and mp4.exists()
+    sonuc.unlink(missing_ok=True)
+    if not tamam:
+        for f in (png, mp4):
+            f.unlink(missing_ok=True)
+        for kalip in ("_cikti_*.html", "_hareket_*.html", "_goril_denetim_*.html"):   # öldürülen süreçten kalanlar
+            for f in SABLONLAR.glob(kalip):
+                f.unlink(missing_ok=True)
+    return tamam
 
 # ---------------------------------------------------------------- instagram
 
@@ -1717,31 +1882,37 @@ def hazirla(tur, cikti, ornek, konu=None):
     if tur == "hafta":
         veri["pazar_hatirlatma"] = PAZAR_HATIRLATMA if (ornek or pazar_yorumu_yarin()) else None
 
+    veri.update(goril_alanlari(veri, tur, ornek))
     damga = datetime.now(TR_SAAT).strftime("%Y%m%d-%H%M")
     # Özel günde (eşik aşıldı / en az bir aylık en yüksek) aynı paylaşım özel görselle gider.
     # Özel görsel üretilemezse paylaşım olağan görselle yapılır.
     sablon = "ozel" if veri.get("ozel") else tur
     png = cikti / f"{tur}-{damga}.png"
-    try:
-        gorsel_uret(sablon, veri, png)
-    except Exception as e:
-        if sablon != "ozel":
-            raise
-        print(f"::warning::Özel gün görseli üretilemedi, olağan görselle devam ediliyor: {type(e).__name__}: {e}")
-        veri["ozel"], veri["baslik_notu"], sablon = None, None, tur
-        gorsel_uret(sablon, veri, png)
     # Her paylaşım sesli video (Reels) olarak gider; özetler okunabilsin diye biraz daha uzun.
     mp4 = cikti / f"{tur}-{damga}.mp4"
     sure = 10 if (sablon == "ozel" or tur != "reels") else 7
-    try:
-        hareketli = hareketli_video_uret(sablon, veri, mp4, sure=sure)
-    except Exception as e:
-        if sablon != "ozel":
-            raise
-        print(f"::warning::Özel gün videosu hareketli üretilemedi, durağan video kullanılıyor: {type(e).__name__}: {e}")
-        hareketli = False
-    if not hareketli:
-        video_uret(png, mp4, sure=sure)
+    # Goril: ayrı süreçte, süre sınırı ve yerleşim denetimiyle. Olmazsa aşağıdaki bugünkü yol gorilsiz çalışır.
+    gorilli = bool(veri.get("maskot")) and goril_ile_uret(sablon, veri, png, mp4, sure)
+    if not gorilli:
+        veri.update(GORIL_YOK)
+        try:
+            gorsel_uret(sablon, veri, png)
+        except Exception as e:
+            if sablon != "ozel":
+                raise
+            print(f"::warning::Özel gün görseli üretilemedi, olağan görselle devam ediliyor: {type(e).__name__}: {e}")
+            veri["ozel"], veri["baslik_notu"], sablon = None, None, tur
+            gorsel_uret(sablon, veri, png)
+        sure = 10 if (sablon == "ozel" or tur != "reels") else 7
+        try:
+            hareketli = hareketli_video_uret(sablon, veri, mp4, sure=sure)
+        except Exception as e:
+            if sablon != "ozel":
+                raise
+            print(f"::warning::Özel gün videosu hareketli üretilemedi, durağan video kullanılıyor: {type(e).__name__}: {e}")
+            hareketli = False
+        if not hareketli:
+            video_uret(png, mp4, sure=sure)
     dosya = mp4.name
     kapak = kapak_uret(tur, veri, cikti / f"kapak-{tur}-{damga}.jpg")
 
@@ -1750,6 +1921,7 @@ def hazirla(tur, cikti, ornek, konu=None):
                                                  "kapak_ms": int((sure - 0.5) * 1000),
                                                  "kapak": kapak,
                                                  "baslik": _baslik_ozeti(veri),
+                                                 "goril": veri.get("goril"),
                                                  "fiyatlar": {k: v for k, v in fiyat.items()
                                                               if k not in ("gecmis_gram", "gecmis_parite")}},
                                                 ensure_ascii=False, indent=2),
@@ -1781,6 +1953,9 @@ def main():
     y.add_argument("--bekle-dk", type=int, default=0,
                    help="Instagram geçici engel verirse en çok bu kadar dakika bekleyip yeniden dene (0: deneme)")
     alt.add_parser("token-yenile")
+    gc = alt.add_parser("goril-ciz", help="iç kullanım: gorilli görseli ayrı süreçte üretir (goril_ile_uret)")
+    gc.add_argument("--girdi", required=True)
+    gc.add_argument("--sonuc", required=True)
     a = ap.parse_args()
 
     if a.komut == "hazirla":
@@ -1789,6 +1964,8 @@ def main():
         hazirla(a.tur, KOK / a.cikti if not os.path.isabs(a.cikti) else Path(a.cikti), a.ornek, a.konu)
     elif a.komut == "yayinla":
         yayinla(KOK / a.cikti if not os.path.isabs(a.cikti) else Path(a.cikti), a.url, a.bekle_dk)
+    elif a.komut == "goril-ciz":
+        goril_ciz(a.girdi, a.sonuc)
     else:
         token_yenile()
 

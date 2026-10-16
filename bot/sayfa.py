@@ -190,6 +190,16 @@ def _rehber(simdi):
     return sorted(yayimlanan, key=lambda b: b["no"])
 
 
+def _goril_yasal(gun):
+    """Goril maskotu başladıysa yasal listeye eklenen cümle (bot/goril.py); yoksa None."""
+    try:
+        import goril
+        return goril.YASAL_CUMLE if goril.aktif_mi(gun) else None
+    except Exception as e:
+        print(f"::warning::Bilgi sayfası: goril cümlesi eklenemedi ({type(e).__name__}: {e})")
+        return None
+
+
 def veri_hazirla(gecmis, simdi=None):
     simdi = simdi or datetime.now(bot.TR_SAAT)
     kayitlar = sorted((date.fromisoformat(g), k) for g, k in gecmis.items())
@@ -242,6 +252,7 @@ def veri_hazirla(gecmis, simdi=None):
         "program": program,
         "tanitim": _tanitim(program),
         "kaynak": _kaynaklar(),
+        "goril_yasal": _goril_yasal(simdi.date()),
         "yil": simdi.year,
     }
 

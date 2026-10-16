@@ -18,6 +18,10 @@
 - Instagram'a tarayıcıyla bakılmaz.
 - Sitede ve açıklamalarda model ya da şirket adı yazılmaz.
   (Bu dört kural: Rıdvan, 16 Ekim 2026 "CLAUDE.md'ye ekle".)
+- Goril maskotu (README → "Goril maskotu", `bot/goril.py`): yalnız hafta içi akşam özeti ve cumartesi haftalık
+  özetinde, 2 Kasım 2026'dan itibaren. Sabah Reels'ine (karşılaştırma grubu) ve pazar yorumuna (hiçbir zaman) goril
+  eklenmez. Hâller, eşikler ya da açıklama satırı değişecekse önce önizleme ve Rıdvan'ın onayı. Gorilli üretim her
+  hatada gorilsiz paylaşıma düşmeli; bu yedek yol kaldırılmaz. (Rıdvan, 16 Ekim 2026.)
 - Rehber hikâyesi kareler tek tek değil, tek müzikli video olarak gider (kapak 3 sn, kare 6 sn), rehber gönderisiyle
   aynı çalıştırmada (`bot/main.py` → `REHBER_HIKAYE_OTOMATIK = True`); hikâye kalabalık olmamalı.
 - "Rehber" öne çıkanının standardı (Rıdvan, 14 Ekim 2026): her bölüm tek video; öne çıkandaki sıra önemli değil,

@@ -138,6 +138,7 @@
       <li>Dolar/TL: {% if kaynak.kur_ecb %}Avrupa Merkez Bankası (ECB) referans kurlarından EUR çaprazıyla hesaplanmıştır, {% endif %}<a href="{{ kaynak.kur_url }}">{{ kaynak.kur_ad }}</a> üzerinden ({{ kur_tarihi }} kuru).</li>
       {% if program and program.yorum %}<li>Pazar yorumları fiyat ve kur verileri ile haftanın haberlerinden üst düzey yapay zekâ ile üretilir; yine de tahmindir: hata içerebilir, eksik ya da güncel olmayabilir ve uzman incelemesinden geçmez; bilgileri kendiniz doğrulamadan dayanak almayın. Haber kaynakları her yorumun açıklamasında yazar.</li>{% endif %}
       <li>Bu sayfa ve hesaptaki tüm paylaşımlar yalnızca bilgi amaçlıdır; alım-satım önerisi içermez ve yatırım danışmanlığı kapsamında değildir. Yatırım danışmanlığı, SPK'dan yetkili kuruluşlarla imzalanan sözleşmeyle verilir.</li>
+      {% if goril_yasal %}<li>{{ goril_yasal }}</li>{% endif %}
       <li>Değerler mali durumunuza ve risk tercihlerinize göre hazırlanmamıştır; yalnızca bunlara dayanarak karar vermeyin.</li>
       <li>Bu hesap DM'den tavsiye vermez, para ya da yatırım istemez. Hesap adına size yazanlara itibar etmeyin.</li>
       <li>Reklam ya da iş birliği içeren paylaşımlar #reklam etiketiyle açıkça belirtilir; fiyat verileri reklamdan etkilenmez.</li>
