@@ -1946,7 +1946,7 @@ def kisa_hazirla(cikti, konu):
                                                  "ses_metni": seslendirme["metin"] if seslendirme else None},
                                                 ensure_ascii=False, indent=2), encoding="utf-8")
     if seslendirme:
-        print(f"Seslendirme: {seslendirme['ses']}, {sure} sn, parçalar {seslendirme['parca_sn']}")
+        print(f"Seslendirme: {seslendirme['ses']} ({seslendirme['model']}), {sure} sn, parçalar {seslendirme['parca_sn']}")
     print(metin)
     print(f"\nÜretilen dosya: {mp4}")
 

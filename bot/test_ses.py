@@ -135,8 +135,39 @@ try:
     dogrula(len(sonuc) == len(ton), "yeniden denemeden sonra ses gelmeli")
     dogrula(cagrilar[-1]["generation_config"]["speech_config"] == [{"voice": "Kore"}], "ses adı istekte")
     dogrula(cagrilar[-1]["input"][0]["content"][0]["annotations"][0]["style"] == ses.USLUP, "üslup istekte")
+    # Günlük kota (429 "per day") beklenmez, aynı model yeniden denenmez
+    cagrilar.clear()
+    ses.requests.post = lambda *a, **k: (cagrilar.append(1), Yanit(429, {"error": {"message":
+        "Rate limit exceeded (limit: 10 requests per day on Free Tier)"}}))[1]
+    try:
+        ses.seslendir("Merhaba", anahtar_="x")
+        dogrula(False, "kota dolunca SesHatasi bekleniyordu")
+    except ses.SesHatasi:
+        dogrula(len(cagrilar) == 1, f"günlük kotada yeniden deneme olmamalı ({len(cagrilar)} istek)")
 finally:
     ses.requests.post, ses.time.sleep = gercek_post, gercek_uyku
+
+# Ana model yarıda kalırsa bütün parçalar yedek modelle baştan okunur (ses tonu karışmasın)
+kullanilan = []
+
+
+def yarida(metin, ses=None, uslup=None, anahtar_=None, model=None):
+    kullanilan.append(model)
+    if model == ses_mod_ana and kullanilan.count(model) == 3:
+        raise ses_mod_hata("kota")
+    return array.array("h", [0] * 1200 + [9000] * 24000 + [0] * 1200)
+
+
+ses_mod_ana, ses_mod_hata = ses.MODEL, ses.SesHatasi
+gercek_s = ses.seslendir
+ses.seslendir = yarida
+try:
+    with tempfile.TemporaryDirectory() as d:
+        sonuc = ses.kisa_seslendir(3, bilgi.BOLUMLER[2], d, anahtar_="x")
+        dogrula(sonuc["model"] == ses.YEDEK_MODEL, f"yedek model: {sonuc['model']}")
+        dogrula(kullanilan == [ses.MODEL] * 3 + [ses.YEDEK_MODEL] * 4, f"parçalar tek modelden: {kullanilan}")
+finally:
+    ses.seslendir = gercek_s
 
 # ---------------------------------------------------------------- kayıt adı
 with tempfile.TemporaryDirectory() as d:
@@ -153,7 +184,7 @@ if os.environ.get("HIZLI"):
 
 
 # ---------------------------------------------------------------- uçtan uca (yapay sesle)
-def yapay_ses(metin, ses=None, uslup=None, anahtar_=None):
+def yapay_ses(metin, ses=None, uslup=None, anahtar_=None, model=None):
     """Harf sayısına orantılı, konuşma benzeri genlikli ton (Gemini yerine)."""
     n = int(len(metin) * 0.065 * ses_mod.ORNEKLEME)
     return array.array("h", [0] * 2400 + [int(9000 * math.sin(i / 7) * (0.6 + 0.4 * math.sin(i / 900)))

@@ -170,7 +170,8 @@ def _istek(metin, ses, uslup, model, anahtar_):
             mesaj = r.json().get("error", {}).get("message", "")[:200]
         except ValueError:
             mesaj = r.text[:200]
-        return None, f"{r.status_code} {mesaj}", r.status_code in (429, 500, 502, 503, 504)
+        gunluk = r.status_code == 429 and "per day" in mesaj   # günlük kota: beklemek işe yaramaz
+        return None, f"{r.status_code} {mesaj}", r.status_code in (429, 500, 502, 503, 504) and not gunluk
     try:
         veri = r.json()
         sesler = [c for s in veri.get("steps", []) if s.get("type") == "model_output"
@@ -182,20 +183,20 @@ def _istek(metin, ses, uslup, model, anahtar_):
         return None, f"yanıt çözülemedi ({type(e).__name__})", False
 
 
-def seslendir(metin, ses=SES, uslup=USLUP, anahtar_=None):
-    """Metni sese çevirir; 24 kHz mono 16 bit PCM örneklerini (array('h')) döndürür."""
+def seslendir(metin, ses=SES, uslup=USLUP, anahtar_=None, model=MODEL):
+    """Metni tek modelle sese çevirir; 24 kHz mono 16 bit PCM örneklerini (array('h')) döndürür.
+    Geçici hatada (meşgul, dakikalık sınır) iki kez daha dener; günlük kota dolduysa beklemez."""
     anahtar_ = anahtar_ or anahtar()
     son_hata = None
-    for model in (MODEL, YEDEK_MODEL):
-        for deneme in range(3):
-            ham, hata, gecici = _istek(metin, ses, uslup, model, anahtar_)
-            if ham is not None:
-                return _pcm(ham)
-            son_hata = f"{model}: {hata}"
-            print(f"Uyarı: seslendirme denemesi başarısız ({son_hata})", file=sys.stderr)
-            if not gecici:
-                break
-            time.sleep(5 * (deneme + 1))
+    for deneme in range(3):
+        ham, hata, gecici = _istek(metin, ses, uslup, model, anahtar_)
+        if ham is not None:
+            return _pcm(ham)
+        son_hata = f"{model}: {hata}"
+        print(f"Uyarı: seslendirme denemesi başarısız ({son_hata})", file=sys.stderr)
+        if not gecici:
+            break
+        time.sleep(5 * (deneme + 1))
     raise SesHatasi(son_hata or "bilinmeyen hata")
 
 
@@ -274,16 +275,25 @@ def kisa_seslendir(konu, bolum, klasor, ses=SES, anahtar_=None):
     """Kısa Reels için ses izi üretir. {"zaman", "sure", "wav", "ses", "metin"} ya da SesHatasi."""
     metin = okuma_metni(konu, bolum)
     anahtar_ = anahtar_ or anahtar()
-    ornekler = {}
-    for ad in ("soru", "cevap", "cumle", "cagri"):
-        ornekler[ad] = kirp(seslendir(metin[ad], ses=ses, anahtar_=anahtar_))
+    # Bir Reels'in bütün parçaları aynı modelden: ana model yarıda kalırsa (ör. günlük kota) hepsi yedek
+    # modelle baştan okunur, ses tonu parça parça değişmesin. Ücretsiz kota ~10 istek/gün/model; Reels 4 ister.
+    hata = None
+    for model in (MODEL, YEDEK_MODEL):
+        try:
+            ornekler = {ad: kirp(seslendir(metin[ad], ses=ses, anahtar_=anahtar_, model=model))
+                        for ad in ("soru", "cevap", "cumle", "cagri")}
+            break
+        except SesHatasi as e:
+            hata = e
+    else:
+        raise hata
     sureler = {ad: sure(o) for ad, o in ornekler.items()}
     if sum(sureler.values()) > 40:
         raise SesHatasi(f"seslendirme çok uzun ({sum(sureler.values()):.1f} sn)")
     zaman, bas, toplam = zamanla(sureler)
     wav = Path(klasor) / f"_ses-kisa{konu}.wav"
     iz_yaz([(bas[ad], ornekler[ad]) for ad in ornekler], toplam, wav)
-    return {"zaman": zaman, "sure": toplam, "wav": wav, "ses": ses, "metin": metin,
+    return {"zaman": zaman, "sure": toplam, "wav": wav, "ses": ses, "metin": metin, "model": model,
             "parca_sn": {ad: round(s, 2) for ad, s in sureler.items()}}
 
 
