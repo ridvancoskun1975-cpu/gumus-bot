@@ -42,6 +42,23 @@ for no, b in enumerate(bilgi.BOLUMLER, 1):
     toplam = sum(len(x) for x in m.values())
     dogrula(toplam <= 330, f"{no}: okuma metni uzun ({toplam} harf; video ~25 sn'yi aşar)")
 
+# Tam okuma: ekrandaki simge ve birimler okunur
+for ham, beklenen in (("Dolar/TL 50,00 ₺", "dolar kuru 50,00 lira"), ("19,3 g/cm³", "santimetreküpte 19,3 gram"),
+                      ("%50+", "yüzde 50'den fazla"), ("±%10", "artı eksi yüzde 10"), ("#1", "1 numara"),
+                      ("Au ÷ Ag", "altın bölü gümüş"), ("~147 kat", "yaklaşık 147 kat"), ("1–4 hafta", "1 ile 4 hafta"),
+                      ("Ons gümüş 50,00 $", "Ons gümüş 50,00 dolar"), ("1 kg", "1 kilogram"), ("147×", "147 kat"),
+                      ("Parite 80 → 1 ons altın = 80 ons gümüş", "Parite 80, 1 ons altın eşittir 80 ons gümüş")):
+    dogrula(ses.okunur(ham) == beklenen, f"okunur({ham!r}) = {ses.okunur(ham)!r}")
+import rehber_hikaye as rh_  # noqa: E402
+for no_, b_ in enumerate(bilgi.BOLUMLER, 1):
+    kareler_ = [rh_._ogeler(s_, False, s_["birimler"]) for s_ in rh_.sayfalari_cikar(b_)]
+    m_ = ses.rehber_metinleri(no_, b_, kareler_, "Sonraki")
+    dogrula(len(m_) == len(kareler_) + 1 and all(m_), f"#{no_}: her kare için metin")
+    dogrula(not re.search(r"[%÷×=→~#₺$±/·•]", " ".join(m_)), f"#{no_}: okunmayacak simge kalmadı")
+    dogrula(m_[0].startswith(ses.OKUMA[no_][0]), f"#{no_}: kapakta soru")
+    dogrula(m_[-1].endswith("Sıradaki bölüm: Sonraki."), f"#{no_}: kapanış")
+    dogrula(400 < len(" ".join(m_)) < 1600, f"#{no_}: okuma uzunluğu {len(' '.join(m_))}")
+
 # Elle yazılmamış bölüm için yedek metin rakam ve simgeyi okunur hâle getirir
 dogrula(ses._sozlu("%50+") == "yüzde 50'den fazla", ses._sozlu("%50+"))
 dogrula(ses._sozlu("~31 kg") == "yaklaşık 31 kilogram", ses._sozlu("~31 kg"))
@@ -262,30 +279,55 @@ try:
         dogrula(ses.ACIKLAMA_SATIRI not in meta["aciklama"], "sessizde seslendirme satırı olmamalı")
         dogrula(abs(sn - 12) < 0.2 and ses_var, f"yedek yol: 12 sn müzikli video ({sn})")
 
-    # Rehber günü (Rıdvan, 16 Ekim 2026 23:4x): kaydırmalı yerine sesli Reels, hikâyeye müzikli rehber videosu
+    # Rehber günü (Rıdvan, 16–17 Ekim 2026): kaydırmalı yerine bölümün TAMAMINI okuyan sesli Reels,
+    # hikâyeye müzikli rehber videosu
     ses.seslendir = yapay_ses
     with tempfile.TemporaryDirectory() as d:
         d = Path(d)
         main.bilgi_hazirla(d, 7)
         meta = json.loads((d / "meta.json").read_text(encoding="utf-8"))
         dogrula("dosyalar" not in meta and meta["dosya"].endswith(".mp4"), f"rehber günü Reels: {meta.get('dosya')}")
-        dogrula((d / meta["kapak"]).exists() and meta["kapak_ms"] > 0, "rehber Reels kapağı")
+        dogrula(meta["kapak"].endswith("-reels-kapak.jpg") and (d / meta["kapak"]).exists(), "Reels kapağı (Dokunun'suz)")
         dogrula(meta["seslendirme"] == ses.SES, "rehber Reels sesli")
+        dogrula(isinstance(meta["ses_metni"], list) and len(meta["ses_metni"]) == len(meta["hikayeler"]),
+                "her kare için bir okuma")
+        b7 = bilgi.BOLUMLER[6]
+        tum = " ".join(meta["ses_metni"])
+        for sf in b7["sayfalar"]:
+            dogrula(ses.okunur(sf["baslik"]) in tum, f"sayfa başlığı okunur: {sf['baslik']}")
+            for mm in sf.get("maddeler", []):
+                dogrula(ses.okunur(mm).rstrip(".") in tum, f"madde okunur: {mm[:40]}")
         dogrula(meta["hikaye_videolari"] and all((d / v).exists() for v in meta["hikaye_videolari"]),
                 "müzikli rehber hikâye videosu yine üretilir")
         a_ = meta["aciklama"]
-        dogrula(a_.startswith(bilgi.BOLUMLER[6]["baslik"] + " Kısa cevap:"), "açıklama kısa cevapla başlar")
+        dogrula(a_.startswith(b7["baslik"] + " Kısa cevap:"), "açıklama kısa cevapla başlar")
         dogrula(ses.ACIKLAMA_SATIRI in a_ and "Müzik:" in a_ and "kaydırmalı" not in a_, "açıklama satırları")
-        dogrula(all(bilgi._sayfa_metni(sf) in a_ for sf in bilgi.BOLUMLER[6]["sayfalar"]), "bölümün tamamı açıklamada")
         dogrula(len(a_) <= 2200, "açıklama sınırı")
         sn, ses_var = sure_olc(d / meta["dosya"])
-        dogrula(ses_var and 12 <= sn <= 25, f"rehber Reels süresi {sn}")
+        beklenen = sum(ses.KARE_EN_AZ["kapak" if i == 0 else "kare"] for i in range(len(meta["hikayeler"])))
+        dogrula(ses_var and sn > beklenen + 10, f"tam okuma uzun sürer ({sn:.0f} sn)")
         dogrula(kayit.paylasim_adi("bilgi", meta_yolu=d / "meta.json") == "Rehber Reels · sesli", "kayıt adı")
-        dogrula(not list(d.glob("_ses-*")), "ara ses dosyası kalmaz")
+        dogrula(not list(d.glob("_ses-*")) and not list(d.glob("_reels-*")), "ara dosyalar kalmaz")
+
+    # Ses alınamazsa Reels yine gider: kareler hikâye süreleriyle (kapak 3, kare 6 sn), yalnızca müzik
+    def bozuk2(*a, **k):
+        raise ses.SesHatasi("kota doldu")
+    ses.seslendir = bozuk2
+    with tempfile.TemporaryDirectory() as d:
+        d = Path(d)
+        main.bilgi_hazirla(d, 7)
+        meta = json.loads((d / "meta.json").read_text(encoding="utf-8"))
+        sn, ses_var = sure_olc(d / meta["dosya"])
+        n = len(meta["hikayeler"])
+        dogrula(meta["seslendirme"] is None and abs(sn - (3 + 6 * (n - 1))) < 0.3 and ses_var,
+                f"sessiz yedek: müzikli Reels {sn}")
+        dogrula(ses.ACIKLAMA_SATIRI not in meta["aciklama"], "sessizde seslendirme satırı yok")
+        dogrula(kayit.paylasim_adi("bilgi", meta_yolu=d / "meta.json") == "Rehber Reels", "sessiz kayıt adı")
+    ses.seslendir = yapay_ses
 
     # Reels üretilemezse aynı gün eski kaydırmalı gönderi gider
-    gercek_uret = main.rehber_reels_uret
-    main.rehber_reels_uret = lambda *a, **k: (_ for _ in ()).throw(RuntimeError("deneme hatası"))
+    gercek_uret = main.rehber_reels_tam_uret
+    main.rehber_reels_tam_uret = lambda *a, **k: (_ for _ in ()).throw(RuntimeError("deneme hatası"))
     try:
         with tempfile.TemporaryDirectory() as d:
             d = Path(d)
@@ -294,9 +336,10 @@ try:
             dogrula(len(meta.get("dosyalar", [])) == len(bilgi.BOLUMLER[6]["sayfalar"]) + 1 and "dosya" not in meta,
                     "yedek yol: kaydırmalı")
             dogrula(meta["aciklama"] == bilgi.aciklama(7), "yedek yolda eski açıklama")
+            dogrula(meta["hikaye_videolari"], "yedek yolda hikâye videosu yine var")
             dogrula(kayit.paylasim_adi("bilgi", meta_yolu=d / "meta.json") == "Rehber", "yedek yolda kayıt adı")
     finally:
-        main.rehber_reels_uret = gercek_uret
+        main.rehber_reels_tam_uret = gercek_uret
 
     # Yayın: rehber Reels'i Reels olarak gider, ardından müzikli rehber hikâyesi; Reels'in kendisi hikâyeye gitmez
     olaylar = []

@@ -25,7 +25,7 @@
   paylaşım durmaz, goril kalır ve Rıdvan'a bildirilir (gece kontrolü; Rıdvan, 16 Ekim 2026 22:43).
 - Rehber hikâyesi kareler tek tek değil, tek müzikli video olarak gider (kapak 3 sn, kare 6 sn), rehber gönderisiyle
   aynı çalıştırmada (`bot/main.py` → `REHBER_HIKAYE_OTOMATIK = True`); hikâye kalabalık olmamalı.
-- Rehber günü (salı ve perşembe ~14:00) akışa kaydırmalı gönderinin yerine kadın sesiyle seslendirilmiş Reels gider,
+- Rehber günü (salı ve perşembe ~14:00) akışa kaydırmalı gönderinin yerine bölümün tamamını kare kare okuyan (Rıdvan, 17 Ekim 2026: "Tabii ki tamamının okunması gerekiyor"; okumayı ona sormadan kısaltma) kadın sesli Reels gider,
   hikâyeye müzikli rehber videosu; cumartesi kısa Reels'i kaldırıldı (Rıdvan, 16 Ekim 2026 23:4x: "Kaydırmalı rehber
   kimse bakmaz"; `bot/main.py` → `REHBER_REELS`). Ses **Sulafat** (Rıdvan, 16 Ekim 2026, 3 önizlemeden seçti; README →
   "Rehber Reels seslendirmesi", `bot/ses.py`). Rehber hikâye videoları sesli değil, müzikli kalır. Reels üretilemezse

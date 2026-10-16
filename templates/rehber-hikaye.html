@@ -97,7 +97,7 @@ h1 { letter-spacing: -3px; line-height: 0.98; text-wrap: balance; }
     <div class="alt-sag">
       {% if kapak %}
       <span class="soluk" style="font-size: 28px">Bütün bölümler: Öne çıkanlar › Rehber</span>
-      <span class="vurgu" style="font-size: 32px; font-weight: 700">Dokunun →</span>
+      {% if not reels %}<span class="vurgu" style="font-size: 32px; font-weight: 700">Dokunun →</span>{% endif %}
       {% else %}
       <span class="soluk" style="font-size: 28px">Bilgi amaçlıdır, yatırım tavsiyesi değildir.</span>
         {% if son %}

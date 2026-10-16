@@ -185,8 +185,10 @@ class Cizici:
         return self.sayfa.evaluate(OLC_JS)
 
 
-def uret(b, no, sonraki, seri, hesap, cikti, damga):
-    """Bölümün hikâye karelerini cikti klasörüne yazar; dosya adlarını sırayla döndürür."""
+def uret(b, no, sonraki, seri, hesap, cikti, damga, plan=None, reels_kapak=False):
+    """Bölümün hikâye karelerini cikti klasörüne yazar; dosya adlarını sırayla döndürür.
+    plan (liste) verilirse kare planı (kapak hariç her karenin öğeleri) ona eklenir (rehber Reels'inin okuması).
+    reels_kapak: kapağın Reels sürümü de çizilir (hikâyedeki "Dokunun →" yok): bilgi<no>-<damga>-reels-kapak.jpg"""
     ortak = {"b": b, "no": no, "seri": seri, "hesap": hesap, "sonraki": sonraki}
     dosyalar = []
     with Cizici() as c:
@@ -194,7 +196,12 @@ def uret(b, no, sonraki, seri, hesap, cikti, damga):
         kareler = kareleri_planla(
             sayfalari_cikar(b),
             lambda ogeler: c.sigar_mi({**ortak, "kapak": False, "ogeler": ogeler, "k": 2, "n": 2, "son": True}))
+        if plan is not None:
+            plan.extend(kareler)
         n = len(kareler) + 1
+        if reels_kapak:
+            c.ciz({**ortak, "k": 1, "n": n, "son": False, "kapak": True, "reels": True},
+                  Path(cikti) / f"bilgi{no}-{damga}-reels-kapak.jpg")
         for k in range(1, n + 1):
             veri = {**ortak, "k": k, "n": n, "son": k == n}
             if k == 1:

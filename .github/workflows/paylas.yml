@@ -151,7 +151,7 @@ jobs:
     if: needs.kontrol.outputs.calis == 'true'
     runs-on: ubuntu-24.04   # sabit sürüm: ubuntu-latest 19 Ekim 2026 itibarıyla Ubuntu 26e geçiyor
     # Pazar yorumu Opus 5.5 "ekstra yüksek" çabayla yazılır; düşünme dakikalar sürebilir, süre geniş.
-    timeout-minutes: ${{ needs.kontrol.outputs.tur == 'yorum' && 45 || 15 }}
+    timeout-minutes: ${{ needs.kontrol.outputs.tur == 'yorum' && 45 || needs.kontrol.outputs.tur == 'bilgi' && 25 || 15 }}
     outputs:
       devam: ${{ steps.uret.outputs.devam }}
       tur: ${{ needs.kontrol.outputs.tur }}
@@ -224,7 +224,8 @@ jobs:
 
       - name: Görseli / videoyu üret
         id: uret
-        timeout-minutes: ${{ needs.kontrol.outputs.tur == 'yorum' && 35 || 5 }}
+        # rehber günü: bölümün tamamı kare kare seslendirilir (Gemini dakikalık sınırında bekleme olabilir)
+        timeout-minutes: ${{ needs.kontrol.outputs.tur == 'yorum' && 35 || needs.kontrol.outputs.tur == 'bilgi' && 15 || 5 }}
         env:
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
           METALCHARTS_KEY: ${{ secrets.METALCHARTS_KEY }}

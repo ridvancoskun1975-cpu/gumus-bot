@@ -189,15 +189,18 @@ def seslendir(metin, ses=SES, uslup=USLUP, anahtar_=None, model=MODEL):
     Geçici hatada (meşgul, dakikalık sınır) iki kez daha dener; günlük kota dolduysa beklemez."""
     anahtar_ = anahtar_ or anahtar()
     son_hata = None
-    for deneme in range(3):
+    for deneme in range(4):
         ham, hata, gecici = _istek(metin, ses, uslup, model, anahtar_)
         if ham is not None:
             return _pcm(ham)
         son_hata = f"{model}: {hata}"
         print(f"Uyarı: seslendirme denemesi başarısız ({son_hata})", file=sys.stderr)
-        if not gecici:
+        if not gecici or deneme == 3:
             break
-        time.sleep(5 * (deneme + 1))
+        # dakikalık sınırda (429) Gemini kaç saniye beklenmesini söylüyorsa o kadar (en çok 65 sn)
+        import re
+        m = re.search(r"retry in (\d+(?:\.\d+)?)s", hata or "")
+        time.sleep(min(65.0, float(m.group(1)) + 1) if m else 5 * (deneme + 1))
     raise SesHatasi(son_hata or "bilinmeyen hata")
 
 
@@ -302,6 +305,113 @@ def kisa_seslendir(konu, bolum, klasor, ses=SES, anahtar_=None, deneme=False):
     iz_yaz([(bas[ad], ornekler[ad]) for ad in ornekler], toplam, wav)
     return {"zaman": zaman, "sure": toplam, "wav": wav, "ses": ses, "metin": metin, "model": model,
             "parca_sn": {ad: round(s, 2) for ad, s in sureler.items()}}
+
+
+# ---------------------------------------------------------------- rehber günü: bölümün tamamı (kare kare)
+# Rıdvan, 17 Ekim 2026: "Tabii ki tamamının okunması gerekiyor." Rehber günü Reels'inde ekranda hikâye videosunun
+# büyük yazılı kareleri döner; her karenin yazısı okunur, kare okuma bitince değişir.
+
+KARE_ON, KARE_ARD = 0.35, 0.6          # sn: karenin başında sessizlik, okumadan sonra bekleme
+KARE_EN_AZ = {"kapak": 3.0, "kare": 4.0}
+SON_EK = 1.2                           # son karede müzik kararırken
+REHBER_EN_UZUN = 240                   # sn: bundan uzun seslendirme olmaz (yedek yol: müzikli)
+
+
+def okunur(metin):
+    """Ekrandaki yazıyı okunacak hâle getirir: simgeler kelimeye, birimler açık yazıya. Rakamlar Gemini'ye kalır
+    (Türkçe okuyor: "31,1035" → "otuz bir virgül bin otuz beş")."""
+    import re
+    m = " " + metin.strip() + " "
+    m = re.sub(r"dolar\s*/\s*TL", "dolar kuru", m, flags=re.I)
+    m = re.sub(r"(\d[\d.,]*)\s*g\s*/\s*cm³", r"santimetreküpte \1 gram", m)
+    m = re.sub(r"\bTL\b", "lira", m)
+    m = re.sub(r"±\s*", " artı eksi ", m)
+    m = re.sub(r"%\s*(\d[\d.,]*)\+", r"yüzde \1'den fazla", m)
+    m = re.sub(r"%\s*(\d[\d.,]*)", r"yüzde \1", m)
+    m = re.sub(r"#(\d+)", r"\1 numara", m)
+    m = re.sub(r"(\d[\d.,]*)\s*×(?!\s*\d)", r"\1 kat", m)
+    m = re.sub(r"(\d)\s*–\s*(\d)", r"\1 ile \2", m)
+    m = re.sub(r"(\d)\s*kg\b", r"\1 kilogram", m)
+    m = re.sub(r"(\d)\s*g\b", r"\1 gram", m)
+    m = re.sub(r"(\d[\d.,]*)\s*\$", r"\1 dolar", m)
+    m = re.sub(r"\bAu\b", "altın", m)
+    m = re.sub(r"\bAg\b", "gümüş", m)
+    for a_, b_ in (("~", " yaklaşık "), ("÷", " bölü "), ("×", " çarpı "), ("=", " eşittir "), ("→", ", "),
+                   ("₺", " lira"), ("/", " "), ("·", ","), ("•", ","), ("#", "")):
+        m = m.replace(a_, b_)
+    m = re.sub(r"\s+([,.;:!?])", r"\1", m)
+    return re.sub(r"\s+", " ", m).strip()
+
+
+def _cumle(metin):
+    metin = metin.strip()
+    return metin if not metin or metin[-1] in ".!?…:" else metin + "."
+
+
+def rehber_metinleri(no, bolum, kareler, sonraki=None):
+    """Rehber Reels'inin kare kare okunacak metinleri: [kapak, kare 1, …]. kareler: rehber_hikaye.kareleri_planla
+    çıktısı (kapak hariç öğe listeleri). Kapakta soru ve elle yazılmış kısa cevap (OKUMA), sonra her karenin yazısı
+    (sayfa başlığı, büyük rakam, formül, tablo, maddeler; kaynak notu okunmaz). Son kareye kapanış eklenir."""
+    soru, cevap, _ = (OKUMA[no] if no in OKUMA else
+                      (okunur(bolum["baslik"]), f"Kısa cevap: {okunur(bolum['buyuk'])}, {okunur(bolum['buyuk_alt'])}.", ""))
+    metinler = [f"{_cumle(soru)} {_cumle(cevap)}"]
+    for kare in kareler:
+        parcalar = []
+        for o in kare:
+            t = o["tip"]
+            if t == "bas":
+                parcalar.append(_cumle(okunur(o["baslik"])))
+            elif t == "buyuk":
+                alt = (o.get("buyuk_alt") or "").strip()
+                bag = " eşittir " if alt.startswith("=") else ", "
+                alt = alt.lstrip("= ").strip()
+                parcalar.append(_cumle(okunur(o["buyuk"] + (bag + alt if alt else ""))))
+            elif t == "formul":
+                parcalar.append(_cumle(okunur(o["metin"])))
+            elif t == "satir":
+                parcalar.append(_cumle(f"{okunur(o['etiket'])}: {okunur(o['deger'])}"))
+            elif t == "madde":
+                parcalar.append(_cumle(okunur(o["metin"])))
+            # "devam" (sayfa başlığı zaten okundu) ve "not" (kaynak) okunmaz
+        metinler.append(" ".join(p_ for p_ in parcalar if p_))
+    kapanis = "Kaydedin, lazım olunca bakarsınız."
+    if sonraki:
+        kapanis += f" Sıradaki bölüm: {_cumle(okunur(sonraki))}"
+    metinler[-1] = f"{metinler[-1]} {kapanis}".strip()
+    return metinler
+
+
+def rehber_seslendir(metinler, klasor, ad, ses=SES, anahtar_=None, deneme=False):
+    """Her karenin metnini okur, kareleri ses süresine göre zamanlar ve ses izini yazar.
+    Dönüş: {"kare_sn": [her karenin ekranda kalma süresi], "sure", "wav", "ses", "model", "metin", "parca_sn"}."""
+    anahtar_ = anahtar_ or anahtar()
+    hata = None
+    for model in modeller(deneme):      # bütün kareler aynı modelden (ses tonu karışmasın)
+        try:
+            ornekler = [kirp(seslendir(m, ses=ses, anahtar_=anahtar_, model=model)) if m else None for m in metinler]
+            break
+        except SesHatasi as e:
+            hata = e
+    else:
+        raise hata
+    parca = [sure(o) if o is not None else 0.0 for o in ornekler]
+    kare_sn = []
+    for i, p_ in enumerate(parca):
+        en_az = KARE_EN_AZ["kapak" if i == 0 else "kare"]
+        kare_sn.append(round(max(en_az, KARE_ON + p_ + KARE_ARD), 2))
+    kare_sn[-1] = round(kare_sn[-1] + SON_EK, 2)
+    toplam = round(sum(kare_sn), 2)
+    if toplam > REHBER_EN_UZUN:
+        raise SesHatasi(f"seslendirme çok uzun ({toplam:.0f} sn)")
+    bas, parcalar = 0.0, []
+    for o, d in zip(ornekler, kare_sn):
+        if o is not None:
+            parcalar.append((bas + KARE_ON, o))
+        bas += d
+    wav = Path(klasor) / f"_ses-{ad}.wav"
+    iz_yaz(parcalar, toplam + 0.05, wav)
+    return {"kare_sn": kare_sn, "sure": toplam, "wav": wav, "ses": ses, "model": model, "metin": metinler,
+            "parca_sn": [round(x, 2) for x in parca]}
 
 
 # ---------------------------------------------------------------- komut satırı

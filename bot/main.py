@@ -1800,15 +1800,28 @@ def bilgi_hazirla(cikti, konu=None):
     sonraki = bilgi.BOLUMLER[konu]["baslik"] if konu < len(bilgi.BOLUMLER) else None
     hesap = hesap_adi()
     damga = datetime.now(TR_SAAT).strftime("%Y%m%d-%H%M")
-    reels = None
-    if REHBER_REELS:
+    # Aynı bölümün 9:16 hikâye kareleri: hem müzikli hikâye videosu (REHBER_HIKAYE_OTOMATIK; "Rehber" öne çıkanı)
+    # hem rehber günü Reels'i (REHBER_REELS; kareler kadın sesiyle okunur) bunlardan yapılır.
+    plan = []
+    hikaye_videolari = []
+    try:
+        hikayeler = rehber_hikaye_uret(cikti, konu, hesap, damga, plan=plan, reels_kapak=REHBER_REELS)
+    except Exception as e:
+        print(f"::warning::Rehber hikâye kareleri üretilemedi ({e}); hikâye ve Reels yok, kaydırmalı gidiyor.")
+        hikayeler = []
+    if hikayeler:
         try:
-            reels = rehber_reels_uret(cikti, konu, damga, ad="bilgi")
+            hikaye_videolari = rehber_hikaye_videosu_uret(cikti, hikayeler, konu, damga)
+        except Exception as e:
+            print(f"::warning::Rehber hikâye videosu üretilemedi, gönderi hikâyesiz gidecek: {e}")
+    reels = None
+    if REHBER_REELS and hikayeler:
+        try:
+            reels = rehber_reels_tam_uret(cikti, konu, damga, hikayeler, plan)
         except Exception as e:
             print(f"::warning::Rehber Reels'i üretilemedi ({type(e).__name__}: {str(e)[:200]}); "
                   "bugün kaydırmalı gönderi gidiyor.")
-            for f in cikti.glob(f"*bilgi{konu}-{damga}*.mp4"):
-                f.unlink(missing_ok=True)
+            (cikti / f"bilgi{konu}-{damga}.mp4").unlink(missing_ok=True)
     dosyalar = []
     if reels:
         metin = bilgi.aciklama(konu, reels=True, ek=_reels_ek_satirlari(reels["seslendirme"]),
@@ -1824,25 +1837,11 @@ def bilgi_hazirla(cikti, konu=None):
         metin = bilgi.aciklama(konu)
     if len(metin) > 2200:
         raise RuntimeError(f"Açıklama Instagram sınırını aşıyor ({len(metin)} > 2200 karakter)")
-    # Aynı bölümün 9:16 hikâye kareleri ve onlardan müzikli hikâye videosu: video gönderiden sonra hikâyeye
-    # gider (REHBER_HIKAYE_OTOMATIK) ve "Rehber" öne çıkanında toplanır. Kareler tek tek paylaşılmaz.
-    # Üretilemezse gönderi yine gider (yalnızca uyarı).
-    hikaye_videolari = []
-    try:
-        hikayeler = rehber_hikaye_uret(cikti, konu, hesap, damga)
-    except Exception as e:
-        print(f"::warning::Rehber hikâye kareleri üretilemedi, gönderi hikâyesiz gidecek: {e}")
-        hikayeler = []
-    if hikayeler:
-        try:
-            hikaye_videolari = rehber_hikaye_videosu_uret(cikti, hikayeler, konu, damga)
-        except Exception as e:
-            print(f"::warning::Rehber hikâye videosu üretilemedi, gönderi hikâyesiz gidecek: {e}")
     meta = {"tur": "bilgi", "konu": konu, "hikayeler": hikayeler, "hikaye_videolari": hikaye_videolari,
             "aciklama": metin}
     if reels:
         sl = reels["seslendirme"]
-        meta.update({"dosya": reels["dosya"], "kapak": reels["kapak"], "kapak_ms": int((reels["sure"] - 0.5) * 1000),
+        meta.update({"dosya": reels["dosya"], "kapak": reels["kapak"], "kapak_ms": 1000,
                      "seslendirme": sl["ses"] if sl else None, "ses_metni": sl["metin"] if sl else None})
         dosyalar = [reels["dosya"], reels["kapak"]]
     else:
@@ -1860,13 +1859,107 @@ def bilgi_hazirla(cikti, konu=None):
         print(f"Hikâye videosu ({len(hikaye_videolari)}):", *hikaye_videolari, sep="\n")
 
 
-def rehber_hikaye_uret(cikti, konu, hesap, damga):
+def rehber_hikaye_uret(cikti, konu, hesap, damga, plan=None, reels_kapak=False):
     """Rehber bölümünün hikâye karelerini üretir (bot/rehber_hikaye.py); dosya adlarını döndürür."""
     import bilgi
     import rehber_hikaye
     b = bilgi.BOLUMLER[konu - 1]
     sonraki = bilgi.BOLUMLER[konu]["baslik"] if konu < len(bilgi.BOLUMLER) else None
-    return rehber_hikaye.uret(b, konu, sonraki, bilgi.SERI, hesap, cikti, damga)
+    return rehber_hikaye.uret(b, konu, sonraki, bilgi.SERI, hesap, cikti, damga, plan=plan, reels_kapak=reels_kapak)
+
+
+def rehber_tam_seslendirmesi(konu, plan, cikti):
+    """Rehber günü Reels'i için bölümün tamamının kare kare seslendirmesi (bot/ses.py → rehber_seslendir). Kapalıysa
+    ya da herhangi bir hata olursa None: Reels o gün yalnızca müzikle (hikâye videosu gibi) gider."""
+    import bilgi
+    import ses
+    if not ses.SES_ACIK or os.environ.get("SES_KAPALI"):
+        return None
+    try:
+        b = bilgi.BOLUMLER[konu - 1]
+        sonraki = bilgi.BOLUMLER[konu]["baslik"] if konu < len(bilgi.BOLUMLER) else None
+        metinler = ses.rehber_metinleri(konu, b, plan, sonraki)
+        return ses.rehber_seslendir(metinler, cikti, f"rehber{konu}",
+                                    ses=os.environ.get("SES_ADI", "").strip() or ses.SES, deneme=_deneme_mi())
+    except Exception as e:
+        print(f"::warning::Rehber seslendirmesi yapılamadı ({type(e).__name__}: {str(e)[:200]}); "
+              "rehber Reels'i yalnızca müzikle gidiyor.")
+        return None
+
+
+def _rehber_reels_sesi(sure, wav):
+    """Uzun rehber Reels'inin ses girdileri ve filtresi ([a]): müzik hikâye videosundaki gibi kendi üstüne bindirilerek
+    uzatılır (döngü yerinde kesik duyulmasın), konuşmanın altında kısık çalar ve konuşurken ayrıca kısılır.
+    Video girdisi 0. sırada."""
+    kazanc = _ses_kazanci(wav)
+    ses_zinciri = f"aresample=44100,aformat=sample_fmts=fltp:channel_layouts=stereo,volume={kazanc:.2f}dB"
+    son = f"alimiter=limit=0.89,afade=t=out:st={sure - 1.5}:d=1.5[a]"
+    muzik = KOK / "assets" / "muzik.mp3"
+    if not muzik.exists():
+        print("Uyarı: assets/muzik.mp3 yok, rehber Reels'i yalnızca seslendirmeyle üretiliyor", file=sys.stderr)
+        return ["-i", str(wav)], f"[1:a]{ses_zinciri},apad,{son}"
+    girdi = ["-i", str(muzik), "-i", str(muzik), "-stream_loop", "-1", "-i", str(muzik), "-i", str(wav)]
+    filtre = ("[1:a][2:a]acrossfade=d=2:c1=tri:c2=tri[m0];[m0][3:a]acrossfade=d=2:c1=tri:c2=tri,"
+              "loudnorm=I=-16:TP=-1.5:LRA=11,aresample=44100,aformat=sample_fmts=fltp:channel_layouts=stereo,"
+              f"volume={SESLI_MUZIK_SEVIYE},afade=t=in:d=0.5[m];"
+              f"[4:a]{ses_zinciri},apad,asplit=2[v1][vs];"
+              "[m][vs]sidechaincompress=threshold=0.03:ratio=5:attack=20:release=450[md];"
+              f"[md][v1]amix=inputs=2:duration=first:normalize=0,{son}")
+    return girdi, filtre
+
+
+def rehber_reels_tam_uret(cikti, konu, damga, hikayeler, plan):
+    """Rehber günü Reels'i (Rıdvan, 17 Ekim 2026: "Tabii ki tamamının okunması gerekiyor"): ekranda hikâye videosunun
+    büyük yazılı kareleri, kadın sesi her karenin yazısını okur, kare okuma bitince değişir; müzik altta kısık.
+    Kapak, "Dokunun →" yazısı olmayan Reels kapağıdır. Ses alınamazsa kareler hikâye videosundaki sürelerle
+    (kapak 3 sn, kare 6 sn) yalnızca müzikle döner. Dönüş: {"dosya", "kapak", "sure", "seslendirme"}."""
+    import rehber_hikaye as rh
+    cikti = Path(cikti)
+    kareler = list(hikayeler)
+    reels_kapak = f"bilgi{konu}-{damga}-reels-kapak.jpg"
+    if (cikti / reels_kapak).exists():
+        kareler[0] = reels_kapak
+    sl = rehber_tam_seslendirmesi(konu, plan, cikti)
+    if sl and len(sl["kare_sn"]) != len(kareler):
+        print(f"::warning::Rehber seslendirmesi kare sayısıyla uyuşmuyor ({len(sl['kare_sn'])} ≠ {len(kareler)}); "
+              "rehber Reels'i yalnızca müzikle gidiyor.")
+        sl = None
+    mp4 = cikti / f"bilgi{konu}-{damga}.mp4"
+    liste = cikti / f"_reels-{konu}-{damga}.txt"
+
+    def yap(sl_):
+        sureler = sl_["kare_sn"] if sl_ else [rh.kare_suresi(i) for i in range(len(kareler))]
+        sure = round(sum(sureler), 2)
+        satirlar = []
+        for k, d in zip(kareler, sureler):
+            satirlar += [f"file '{(cikti / k).resolve().as_posix()}'", f"duration {d}"]
+        satirlar.append(f"file '{(cikti / kareler[-1]).resolve().as_posix()}'")   # concat: son kare yinelenir
+        liste.write_text("\n".join(satirlar) + "\n", encoding="utf-8")
+        ses_girdi, ses_filtre = _rehber_reels_sesi(sure, sl_["wav"]) if sl_ else _hikaye_sesi(sure)
+        komut = [ffmpeg_yolu(), "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", str(liste), *ses_girdi,
+                 "-filter_complex", f"[0:v]scale=1080:1920,fps={VIDEO_FPS},format=yuv420p[v];{ses_filtre}",
+                 "-map", "[v]", "-map", "[a]", "-t", str(sure),
+                 "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-r", str(VIDEO_FPS),
+                 "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", str(mp4)]
+        subprocess.run(komut, check=True)
+        return sure
+
+    try:
+        try:
+            sure = yap(sl)
+        except Exception as e:
+            if not sl:
+                raise
+            print(f"::warning::Seslendirmeli rehber Reels'i üretilemedi ({type(e).__name__}: {str(e)[:200]}); "
+                  "yalnızca müzikle gidiyor.")
+            sl = None
+            sure = yap(None)
+    finally:
+        liste.unlink(missing_ok=True)
+        (cikti / f"_ses-rehber{konu}.wav").unlink(missing_ok=True)   # ara dosya yayına çıkmasın
+    if sl:
+        print(f"Seslendirme: {sl['ses']} ({sl['model']}), {sure} sn, kareler {sl['kare_sn']}")
+    return {"dosya": mp4.name, "kapak": kareler[0], "sure": sure, "seslendirme": sl}
 
 
 def _hikaye_sesi(sure):
