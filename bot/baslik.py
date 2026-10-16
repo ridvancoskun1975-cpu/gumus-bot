@@ -129,10 +129,13 @@ def _grafik_serisi(seri, gun, deger, gun_sayisi):
     return noktalar + [(gun, deger)]
 
 
-def degerlendir(kayitlar, gun, deger):
+def degerlendir(kayitlar, gun, deger, sabah=False):
     """Bugünün başlığı ve (varsa) özel durumu.
 
     kayitlar: {tarih: gram} (bugünden önceki günler kullanılır), gun: bugün, deger: bugünkü gram.
+    sabah: sabah Reels'i (Rıdvan, 16 Ekim 2026 23:00): gün daha bitmediği için bugünü tamamlanmış gün sayan
+    "Üst üste N. gün …" ve "N günlük … sona erdi" başlıkları çıkmaz; yerine (varsa) anlık doğru olan başlık gelir
+    (eşik, son X'in en yükseği/düşüğü, haftaya başlangıç). Akşam özetinde hepsi çıkar.
     Dönüş: {"ozel": None | {...}, "baslik": None | {"yon", "metin", "kural"}, "not": str | None}
     """
     seri = {d: _y(v) for d, v in kayitlar.items() if d < gun}
@@ -213,15 +216,15 @@ def degerlendir(kayitlar, gun, deger):
         w, y, ek = (w_yuksek, "artis", "en yükseği") if w_yuksek else (w_dusuk, "dusus", "en düşüğü")
         # Aynı pencere dün de geçerliyse ve seri sürüyorsa her gün aynı başlık çıkmasın: seri yazılır
         wo = pencere(_oncesi(seri, dun), dun, seri[dun], y) if dun in seri else None
-        if not (wo == w and n >= SERI_ALT):
+        if sabah or not (wo == w and n >= SERI_ALT):     # sabah seri yazılmadığı için pencere susmaz
             baslik = b(y, f"Son {pencere_adi(w)} {ek}", "pencere")
-    if not baslik and yon and n == 1 and dun in seri:
+    if not baslik and not sabah and yon and n == 1 and dun in seri:
         # Dün biten seri: bugün ters yöne döndüyse "3 günlük yükseliş sona erdi"
         yon_dun, n_dun = seri_say(_oncesi(seri, dun), dun, seri[dun])
         if yon_dun and yon_dun != yon and n_dun >= SERI_ALT:
             ad = "yükseliş" if yon_dun == "artis" else "düşüş"
             baslik = b(yon, f"{n_dun} günlük {ad} sona erdi", "donus")
-    if not baslik and yon and n >= SERI_ALT:
+    if not baslik and not sabah and yon and n >= SERI_ALT:
         baslik = b(yon, f"Üst üste {n}. gün {'yükseliş' if yon == 'artis' else 'düşüş'}", "seri")
     if not baslik and yon and gun.weekday() == 0:
         baslik = b(yon, f"Haftaya {'yükselişle' if yon == 'artis' else 'düşüşle'} başladı", "hafta")

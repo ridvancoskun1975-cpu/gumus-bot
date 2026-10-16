@@ -694,7 +694,8 @@ def buyuk_hareket(d, zaman, esik):
     if round(abs(d["yuzde"]), 2) < esik:
         return None
     fiil = "yükseldi" if d["yon"] == "artis" else "düştü"
-    return {"yon": d["yon"], "metin": f"Gümüş {zaman} %{tr_sayi(abs(d['yuzde']), 1)} {fiil}"}
+    # zaman boşsa (sabah Reels'i) "Gümüş %3,4 yükseldi": hareket gece olmuştur, görselde altında "önceki güne göre"
+    return {"yon": d["yon"], "metin": " ".join(p for p in ("Gümüş", zaman, f"%{tr_sayi(abs(d['yuzde']), 1)}", fiil) if p)}
 
 
 # Parite satırı (Rıdvan, 16 Ekim 2026): görselde paritenin altında, ne anlama geldiğini söyleyen tek cümle; rakam
@@ -731,7 +732,10 @@ def muzik_kunyesi():
         return ""
 
 
-def veri_hazirla(f, hesap):
+def veri_hazirla(f, hesap, tur=None):
+    """tur "reels" (sabah): gün daha bitmedi, manşette "bugün" yok ve bugünü tamamlanmış gün sayan başlıklar çıkmaz
+    (Rıdvan, 16 Ekim 2026 23:00). Sabahki değişim önceki iş gününün akşam kaydına göredir (gece boyunca)."""
+    sabah = tur == "reels"
     simdi = datetime.now(TR_SAAT)
     kur_gunu = date.fromisoformat(f["kur_tarihi"])
     return {
@@ -741,7 +745,8 @@ def veri_hazirla(f, hesap):
         "gram_sayi": round(f["gram"], 2),            # hareketli videoda sayım için (dünden bugüne)
         "gram_once_sayi": round(f["gram_once"], 2),
         "gram_deg": degisim(f["gram"], f["gram_once"]),
-        "buyuk_hareket": buyuk_hareket(degisim(f["gram"], f["gram_once"]), "bugün", BUYUK_HAREKET_GUNLUK),
+        "buyuk_hareket": buyuk_hareket(degisim(f["gram"], f["gram_once"]), "" if sabah else "bugün",
+                                       BUYUK_HAREKET_GUNLUK),
         "parite": tr_sayi(f["parite"], 1),
         "parite_deg": degisim(f["parite"], f["parite_once"]),
         "parite_cumle": parite_cumlesi(degisim(f["parite"], f["parite_once"]), "bugün"),
@@ -752,7 +757,7 @@ def veri_hazirla(f, hesap):
         "kaynak_metal": KAYNAK_METAL,
         "kaynak_kur": KAYNAK_KUR,
         "hesap": hesap,
-        **gun_durumu(f, simdi.date()),
+        **gun_durumu(f, simdi.date(), sabah),
         **ozet_ek_satirlari(f, simdi.date()),
     }
 
@@ -769,7 +774,7 @@ def ozet_ek_satirlari(f, gun):
         return {"gun_ici_satiri": None, "donem_satirlari": []}
 
 
-def gun_durumu(f, gun):
+def gun_durumu(f, gun, sabah=False):
     """Günlük başlık ve özel gün (bot/baslik.py). Yalnızca hafta içi fiyat paylaşımlarında
     (f içinde önceki günlerin kayıtları varsa) hesaplanır; bir hata paylaşımı durdurmaz."""
     bos = {"ozel": None, "gun_baslik": None, "baslik_notu": None}
@@ -778,7 +783,7 @@ def gun_durumu(f, gun):
     try:
         import baslik
         seri = {date.fromisoformat(k): v for k, v in f["gecmis_gram"].items()}
-        d = baslik.degerlendir(seri, gun, f["gram"])
+        d = baslik.degerlendir(seri, gun, f["gram"], sabah=sabah)
         ozel = d["ozel"]
         if ozel:
             ozel["grafik"] = ozel_grafik(ozel, min(seri))
@@ -2289,8 +2294,8 @@ def hazirla(tur, cikti, ornek, konu=None):
         print(f"::warning::Paylaşım atlandı: {e}")
         return
     hesap = hesap_adi()
-    hazirlayici = {"hafta": haftalik_veri_hazirla, "ay": aylik_veri_hazirla}.get(tur, veri_hazirla)
-    veri = hazirlayici(fiyat, hesap)
+    hazirlayici = {"hafta": haftalik_veri_hazirla, "ay": aylik_veri_hazirla}.get(tur)
+    veri = hazirlayici(fiyat, hesap) if hazirlayici else veri_hazirla(fiyat, hesap, tur)
     if tur == "hafta":
         veri["pazar_hatirlatma"] = PAZAR_HATIRLATMA if (ornek or pazar_yorumu_yarin()) else None
 

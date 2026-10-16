@@ -98,6 +98,23 @@ esit("eşitlik en yüksek değil", metin(s), None)
 s = bak(SALI, [99.0, 95.0, 95.4, 95.1, 95.3, 95.9, 96.2, 96.5], 96.9)
 esit("pencere yinelenmez, seri yazılır", metin(s), "Üst üste 5. gün yükseliş")
 
+# ---- sabah Reels'i (Rıdvan, 16 Ekim 2026 23:00): bugünü tamamlanmış gün sayan başlıklar çıkmaz
+def bak_sabah(gun, degerler, bugun):
+    return baslik.degerlendir(seri_kur(gun, degerler), gun, bugun, sabah=True)
+
+
+esit("sabah seri yok", metin(bak_sabah(SALI, [97.0, 96.9, 95.0, 95.3, 95.6], 95.9)), None)
+esit("sabah dönüş yok", metin(bak_sabah(SALI, [97.0, 94.0, 94.5, 95.0, 95.5], 95.2)), None)
+esit("sabah haftaya başlangıç var", metin(bak_sabah(PAZARTESI, [96.0, 95.0, 95.6, 95.2], 95.4)),
+     "Haftaya yükselişle başladı")
+esit("sabah pazartesi seri yerine hafta başı", metin(bak_sabah(PAZARTESI, [97.0, 96.9, 95.0, 95.3, 95.6], 95.9)),
+     "Haftaya yükselişle başladı")
+esit("sabah pencere var", metin(bak_sabah(SALI, [99.0, 95.0, 95.4, 95.1, 95.3, 95.2], 96.0)), "Son 1 haftanın en yükseği")
+esit("sabah seri yerine pencere", metin(bak_sabah(SALI, [99.0, 95.0, 95.4, 95.1, 95.3, 95.9, 96.2, 96.5], 96.9)),
+     "Son 1 haftanın en yükseği")
+esit("sabah özel gün aynı", bak_sabah(SALI, [99.0] + DUZ * 5, 96.0)["ozel"]["tur"], "zirve")
+esit("akşam değişmedi", metin(bak(SALI, [97.0, 96.9, 95.0, 95.3, 95.6], 95.9)), "Üst üste 3. gün yükseliş")
+
 # ---- özel: en az 1 aylık en yüksek
 uzun = [99.0] + DUZ * 5                                     # 26 iş günü ≈ 5 hafta
 s = bak(SALI, uzun, 96.0)

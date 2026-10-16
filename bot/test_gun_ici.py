@@ -183,4 +183,21 @@ main.GUN_ICI_DOSYASI.unlink(missing_ok=True)
 main.fiyatlari_al(kaydet=False)
 kontrol(not main.GUN_ICI_DOSYASI.exists(), "kaynaksız çağrı (pazar yorumu vb.) nokta yazmaz")
 
+# ---- sabah Reels'inde "bugün" yok (Rıdvan, 16 Ekim 2026 23:00): hareket gece olmuştur
+d = main.degisim(103.4, 100.0)
+kontrol(main.buyuk_hareket(d, "", 2.0)["metin"] == "Gümüş %3,4 yükseldi", "sabah manşeti 'bugün'süz, çift boşluksuz")
+kontrol(main.buyuk_hareket(d, "bugün", 2.0)["metin"] == "Gümüş bugün %3,4 yükseldi", "akşam manşeti değişmedi")
+os.environ["ORNEK_SENARYO"] = "goril-sevinen"
+vs = main.veri_hazirla(main.ornek_fiyatlar(), "x", "reels")
+va = main.veri_hazirla(main.ornek_fiyatlar(), "x", "post")
+os.environ.pop("ORNEK_SENARYO")
+kontrol(vs["buyuk_hareket"]["metin"] == "Gümüş %3,4 yükseldi", "sabah verisinde manşet")
+kontrol(va["buyuk_hareket"]["metin"] == "Gümüş bugün %3,4 yükseldi", "akşam verisinde manşet")
+kontrol(main.aciklama_yaz(vs, "reels").startswith("Gümüş %3,4 yükseldi: gram gümüş fiyatı"), "sabah açıklama ilk satırı")
+kontrol("bugün %" not in main.aciklama_yaz(vs, "reels"), "sabah açıklamasında 'bugün %…' yok")
+os.environ["ORNEK_SENARYO"] = "goril-sevinen"
+kontrol(main.veri_hazirla(main.ornek_fiyatlar(), "x")["buyuk_hareket"]["metin"] == "Gümüş bugün %3,4 yükseldi",
+        "tur verilmeden eski davranış")
+os.environ.pop("ORNEK_SENARYO")
+
 print(f"test_gun_ici: {gecen} sınama geçti")
