@@ -169,6 +169,19 @@ try:
 finally:
     ses.seslendir = gercek_s
 
+# Denemede yalnızca yedek model (ana modelin günlük kotası paylaşıma kalsın)
+dogrula(ses.modeller(deneme=True) == (ses.YEDEK_MODEL,), "denemede yalnızca yedek model")
+dogrula(ses.modeller() == (ses.MODEL, ses.YEDEK_MODEL), "paylaşımda önce ana model")
+kullanilan.clear()
+ses.seslendir = yarida
+try:
+    with tempfile.TemporaryDirectory() as d:
+        sonuc = ses.kisa_seslendir(3, bilgi.BOLUMLER[2], d, anahtar_="x", deneme=True)
+        dogrula(sonuc["model"] == ses.YEDEK_MODEL and set(kullanilan) == {ses.YEDEK_MODEL},
+                f"deneme ana modele dokunmamalı: {kullanilan}")
+finally:
+    ses.seslendir = gercek_s
+
 # ---------------------------------------------------------------- kayıt adı
 with tempfile.TemporaryDirectory() as d:
     m = Path(d) / "meta.json"
@@ -220,6 +233,14 @@ try:
         dogrula(abs(meta["kapak_ms"] / 1000 - (sn - 0.5)) < 0.3, "kapak anı videonun sonuna yakın")
         dogrula(not list(d.glob("_ses-*")), "ara ses dosyası silinmeli")
         dogrula(meta["ses_metni"]["soru"] == ses.OKUMA[3][0], "okunan metin metada")
+    os.environ["DENEME"] = "true"
+    modeller_ = []
+    ses.seslendir = lambda *a, model=None, **k: (modeller_.append(model), yapay_ses(*a, **k))[1]
+    with tempfile.TemporaryDirectory() as d:
+        main.kisa_hazirla(Path(d), 3)
+        dogrula(set(modeller_) == {ses.YEDEK_MODEL}, f"elle denemede yalnızca yedek model: {set(modeller_)}")
+    del os.environ["DENEME"]
+    ses.seslendir = yapay_ses
 
     def bozuk(*a, **k):
         raise ses.SesHatasi("kota doldu")

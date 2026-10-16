@@ -11,6 +11,7 @@ Her parça (soru, cevap, cümle, çağrı) ayrı istenir; böylece her sesin sü
 müzikle üretir (yedek yol kaldırılmaz).
 
 Yerelde örnek:  GEMINI_API_KEY=... python bot/ses.py dene --konu 3 --ses Kore --cikti <klasör>
+                (denemeler yedek modelle; ana modelle tam önizleme için --ana-model, kotayı yer)
 Sesleri listele: GEMINI_API_KEY=... python bot/ses.py sesler
 """
 import argparse
@@ -271,14 +272,20 @@ def zamanla(sureler):
     return z, bas, math.ceil(round(toplam, 3) * 10) / 10
 
 
-def kisa_seslendir(konu, bolum, klasor, ses=SES, anahtar_=None):
-    """Kısa Reels için ses izi üretir. {"zaman", "sure", "wav", "ses", "metin"} ya da SesHatasi."""
+def modeller(deneme=False):
+    """Denemede (paylaşmayan çalıştırma, yerel örnek) yalnızca yedek model: ana modelin günlük kotası cumartesi
+    paylaşımına kalsın (Rıdvan, 16 Ekim 2026: "google ses denemeleri yedek model ile yapılmalı")."""
+    return (YEDEK_MODEL,) if deneme else (MODEL, YEDEK_MODEL)
+
+
+def kisa_seslendir(konu, bolum, klasor, ses=SES, anahtar_=None, deneme=False):
+    """Kısa Reels için ses izi üretir. {"zaman", "sure", "wav", "ses", "metin", "model"} ya da SesHatasi."""
     metin = okuma_metni(konu, bolum)
     anahtar_ = anahtar_ or anahtar()
     # Bir Reels'in bütün parçaları aynı modelden: ana model yarıda kalırsa (ör. günlük kota) hepsi yedek
     # modelle baştan okunur, ses tonu parça parça değişmesin. Ücretsiz kota ~10 istek/gün/model; Reels 4 ister.
     hata = None
-    for model in (MODEL, YEDEK_MODEL):
+    for model in modeller(deneme):
         try:
             ornekler = {ad: kirp(seslendir(metin[ad], ses=ses, anahtar_=anahtar_, model=model))
                         for ad in ("soru", "cevap", "cumle", "cagri")}
@@ -315,6 +322,7 @@ def main():
     ap.add_argument("--ses", default=SES)
     ap.add_argument("--dil", default="tr-TR")
     ap.add_argument("--cikti", default=".")
+    ap.add_argument("--ana-model", action="store_true", help="denemede de ana modeli kullan (günlük kotayı yer)")
     a = ap.parse_args()
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     import bilgi
@@ -326,7 +334,7 @@ def main():
         print(json.dumps(okuma_metni(a.konu, b), ensure_ascii=False, indent=2))
         return
     Path(a.cikti).mkdir(parents=True, exist_ok=True)
-    s = kisa_seslendir(a.konu, b, a.cikti, ses=a.ses)
+    s = kisa_seslendir(a.konu, b, a.cikti, ses=a.ses, deneme=not a.ana_model)
     print(json.dumps({k: (str(v) if isinstance(v, Path) else v) for k, v in s.items()}, ensure_ascii=False, indent=2))
 
 

@@ -27,8 +27,9 @@
 - Rehber kısa Reels'i (cumartesi ~14:00) kadın sesiyle seslendirilir: ses **Sulafat** (Rıdvan, 16 Ekim 2026, 3
   önizlemeden seçti; README → "Rehber Reels seslendirmesi", `bot/ses.py`). Rehber hikâye videoları sesli değil,
   müzikli kalır. Ses, üslup ya da okunan metin değişecekse önce önizleme ve onay. Seslendirmenin her hatası Reels'i
-  yalnızca müzikle paylaşmaya düşmeli; bu yedek yol kaldırılmaz. Ücretsiz kota günde ~10 okuma/model: cumartesi
-  14:00'ten önce aynı gün seslendirme denemesi yapma. Yeni rehber bölümü eklenince `ses.OKUMA`'ya satır ekle.
+  yalnızca müzikle paylaşmaya düşmeli; bu yedek yol kaldırılmaz. Ücretsiz kota günde ~10 okuma/model, modeller ayrı:
+  denemeler yalnızca yedek modelle (Rıdvan, 16 Ekim 2026), ana model paylaşıma kalır; cumartesi 14:00'ten önce
+  aynı gün art arda deneme yapma (yedeğin kotası da paylaşımın güvencesi). Yeni rehber bölümü eklenince `ses.OKUMA`'ya satır ekle.
 - "Rehber" öne çıkanının standardı (Rıdvan, 14 Ekim 2026): her bölüm tek video; öne çıkandaki sıra önemli değil,
   eksik olmaması önemli. Tek tek kare olarak giden eski #1–#2 yerine videoları 18 Ekim'de paylaşılır, eski
   kareleri Rıdvan siler. Rehber hikâyesini elle kareler hâlinde paylaşma.

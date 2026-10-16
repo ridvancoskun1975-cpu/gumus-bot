@@ -1881,7 +1881,8 @@ def kisa_seslendirmesi(konu, bolum, cikti):
     if not ses.SES_ACIK or os.environ.get("SES_KAPALI"):
         return None
     try:
-        return ses.kisa_seslendir(konu, bolum, cikti, ses=os.environ.get("SES_ADI", "").strip() or ses.SES)
+        return ses.kisa_seslendir(konu, bolum, cikti, ses=os.environ.get("SES_ADI", "").strip() or ses.SES,
+                                  deneme=_deneme_mi())   # denemede yalnızca yedek model (ana kota paylaşıma)
     except Exception as e:
         print(f"::warning::Seslendirme yapılamadı ({type(e).__name__}: {str(e)[:200]}); kısa Reels yalnızca müzikle gidiyor.")
         return None
