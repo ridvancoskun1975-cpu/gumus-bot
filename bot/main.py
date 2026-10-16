@@ -1295,6 +1295,11 @@ GORIL_KORUNAN_METIN = ["#fiyat", ".kahraman-birim", ".kahraman-baslik", ".kahram
                        ".tarih", ".ozel-manset", "h1", ".satir"]
 GORIL_KORUNAN_KUTU = ["#fiyat-deg", "#manset", "#gun-baslik", ".ag", ".grafik-deger"]
 GORIL_DENETIM_ANLARI = tuple(i / 10 for i in range(101))   # 10 sn'lik videonun her 0,1 sn'si
+GORIL_OGE_ADI = {"#fiyat": "fiyat", ".kahraman-birim": "₺ işareti", ".kahraman-baslik": "GRAM GÜMÜŞ başlığı",
+                 ".kahraman > .soluk": "fiyatın altındaki satır", ".alt": "en alttaki satır", ".etiket": "üst etiket",
+                 ".tarih": "tarih", ".ozel-manset": "özel gün manşeti", "h1": "Gümüş başlığı",
+                 ".satir": "parite / dolar satırı", "#fiyat-deg": "yüzde rozeti", "#manset": "manşet",
+                 "#gun-baslik": "günün başlığı", ".ag": "Ag rozeti", ".grafik-deger": "grafik değeri"}
 
 
 def goril_alanlari(veri, tur, ornek=False):
@@ -1308,10 +1313,13 @@ def goril_alanlari(veri, tur, ornek=False):
         return dict(GORIL_YOK)
 
 
-def goril_yerlesimi_denetle(sablon, veri):
-    """Gorilin bedeni (class="goril-beden") durağan pozda ya da videonun her 0,1 sn'sinde fiyat, ₺, rozet, manşet,
-    alt satırlar, Ag rozeti, uyarı satırı gibi öğelerle kesişirse, hiç ölçülemezse ya da fiyat görünmüyorsa
-    RuntimeError verir (o zaman paylaşım gorilsiz üretilir). Saydam (giriş öncesi) parçalar sayılmaz."""
+def goril_yerlesimi_denetle(sablon, veri, sure=None):
+    """Gorilin bedeni (class="goril-beden") durağan pozda ve videonun her 0,1 sn'sinde fiyat, ₺, rozet, manşet, alt
+    satırlar, Ag rozeti, uyarı satırı gibi öğelerle kesişiyor mu bakar. Kesişme varsa okunur bir özet döndürür
+    ("fiyat, ₺ işareti (durağan pozda; 2,3–4,1 sn)"), yoksa None. Kesişme paylaşımı durdurmaz: goril kalır, uyarı
+    çıkar ve Rıdvan'a bildirilir (Rıdvan, 16 Ekim 2026 22:43: "durmasına gerek yok ... sadece bunu bildirmen
+    yeterli"). Goril hiç ölçülemezse ya da fiyat görünmüyorsa (çizim bozuk) RuntimeError verir; o zaman paylaşım
+    gorilsiz üretilir. Saydam (giriş öncesi) parçalar sayılmaz."""
     from jinja2 import Environment, FileSystemLoader
     from playwright.sync_api import sync_playwright
 
@@ -1361,22 +1369,34 @@ def goril_yerlesimi_denetle(sablon, veri):
             sayfa.wait_for_timeout(200)
             hareket = sayfa.evaluate("typeof window.kare === 'function'")
             goruldu = False
+            ogeler, durgun, anlar = set(), False, []
             # önce durağan poz (görsel ve durağan video), sonra hareketin anları
-            for t in ((None,) + GORIL_DENETIM_ANLARI if hareket else (None,)):
+            anlar_ = tuple(t for t in GORIL_DENETIM_ANLARI if sure is None or t <= sure)   # videonun süresi kadar
+            for t in ((None,) + anlar_ if hareket else (None,)):
                 if t is not None:
                     sayfa.evaluate(f"window.kare({t})")
                 s = sayfa.evaluate(olc, [GORIL_KORUNAN_METIN, GORIL_KORUNAN_KUTU])
                 if s.get("hata"):
                     raise RuntimeError(f"goril denetimi: {s['hata']}")
                 if s["carpan"]:
-                    an = "durağan pozda" if t is None else f"{t} sn'de"
-                    raise RuntimeError(f"goril {an} şunlarla çakışıyor: {', '.join(sorted(set(s['carpan'])))}")
+                    ogeler.update(s["carpan"])
+                    if t is None:
+                        durgun = True
+                    else:
+                        anlar.append(t)
                 goruldu = goruldu or bool(s["goril"])
             tarayici.close()
             if not goruldu:
                 raise RuntimeError("goril denetimi: goril bedeni hiçbir anda ölçülemedi")
     finally:
         gecici.unlink(missing_ok=True)
+    if not ogeler:
+        return None
+    ne = ", ".join(sorted({GORIL_OGE_ADI.get(o, o) for o in ogeler}))
+    ne_zaman = (["durağan pozda"] if durgun else []) + (
+        [f"{tr_sayi(min(anlar), 1)}–{tr_sayi(max(anlar), 1)} sn" if len(anlar) > 1 else f"{tr_sayi(anlar[0], 1)} sn"]
+        if anlar else [])
+    return f"{ne} ({'; '.join(ne_zaman)})"
 
 
 def goril_ciz(girdi, sonuc):
@@ -1384,17 +1404,19 @@ def goril_ciz(girdi, sonuc):
     import pickle
     d = pickle.loads(Path(girdi).read_bytes())
     png, mp4 = Path(d["png"]), Path(d["mp4"])
-    goril_yerlesimi_denetle(d["sablon"], d["veri"])
+    cakisma = goril_yerlesimi_denetle(d["sablon"], d["veri"], d["sure"])
     gorsel_uret(d["sablon"], d["veri"], png)
     hareketli = hareketli_video_uret(d["sablon"], d["veri"], mp4, sure=d["sure"])
     if not hareketli:
         video_uret(png, mp4, sure=d["sure"])
-    Path(sonuc).write_text(json.dumps({"hareketli": bool(hareketli)}), encoding="utf-8")
+    Path(sonuc).write_text(json.dumps({"hareketli": bool(hareketli), "cakisma": cakisma}, ensure_ascii=False),
+                           encoding="utf-8")
 
 
 def goril_ile_uret(sablon, veri, png, mp4, sure):
-    """Gorilli görsel ve videoyu ayrı süreçte, süre sınırıyla üretir. Başarılıysa True. Hata, takılma, süre aşımı
-    ya da yerleşim sorununda False döner ve yarım dosyaları siler; o zaman hazirla() bugünkü gibi gorilsiz üretir.
+    """Gorilli görsel ve videoyu ayrı süreçte, süre sınırıyla üretir. Başarılıysa True. Hata, takılma ya da süre
+    aşımında False döner ve yarım dosyaları siler; o zaman hazirla() bugünkü gibi gorilsiz üretir. Goril bir yazıyla
+    üst üste binerse yine True döner (goril kalır), uyarı yazar ve veri["goril_cakisma"]'ya özeti koyar.
     Goril hiçbir zaman fiyat paylaşımını durdurmaz (taahhüt: hafta içi her gün 2 kez gram fiyatı)."""
     import pickle
     import signal
@@ -1423,6 +1445,15 @@ def goril_ile_uret(sablon, veri, png, mp4, sure):
     finally:
         girdi.unlink(missing_ok=True)
     tamam = kod == 0 and sonuc.exists() and png.exists() and mp4.exists()
+    if tamam:
+        try:
+            cakisma = json.loads(sonuc.read_text(encoding="utf-8")).get("cakisma")
+        except Exception:
+            cakisma = None
+        if cakisma:
+            # Paylaşım gorilli gider; gece kontrolü bu satırı günlükten okuyup Rıdvan'a bildirir.
+            print(f"::warning::Goril üst üste biniyor: {cakisma}. Paylaşım gorilli gidiyor (Rıdvan'a bildirilecek).")
+            veri["goril_cakisma"] = cakisma
     sonuc.unlink(missing_ok=True)
     if not tamam:
         for f in (png, mp4):
@@ -2304,6 +2335,7 @@ def hazirla(tur, cikti, ornek, konu=None):
                                                  "kapak": kapak,
                                                  "baslik": _baslik_ozeti(veri),
                                                  "goril": veri.get("goril"),
+                                                 "goril_cakisma": veri.get("goril_cakisma"),
                                                  "fiyatlar": {k: v for k, v in fiyat.items()
                                                               if k not in ("gecmis_gram", "gecmis_parite")}},
                                                 ensure_ascii=False, indent=2),

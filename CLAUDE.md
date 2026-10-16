@@ -21,7 +21,8 @@
 - Goril maskotu (README → "Goril maskotu", `bot/goril.py`): hafta içi sabah Reels'i (19 Ekim 2026'dan; Rıdvan 16 Ekim
   22:25 "sabaha şimdi koy"), akşam özeti ve cumartesi haftalık özetinde her gün. Pazar yorumuna hiçbir zaman goril
   eklenmez. Hâller, eşikler ya da açıklama satırı değişecekse önce önizleme ve Rıdvan'ın onayı. Gorilli üretim her
-  hatada gorilsiz paylaşıma düşmeli; bu yedek yol kaldırılmaz. (Rıdvan, 16 Ekim 2026.)
+  hatada ve süre aşımında gorilsiz paylaşıma düşmeli; bu yedek yol kaldırılmaz. Goril bir yazıyla üst üste binerse
+  paylaşım durmaz, goril kalır ve Rıdvan'a bildirilir (gece kontrolü; Rıdvan, 16 Ekim 2026 22:43).
 - Rehber hikâyesi kareler tek tek değil, tek müzikli video olarak gider (kapak 3 sn, kare 6 sn), rehber gönderisiyle
   aynı çalıştırmada (`bot/main.py` → `REHBER_HIKAYE_OTOMATIK = True`); hikâye kalabalık olmamalı.
 - Rehber kısa Reels'i (cumartesi ~14:00) kadın sesiyle seslendirilir: ses **Sulafat** (Rıdvan, 16 Ekim 2026, 3

@@ -21,8 +21,10 @@ yorumunda goril yok; pazar yorumunda hiçbir zaman.
 Açıklamaya yalnız sevinen hâlde 2. satır eklenir (SATIR); 1. satır (arama için fiyat satırı) değişmez. Sabah
 satırında "bugün" yok (gün daha başlamadı; parite cümlesindeki kararla aynı).
 
-Güvenlik: main.py gorilli görseli ayrı süreçte, SURE_SINIRI saniyede ve yerleşim denetimiyle üretir; herhangi
-bir sorun olursa aynı paylaşım bugünkü gibi gorilsiz çıkar. Kapatmak için GORIL_ACIK = False.
+Güvenlik: main.py gorilli görseli ayrı süreçte, SURE_SINIRI saniyede üretir; hata ya da süre aşımında aynı
+paylaşım bugünkü gibi gorilsiz çıkar. Yerleşim denetimi goril bir yazıyla üst üste binerse paylaşımı durdurmaz:
+goril kalır, günlüğe "Goril üst üste biniyor" uyarısı düşer ve gece kontrolü Rıdvan'a bildirir (Rıdvan, 16 Ekim
+2026 22:43). Kapatmak için GORIL_ACIK = False.
 
 Yalnızca standart kütüphane. Sınama: python bot/test_goril.py
 """

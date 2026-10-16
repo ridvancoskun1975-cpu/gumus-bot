@@ -197,17 +197,14 @@ for tur, sablon, senaryo, hafta_, d in ornekler:
          env.get_template(f"{sablon}.html").render(**ham))
     esit(f"{sablon} gorilsizde maskot yok", 'class="maskot"' in env.get_template(f"{sablon}.html").render(**yok), False)
     # yerleşim: bütün hâller kendi kutusunda fiyat ve yazılarla çakışmaz
-    main.goril_yerlesimi_denetle(sablon, v)
-    sayac += 1
+    esit(f"{sablon}/{d} yerleşim temiz", main.goril_yerlesimi_denetle(sablon, v), None)
 print(f"Şablon ve yerleşim: {sayac} sınama geçti.")
 
-# büyük fiyat: goril rakama biner → denetim yakalar
+# büyük fiyat: goril rakama biner → denetim yakalar ve okunur özet verir (paylaşımı durdurmaz; Rıdvan, 16 Ekim 22:43)
 v = ornek_veri("post", "goril-buyuk", None, "sevinen")
-try:
-    main.goril_yerlesimi_denetle("post", v)
-    raise AssertionError("büyük fiyatta çakışma yakalanmadı")
-except RuntimeError as e:
-    esit("büyük fiyat çakışması", "çakışıyor" in str(e), True)
+ozet_ = main.goril_yerlesimi_denetle("post", v)
+esit("büyük fiyat çakışması yakalanır", bool(ozet_) and "fiyat" in ozet_, True)
+esit("çakışma özeti okunur (seçici adı yok)", "#" in ozet_ or "." in ozet_.split("(")[0], False)
 
 
 def yedek_dene(ad, v, beklenen_sure):
@@ -257,9 +254,12 @@ meta, cikti = hazirla("goril-sevinen", "sevinen")
 esit("uçtan uca gorilli: meta", meta["goril"], "sevinen")
 esit("uçtan uca gorilli: 2. satır", meta["aciklama"].split("\n")[1], goril.SATIR["post"])
 esit("uçtan uca gorilli: uyarı yok", "Goril" in cikti and "gorilsiz" in cikti, False)
+esit("uçtan uca gorilli: çakışma yok", meta.get("goril_cakisma"), None)
 meta, cikti = hazirla("goril-buyuk", "sevinen")
-esit("uçtan uca büyük fiyat: gorilsiz", meta["goril"], None)
-esit("uçtan uca büyük fiyat: satır yok", goril.SATIR["post"] in meta["aciklama"], False)
-esit("uçtan uca büyük fiyat: uyarı", "paylaşım gorilsiz üretiliyor" in cikti, True)
+esit("uçtan uca büyük fiyat: goril kalır", meta["goril"], "sevinen")
+esit("uçtan uca büyük fiyat: satır var", meta["aciklama"].split("\n")[1], goril.SATIR["post"])
+esit("uçtan uca büyük fiyat: çakışma metada", "fiyat" in (meta.get("goril_cakisma") or ""), True)
+esit("uçtan uca büyük fiyat: bildirim satırı", "::warning::Goril üst üste biniyor" in cikti, True)
+esit("uçtan uca büyük fiyat: gorilsize düşmez", "gorilsiz" in cikti, False)
 
 print(f"Tamam: {sayac} sınama geçti.")
