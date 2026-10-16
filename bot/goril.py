@@ -14,8 +14,9 @@ Yüzde: görseldeki okla aynı değer (2 ondalığa yuvarlanmış mutlak değiş
 Hâl manşetle aynı karardan (buyuk_hareket) türetilir; goril, rakam ve manşet hiç çelişmez.
 İstifleyici yönden bağımsızdır (sakin gün); külçe dizmek fiyatın yönüne bağlanmaz.
 
-Goril GORIL_BASLANGIC'ten itibaren çıkar (26–30 Ekim gorilsiz karşılaştırma haftası). Sabah Reels'i (ölçümde
-kontrol grubu), aylık özet, rehber, kart ve pazar yorumunda goril yok; pazar yorumunda hiçbir zaman.
+Goril GORIL_BASLANGIC'ten itibaren her gün çıkar (Rıdvan, 16 Ekim 2026 12:3x: "daha erken başlayalım", ölçüm
+"her gün goril"; gorilsiz kıyas 13–15 Ekim akşamları). Sabah Reels'i (ölçümde karşılaştırma: akşam ÷ sabah oranı),
+aylık özet, rehber, kart ve pazar yorumunda goril yok; pazar yorumunda hiçbir zaman.
 Açıklamaya yalnız sevinen hâlde 2. satır eklenir (SATIR); 1. satır (arama için fiyat satırı) değişmez.
 
 Güvenlik: main.py gorilli görseli ayrı süreçte, SURE_SINIRI saniyede ve yerleşim denetimiyle üretir; herhangi
@@ -27,7 +28,7 @@ import os
 from datetime import date
 
 GORIL_ACIK = True
-GORIL_BASLANGIC = date(2026, 11, 2)            # ilk akşam 2 Kasım, ilk cumartesi 7 Kasım
+GORIL_BASLANGIC = date(2026, 10, 16)           # ilk akşam 16 Ekim, ilk cumartesi 17 Ekim
 TURLER = ("post", "hafta")
 SAKIN_ESIK = {"post": 0.5, "hafta": 1.25}      # %: bunun altı istifleyici
 DURUMLAR = ("ozel", "sevinen", "istif", "gezinen", "uzulen")

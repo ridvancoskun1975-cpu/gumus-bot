@@ -297,8 +297,9 @@ def goril_bolumu(medyalar):
             sabah.setdefault(m["_zaman"].date(), m)       # günün ilk fiyat Reels'i
     sat = ["## Goril", "",
            "Akşam özetinin aynı günün sabah fiyat Reels'ine oranı asıl ölçüdür: sabah Reels'inde goril yok, "
-           "iki paylaşım aynı günün kitlesini görür. Hesabın ilk iki haftası (13–26 Ekim) tanıdık etkileşimi "
-           "yüzünden karşılaştırmaya girmez; sayılar küçükken tek tek günler gürültülüdür.", ""]
+           "iki paylaşım aynı günün kitlesini görür. Goril 16 Ekim akşamı başladı; gorilsiz akşamlar yalnız "
+           "13–15 Ekim (hesabın ilk günleri, tanıdık etkileşimi yüksek), bu yüzden kıyas zayıftır ve hâller arası "
+           "fark da izlenir. Sayılar küçükken tek tek günler gürültülüdür.", ""]
     if aksam:
         sat += ["**Akşam özeti (hafta içi)**", "",
                 "| Goril | Gün | Ort. görüntülenme | Ort. ulaşılan | Akşam ÷ sabah (görüntülenme) | "

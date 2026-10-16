@@ -28,9 +28,9 @@ def esit(ad, gercek, beklenen):
         raise AssertionError(f"{ad}: beklenen {beklenen!r}, gelen {gercek!r}")
 
 
-PZT, SAL = date(2026, 11, 2), date(2026, 11, 3)
+ILK, SAL = date(2026, 10, 16), date(2026, 11, 3)
 CMT, PAZAR = date(2026, 11, 7), date(2026, 11, 8)
-ONCE = date(2026, 10, 30)                 # başlangıçtan önceki cuma (gorilsiz karşılaştırma haftası)
+ONCE = date(2026, 10, 15)                 # başlangıçtan önceki gün (gorilsiz kıyas: 13–15 Ekim)
 
 
 # ---------------------------------------------------------------- kurallar (paketsiz)
@@ -59,10 +59,10 @@ esit("haftalıkta özel gün hâli yok", goril.durum(v_kur(1.0, 5.0, ozel={"tur"
 # tarih ve tür
 v = v_kur(3.0, 2.0)
 esit("başlangıçtan önce yok", goril.durum(v, "post", ONCE), None)
-esit("ilk gün var", goril.durum(v, "post", PZT), "sevinen")
+esit("ilk gün var", goril.durum(v, "post", ILK), "sevinen")
 esit("cumartesi akşam özeti yok", goril.durum(v, "post", CMT), None)
 esit("pazar akşam özeti yok", goril.durum(v, "post", PAZAR), None)
-esit("ilk cumartesi var", goril.durum(v_kur(6.0, 5.0), "hafta", CMT), "sevinen")
+esit("ilk cumartesi var", goril.durum(v_kur(6.0, 5.0), "hafta", date(2026, 10, 17)), "sevinen")
 for tur in ("reels", "ay", "bilgi", "kisa", "yorum", "hikaye", "kart", "yasal"):
     esit(f"{tur} türünde goril yok", goril.durum(v, tur, SAL), None)
 eski = goril.GORIL_ACIK
