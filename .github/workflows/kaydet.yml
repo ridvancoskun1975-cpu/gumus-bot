@@ -1,0 +1,57 @@
+name: Gün içi fiyat kaydı
+
+# Paylaşım YAPMAZ. Hafta içi gün boyunca gram gümüş fiyatını kaydeder; akşam özeti (~20:00) açıklamasında
+# "Gün içi: en düşük … · en yüksek …" satırı bu noktalardan ve Reels/kart/özet çalıştırmalarının
+# noktalarından çıkar (Rıdvan, 16 Ekim 2026). Ayrıntı: README → "Gün içi kayıt", bot/main.py → gun_ici_kaydet().
+#
+# MetalCharts ücretsiz plan ayda 200 istek hakkı verir: saatte bir kayıt sığmaz, 2 saatte bir sığar.
+# Kalan hak 40'ın altına inerse kayıt kendiliğinden durur (bot/main.py → KOTA_YEDEK), hak paylaşımlara kalır.
+# Bir hata paylaşımları etkilemez; iş kırmızı bitmez, yalnızca uyarı yazar.
+
+on:
+  schedule:
+    # Saatler UTC'dir (TR = UTC+3): 12:35, 14:35, 16:35, 18:35 TR. Paylaşım saatlerinden (09:50, 11:50 kart,
+    # 13:50 rehber, 19:50 özet) uzak; 19:30'dan sonra başlarsa (gecikme) kayıt atlanır.
+    - cron: '35 9,11,13,15 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gumus-gunici
+  cancel-in-progress: false
+
+jobs:
+  kaydet:
+    runs-on: ubuntu-24.04   # sabit sürüm: ubuntu-latest 19 Ekim 2026 itibarıyla Ubuntu 26e geçiyor
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: bot
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pip install -q requests
+
+      - name: Gün içi kayıtları getir
+        uses: actions/cache/restore@v4
+        with:
+          path: veri/gun_ici.json
+          key: gunici-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: gunici-
+
+      - name: Fiyatı kaydet
+        env:
+          METALCHARTS_KEY: ${{ secrets.METALCHARTS_KEY }}
+        run: python bot/main.py gun-ici
+
+      - name: Gün içi kayıtları sakla
+        if: always() && hashFiles('veri/gun_ici_degisti.txt') != ''
+        uses: actions/cache/save@v4
+        with:
+          path: veri/gun_ici.json
+          key: gunici-${{ github.run_id }}-${{ github.run_attempt }}

@@ -4,6 +4,7 @@ Komutlar:
   python bot/main.py hazirla --tur reels|post|hafta|ay|yasal|bilgi|kisa|yorum --cikti site [--ornek] [--konu no]
   python bot/main.py yayinla --cikti site --url https://kullanici.github.io/repo/
   python bot/main.py token-yenile
+  python bot/main.py gun-ici      (paylaşımsız gün içi fiyat kaydı; .github/workflows/kaydet.yml)
 
 Veri kaynakları (ikisi de kaynak gösterilerek herkese açık yayımlanmaya izin veriyor):
   - Ons gümüş ve ons altın (USD): MetalCharts API, ücretsiz plan.
@@ -76,6 +77,46 @@ def _bekle(deneme):
     time.sleep(5 * (deneme + 1))
 
 
+# MetalCharts kotası (ücretsiz plan: ayda 200 "weight"). Her yanıttaki X-RateLimit-* başlıkları günlüğe
+# yazılır ve son okunan kalan hak gün içi kayıt dosyasında saklanır: gün içi kayıt (paylaşım yapmayan iş)
+# kalan hak KOTA_YEDEK'in altına inince durur, paylaşımlara yetecek hak hep kalır (Rıdvan, 16 Ekim 2026).
+SON_KOTA = {}
+KOTA_YEDEK = 40
+
+
+def _kota_oku(basliklar):
+    """Yanıt başlıklarından X-RateLimit-* değerlerini SON_KOTA'ya alır ve günlüğe yazar (sayılar gizli değil)."""
+    kota = {k.lower(): v for k, v in basliklar.items() if k.lower().startswith("x-ratelimit")}
+    if not kota:
+        print("MetalCharts kota başlığı yok (X-RateLimit-*).")
+        return
+    SON_KOTA.clear()
+    SON_KOTA.update(kota)
+    SON_KOTA["_zaman"] = datetime.now(TR_SAAT).isoformat(timespec="minutes")
+    print("MetalCharts kota: " + ", ".join(f"{k}={v}" for k, v in sorted(kota.items())))
+
+
+def kota_kalan(kota):
+    """Kota sözlüğünden aylık kalan hakkı (sayı) çıkarır; bulunamazsa None.
+    Dakikalık sınırın (10/dk) başlığı ayrıysa onu değil aylığı seçmeye çalışır."""
+    def sayi(v):
+        try:
+            return int(float(str(v).split(",")[0].split(";")[0].strip()))
+        except (TypeError, ValueError):
+            return None
+
+    adaylar = []
+    for k, v in kota.items():
+        if k.startswith("_") or "remaining" not in k or sayi(v) is None:
+            continue
+        sinir = sayi(kota.get(k.replace("remaining", "limit")))
+        # Aylık hak: eşi olan "limit" başlığı aylık ölçekte (≥ 100; ücretsiz plan 200) ya da adında ay geçiyor.
+        # Dakikalık sınır (10/dk) aylık sanılırsa gün içi kayıt hep durur; emin değilsek None.
+        if (sinir is not None and sinir >= 100) or "month" in k:
+            adaylar.append(sayi(v))
+    return min(adaylar) if adaylar else None
+
+
 def metal_fiyatlari():
     """MetalCharts'tan ons gümüş (XAG) ve ons altın (XAU) spot fiyatı, USD."""
     anahtar = os.environ.get("METALCHARTS_KEY", "").strip()
@@ -104,6 +145,7 @@ def metal_fiyatlari():
             son_hata = RuntimeError(f"HTTP {r.status_code}: {r.text[:200]}")
             _bekle(deneme)
             continue
+        _kota_oku(r.headers)
         try:
             veri = r.json()["data"]
             sonuc = {}
@@ -228,7 +270,119 @@ def gecmis_yaz(gecmis, gun, kayit):
     GECMIS_DOSYASI.write_text(json.dumps(gecmis, ensure_ascii=False, indent=1), encoding="utf-8")
 
 
-def fiyatlari_al(kaydet=True):
+# ---------------------------------------------------------------- gün içi kayıtlar
+# Akşam özetinde "Gün içi: en düşük … · en yüksek …" satırı için hafta içi fiyat gün boyunca, paylaşım
+# yapılmadan kaydedilir (Rıdvan, 16 Ekim 2026: sabah "şu an fiyat ne", akşam "bugün ne oldu").
+# Noktalar: ~10:00 Reels, çarşamba/cuma ~12:00 kart, ~12:35 / 14:35 / 16:35 / 18:35 gün içi kayıt
+# (.github/workflows/kaydet.yml) ve ~20:00 özet. Ayrı dosya ve ayrı önbellek: günlük kayıtlara
+# (gecmis.json; önceki gün, haftalık, pazar yorumu) dokunmaz, pazar yorumuna da girmez.
+GUN_ICI_DOSYASI = KOK / "veri" / "gun_ici.json"
+GUN_ICI_DEGISTI = KOK / "veri" / "gun_ici_degisti.txt"   # iş akışı yalnızca bu varsa önbelleğe yazar
+GUN_ICI_TUT = 10          # gün; dosyada en çok bu kadar günün noktaları durur
+GUN_ICI_EN_AZ = 3         # akşam satırı için en az nokta (akşamki dahil)
+GUN_ICI_YAKIN_DK = 60     # gün içi kayıt: son noktadan bu kadar dakika geçmediyse istek harcanmaz (kart günü)
+GUN_ICI_PENCERE = ("11:00", "19:30")   # gün içi kayıt işi yalnızca bu saatler arasında çalışır (TR)
+
+
+def gun_ici_oku():
+    try:
+        veri = json.loads(GUN_ICI_DOSYASI.read_text(encoding="utf-8"))
+        return veri if isinstance(veri, dict) else {}
+    except FileNotFoundError:
+        return {}
+    except ValueError as e:
+        print(f"Uyarı: gün içi kayıt dosyası okunamadı ({e}); boş başlanıyor", file=sys.stderr)
+        return {}
+
+
+def gun_ici_ekle(simdi, nokta):
+    """Bugünün noktalarına bir nokta ekler; eski günleri atar; kota bilgisini saklar. Hata paylaşımı durdurmaz."""
+    try:
+        veri = gun_ici_oku()
+        gunler = veri.get("gunler", {})
+        bugun = simdi.date().isoformat()
+        gunler.setdefault(bugun, []).append({"saat": simdi.strftime("%H:%M"), **nokta})
+        sinir = (simdi.date() - timedelta(days=GUN_ICI_TUT)).isoformat()
+        veri["gunler"] = {k: gunler[k] for k in sorted(gunler) if k >= sinir}
+        if SON_KOTA:
+            veri["kota"] = dict(SON_KOTA)
+        GUN_ICI_DOSYASI.parent.mkdir(parents=True, exist_ok=True)
+        GUN_ICI_DOSYASI.write_text(json.dumps(veri, ensure_ascii=False, indent=1), encoding="utf-8")
+        GUN_ICI_DEGISTI.write_text(simdi.isoformat(), encoding="utf-8")
+    except Exception as e:
+        print(f"::warning::Gün içi nokta yazılamadı: {type(e).__name__}: {e}")
+
+
+def _deneme_mi():
+    return os.environ.get("DENEME", "").strip().lower() == "true"
+
+
+def gun_ici_noktalari(gun, gecmis_kaydi=None, simdiki=None):
+    """O günün gün içi noktaları [(saat, gram)], saate göre sıralı. Sabahki kayıt (gecmis.json'daki günün
+    kaydı) ve şimdiki değer de eklenir; aynı saat bir kez sayılır."""
+    noktalar = {}
+    for n in gun_ici_oku().get("gunler", {}).get(gun.isoformat(), []):
+        if isinstance(n, dict) and n.get("saat") and isinstance(n.get("gram"), (int, float)):
+            noktalar[n["saat"]] = float(n["gram"])
+    if gecmis_kaydi and gecmis_kaydi.get("saat") and gecmis_kaydi.get("gram"):
+        noktalar.setdefault(gecmis_kaydi["saat"], float(gecmis_kaydi["gram"]))
+    if simdiki:
+        noktalar[simdiki[0]] = float(simdiki[1])
+    return sorted(noktalar.items())
+
+
+def gun_ici_satiri(noktalar):
+    """Akşam özeti açıklaması: 'Gün içi: en düşük 90,92 ₺ (12:35) · en yüksek 92,10 ₺ (16:35)'.
+    Görselde yazan 2 ondalıklı değerlerle; en az GUN_ICI_EN_AZ nokta yoksa None."""
+    if len(noktalar) < GUN_ICI_EN_AZ:
+        return None
+    yuvarli = [(s, round(g, 2)) for s, g in noktalar]
+    en_az = min(yuvarli, key=lambda x: (x[1], x[0]))
+    en_cok = max(yuvarli, key=lambda x: (x[1], [-int(p) for p in x[0].split(":")]))   # eşitse ilk saat
+    if en_az[1] == en_cok[1]:
+        return f"Gün içi: {tr_sayi(en_az[1], 2)} ₺, gün boyunca değişmedi"
+    return (f"Gün içi: en düşük {tr_sayi(en_az[1], 2)} ₺ ({en_az[0]}) · "
+            f"en yüksek {tr_sayi(en_cok[1], 2)} ₺ ({en_cok[0]})")
+
+
+def gun_ici_kaydet(simdi=None):
+    """Paylaşım yapmayan gün içi kayıt (kaydet.yml): fiyatı alır, gun_ici.json'a ekler.
+    Atlar: hafta sonu, saat penceresi dışı, son nokta çok yakınsa, MetalCharts kalan hakkı azsa.
+    Döner: "kaydedildi" ya da atlama nedeni (sınamalar için)."""
+    simdi = simdi or datetime.now(TR_SAAT)
+    saat = simdi.strftime("%H:%M")
+    if simdi.weekday() >= 5:
+        print("Hafta sonu: gün içi kayıt yok.")
+        return "hafta-sonu"
+    if not (GUN_ICI_PENCERE[0] <= saat <= GUN_ICI_PENCERE[1]):
+        # GitHub zamanlı işi çok gecikirse akşam özetiyle çakışmasın (önbellek sırası); kayıt atlanır.
+        print(f"::warning::Gün içi kayıt atlandı: saat {saat}, pencere {GUN_ICI_PENCERE[0]}–{GUN_ICI_PENCERE[1]}.")
+        return "pencere-disi"
+    veri = gun_ici_oku()
+    bugunku = veri.get("gunler", {}).get(simdi.date().isoformat(), [])
+    if bugunku:
+        son = datetime.combine(simdi.date(), datetime.strptime(bugunku[-1]["saat"], "%H:%M").time(), TR_SAAT)
+        if (simdi - son) < timedelta(minutes=GUN_ICI_YAKIN_DK):
+            print(f"Son nokta {bugunku[-1]['saat']}: {GUN_ICI_YAKIN_DK} dk geçmedi, istek harcanmadı.")
+            return "yakin"
+    kota = veri.get("kota") or {}
+    kalan = kota_kalan(kota)
+    if kalan is not None and kota.get("_zaman", "")[:7] == simdi.isoformat()[:7] and kalan < KOTA_YEDEK:
+        print(f"::warning::Gün içi kayıt durduruldu: MetalCharts'ta bu ay kalan hak {kalan} "
+              f"(< {KOTA_YEDEK}); kalan hak paylaşımlara ayrıldı.")
+        return "kota"
+    metal = metal_fiyatlari()
+    (kur_tarihi, dolar), _ = kurlar()
+    gumus, altin = metal["XAG"]["fiyat"], metal["XAU"]["fiyat"]
+    gram = gumus * dolar / ONS_GRAM
+    gun_ici_ekle(simdi, {"gumus": gumus, "altin": altin, "dolar": dolar,
+                         "kur_tarihi": kur_tarihi.isoformat(), "gram": gram, "kaynak": "kayit"})
+    print(f"Gün içi nokta kaydedildi: {saat} · gram {tr_sayi(gram, 2)} ₺ "
+          f"({len(bugunku) + 1}. nokta; kayıt işinde)")
+    return "kaydedildi"
+
+
+def fiyatlari_al(kaydet=True, kaynak=None):
     metal = metal_fiyatlari()
     (kur_tarihi, dolar), (_, dolar_once) = kurlar()
     gumus, altin = metal["XAG"]["fiyat"], metal["XAU"]["fiyat"]
@@ -237,6 +391,11 @@ def fiyatlari_al(kaydet=True):
     simdi = datetime.now(TR_SAAT)
     bugun = simdi.date()
     gecmis = gecmis_oku()
+    bugun_kaydi = gecmis.get(bugun.isoformat())       # sabahki Reels'in kaydı (akşam gün içi aralığı için)
+    # Gün içi nokta: yalnızca gerçek (deneme olmayan) hafta içi fiyat paylaşımlarında
+    if kaynak and bugun.weekday() < 5 and not _deneme_mi():
+        gun_ici_ekle(simdi, {"gumus": gumus, "altin": altin, "dolar": dolar,
+                             "kur_tarihi": kur_tarihi.isoformat(), "gram": gram, "kaynak": kaynak})
     alt_sinir = (bugun - timedelta(days=6)).isoformat()
     onceki_gunler = [k for k in gecmis if alt_sinir <= k < bugun.isoformat()]
     if onceki_gunler:
@@ -263,7 +422,60 @@ def fiyatlari_al(kaydet=True):
         # Altın–gümüş kartı (bot/kart.py) için önceki günlerin paritesi
         "gecmis_parite": {k: v["altin"] / v["gumus"] for k, v in gecmis.items()
                           if k < bugun.isoformat() and v.get("gumus")},
+        # Akşam özetinin gün içi aralığı: [(saat, gram)]
+        "gun_ici": gun_ici_noktalari(bugun, bugun_kaydi, (simdi.strftime("%H:%M"), gram)),
     }
+
+
+def _yuvarla_degisim(simdi, once, basamak=1):
+    """degisim() gibi, ama iki değer önce görselde yazan 2 ondalığa yuvarlanır; metin 1 ondalık."""
+    d = degisim(round(simdi, 2), round(once, 2))
+    yuzde = round(d["yuzde"], basamak)
+    if yuzde == 0:
+        return {"isaret": "▬", "metin": "%" + tr_sayi(0, basamak)}
+    return {"isaret": "▼" if yuzde < 0 else "▲", "metin": "%" + tr_sayi(abs(yuzde), basamak)}
+
+
+def _ay_once(gun):
+    """Bir ay önceki aynı gün (ay sonuna kısaltılır: 31 Mart → 28/29 Şubat)."""
+    import calendar
+    yil, ay = (gun.year, gun.month - 1) if gun.month > 1 else (gun.year - 1, 12)
+    return date(yil, ay, min(gun.day, calendar.monthrange(yil, ay)[1]))
+
+
+# "Son 1 hafta / Son 1 ay" satırları (akşam özeti; Rıdvan, 16 Ekim 2026): karşılaştırma günü bir hafta / bir ay
+# önceki gün ya da (o gün kayıt yoksa: tatil, hata) ondan önceki en yakın kayıt; en çok bu kadar gün geriye.
+DONEM_TOLERANS = {"hafta": 3, "ay": 4}
+
+
+def donem_satirlari(gecmis_gram, gun, gram):
+    """['Son 1 hafta: ▼ %2,2 (13 Ekim: 93,88 ₺)', 'Son 1 ay: …'] — kaydı olanlar; kayıt yoksa satır yok."""
+    satirlar = []
+    seri = {date.fromisoformat(k): v for k, v in gecmis_gram.items()}
+    for ad, hedef in (("Son 1 hafta", gun - timedelta(days=7)), ("Son 1 ay", _ay_once(gun))):
+        tolerans = DONEM_TOLERANS["hafta" if ad.endswith("hafta") else "ay"]
+        adaylar = [d for d in seri if hedef - timedelta(days=tolerans) <= d <= hedef]
+        if not adaylar:
+            continue
+        baz = max(adaylar)
+        d = _yuvarla_degisim(gram, seri[baz])
+        satirlar.append(f"{ad}: {d['isaret']} {d['metin']} ({baz.day} {AYLAR[baz.month - 1]}: "
+                        f"{tr_sayi(seri[baz], 2)} ₺)")
+    return satirlar
+
+
+def kaynak_satiri(f, donem):
+    """Haftalık/aylık özet: 'Haftanın kaynağı: ons gümüş ▼ %2,3 · dolar/TL ▲ %0,1' (gram = ons × kur;
+    iki parçanın değişimi). Ons verisi yoksa None (Rıdvan, 16 Ekim 2026: yeri günlük değil haftalık/aylık)."""
+    if not (f.get("ons") and f.get("ons_once") and f.get("dolar") and f.get("dolar_once")):
+        return None
+    o = degisim(f["ons"], f["ons_once"])
+    k = degisim(f["dolar"], f["dolar_once"])
+
+    def yaz(d):
+        y = round(d["yuzde"], 1)
+        return "▬ %0,0" if y == 0 else f"{'▼' if y < 0 else '▲'} %{tr_sayi(abs(y), 1)}"
+    return f"{donem} kaynağı: ons gümüş {yaz(o)} · dolar/TL {yaz(k)}"
 
 
 def _hafta_ayir(tarihler, bugun=None):
@@ -303,6 +515,7 @@ def haftalik_fiyatlari_al():
         "gram": son["gram"], "gram_once": once["gram"],
         "parite": son["altin"] / son["gumus"], "parite_once": once["altin"] / once["gumus"],
         "dolar": son["dolar"], "dolar_once": once["dolar"],
+        "ons": son.get("gumus"), "ons_once": once.get("gumus"),    # "Haftanın kaynağı" satırı
         "kur_tarihi": son["kur_tarihi"],
         "son_saat": son["saat"],
         "kismi": kismi, "baz_tarih": baz_gun.isoformat(),
@@ -336,6 +549,7 @@ def aylik_fiyatlari_al(bugun=None):
         "gram": son["gram"], "gram_once": once["gram"],
         "parite": son["altin"] / son["gumus"], "parite_once": once["altin"] / once["gumus"],
         "dolar": son["dolar"], "dolar_once": once["dolar"],
+        "ons": son.get("gumus"), "ons_once": once.get("gumus"),    # "Ayın kaynağı" satırı
         "kur_tarihi": son["kur_tarihi"],
         "son_saat": son["saat"],
         "ay": ay_bas.isoformat(), "kismi": kismi, "baz_tarih": baz_gun.isoformat(),
@@ -487,7 +701,20 @@ def veri_hazirla(f, hesap):
         "kaynak_kur": KAYNAK_KUR,
         "hesap": hesap,
         **gun_durumu(f, simdi.date()),
+        **ozet_ek_satirlari(f, simdi.date()),
     }
+
+
+def ozet_ek_satirlari(f, gun):
+    """Akşam özeti açıklamasına (yalnız post) gün içi aralık ve son 1 hafta / 1 ay satırları.
+    Veri yoksa satır yok; bir hata paylaşımı durdurmaz."""
+    try:
+        gun_ici = gun_ici_satiri(f["gun_ici"]) if f.get("gun_ici") else None
+        donem = donem_satirlari(f["gecmis_gram"], gun, f["gram"]) if "gecmis_gram" in f else []
+        return {"gun_ici_satiri": gun_ici, "donem_satirlari": donem}
+    except Exception as e:
+        print(f"::warning::Gün içi / dönem satırları hesaplanamadı, satırsız devam ediliyor: {type(e).__name__}: {e}")
+        return {"gun_ici_satiri": None, "donem_satirlari": []}
 
 
 def gun_durumu(f, gun):
@@ -561,6 +788,7 @@ def haftalik_veri_hazirla(f, hesap):
     v["buyuk_hareket"] = buyuk_hareket(v["gram_deg"], "bu hafta", BUYUK_HAREKET_HAFTALIK)
     v["en_yuksek"] = tr_sayi(max(degerler), 2)
     v["en_dusuk"] = tr_sayi(min(degerler), 2)
+    v["kaynak_satiri"] = kaynak_satiri(f, "Haftanın")
 
     # Grafik: gram gümüşün günlük değerleri, önceki haftanın son değeri kesikli çizgi (kısmi haftada çizgi yok)
     gen, yuk, kenar, yan = 904, 230, 30, 64
@@ -609,6 +837,7 @@ def aylik_veri_hazirla(f, hesap):
     v["en_dusuk"] = tr_sayi(degerler[i_az], 2)
     v["en_dusuk_gun"] = f"{gunler[i_az].day} {AYLAR[gunler[i_az].month - 1]}"
     v["gun_sayisi"] = len(gunler)
+    v["kaynak_satiri"] = kaynak_satiri(f, "Ayın")
 
     # Grafik: ayın her iş günü; önceki ayın son değeri kesikli çizgi (kısmi ayda yok)
     gen, yuk, ust, alt, yan = 904, 320, 56, 76, 14   # altta en düşük etiketine ve tarihlere yer
@@ -733,6 +962,15 @@ def _ozel_satiri(v):
     return " · ".join(parcalar) + "\n\n"
 
 
+GUN_ICI_NOTU = "Gün içi aralık, gün boyunca yaklaşık 2 saatte bir alınan fiyatlara göredir."
+
+
+def _ozet_ek(v):
+    """Akşam özeti: başlık satırının altına gün içi aralık ve son 1 hafta / 1 ay (veri varsa)."""
+    satirlar = ([v["gun_ici_satiri"]] if v.get("gun_ici_satiri") else []) + list(v.get("donem_satirlari") or [])
+    return "".join(s + "\n" for s in satirlar)
+
+
 def aciklama_yaz(v, tur):
     # İlk satır aranan kelimeyle ("gram gümüş fiyatı") ve rakamla başlar: Instagram araması ve
     # Google ilk satıra en çok ağırlığı verir, akışta da "devamı"ndan önce yalnızca o görünür.
@@ -741,7 +979,8 @@ def aciklama_yaz(v, tur):
         return (
             f"{_ilk_satir(v, 'bu hafta')}\n"
             f"{v.get('goril_satiri', '')}"
-            f"Haftalık gümüş özeti · {v['aralik']}\n\n"
+            f"Haftalık gümüş özeti · {v['aralik']}\n"
+            f"{v['kaynak_satiri'] + chr(10) if v.get('kaynak_satiri') else ''}\n"
             f"Haftanın en yükseği: {v['en_yuksek']} ₺ · en düşüğü: {v['en_dusuk']} ₺\n"
             f"Altın/Gümüş paritesi: {v['parite']} ({p['isaret']} {p['metin']})\n"
             f"Dolar/TL: {v['dolar']} ₺ ({d['isaret']} {d['metin']})\n\n"
@@ -767,7 +1006,8 @@ def aciklama_yaz(v, tur):
                    if v["kismi"] else "değişimler önceki ayın son değerine göredir."))
         return (
             f"{ilk}\n"
-            f"Aylık gümüş özeti · {v['ay_adi']}{' (' + v['aralik'] + ')' if v['kismi'] else ''}\n\n"
+            f"Aylık gümüş özeti · {v['ay_adi']}{' (' + v['aralik'] + ')' if v['kismi'] else ''}\n"
+            f"{v['kaynak_satiri'] + chr(10) if v.get('kaynak_satiri') else ''}\n"
             f"Ayın en yükseği: {v['en_yuksek']} ₺ ({v['en_yuksek_gun']}) · en düşüğü: {v['en_dusuk']} ₺ ({v['en_dusuk_gun']})\n"
             f"Altın/Gümüş paritesi: {v['parite']} ({p['isaret']} {p['metin']})\n"
             f"Dolar/TL: {v['dolar']} ₺ ({d['isaret']} {d['metin']})\n\n"
@@ -782,11 +1022,14 @@ def aciklama_yaz(v, tur):
     return (
         f"{_ilk_satir(v, 'bugün')}\n"
         f"{v.get('goril_satiri', '') if tur == 'post' else ''}"
-        f"{baslik} · {v['tarih']} · {v['saat']}\n\n"
+        f"{baslik} · {v['tarih']} · {v['saat']}\n"
+        f"{_ozet_ek(v) if tur == 'post' else ''}\n"
         f"Altın/Gümüş paritesi: {v['parite']} ({p['isaret']} {p['metin']})\n"
         f"Dolar/TL: {v['dolar']} ₺ ({d['isaret']} {d['metin']})\n\n"
         f"{_ozel_satiri(v)}"
-        f"Değişimler önceki iş gününe göredir.{' ' + v['baslik_notu'] if v.get('baslik_notu') else ''}\n"
+        f"Değişimler önceki iş gününe göredir."
+        f"{' ' + GUN_ICI_NOTU if tur == 'post' and v.get('gun_ici_satiri') else ''}"
+        f"{' ' + v['baslik_notu'] if v.get('baslik_notu') else ''}\n"
         f"{_cagri_satirlari(v, tur)}"
         "Bilgi amaçlıdır, yatırım tavsiyesi değildir.\n\n"
         f"{_kaynak_satirlari(v)}\n\n"
@@ -1777,7 +2020,7 @@ def kart_hazirla(cikti, konu, ornek):
         print(f"::warning::Paylaşım atlandı: bugün haftalık kart yok (konu: {konu or 'boş'})")
         return
     try:
-        fiyat = ornek_fiyatlar() if ornek else fiyatlari_al(kaydet=False)
+        fiyat = ornek_fiyatlar() if ornek else fiyatlari_al(kaydet=False, kaynak="kart")
     except VeriYok as e:
         print(f"::warning::Paylaşım atlandı: {e}")
         return
@@ -1871,7 +2114,7 @@ def hazirla(tur, cikti, ornek, konu=None):
         elif tur == "ay":
             fiyat = ornek_aylik(kismi=os.environ.get("ORNEK_KISMI") == "1") if ornek else aylik_fiyatlari_al()
         else:
-            fiyat = ornek_fiyatlar() if ornek else fiyatlari_al(kaydet=True)
+            fiyat = ornek_fiyatlar() if ornek else fiyatlari_al(kaydet=True, kaynak=tur)
     except VeriYok as e:
         # Hata değil: paylaşım bu sefer atlanır, iş akışı sonraki adımları çalıştırmaz.
         print(f"::warning::Paylaşım atlandı: {e}")
@@ -1953,6 +2196,7 @@ def main():
     y.add_argument("--bekle-dk", type=int, default=0,
                    help="Instagram geçici engel verirse en çok bu kadar dakika bekleyip yeniden dene (0: deneme)")
     alt.add_parser("token-yenile")
+    alt.add_parser("gun-ici", help="paylaşımsız gün içi fiyat kaydı (kaydet.yml)")
     gc = alt.add_parser("goril-ciz", help="iç kullanım: gorilli görseli ayrı süreçte üretir (goril_ile_uret)")
     gc.add_argument("--girdi", required=True)
     gc.add_argument("--sonuc", required=True)
@@ -1966,6 +2210,11 @@ def main():
         yayinla(KOK / a.cikti if not os.path.isabs(a.cikti) else Path(a.cikti), a.url, a.bekle_dk)
     elif a.komut == "goril-ciz":
         goril_ciz(a.girdi, a.sonuc)
+    elif a.komut == "gun-ici":
+        try:
+            gun_ici_kaydet()
+        except Exception as e:          # paylaşım değil: iş kırmızı bitmesin, hata maili gelmesin
+            print(f"::warning::Gün içi kayıt yapılamadı: {type(e).__name__}: {e}")
     else:
         token_yenile()
 
