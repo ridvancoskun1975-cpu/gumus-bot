@@ -124,6 +124,11 @@ kontrol(main.kota_kalan({"x-ratelimit-limit": "10", "x-ratelimit-remaining": "9"
 kontrol(main.kota_kalan({"x-ratelimit-limit-minute": "10", "x-ratelimit-remaining-minute": "9",
                          "x-ratelimit-limit-month": "200", "x-ratelimit-remaining-month": "120"}) == 120, "ikisi birden")
 kontrol(main.kota_kalan({}) is None, "başlık yok")
+# MetalCharts'ın gerçek başlıkları (16 Ekim 2026 13:23 deneme çalıştırması #38886753911): /v1/prices 1 hak
+gercek = {"x-ratelimit-limit": "10", "x-ratelimit-month-limit": "200", "x-ratelimit-month-remaining": "159",
+          "x-ratelimit-month-reset": "1793491200", "x-ratelimit-month-used": "41", "x-ratelimit-remaining": "9",
+          "x-ratelimit-reset": "1792146180", "x-ratelimit-used": "1"}
+kontrol(main.kota_kalan(gercek) == 159, "gerçek başlıklar: aylık kalan 159, dakikalık 9 değil")
 
 # --- 7) Gün içi kayıt işi: atlama kuralları ve yazım -------------------------------------------------
 main.GUN_ICI_DOSYASI.unlink(missing_ok=True)
