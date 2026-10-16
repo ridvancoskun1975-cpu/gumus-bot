@@ -61,7 +61,8 @@ kontrol("ilk haftalık 17 Ekim (kayıtlar 13 Ekim'de başladı, önceki hafta bo
 kontrol("önceki haftalar kayıtlıyken boş hafta özet vermez",
         prg.ilk_haftalik(date(2026, 10, 14), {date(2026, 10, 1), date(2026, 10, 13), date(2026, 10, 14)}) == date(2026, 10, 24)
         and prg.ilk_haftalik(date(2026, 10, 14), {date(2026, 9, 30)}) == date(2026, 10, 24))
-kontrol("14 Ekim: kısa Reels 17 Ekim #3", "17 Ekim Cumartesi (rehber #3)" in " ".join(satir(a, "Rehberden kısa")["ek"]))
+# Cumartesi rehber Reels'i 17 Ekim 2026'da kaldırıldı (Rıdvan: "Cumartesi rehber olmayacak")
+kontrol("cumartesi rehber Reels'i satırı yok", not any(s_["ne"].startswith("Rehberden kısa") for s_ in a["satirlar"]))
 kontrol("14 Ekim: aylık 2 Kasım", "2 Kasım Pazartesi" in " ".join(satir(a, "Aylık")["ek"]))
 kontrol("14 Ekim: ECB ~17:00 (yaz saati)", a["ecb"]["saat"] == "~17:00", a["ecb"])
 kontrol("güncelleme saatleri", a["guncelleme"] == "Hafta içi ~10:00 ve ~20:00" and a["son_deger_saati"] == "~20:00")
@@ -92,11 +93,7 @@ kontrol("cumartesi: ECB saati pazartesiye göre (26 Ekim → ~18:00)", f["ecb"][
 g = p(2026, 11, 13)
 r = satir(g, "Gümüş rehberi")
 kontrol("13 Kasım: 'şimdilik sıradaki bölüm yok'", "şimdilik sıradaki bölüm yok" in r["ek"], r)
-kontrol("13 Kasım: kısa Reels sürüyor (14 Kasım #7)", "14 Kasım Cumartesi (rehber #7)" in " ".join(satir(g, "Rehberden kısa")["ek"]))
 
-# 3 Ocak 2027: kısa Reels de bitti
-h = p(2027, 1, 3)
-kontrol("3 Ocak 2027: kısa Reels bitti", "yeni rehber bölümleri eklenince devam eder" in satir(h, "Rehberden kısa")["ek"])
 
 # Rehber hikâyesi otomatik kapalıyken (14 Ekim'den beri) sayfa hikâye/öne çıkan yazmaz; açıksa yazar
 r_kapali = satir(a, "Gümüş rehberi")

@@ -11,7 +11,7 @@ on:
     # (ilk hafta her gün, sonra salı ve perşembe). Rehber olmayan günlerden ayın ilk iş günü aylık özet
     # gider (bot/aylik.py; ilki 2 Kasım 2026). İkisi de yoksa "kontrol" işi birkaç saniyede biter.
     - cron: '50 10 * * 1-5'
-    - cron: '50 10 * * 6'     # Cumartesi 13:50 TR -> Rehberden kısa Reels (bot/bilgi.py → kisa_takvim)
+    # Cumartesi rehber Reels'i 17 Ekim 2026'da kaldırıldı (Rıdvan: "Cumartesi rehber olmayacak").
     # Çarşamba ve cuma 11:50 TR -> haftalık kart (bot/kart.py): çarşamba "Kaç gram eder?", cuma altın–gümüş.
     # 10:00 Reels ve 20:00 özetin YERİNE DEĞİL, onlara ek (taahhüt: hafta içi her gün 2 kez gram fiyatı).
     - cron: '50 8 * * 3,5'
@@ -83,8 +83,6 @@ jobs:
             tur=yorum
           elif [ "${{ github.event.schedule }}" = "50 10 * * 1-5" ]; then
             tur=bilgi
-          elif [ "${{ github.event.schedule }}" = "50 10 * * 6" ]; then
-            tur=kisa
           elif [ "${{ github.event.schedule }}" = "50 8 * * 3,5" ]; then
             tur=kart
           else
