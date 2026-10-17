@@ -1170,6 +1170,18 @@ ZEMIN_RENGI = "0x121418"   # templates/ortak.css içindeki --zemin ile aynı
 
 VIDEO_FPS = 30
 
+# Fiyat videolarının süresi (sn): sabah Reels'i 7, akşam özeti ve özel gün görseli 10, haftalık ve aylık özet 13
+# (Rıdvan, 18 Ekim 2026: "Haftalık ve aylık özet ekranda 3 saniye daha uzun kalmalı"; önce 10). Hareketler ilk
+# ~2,5 sn'de biter (templates/hareket.js), goril hareketleri de durağan bir sona oturur: ek süre son hâlin ekranda
+# kalmasıdır. Haftalık/aylık özet özel gün görseline dönse de 13 sn kalır.
+VIDEO_SURESI = {"reels": 7, "post": 10, "ozel": 10, "hafta": 13, "ay": 13}
+
+
+def video_suresi(tur, sablon=None):
+    if tur in ("hafta", "ay"):
+        return VIDEO_SURESI[tur]
+    return VIDEO_SURESI["ozel"] if sablon == "ozel" else VIDEO_SURESI.get(tur, 10)
+
 
 def _ses_girdisi(sure):
     muzik = KOK / "assets" / "muzik.mp3"
@@ -1304,7 +1316,7 @@ GORIL_YOK = {"goril": None, "maskot": None, "maskot_js": None, "goril_satiri": "
 GORIL_KORUNAN_METIN = ["#fiyat", ".kahraman-birim", ".kahraman-baslik", ".kahraman > .soluk", ".alt", ".etiket",
                        ".tarih", ".ozel-manset", "h1", ".satir"]
 GORIL_KORUNAN_KUTU = ["#fiyat-deg", "#manset", "#gun-baslik", ".ag", ".grafik-deger"]
-GORIL_DENETIM_ANLARI = tuple(i / 10 for i in range(101))   # 10 sn'lik videonun her 0,1 sn'si
+GORIL_DENETIM_ANLARI = tuple(i / 10 for i in range(131))   # en uzun videonun (13 sn) her 0,1 sn'si
 GORIL_OGE_ADI = {"#fiyat": "fiyat", ".kahraman-birim": "₺ işareti", ".kahraman-baslik": "GRAM GÜMÜŞ başlığı",
                  ".kahraman > .soluk": "fiyatın altındaki satır", ".alt": "en alttaki satır", ".etiket": "üst etiket",
                  ".tarih": "tarih", ".ozel-manset": "özel gün manşeti", "h1": "Gümüş başlığı",
@@ -2541,8 +2553,9 @@ def hazirla(tur, cikti, ornek, konu=None):
     sablon = "ozel" if veri.get("ozel") else tur
     png = cikti / f"{tur}-{damga}.png"
     # Her paylaşım sesli video (Reels) olarak gider; özetler okunabilsin diye biraz daha uzun.
+    # Haftalık ve aylık özet 3 sn daha uzun ekranda kalır (Rıdvan, 18 Ekim 2026; özel gün görseline dönse de).
     mp4 = cikti / f"{tur}-{damga}.mp4"
-    sure = 10 if (sablon == "ozel" or tur != "reels") else 7
+    sure = video_suresi(tur, sablon)
     # Goril: ayrı süreçte, süre sınırı ve yerleşim denetimiyle. Olmazsa aşağıdaki bugünkü yol gorilsiz çalışır.
     gorilli = bool(veri.get("maskot")) and goril_ile_uret(sablon, veri, png, mp4, sure)
     if not gorilli:
@@ -2555,7 +2568,7 @@ def hazirla(tur, cikti, ornek, konu=None):
             print(f"::warning::Özel gün görseli üretilemedi, olağan görselle devam ediliyor: {type(e).__name__}: {e}")
             veri["ozel"], veri["baslik_notu"], sablon = None, None, tur
             gorsel_uret(sablon, veri, png)
-        sure = 10 if (sablon == "ozel" or tur != "reels") else 7
+        sure = video_suresi(tur, sablon)
         try:
             hareketli = hareketli_video_uret(sablon, veri, mp4, sure=sure)
         except Exception as e:
