@@ -1,5 +1,9 @@
 # Claude için kurallar (gumus-bot)
 
+- **Galeri (Rıdvan, 17 Ekim 2026: "Bana gönderdiğin her görsel ve videoyu aynı anda proje galerisine ekle."):**
+  Rıdvan'a gönderilen her görsel ve video (önizleme, önce/sonra, deneme çıktısı dahil) aynı turda proje galerisine
+  de eklenir: https://claude.ai/artifact/CFKCZroCrWfYDG8b1BgDzm (proje-galerisi becerisi; veri `ogeler`
+  koleksiyonunda). Oturumun dosyaları başka sohbetten erişilemez; eklenmeyen dosya kaybolur.
 - **Günlük sınır: günde en fazla 4 paylaşım** (14 Ekim 2026 21:23'ten beri; önce 3). 5. ve sonrası yalnızca Rıdvan
   sohbette açıkça onay verirse gider.
   Ayrıntı: README → "Günlük sınır", kod `bot/sinir.py`.
