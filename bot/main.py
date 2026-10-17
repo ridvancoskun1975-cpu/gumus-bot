@@ -1716,7 +1716,7 @@ def yorum_reelsi(kullanici_id, reels, taban_url):
         print(f"::warning::Pazar Reels'i paylaşılamadı ({type(e).__name__}: {e}); kaydırmalı gönderi paylaşıldı. "
               "Reels'i sonradan göndermek için Claude'a yaz.")
         return
-    # Sesli Reels 2–3 dk: hikâyeye 32 sn'lik müzikli sürüm gider (hikâye en çok 60 sn)
+    # Sesli Reels ~1,5 dk: hikâyeye 24 sn'lik müzikli sürüm gider (hikâye en çok 60 sn)
     hikaye = reels.get("hikaye_dosya")
     hikaye_paylas(kullanici_id, taban_url.rstrip("/") + "/" + hikaye if hikaye else video_url)
 
@@ -2314,8 +2314,8 @@ YORUM_REELS_SAHNELER = (8, 8, 8)   # sn: kapak, kısa, orta vade (toplam 24 sn)
 
 # Pazar Reels'i sesli (Rıdvan, 17 Ekim 2026: "Pazar günü analiz sesli olsun"; Gemini erkek sesi, analizin TAMAMI):
 # analizi Claude yazar, ses ekrandaki metnin tamamını sahne sahne okur (bot/yorum.py → seslendirme_parcalari),
-# her sahne sesi kadar sürer (~2–3 dk) ve sonda kapanış sahnesi gelir. Ses seçilmediyse (ses.YORUM_SES None),
-# kapalıysa ya da herhangi bir hatada Reels bugünkü gibi 32 sn ve yalnızca müzikle gider. Hikâyeye her zaman 32 sn'lik
+# her sahne sesi kadar sürer (1,5 kat hızla ~1,5 dk) ve sonda kapanış sahnesi gelir. Ses seçilmediyse (ses.YORUM_SES None),
+# kapalıysa ya da herhangi bir hatada Reels 24 sn ve yalnızca müzikle gider. Hikâyeye her zaman 24 sn'lik
 # müzikli video gider (hikâye en çok 60 sn; rehberdeki gibi). Kapatmak için False.
 YORUM_SESLI = True
 
@@ -2370,7 +2370,7 @@ def _yorum_sesli_metin(metin):
 
 def yorum_reels_uret(cikti, veri, metin, damga):
     """Pazar Reels'inin videosu, kapağı ve açıklaması. Hata verirse None (kaydırmalı gönderi etkilenmez).
-    Sesliyse Reels uzun sesli video, hikâye 32 sn'lik müzikli video ("hikaye_dosya")."""
+    Sesliyse Reels uzun sesli video, hikâye 24 sn'lik müzikli video ("hikaye_dosya")."""
     sahneler_ = [YORUM_REELS_SAHNELER[0]] * (len(veri["vadeler"]) + 1)   # kapak + vadeler, 8'er sn
     sure = sum(sahneler_)
     muzikli = {**veri, "sahne_sureleri": sahneler_}
@@ -2407,7 +2407,7 @@ def yorum_reels_uret(cikti, veri, metin, damga):
             print(f"Pazar seslendirmesi: {sl['ses']} ({sl['model']}), {sl['sure']} sn, sahneler {sureler}")
         except Exception as e:
             print(f"::warning::Sesli pazar Reels'i üretilemedi ({type(e).__name__}: {str(e)[:200]}); "
-                  "32 sn'lik müzikli Reels gidiyor.")
+                  "24 sn'lik müzikli Reels gidiyor.")
             mp4s.unlink(missing_ok=True)
         finally:
             sl["wav"].unlink(missing_ok=True)   # ara dosya yayına çıkmasın
