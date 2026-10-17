@@ -7,6 +7,8 @@ Varsayılan dönem: dünden geriye 7 gün (pazartesi sabahı çalışınca geçe
 Rapor her paylaşımın ulaştığı kişi, görüntülenme, beğeni, yorum, kaydetme ve paylaşma sayılarını,
 Reels ile gönderiyi karşılaştırmasını, hesaba ulaşanların ne kadarının takip etmeyenlerden geldiğini,
 günlere göre takipçi değişimini ve goril maskotunun hâllerine göre akşam özetlerini ve sabah Reels'lerini (bot/goril.py) içerir.
+Dönemde ücretli reklam varsa (bot/reklam.py) "Reklam etkisi" bölümü takipçi artışını ve paylaşım başına erişimi
+reklamlı ve reklamsız günlere ayırır; günlük takipçi tablosu ve tek tek paylaşımlar reklam günlerini işaretler.
 
 Bot deposu ve iş akışı günlükleri herkese açık: bu betik hiçbir sayıyı günlüğe yazmaz. Rakamlar
 yalnızca özel depodaki raporlar/<bitiş tarihi>.md dosyasında durur. DENEME=true ise dosya adı
@@ -32,6 +34,7 @@ import requests
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import kayit  # noqa: E402  (takipci.md biçimi ve özel depo adresi tek yerde)
 import goril  # noqa: E402  (takipci.md'deki " · goril: <hâl>" eki; yalnız standart kütüphane)
+import reklam  # noqa: E402  (ücretli reklam dönemleri; reklamın etkisi ayrı tutulur)
 
 TR_SAAT = ZoneInfo("Europe/Istanbul")
 IG_API = kayit.IG_API
@@ -284,7 +287,7 @@ GORIL_ADI = {"yok": "goril yok", "istif": "istifleyici", "gezinen": "gezinen", "
              "uzulen": "üzülen", "ozel": "özel gün"}
 
 
-def goril_bolumu(medyalar):
+def goril_bolumu(medyalar, reklam_gunleri=frozenset()):
     """Goril hâllerine göre akşam özetleri (ve aynı günün sabah Reels'ine oranı), sabah Reels'leri ve haftalık
     özetler. Dönemde bunların hiçbiri yoksa boş liste."""
     aksam = [m for m in medyalar if m.get("_ad") == "Günlük özet"]
@@ -299,7 +302,11 @@ def goril_bolumu(medyalar):
            "Goril 16 Ekim akşamı başladı; 19 Ekim'den beri sabah Reels'inde de var (Rıdvan, 16 Ekim). Gorilsiz kıyas "
            "yalnız hesabın ilk günleri: akşamlar 13–15 Ekim, sabahlar 13–16 Ekim (tanıdık etkileşimi yüksek), bu "
            "yüzden zayıftır; asıl izlenen hâller arası fark. Akşam ÷ sabah oranı 19 Ekim'den önce gorilli akşamı "
-           "gorilsiz sabahla, sonra iki gorilli paylaşımı kıyaslar. Sayılar küçükken tek tek günler gürültülüdür.", ""]
+           "gorilsiz sabahla, sonra iki gorilli paylaşımı kıyaslar. Sayılar küçükken tek tek günler gürültülüdür."
+           + (" Bu dönemde ücretli reklam vardı: reklam günlerindeki paylaşımların erişimi reklamla şişebilir, hâlleri "
+              "kıyaslarken \"Reklam etkisi\" bölümüne bakın." if any(m['_zaman'].date() in reklam_gunleri
+                                                                       for m in aksam + hafta + sabahlar) else ""),
+           ""]
     if aksam:
         sat += ["**Akşam özeti (hafta içi)**", "",
                 "| Goril | Gün | Ort. görüntülenme | Ort. ulaşılan | Akşam ÷ sabah (görüntülenme) | "
@@ -354,6 +361,53 @@ def goril_bolumu(medyalar):
     return sat
 
 
+def reklam_bolumu(medyalar, gunler, bas, bit):
+    """Dönemle kesişen reklam varsa: reklamlar, takipçi artışı ve paylaşım başına erişim reklamlı / reklamsız günlere
+    ayrılmış. Yoksa boş liste."""
+    rek = reklam.kesisen(bas, bit)
+    if not rek:
+        return []
+    rg = {g for r_ in rek for g in reklam.gunleri(r_)}
+    sat = ["## Reklam etkisi", ""]
+    for r_ in rek:
+        sat.append(f"- **{r_['ad']}:** {tarih_tr(r_['bas'])} – {tarih_tr(r_['bit'])}, hedef {r_['hedef']}"
+                   + (f" ([reklam](https://www.instagram.com/p/{r_['kod']}/))" if r_.get("kod") else ""))
+    sat.append("")
+    deg = [(g, d) for g, _, d in gunler if d is not None]
+    if deg:
+        sat += ["| | Gün | Takipçi değişimi | Günde ortalama |", "|---|---|---|---|"]
+        for ad, liste in (("Reklamlı günler", [d for g, d in deg if g in rg]),
+                          ("Reklamsız günler", [d for g, d in deg if g not in rg])):
+            if liste:
+                sat.append(f"| {ad} | {len(liste)} | {kayit._isaretli(sum(liste))} | {sayi(sum(liste) / len(liste))} |")
+        sat.append("")
+        tan = [r_["tanidik"] for r_ in rek if r_.get("tanidik")]
+        artis = sum(d for g, d in deg if g in rg)
+        if tan and any(g in rg for g, _ in deg):
+            az, cok = sum(t[0] for t in tan), sum(t[1] for t in tan)
+            alt, ust = max(artis - cok, 0), max(artis - az, 0)
+            sat += [f"**Reklamla gelen takipçi (tahmini): {sayi(alt)}{'' if alt == ust else f'–{sayi(ust)}'}** · reklam "
+                    f"günlerindeki {kayit._isaretli(artis)} değişimden Rıdvan'ın söylediği {az}{'' if az == cok else f'–{cok}'} "
+                    "tanıdık düşüldü (takibi bırakanlar da değişime girer).", ""]
+    turler = {}
+    for m in medyalar:
+        turler.setdefault(m["_ad"], {"r": [], "y": []})["r" if m["_zaman"].date() in rg else "y"].append(m)
+    turler = {ad: v for ad, v in turler.items() if v["r"] and v["y"]}
+    if turler:
+        sat += ["Aynı paylaşım türünde, paylaşım başına (türler karışmasın diye yalnız iki tarafta da olan türler):", "",
+                "| Paylaşım | Reklamlı gün: adet | Ort. ulaşılan | Ort. görüntülenme | Reklamsız gün: adet | Ort. ulaşılan | "
+                "Ort. görüntülenme |", "|---|---|---|---|---|---|---|"]
+        for ad, v in sorted(turler.items()):
+            sat.append(f"| {ad} | {len(v['r'])} | {sayi(_ort(v['r'], 'reach'))} | {sayi(_ort(v['r'], 'views'))} | "
+                       f"{len(v['y'])} | {sayi(_ort(v['y'], 'reach'))} | {sayi(_ort(v['y'], 'views'))} |")
+        sat.append("")
+    sat += ["Reklamın kendi sonuçları (reklamı gören, profil ziyareti, harcama) Instagram'da Reklam araçları'ndadır; bu "
+            "rapora girmez. Hesap genelindeki \"ulaşan kişi\" ve \"takip etmeyen\" sayılarına reklamı görenler de "
+            "girebilir (Instagram ayırmıyor). Reklam bittikten sonraki birkaç gün de reklamla gelen takipçiler yüzünden "
+            "erişim yüksek kalabilir; organik büyümeyi reklamsız haftalarla kıyaslayın.", ""]
+    return sat
+
+
 def gunluk_takipci(satirlar, bas, bit):
     """Her günün son kaydı ve bir önceki güne göre değişim: [(gün, takipçi, değişim)]."""
     gun_sonu = {}
@@ -396,6 +450,11 @@ def rapor_yaz(medyalar, hesap, satirlar, bas, bit, hesap_adi, uyarilar, deneme, 
             ozet.append(f"**Takipçi:** {sayi(bas_sayi)} → **{sayi(son)}** ({kayit._isaretli(son - bas_sayi)})")
         else:
             ozet.append(f"**Takipçi:** {sayi(son)} (kayıt bu hafta başladı; ilk gün {sayi(gunler[0][1])})")
+    rek = reklam.kesisen(bas, bit)
+    rg = frozenset(g for r_ in rek for g in reklam.gunleri(r_))
+    if rek:
+        ozet.append("**Reklam:** " + "; ".join(f"{r_['ad']} {tarih_tr(r_['bas'])} – {tarih_tr(r_['bit'])}" for r_ in rek)
+                    + " yayındaydı. Takipçi ve erişim artışının bir kısmı reklamdan; ayrımı \"Reklam etkisi\" bölümünde.")
     ozet.append(f"**Paylaşım:** {len(medyalar)} ({len(reels)} Reels, {len(gonderi)} gönderi)"
                 " · hikâyeler 24 saatte kaybolduğu için bu sayıya ve tabloya girmez")
     ul = hesap.get("reach")
@@ -473,8 +532,9 @@ def rapor_yaz(medyalar, hesap, satirlar, bas, bit, hesap_adi, uyarilar, deneme, 
                        f"{sayi(_top(liste, 'saved'))} | {sayi(_top(liste, 'shares'))} |")
         sat.append("")
 
-    # --- goril
-    sat += goril_bolumu(medyalar)
+    # --- reklam ve goril
+    sat += reklam_bolumu(medyalar, gunler, bas, bit)
+    sat += goril_bolumu(medyalar, rg)
 
     # --- tek tek
     if medyalar:
@@ -488,17 +548,22 @@ def rapor_yaz(medyalar, hesap, satirlar, bas, bit, hesap_adi, uyarilar, deneme, 
             else:
                 son_hucre = f"{sayi(i.get('follows'))} takip" if i.get("follows") is not None else "—"
             ad = m["_ad"] + (f" · goril: {GORIL_ADI.get(m['_goril'], m['_goril'])}" if m.get("_goril") else "")
-            sat.append(f"| {_kisa_zaman(m['_zaman'])} | [{ad}]({m.get('permalink', '')}) | {sayi(i.get('reach'))} | "
+            sat.append(f"| {_kisa_zaman(m['_zaman'])} | [{ad}]({m.get('permalink', '')})"
+                       f"{' · reklam günü' if m['_zaman'].date() in rg else ''} | {sayi(i.get('reach'))} | "
                        f"{sayi(i.get('views'))} | {sayi(i.get('likes'))} | {sayi(i.get('comments'))} | "
                        f"{sayi(i.get('saved'))} | {sayi(i.get('shares'))} | {son_hucre} |")
         sat.append("")
 
     # --- takipçi günlük
     if gunler:
-        sat += ["## Günlere göre takipçi", "", "| Gün | Takipçi (gün sonu) | Değişim |", "|---|---|---|"]
+        if rek:
+            sat += ["## Günlere göre takipçi", "", "| Gün | Takipçi (gün sonu) | Değişim | Reklam |", "|---|---|---|---|"]
+        else:
+            sat += ["## Günlere göre takipçi", "", "| Gün | Takipçi (gün sonu) | Değişim |", "|---|---|---|"]
         for g, n, d in gunler:
             sat.append(f"| {GUNLER[g.weekday()]} {g.day} {AYLAR[g.month - 1]} | {sayi(n)} | "
-                       f"{'—' if d is None else kayit._isaretli(d)} |")
+                       f"{'—' if d is None else kayit._isaretli(d)} |"
+                       + (f" {', '.join(reklam.o_gun(g)) or '—'} |" if rek else ""))
         sat.append("")
 
     # --- notlar
@@ -508,6 +573,7 @@ def rapor_yaz(medyalar, hesap, satirlar, bas, bit, hesap_adi, uyarilar, deneme, 
         "Takip etmeyen / takipçi ayrımını Instagram yalnızca hesap geneli için veriyor, tek tek paylaşım için vermiyor.",
         "Reels'te son sütun ortalama izlenme süresi, gönderide o gönderiden gelen takip sayısıdır.",
         "Takipçi tablosu gumus-kayit/takipci.md'den gelir (bot her paylaşımda yazar).",
+        "Ücretli reklam dönemleri bot/reklam.py'de; yeni reklam verilince oraya satır eklenir.",
     ]
     sat += ["## Notlar", ""] + [f"- {n}" for n in notlar + uyarilar] + [""]
     sat += ["Bu dosyayı gumus-bot yazar (bot/rapor.py); elle değiştirme.", ""]

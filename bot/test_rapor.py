@@ -146,4 +146,29 @@ icinde("| istifleyici | 2 | 150 | 200 |", metin, "istifleyici sabah satırı")
 icinde("| gezinen | 1 | 400 | 200 | 4,0 sn |", metin, "gezinen sabah satırı")
 icinde("| Fiyat Reels'i | 4 |", metin, "hâl eki sabah türünü bölmez")
 
+# ---- reklam (bot/reklam.py): Reklam 1, 16–19 Ekim 2026, tanıdık 4–5
+import reklam  # noqa: E402
+esit(reklam.o_gun(date(2026, 10, 17)), ["Reklam 1"], "reklam günü")
+esit(reklam.o_gun(date(2026, 10, 20)), [], "reklamsız gün")
+esit(len(reklam.kesisen(date(2026, 10, 5), date(2026, 10, 11))), 0, "reklamsız hafta")
+satirlar = [("2026-10-14", "20:00", "Günlük özet", 19), ("2026-10-15", "20:00", "Günlük özet", 20),
+            ("2026-10-16", "20:00", "Günlük özet", 22), ("2026-10-17", "09:57", "Reels", 30),
+            ("2026-10-18", "11:00", "Pazar yorumu", 36), ("2026-10-19", "20:00", "Günlük özet", 38),
+            ("2026-10-20", "09:57", "Reels", 39), ("2026-10-21", "20:00", "Günlük özet", 40)]
+ms = [medya(17, (10, 0), "REELS", reach=300, views=600), medya(20, (10, 0), "REELS", reach=100, views=150)]
+rapor.paylasim_adlari(ms, satirlar)
+metin = rapor.rapor_yaz(ms, {}, satirlar, date(2026, 10, 15), date(2026, 10, 21), "@gunlukgumus", [], False,
+                        datetime(2026, 10, 22, 9, 5, tzinfo=TR))
+icinde("**Reklam:** Reklam 1 16 Ekim – 19 Ekim yayındaydı", metin, "özette reklam")
+icinde("## Reklam etkisi", metin, "reklam bölümü")
+icinde("| Reklamlı günler | 4 | +18 | 4,5 |", metin, "reklamlı günlerde takipçi")
+icinde("| Reklamsız günler | 3 | +3 | 1 |", metin, "reklamsız günlerde takipçi")
+icinde("**Reklamla gelen takipçi (tahmini): 13–14**", metin, "tanıdıklar düşülür")
+icinde("| Fiyat Reels'i | 1 | 300 | 600 | 1 | 100 | 150 |", metin, "aynı türde reklamlı / reklamsız erişim")
+icinde("· reklam günü |", metin, "tek tek tabloda reklam günü")
+icinde("| Takipçi (gün sonu) | Değişim | Reklam |", metin, "takipçi tablosunda reklam sütunu")
+icinde("| Reklam 1 |", metin, "reklam günü işareti")
+esit("Reklam etkisi" in rapor.rapor_yaz(ms[:0], {}, satirlar, date(2026, 10, 5), date(2026, 10, 11), "", [], False,
+                                        datetime(2026, 10, 12, 9, 5, tzinfo=TR)), False, "reklamsız haftada bölüm yok")
+
 print(f"test_rapor: {gecen} sınama geçti")
