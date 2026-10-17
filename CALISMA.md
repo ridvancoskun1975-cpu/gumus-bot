@@ -6,3 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
+| 17 Ekim 20:55 | Reklam dönemi raporlarda (reklam etkisi ayrı tutulsun) | bot/reklam.py (yeni), bot/rapor.py, bot/test_rapor.py, README.md | main'e doğrudan (rapor özel, paylaşım değişmez) |
