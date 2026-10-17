@@ -10,29 +10,30 @@
    (+ isteğe bağlı kapanış). Süreler bot/main.py →
    YORUM_REELS_SAHNELER (sahne_sureleri olarak gelir); sesli Reels'te (17 Ekim 2026) süreler sesten gelir, kapanış
    sahnesi eklenir ve öğeler kendi cümlesi okunurken belirir (kapak_g, v.g: sahne süresine oran). Profil ızgarası ortadaki 3:4 alanı (y 240–1680) gösterir;
-   alt ~280 px'i Reels/hikâye arayüzü kapatır, bu yüzden içerik ve yapay zekâ notu onun üstünde biter.
+   Reels ekranının güvenli alanı (Rıdvan, 17 Ekim 2026; reels.html ile aynı ölçüler): üst 220 px (Reels yazısı, kamera),
+   alt 420 px (hesap adı, açıklama, müzik), sağ 170 px (beğeni/yorum düğmeleri) boş kalır; sol kenar 64 px.
    Kare çağrılmazsa (kapak görseli) yalnızca kapak sahnesi son hâliyle görünür. */
 .yr { position: relative; width: 1080px; height: 1920px; box-sizing: border-box; background: var(--zemin);
   color: var(--yazi); font-family: 'Archivo', sans-serif; overflow: hidden; }
-.yr .kenar { position: absolute; left: 90px; right: 90px; display: flex; justify-content: space-between; align-items: center; }
+.yr .kenar { position: absolute; left: 52px; right: 90px; display: flex; justify-content: space-between; align-items: center; }
 .yr .seri { gap: 14px; font-size: 32px; }
 .yr .sahne-k { position: absolute; inset: 0; }
 .yr .sahne-k.gizli { display: none; }
-.yr .blok { position: absolute; left: 90px; right: 90px; }
-.yr h1 { font-size: 118px; letter-spacing: -4px; line-height: 0.95; text-wrap: balance; }
+.yr .blok { position: absolute; left: 52px; right: 170px; }
+.yr h1 { font-size: 104px; letter-spacing: -4px; line-height: 0.95; text-wrap: balance; }
 .yr .tarih { margin-top: 24px; font-size: 40px; }
 .yr .fiyat-blok { border-top: 3px solid var(--cizgi); padding-top: 30px; }
 .yr .kucuk-baslik { font-size: 32px; font-weight: 700; letter-spacing: 4px; color: var(--soluk); }
 .yr .fiyat-satir { display: flex; align-items: baseline; gap: 16px; margin-top: 8px; }
-.yr .fiyat { font-size: 150px; font-weight: 800; line-height: 1; letter-spacing: -6px; }
+.yr .fiyat { font-size: 128px; font-weight: 800; line-height: 1; letter-spacing: -6px; }
 .yr .birim { font-size: 78px; font-weight: 700; color: var(--vurgu); }
 .yr .fiyat-alt { display: flex; align-items: center; gap: 18px; margin-top: 14px; font-size: 34px; }
-.yr .vade { display: grid; grid-template-columns: 260px 1fr; gap: 26px; align-items: center; padding: 26px 0;
+.yr .vade { display: grid; grid-template-columns: 200px 1fr; gap: 22px; align-items: center; padding: 22px 0;
   border-top: 3px solid var(--cizgi); }
 .yr .vade:last-child { border-bottom: 3px solid var(--cizgi); }
 .yr .vade-ad b { display: block; font-size: 38px; font-weight: 800; }
 .yr .vade-ad span { font-size: 32px; color: var(--soluk); }
-.yr .vade-ozet { margin-top: 8px; font-size: 40px; font-weight: 600; line-height: 1.18; text-wrap: balance; }
+.yr .vade-ozet { margin-top: 6px; font-size: 38px; font-weight: 600; line-height: 1.18; text-wrap: balance; }
 .yr .yon { display: inline-flex; align-items: center; gap: 12px; font-weight: 800; }
 .yr .yon.artis { color: var(--artis); }
 .yr .yon.dusus { color: var(--dusus); }
@@ -55,8 +56,19 @@
 .yr .veri-not { margin-top: 10px; font-size: 30px; color: var(--soluk); line-height: 1.25; }
 .yr .parca { margin-top: 34px; }
 .yr .parca .kucuk-baslik { margin-bottom: 10px; }
-.yr .metin { font-size: var(--metin, 44px); line-height: 1.28; font-weight: 500; text-wrap: pretty; }
+.yr .metin { font-size: var(--metin, 48px); line-height: 1.2; font-weight: 500; text-wrap: pretty; }
 .yr .izle { color: var(--vurgu); font-weight: 700; }
+/* vade sahnesi güvenli alanda: başlık, etiketler ve aralıklar sıkı; yer metne kalır */
+.yr [data-sigdir] .no { font-size: 30px; display: inline; margin-right: 16px; }
+.yr [data-sigdir] h2 { font-size: 72px; letter-spacing: -3px; margin: 0; display: inline; }
+.yr [data-sigdir] .ufuk { font-size: 32px; margin: 0 0 0 16px; display: inline; }
+.yr [data-sigdir] .parca { margin-top: 16px; }
+.yr [data-sigdir] .kucuk-baslik { font-size: 26px; letter-spacing: 3px; }
+.yr [data-sigdir] .parca .kucuk-baslik { margin-bottom: 6px; }
+.yr [data-sigdir] .veri { padding: 16px 0 18px; }
+.yr [data-sigdir] .hucreler { margin-top: 8px; }
+.yr [data-sigdir] .hucre > span:not(.degisim) { font-size: 28px; margin-bottom: 2px; }
+.yr [data-sigdir] .veri-not { font-size: 26px; margin-top: 6px; }
 /* kapanış */
 .yr .kapanis h2 { font-size: 104px; }
 .yr .cagri { display: inline-flex; align-items: center; gap: 18px; font-size: 44px; font-weight: 800;
@@ -66,7 +78,7 @@
 <body>
 <div class="yr" id="yr" data-sureler="{{ sahne_sureleri | join(',') }}">
   <div class="isik" aria-hidden="true"></div>
-  <div class="kenar" style="top: 110px">
+  <div class="kenar" style="top: 246px">
     <div class="etiket seri"{% if sesli %} style="font-size: 25px; letter-spacing: 3px; white-space: nowrap"{% endif %}><span id="nokta" class="nokta" style="width: 14px; height: 14px"></span><span>GÜMÜŞ GÖRÜNÜMÜ · <span id="sayac">HER PAZAR</span></span></div>
     {% if sesli %}{{ ses_rozeti(29) }}{% endif %}
     {{ ag_etiketi(104, 118, '10px 12px', 18, 40, 15) }}
@@ -75,16 +87,16 @@
   {# ---- 1) kapak ---- #}
   <div class="sahne-k" id="s0" data-sayac="HER PAZAR">
     {% set kg = kapak_g or {} %}
-    <div class="blok" data-g="{{ kg.baslik or 0 }}" style="top: 250px">
+    <div class="blok" data-g="{{ kg.baslik or 0 }}" style="top: 400px">
       <h1>{{ baslik or 'Kısa ve orta vade' }}</h1>
       <div class="tarih">{{ tarih }} · {{ gun }}</div>
     </div>
-    <div class="blok fiyat-blok" data-g="{{ kg.fiyat or 0.1 }}" style="top: 600px">
+    <div class="blok fiyat-blok" data-g="{{ kg.fiyat or 0.1 }}" style="top: 690px">
       <div class="kucuk-baslik">GRAM GÜMÜŞ</div>
       <div class="fiyat-satir"><span class="fiyat sayi">{{ gram }}</span><span class="birim">₺</span></div>
       <div class="fiyat-alt">{{ degisim(gram_deg, 42, 32) }}<span class="soluk">haftalık · {{ veri_ani }}</span></div>
     </div>
-    <div class="blok" style="top: 930px">
+    <div class="blok" style="top: 975px">
       {% for v in vadeler %}
       <div class="vade" data-g="{{ kg['vade-' ~ v.anahtar] or (0.25 + 0.1 * loop.index0) }}" data-x="60">
         <div class="vade-ad"><b>{{ v.ad }}</b><span>{{ v.ufuk }}</span></div>
@@ -95,7 +107,7 @@
       </div>
       {% endfor %}
     </div>
-    <div class="blok" data-g="{{ kg.ileri or 0.55 }}" style="top: 1440px">
+    <div class="blok" data-g="{{ kg.ileri or 0.55 }}" style="top: 1272px">
       <span class="ileri">Ayrıntılar geliyor <svg class="ok" id="ileri-ok" width="52" height="40" viewBox="0 0 52 40" aria-hidden="true"><path d="M4 20 H44 M30 6 L46 20 L30 34" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
     </div>
   </div>
@@ -103,7 +115,7 @@
   {# ---- 2–4) vadeler: kaydırmalı gönderinin vade sayfalarıyla aynı içerik ---- #}
   {% for v in vadeler %}
   <div class="sahne-k gizli" id="s{{ loop.index }}" data-sayac="{{ '%02d' % (loop.index + 1) }} / {{ '%02d' % (vadeler | length + 1) }}">
-    <div class="blok" style="top: 240px; bottom: 330px; display: flex; flex-direction: column" data-sigdir>
+    <div class="blok" style="top: 362px; bottom: 500px; display: flex; flex-direction: column" data-sigdir>
       <div data-g="0">
         <div class="no mono">{{ '%02d' % loop.index }}</div>
         <h2>{{ v.ad }}</h2>
@@ -115,13 +127,13 @@
         <div class="hucreler">
           {% for h in v.hucreler %}
           <div class="hucre"><span>{{ h.ad }}</span>
-            {% if h.deg %}{{ degisim(h.deg, 44, 32) }}{% else %}<b class="bos">—</b>{% endif %}
+            {% if h.deg %}{{ degisim(h.deg, 38, 28) }}{% else %}<b class="bos">—</b>{% endif %}
           </div>
           {% endfor %}
         </div>
         {% if v.not %}<div class="veri-not">{{ v.not }}</div>{% endif %}
       </div>
-      <div class="parca" data-g="{{ g.agir or 0.1 }}"><div class="kucuk-baslik">AĞIR BASAN</div>{{ yon_isareti(v.yorum, 46, 36) }}</div>
+      <div class="parca" data-g="{{ g.agir or 0.1 }}"><div class="kucuk-baslik">AĞIR BASAN</div>{{ yon_isareti(v.yorum, 40, 30) }}</div>
       <div class="parca" data-g="{{ g.durum or 0.16 }}"><div class="kucuk-baslik">DURUM</div><div class="metin">{{ v.yorum.durum }}</div></div>
       <div class="parca" data-g="{{ g.seyir or 0.28 }}"><div class="kucuk-baslik">OLASI SEYİR</div><div class="metin">{{ v.yorum.seyir }}</div></div>
       <div class="parca" data-g="{{ g.izle or 0.4 }}"><div class="kucuk-baslik">İZLENECEK</div><div class="metin izle">{{ v.yorum.izlenecek }}</div></div>
@@ -132,11 +144,11 @@
   {# ---- 5) kapanış (isteğe bağlı: YORUM_REELS_SAHNELER'de 5. süre varsa) ---- #}
   {% if sahne_sureleri | length > vadeler | length + 1 %}
   <div class="sahne-k gizli kapanis" id="s{{ vadeler | length + 1 }}" data-sayac="HER PAZAR">
-    <div class="blok" data-g="0" style="top: 560px">
+    <div class="blok" data-g="0" style="top: 480px">
       <h2>Her pazar<br>~11:00</h2>
       <div class="ufuk" style="font-size: 42px; margin-top: 30px">{{ baslik or 'Kısa ve orta vade' }} gümüş görünümü</div>
     </div>
-    <div class="blok" data-g="0.6" style="top: 1000px">
+    <div class="blok" data-g="0.6" style="top: 900px">
       <span class="cagri">Takip edin, kaçırmayın</span>
       <div class="ufuk" style="margin-top: 26px">Ayrıntılı metin ve kaynaklar profildeki kaydırmalı gönderide</div>
     </div>
@@ -144,20 +156,19 @@
   {% endif %}
 
   {#- Yapay zekâ ibaresi altta, küçük (Rıdvan, 15 Ekim 21:38) ama ilk kareden görünür ve arayüzün kapattığı
-      alt şeridin üstünde; bütün sahnelerde. -#}
-  <div class="blok soluk yz-not" style="top: 1610px">Üst düzey yapay zekâ ile üretilmiştir · yatırım tavsiyesi değildir.</div>
-
-  <div class="kenar" style="bottom: 110px">
+      alt şeridin (420 px) üstünde; bütün sahnelerde. -#}
+  <div class="blok" style="top: 1428px">
     <b style="font-size: 34px">{{ hesap }}</b>
+    <div class="soluk yz-not" style="margin-top: 4px">Üst düzey yapay zekâ ile üretilmiştir · yatırım tavsiyesi değildir.</div>
   </div>
 </div>
 <script>
-// Uzun yapay zekâ metni vade sahnesine sığmazsa yazıyı küçült (44 → 34 px), sahneden taşmasın.
+// Vade sahnesinde metin sığan en büyük boyda (52 → 28 px); sahneden taşmasın.
 function sigdir() {
   document.querySelectorAll('[data-sigdir]').forEach(function (g) {
     var s = g.closest('.sahne-k'), gizli = s.classList.contains('gizli');
     s.classList.remove('gizli');
-    for (var boy = 44; boy >= 34; boy--) {
+    for (var boy = 52; boy >= 28; boy--) {
       g.style.setProperty('--metin', boy + 'px');
       if (g.scrollHeight <= g.clientHeight + 1) break;
     }
