@@ -1,6 +1,6 @@
 """Pazar yapay zekâ yorumu: gram gümüş için kısa ve orta vadeli görünüm (kaydırmalı, 3 görsel).
-Uzun vade 17 Ekim 2026'da çıkarıldı (Rıdvan: "sadece kısa ve orta vade olsun"); kendi kayıtlarımız 1 yılı doldurunca
-13 Ekim 2027'de kendiliğinden geri gelir (aktif_vadeler, UZUN_VADE_DONUS).
+Uzun vade 17 Ekim 2026'da kalıcı olarak kaldırıldı (Rıdvan: "Kısa orta uzun yazan her yer artık kısa ve orta olmalı";
+11:47: "geleceği de etkilemeli. Kısa, orta, uzun yerine sadece kısa ve orta kalacak").
 
 Yorum pazar sabahı, o anki bütün verilerle şekillenir. İki adımda üretilir:
   1. Haftanın gelişmeleri: Claude, web aramasıyla haftanın gümüş, dolar, faiz, sanayi talebi ve
@@ -8,7 +8,7 @@ Yorum pazar sabahı, o anki bütün verilerle şekillenir. İki adımda üretili
      Bu adım yorum yazmaz; yalnızca kaynaklarda yazanları derler. Başarısız olursa yorum yalnızca
      fiyat ve kur verileriyle yazılır, açıklamada da öyle belirtilir.
   2. Yorum: botun günlük kayıtları, pazar günü alınan haftalık kapanış fiyatı, 13 aylık dolar/TL
-     ve 1. adımdaki özet birlikte verilir; Claude kısa/orta/uzun vade yorumunu yazar.
+     ve 1. adımdaki özet birlikte verilir; Claude kısa ve orta vade yorumunu yazar.
 
 Yasal çerçeve — SPK III-37.1 Tebliğ'in medya ve elektronik ortamdaki yorumlara uygulanan
 78-80. maddeleri esas alınarak:
@@ -52,25 +52,14 @@ HASHTAG = "#gümüş #gümüşyatırımı #gümüşfiyatları #değerlimetaller 
 VADELER = [
     {"anahtar": "kisa", "ad": "Kısa vade", "ufuk": "1–4 hafta", "pencere": 28, "etiket": "Son 4 hafta", "esnek": True},
     {"anahtar": "orta", "ad": "Orta vade", "ufuk": "1–6 ay", "pencere": 91, "etiket": "Son 3 ay", "esnek": False},
-    {"anahtar": "uzun", "ad": "Uzun vade", "ufuk": "1 yıl ve üzeri", "pencere": 365, "etiket": "Son 1 yıl", "esnek": False},
 ]
 
-# Uzun vade (Rıdvan, 17 Ekim 2026 11:20: "sadece kısa ve orta vade olsun"): pazar yorumu kısa ve orta vadedir.
-# Kendi kayıtlarımız 13 Ekim 2026'da başladı; 1 yılı doldurunca (UZUN_VADE_DONUS) uzun vade kendiliğinden geri
-# gelir, o gün de 1 yıllık veri yoksa yine yazılmaz. Orta vadenin 3 aylık geçmişini o zamana kadar MetalCharts
-# Starter planı karşılar (17 Ekim 2026'da alındı; ~13 Ocak 2027'den sonra kendi kayıtlarımız yeter).
-UZUN_VADE_DONUS = date(2027, 10, 13)
-
-
-def aktif_vadeler(ist, bugun):
-    """O pazar yazılacak vadeler: kısa ve orta her zaman; uzun yalnızca UZUN_VADE_DONUS'tan sonra ve 1 yıllık veri
-    varken (ist: vade_istatistikleri sonucu)."""
-    uzun = bugun >= UZUN_VADE_DONUS and (ist.get("uzun") or {}).get("veri_yeterli")
-    return [v for v in VADELER if v["anahtar"] != "uzun" or uzun]
+# Orta vadenin 3 aylık geçmişini ~Ocak 2027'ye kadar MetalCharts Starter planı karşılar (17 Ekim 2026'da alındı;
+# 11 Ocak 2027 hatırlatmasıyla iptal edilir, sonra kendi kayıtlarımız — 13 Ekim 2026'dan beri — yeter).
 
 
 def vade_metni(vadeler):
-    """"kısa ve orta vade" / "kısa, orta ve uzun vade"."""
+    """"kısa ve orta vade"."""
     adlar = [v["ad"].split()[0].lower() for v in vadeler]
     return (", ".join(adlar[:-1]) + " ve " + adlar[-1] if len(adlar) > 1 else adlar[0]) + " vade"
 
@@ -112,7 +101,7 @@ OLAY_GRUPLARI = {
     "ticaret / yaptırım": [r"gümrük", r"tarife", r"yaptırım"],
 }
 
-SISTEM = """Sen bir Instagram hesabı için her pazar gram gümüşün kısa, orta ve uzun vadeli görünümünü yazan bir yapay zekâsın. Yazdıkların görselde büyük puntoyla gösterilecek ve "yapay zekâ yorumudur, yatırım tavsiyesi değildir" uyarısıyla yayımlanacak.
+SISTEM = """Sen bir Instagram hesabı için her pazar gram gümüşün kısa ve orta vadeli görünümünü yazan bir yapay zekâsın. Yazdıkların görselde büyük puntoyla gösterilecek ve "yapay zekâ yorumudur, yatırım tavsiyesi değildir" uyarısıyla yayımlanacak.
 
 Dayanakların iki tanedir ve ikisini birlikte kullan:
 - Fiyat ve kur verileri (JSON): botun günlük kayıtları, pazar günü alınan haftalık kapanış, haftalık kapanışlar, aylık dolar/TL.
@@ -127,7 +116,7 @@ Kurallar (hepsine uy):
 6. Hiç rakam, yüzde, baz puan, tarih yazma; sayıları yazıyla da yazma. Sayılar görselde ayrıca gösteriliyor. "Üç ay", "bir yıl", "önümüzdeki hafta" gibi süreleri yazıyla yazabilirsin.
 7. Abartılı, heyecanlı dil yok (patlama, uçuş, çöküş, roket gibi). Sakin, sade, günlük Türkçe; Türkçe karakterleri doğru kullan.
 8. Gram gümüşün TL fiyatı ons gümüş (dolar) ile dolar/TL'nin çarpımından gelir; hareketin onstan mı kurdan mı geldiğini ayırt etmeye çalış.
-9. Vadelere göre ağırlık: kısa vadede bu haftanın fiyat hareketi, haftanın gelişmeleri ve önümüzdeki haftanın takvimi; orta vadede son aylardaki eğilim, faiz beklentileri ve kur; uzun vadede yıllık eğilim ve arz-talep gibi yapısal etkenler.
+9. Vadelere göre ağırlık: kısa vadede bu haftanın fiyat hareketi, haftanın gelişmeleri ve önümüzdeki haftanın takvimi; orta vadede son aylardaki eğilim, faiz beklentileri, kur ve arz-talep gibi yapısal etkenler.
 10. Bir vade için fiyat kaydı yetersizse (veri_yeterli: false) bu, görselde ayrıca not olarak yazılır; "durum" alanında kayıtların kısa olduğunu tekrarlama. O vadeyi özetteki uzun dönem bağlam ve kur verisiyle, daha temkinli yaz.
 11. Her vade için ağır basan yönü seç: "yükseliş" ya da "düşüş". Yatay, nötr ya da belirsiz seçeneği yok; okur net bir değerlendirme görmeli. Yönü dayanaklardaki ağırlığa göre seç, keyfi seçme. Etkenler karışıksa biraz daha ağır basan tarafı seç ve gücünü "zayıf" yaz; gücü dürüstçe belirle ("zayıf", "orta", "belirgin"). Ağır basan yön bir değerlendirmedir: kesinlik, hedef ya da al-sat önerisi değildir.
 12. "ozet" ve "seyir" ağır basan yönle uyumlu olsun, ikisini dengeleyip nötr bir sonuca bağlama. "seyir"de önce ağır basan yönü ve nedenini koşullu yaz, sonra karşı yönü kısa bir risk olarak an.
@@ -142,12 +131,8 @@ Her vade için alanlar:
 
 
 def sistem(vadeler=None):
-    """Sistem talimatı, o pazarın vadelerine göre (uzun vade arasında "kısa ve orta vadeli", 9. kuralda uzun vade yok)."""
-    vadeler = vadeler or VADELER
-    if any(v["anahtar"] == "uzun" for v in vadeler):
-        return SISTEM
-    return (SISTEM.replace("kısa, orta ve uzun vadeli görünümünü", "kısa ve orta vadeli görünümünü")
-            .replace("; uzun vadede yıllık eğilim ve arz-talep gibi yapısal etkenler.", "."))
+    """Sistem talimatı (vadeler yalnızca kısa ve orta; parametre geriye uyum için)."""
+    return SISTEM
 
 
 def _vade_sema():
@@ -602,14 +587,6 @@ ORNEK_YORUM = {
                  "gecikirse ons baskı altında kalabilir.",
         "izlenecek": "Fed faiz beklentileri, dolar/TL, sanayi talebi",
     },
-    "uzun": {
-        "yon": "yükseliş", "guc": "belirgin",
-        "ozet": "Yapısal talep güçlü görünüyor",
-        "durum": "Gümüş son bir yılda belirgin yükseldi; güneş paneli talebi ve arz açığı öne çıkıyor.",
-        "seyir": "Sanayi talebi güçlü kalırsa ons desteklenebilir; küresel büyüme yavaşlarsa talep zayıflayabilir "
-                 "ve fiyat geri çekilebilir.",
-        "izlenecek": "Sanayi talebi, arz açığı, kur eğilimi",
-    },
 }
 
 
@@ -661,7 +638,7 @@ def _nasil_hazirlandi(gelismeler):
 # ---------------------------------------------------------------- seslendirme (pazar Reels'i)
 # Rıdvan (17 Ekim 2026): pazar analizi sesli olsun, erkek sesiyle, analizin TAMAMI okunsun (kısaltma yok).
 # Metni Claude'un yazdığı analizden kurulur (ayrı bir istek yok): ekranda ne varsa o okunur. Sahneler pazar
-# Reels'iyle aynı: kapak, kısa/orta/uzun vade, kapanış. Her sahne parçalar listesidir: [(öğe, metin)];
+# Reels'iyle aynı: kapak, kısa ve orta vade, kapanış. Her sahne parçalar listesidir: [(öğe, metin)];
 # öğe adları şablondaki (templates/yorum-reels.html) belirme anlarını sese göre ayarlamak için kullanılır.
 
 def kapanis_okuma(vadeler=None):

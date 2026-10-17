@@ -47,7 +47,7 @@ CAGRI = "Rehberin tamamı profilde. Kaydedin, lazım olunca bakarsınız."
 # Rıdvan 17 Ekim 2026 10:29'da 3 örnekten "Ses 2"yi seçti: Orus. None yapılırsa pazar Reels'i sessiz (yalnızca
 # müzik) gider. Başka aday dinlemek: `python bot/ses.py ornek` / "Ses örneği" iş akışı.
 YORUM_SES = "Orus"
-YORUM_EN_AZ = (6.0, 10.0, 10.0, 10.0, 5.0)    # sn: kapak, kısa/orta/uzun vade, kapanış
+YORUM_EN_AZ = (6.0, 10.0, 10.0, 5.0)    # sn: kapak, kısa ve orta vade, kapanış
 YORUM_EN_UZUN = 300                            # analizin tamamı ~2–3 dk; 5 dk'yı aşarsa sessiz Reels'e düşer
 USLUP_ERKEK = ("Calm, trustworthy male narrator. Natural Istanbul Turkish, measured medium pace, clear articulation, "
                "like a professional weekly markets bulletin. Neutral and sober, no hype, no exaggeration.")

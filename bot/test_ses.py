@@ -207,19 +207,13 @@ adim = next(a_ for a_ in akis["jobs"]["uret"]["steps"] if a_.get("name") == "Ses
 dogrula("'bilgi'" in adim["if"] and "'kisa'" in adim["if"], f"anahtar adımı koşulu: {adim['if']}")
 dogrula(not any(c.get("cron") == "50 10 * * 6" for c in akis[True]["schedule"]), "cumartesi kısa Reels zamanlaması yok")
 
-# Pazar yorumu kısa ve orta vade (Rıdvan, 17 Ekim 2026 11:20); uzun vade 13 Ekim 2027'de, veri varsa
+# Pazar yorumu yalnız kısa ve orta vade, kalıcı (Rıdvan, 17 Ekim 2026 11:47: "geleceği de etkilemeli")
 import yorum as _y  # noqa: E402
-from datetime import date as _d  # noqa: E402
-_iki = _y.aktif_vadeler({"uzun": {"veri_yeterli": True}}, _d(2026, 10, 18))
-_tam = _y.aktif_vadeler({"uzun": {"veri_yeterli": True}}, _d(2027, 10, 17))
-dogrula([v["anahtar"] for v in _iki] == ["kisa", "orta"], "veri olsa da 13 Ekim 2027'ye kadar kısa ve orta vade")
-dogrula([v["anahtar"] for v in _tam] == ["kisa", "orta", "uzun"], "13 Ekim 2027'den sonra uzun vade geri gelir")
-dogrula([v["anahtar"] for v in _y.aktif_vadeler({"uzun": {"veri_yeterli": False}}, _d(2027, 10, 17))]
-        == ["kisa", "orta"], "o gün 1 yıllık veri yoksa yine yok")
-dogrula(_y.vade_basligi(_iki) == "Kısa ve orta vade" and _y.vade_basligi(_tam) == "Kısa, orta ve uzun vade", "başlık")
-dogrula("uzun" not in _y.sema(_iki)["required"] and "uzun vadede" not in _y.sistem(_iki)
-        and "kısa ve orta vadeli" in _y.sistem(_iki) and _y.sistem(_tam) == _y.SISTEM, "Claude'a giden şema ve talimat")
-dogrula("Kısa ve orta vade gümüş görünümü" in _y.kapanis_okuma(_iki), "kapanış okuması")
+dogrula([v["anahtar"] for v in _y.VADELER] == ["kisa", "orta"], "vadeler: kısa ve orta (uzun vade kalıcı olarak yok)")
+dogrula(_y.vade_basligi(_y.VADELER) == "Kısa ve orta vade", "başlık")
+dogrula("uzun" not in _y.sema()["required"] and "uzun vade" not in _y.sistem().lower()
+        and "kısa ve orta vadeli" in _y.sistem() and "uzun" not in _y.ORNEK_YORUM, "Claude'a giden şema ve talimat")
+dogrula("Kısa ve orta vade gümüş görünümü" in _y.kapanis_okuma(_y.VADELER), "kapanış okuması")
 
 # Okuma 1,5 kat hızlı (Rıdvan, 17 Ekim 2026: "Sesleri 1,5 hızlandır hepsini"); perde korunur (ffmpeg atempo)
 dogrula(ses.HIZ == 1.5, f"okuma hızı {ses.HIZ}")

@@ -2179,8 +2179,8 @@ def kapanis_fiyati(ecb):
 
 
 def yorum_hazirla(cikti, ornek):
-    """Pazar yapay zekâ yorumu: kapak + kısa ve orta vade, kaydırmalı 3 görsel (Rıdvan, 17 Ekim 2026; uzun vade 13 Ekim
-    2027'de kendi kayıtlarımız 1 yılı doldurunca geri gelir: yorum.aktif_vadeler). Ayrıntı: bot/yorum.py
+    """Pazar yapay zekâ yorumu: kapak + kısa ve orta vade, kaydırmalı 3 görsel (Rıdvan, 17 Ekim 2026; uzun vade
+    kalıcı olarak yok). Ayrıntı: bot/yorum.py
 
     Pazar sabahı bütün verilerle şekillenir: botun günlük kayıtları, o anki (haftanın kapanış)
     fiyatı, 13 aylık dolar/TL, varsa MetalCharts geçmişi ve web aramasıyla derlenen haftanın haberleri.
@@ -2214,7 +2214,7 @@ def yorum_hazirla(cikti, ornek):
             kaynak_notu += "; son değer pazar günü alınan güncel fiyat"
     seri = yorum.seri_kur(kayitlar, ecb, metal)
     ist = yorum.vade_istatistikleri(seri, ecb)
-    aktif = yorum.aktif_vadeler(ist, bugun)   # kısa ve orta vade; uzun vade 13 Ekim 2027'den sonra (yorum.UZUN_VADE_DONUS)
+    aktif = yorum.VADELER   # kısa ve orta vade (uzun vade 17 Ekim 2026'da kalıcı olarak kaldırıldı)
     ist = {v["anahtar"]: ist[v["anahtar"]] for v in aktif}
 
     if ornek:
@@ -2274,7 +2274,7 @@ def yorum_hazirla(cikti, ornek):
         "vadeler": vadeler,
         "hesap": hesap,
         "dayanak": "Fiyat ve kur verileri + haftanın haberleri" if gelismeler else "Fiyat ve kur verileri",
-        "baslik": yorum.vade_basligi(aktif),   # "Kısa ve orta vade" (uzun vade dönünce "Kısa, orta ve uzun vade")
+        "baslik": yorum.vade_basligi(aktif),   # "Kısa ve orta vade"
     }
 
     damga = datetime.now(TR_SAAT).strftime("%Y%m%d-%H%M")
@@ -2308,8 +2308,7 @@ def yorum_hazirla(cikti, ornek):
 # kaydırmalı gönderi yine gider (yalnızca uyarı). Kapatmak için False.
 YORUM_REELS = True
 # Rıdvan 21:59: "3 sn giriş 6 sn sayfalar"; 22:05: "Giriş çok kısa oldu. Hepsi 8 saniye olsun".
-# Müzikli sürümde sahne sayısı vadelere göre: kapak + vade başına YORUM_REELS_SAHNELER[0] sn (kısa ve orta vade: 24 sn;
-# uzun vade 13 Ekim 2027'de dönünce 32 sn).
+# Müzikli sürümde sahne sayısı vadelere göre: kapak + vade başına YORUM_REELS_SAHNELER[0] sn (kısa ve orta vade: 24 sn).
 YORUM_REELS_SAHNELER = (8, 8, 8)   # sn: kapak, kısa, orta vade (toplam 24 sn)
 
 
