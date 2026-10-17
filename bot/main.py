@@ -292,7 +292,7 @@ def gecmis_oku():
 def gecmis_yaz(gecmis, gun, kayit):
     gecmis = dict(gecmis)
     gecmis[gun.isoformat()] = kayit
-    # Pazar yorumunun orta/uzun vadesi için kayıtlar ~2 yıl tutulur (dosya yine de birkaç yüz KB'yi geçmez).
+    # Pazar yorumu ve aylık/yıllık özetler için kayıtlar ~2 yıl tutulur (dosya yine de birkaç yüz KB'yi geçmez).
     sinir = (gun - timedelta(days=800)).isoformat()
     gecmis = {k: gecmis[k] for k in sorted(gecmis) if k >= sinir}
     GECMIS_DOSYASI.parent.mkdir(parents=True, exist_ok=True)
@@ -2126,7 +2126,7 @@ def kapanis_fiyati(ecb):
 
 
 def yorum_hazirla(cikti, ornek):
-    """Pazar yapay zekâ yorumu: kapak + kısa/orta/uzun vade, kaydırmalı 4 görsel. Ayrıntı: bot/yorum.py
+    """Pazar yapay zekâ yorumu: kapak + kısa/orta vade, kaydırmalı 3 görsel. Ayrıntı: bot/yorum.py
 
     Pazar sabahı bütün verilerle şekillenir: botun günlük kayıtları, o anki (haftanın kapanış)
     fiyatı, 13 aylık dolar/TL, varsa MetalCharts geçmişi ve web aramasıyla derlenen haftanın haberleri.
@@ -2242,14 +2242,14 @@ def yorum_hazirla(cikti, ornek):
 
 
 # Pazar yorumunun Reels'i (Rıdvan, 15 Ekim 2026 21:25: "Reels bence şart"; 21:53: "Reels'te düzgün bir pazar
-# analizi videosu olmalı. Zaten 4 sayfa. Süre biraz uzun olabilir"): kaydırmalı gönderinin 4 sayfası sırayla,
-# 9:16 ekranı dolduran bir video (kapak → kısa → orta → uzun vade). Kaydırmalıyla AYNI çalıştırmada,
+# analizi videosu olmalı. Zaten 4 sayfa. Süre biraz uzun olabilir"): kaydırmalı gönderinin sayfaları sırayla,
+# 9:16 ekranı dolduran bir video (kapak → kısa → orta vade; uzun vade 17 Ekim 2026'da kaldırıldı). Kaydırmalıyla AYNI çalıştırmada,
 # gönderiden hemen sonra paylaşılır ve aynı video hikâyeye de konur. Reels üretilemez ya da paylaşılamazsa
 # kaydırmalı gönderi yine gider (yalnızca uyarı). Kapatmak için False.
 YORUM_REELS = True
 # Rıdvan 21:59: "3 sn giriş 6 sn sayfalar"; 22:05: "Giriş çok kısa oldu. Hepsi 8 saniye olsun".
-# 5. bir süre eklenirse kapanış sahnesi de çıkar.
-YORUM_REELS_SAHNELER = (8, 8, 8, 8)   # sn: kapak, kısa, orta, uzun vade (toplam 32 sn)
+# Vade sayısından fazla bir süre eklenirse kapanış sahnesi de çıkar.
+YORUM_REELS_SAHNELER = (8, 8, 8)   # sn: kapak, kısa, orta vade (toplam 24 sn)
 
 
 def yorum_reels_uret(cikti, veri, metin, damga):
@@ -2267,7 +2267,7 @@ def yorum_reels_uret(cikti, veri, metin, damga):
         return None
     # Açıklama kaydırmalıyla aynı (uyarılar, kaynaklar, etiketler); yalnızca "kaydırın" satırı profile yönlendirir.
     reels_metin = metin.replace("Ayrıntılar görsellerde, kaydırın →",
-                                "Yorumun 4 sayfası profildeki kaydırmalı gönderide de var →")
+                                "Yorumun 3 sayfası profildeki kaydırmalı gönderide de var →")
     # Yedek kapak anı: kapak sahnesinin bütün öğeleri görünürken (kapak sahnesinin sonundan 1 sn önce)
     return {"dosya": mp4.name, "kapak": kapak.name, "kapak_ms": int((YORUM_REELS_SAHNELER[0] - 1) * 1000),
             "aciklama": reels_metin}
@@ -2332,7 +2332,7 @@ def _baslik_ozeti(veri):
 # KURAL (Rıdvan, 15 Ekim 2026 23:22: "bu kural olmalı. her cumartesi bu yazı çıkmalı."): her cumartesi çıkar;
 # takvime ya da kayıtlara bakılmaz, hata yüzünden düşmez. Pazar yorumu her pazar zamanlı olduğu için söz boş
 # kalmaz; bot/test_pazar.py ikisini birlikte denetler (pazar yorumu takvimden çıkarsa sınama kırılır).
-PAZAR_HATIRLATMA = {"kalin": "Yarın ~11:00", "metin": "Pazar derin analizi: kısa, orta ve uzun vade. Kaçırmayın."}
+PAZAR_HATIRLATMA = {"kalin": "Yarın ~11:00", "metin": "Pazar derin analizi: kısa ve orta vade. Kaçırmayın."}
 
 
 def pazar_yorumu_yarin(bugun=None):

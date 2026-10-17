@@ -1,4 +1,5 @@
-"""Pazar yapay zekâ yorumu: gram gümüş için kısa, orta ve uzun vadeli görünüm (kaydırmalı, 4 görsel).
+"""Pazar yapay zekâ yorumu: gram gümüş için kısa ve orta vadeli görünüm (kaydırmalı, 3 görsel).
+Uzun vade 17 Ekim 2026'da kaldırıldı (Rıdvan: "Kısa orta uzun yazan her yer artık kısa ve orta olmalı").
 
 Yorum pazar sabahı, o anki bütün verilerle şekillenir. İki adımda üretilir:
   1. Haftanın gelişmeleri: Claude, web aramasıyla haftanın gümüş, dolar, faiz, sanayi talebi ve
@@ -6,7 +7,7 @@ Yorum pazar sabahı, o anki bütün verilerle şekillenir. İki adımda üretili
      Bu adım yorum yazmaz; yalnızca kaynaklarda yazanları derler. Başarısız olursa yorum yalnızca
      fiyat ve kur verileriyle yazılır, açıklamada da öyle belirtilir.
   2. Yorum: botun günlük kayıtları, pazar günü alınan haftalık kapanış fiyatı, 13 aylık dolar/TL
-     ve 1. adımdaki özet birlikte verilir; Claude kısa/orta/uzun vade yorumunu yazar.
+     ve 1. adımdaki özet birlikte verilir; Claude kısa ve orta vade yorumunu yazar.
 
 Yasal çerçeve — SPK III-37.1 Tebliğ'in medya ve elektronik ortamdaki yorumlara uygulanan
 78-80. maddeleri esas alınarak:
@@ -50,7 +51,6 @@ HASHTAG = "#gümüş #gümüşyatırımı #gümüşfiyatları #değerlimetaller 
 VADELER = [
     {"anahtar": "kisa", "ad": "Kısa vade", "ufuk": "1–4 hafta", "pencere": 28, "etiket": "Son 4 hafta", "esnek": True},
     {"anahtar": "orta", "ad": "Orta vade", "ufuk": "1–6 ay", "pencere": 91, "etiket": "Son 3 ay", "esnek": False},
-    {"anahtar": "uzun", "ad": "Uzun vade", "ufuk": "1 yıl ve üzeri", "pencere": 365, "etiket": "Son 1 yıl", "esnek": False},
 ]
 
 # Ağır basan yön (14 Ekim 2026, Rıdvan: "fazla nötr; ağır basan bir taraf olmalı, sonuç yine yasalara uygun").
@@ -85,7 +85,7 @@ OLAY_GRUPLARI = {
     "ticaret / yaptırım": [r"gümrük", r"tarife", r"yaptırım"],
 }
 
-SISTEM = """Sen bir Instagram hesabı için her pazar gram gümüşün kısa, orta ve uzun vadeli görünümünü yazan bir yapay zekâsın. Yazdıkların görselde büyük puntoyla gösterilecek ve "yapay zekâ yorumudur, yatırım tavsiyesi değildir" uyarısıyla yayımlanacak.
+SISTEM = """Sen bir Instagram hesabı için her pazar gram gümüşün kısa ve orta vadeli görünümünü yazan bir yapay zekâsın. Yazdıkların görselde büyük puntoyla gösterilecek ve "yapay zekâ yorumudur, yatırım tavsiyesi değildir" uyarısıyla yayımlanacak.
 
 Dayanakların iki tanedir ve ikisini birlikte kullan:
 - Fiyat ve kur verileri (JSON): botun günlük kayıtları, pazar günü alınan haftalık kapanış, haftalık kapanışlar, aylık dolar/TL.
@@ -100,7 +100,7 @@ Kurallar (hepsine uy):
 6. Hiç rakam, yüzde, baz puan, tarih yazma; sayıları yazıyla da yazma. Sayılar görselde ayrıca gösteriliyor. "Üç ay", "bir yıl", "önümüzdeki hafta" gibi süreleri yazıyla yazabilirsin.
 7. Abartılı, heyecanlı dil yok (patlama, uçuş, çöküş, roket gibi). Sakin, sade, günlük Türkçe; Türkçe karakterleri doğru kullan.
 8. Gram gümüşün TL fiyatı ons gümüş (dolar) ile dolar/TL'nin çarpımından gelir; hareketin onstan mı kurdan mı geldiğini ayırt etmeye çalış.
-9. Vadelere göre ağırlık: kısa vadede bu haftanın fiyat hareketi, haftanın gelişmeleri ve önümüzdeki haftanın takvimi; orta vadede son aylardaki eğilim, faiz beklentileri ve kur; uzun vadede yıllık eğilim ve arz-talep gibi yapısal etkenler.
+9. Vadelere göre ağırlık: kısa vadede bu haftanın fiyat hareketi, haftanın gelişmeleri ve önümüzdeki haftanın takvimi; orta vadede son aylardaki eğilim, faiz beklentileri, kur ve arz-talep gibi yapısal etkenler.
 10. Bir vade için fiyat kaydı yetersizse (veri_yeterli: false) bu, görselde ayrıca not olarak yazılır; "durum" alanında kayıtların kısa olduğunu tekrarlama. O vadeyi özetteki uzun dönem bağlam ve kur verisiyle, daha temkinli yaz.
 11. Her vade için ağır basan yönü seç: "yükseliş" ya da "düşüş". Yatay, nötr ya da belirsiz seçeneği yok; okur net bir değerlendirme görmeli. Yönü dayanaklardaki ağırlığa göre seç, keyfi seçme. Etkenler karışıksa biraz daha ağır basan tarafı seç ve gücünü "zayıf" yaz; gücü dürüstçe belirle ("zayıf", "orta", "belirgin"). Ağır basan yön bir değerlendirmedir: kesinlik, hedef ya da al-sat önerisi değildir.
 12. "ozet" ve "seyir" ağır basan yönle uyumlu olsun, ikisini dengeleyip nötr bir sonuca bağlama. "seyir"de önce ağır basan yönü ve nedenini koşullu yaz, sonra karşı yönü kısa bir risk olarak an.
@@ -499,7 +499,7 @@ def yz_yorum(girdi, gelismeler=None):
     if not anahtar:
         return None
     mesajlar = [{"role": "user", "content":
-                 "Bu haftanın gram gümüş verileri ve haftanın gelişmeleri aşağıda (JSON). Kısa, orta ve uzun "
+                 "Bu haftanın gram gümüş verileri ve haftanın gelişmeleri aşağıda (JSON). Kısa ve orta "
                  "vade için yorumu yaz.\n\n" + json.dumps(girdi, ensure_ascii=False, indent=1)}]
     for tur in range(3):
         metin, cevap = _cagir(anahtar, mesajlar)
@@ -560,14 +560,6 @@ ORNEK_YORUM = {
         "seyir": "Kurdaki eğilim korunursa onstaki düşüşler gram fiyata daha az yansıyabilir; faiz indirimleri "
                  "gecikirse ons baskı altında kalabilir.",
         "izlenecek": "Fed faiz beklentileri, dolar/TL, sanayi talebi",
-    },
-    "uzun": {
-        "yon": "yükseliş", "guc": "belirgin",
-        "ozet": "Yapısal talep güçlü görünüyor",
-        "durum": "Gümüş son bir yılda belirgin yükseldi; güneş paneli talebi ve arz açığı öne çıkıyor.",
-        "seyir": "Sanayi talebi güçlü kalırsa ons desteklenebilir; küresel büyüme yavaşlarsa talep zayıflayabilir "
-                 "ve fiyat geri çekilebilir.",
-        "izlenecek": "Sanayi talebi, arz açığı, kur eğilimi",
     },
 }
 

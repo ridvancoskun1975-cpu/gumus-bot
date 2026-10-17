@@ -48,7 +48,7 @@ TUR_ADI = {
     "post": "Günün özeti",
     "hafta": "Haftalık özet ve grafik",
     "ay": "Aylık özet ve grafik",
-    "yorum": "Kısa, orta ve uzun vade yapay zekâ yorumu",
+    "yorum": "Kısa ve orta vade yapay zekâ yorumu",
     "bilgi": "Gümüş rehberi",
     "kisa": "Rehber Reels'i (önceki bölüm)",
     "kart": '"Kaç gram eder?" (çarşamba) ve altın–gümüş (cuma) kartı',
@@ -228,7 +228,7 @@ def program(simdi=None, kayit_gunleri=(), hikaye_turleri=None, rehber_saati=(13,
             # Rehber kareleri hikâyeye yalnızca bu açıksa otomatik gider (14 Ekim'den beri kapalı, elle paylaşılıyor)
             rehber_hikaye = getattr(bot, "REHBER_HIKAYE_OTOMATIK", True)
         if yorum_reels is None:
-            # Pazar yorumu 15 Ekim 2026'dan beri kaydırmalının yanında 32 sn Reels ve hikâye olarak da gider
+            # Pazar yorumu 15 Ekim 2026'dan beri kaydırmalının yanında Reels (17 Ekim'den beri 24 sn) ve hikâye olarak da gider
             yorum_reels = getattr(bot, "YORUM_REELS", False)
     if rehber_reels is None:
         import main as bot
