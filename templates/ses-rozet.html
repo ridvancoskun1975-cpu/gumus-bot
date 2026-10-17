@@ -1,0 +1,17 @@
+{% from "makrolar.html" import ses_rozeti %}<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Ses rozeti</title>
+<style>{% include "ortak.css" %}
+/* Rehber Reels'inin üstüne bindirilen "sesi açın" rozeti (bot/main.py → _ses_rozeti_kareleri): saydam zeminde
+   tek başına çizilir, her kare ayrı PNG olur ve videonun üst ortasına (kare içeriğinin üstündeki boşluğa) konur. */
+html, body { background: transparent !important; margin: 0; }
+.kutu { display: inline-block; padding: 6px; }
+</style>
+</head>
+<body>
+<div class="kutu" id="kutu">{{ ses_rozeti(yazi) }}</div>
+<script>window.kare = function (t) { window.sesRozeti(t); };</script>
+</body>
+</html>

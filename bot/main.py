@@ -1910,6 +1910,41 @@ def _rehber_reels_sesi(sure, wav):
     return girdi, filtre
 
 
+# "Sesi açın" rozeti (Rıdvan, 17 Ekim 2026): sesli rehber Reels'inde videonun üst ortasında, kare içeriğinin üstündeki
+# boşlukta (hikâye karelerinde üst 260 px yazısız) hareket eden hoparlör simgesi ve "Sesi açın". Yalnız sesliyse.
+SES_ROZETI_Y = 140          # px, rozetin üst kenarı (1080×1920 karede)
+SES_ROZETI_KARE = 36        # 1,2 sn'lik döngü, 30 fps
+
+
+def _ses_rozeti_kareleri(klasor, yazi=42):
+    """Rozetin döngü karelerini saydam PNG olarak klasöre yazar; ffmpeg girdi deseni (rozet_%02d.png) döner."""
+    from jinja2 import Environment, FileSystemLoader
+    from playwright.sync_api import sync_playwright
+    env = Environment(loader=FileSystemLoader(str(SABLONLAR)), autoescape=True)
+    gecici = SABLONLAR / "_ses_rozet.html"
+    gecici.write_text(env.get_template("ses-rozet.html").render(yazi=yazi), encoding="utf-8")
+    klasor = Path(klasor)
+    klasor.mkdir(parents=True, exist_ok=True)
+    try:
+        with sync_playwright() as p:
+            kwargs = {"executable_path": os.environ["CHROME_YOLU"]} if os.environ.get("CHROME_YOLU") else {}
+            tarayici = p.chromium.launch(**kwargs)
+            sayfa = tarayici.new_page(viewport={"width": 1080, "height": 300})
+            sayfa.goto(gecici.as_uri())
+            sayfa.evaluate("document.fonts.ready")
+            sayfa.wait_for_timeout(200)
+            kutu = sayfa.locator("#kutu").bounding_box()
+            alan = {"x": kutu["x"], "y": kutu["y"], "width": math.ceil(kutu["width"] / 2) * 2,
+                    "height": math.ceil(kutu["height"] / 2) * 2}
+            for i in range(SES_ROZETI_KARE):
+                sayfa.evaluate(f"window.kare({i / VIDEO_FPS:.4f})")
+                sayfa.screenshot(path=str(klasor / f"rozet_{i:02d}.png"), clip=alan, omit_background=True)
+            tarayici.close()
+    finally:
+        gecici.unlink(missing_ok=True)
+    return str(klasor / "rozet_%02d.png")
+
+
 def rehber_reels_tam_uret(cikti, konu, damga, hikayeler, plan):
     """Rehber Reels'i, rehber günü ve arşiv günü (Rıdvan, 17 Ekim 2026: "Tabii ki tamamının okunması gerekiyor"):
     ekranda hikâye videosunun büyük yazılı kareleri, kadın sesi her karenin yazısını okur, kare okuma bitince değişir; müzik altta kısık.
@@ -1928,6 +1963,8 @@ def rehber_reels_tam_uret(cikti, konu, damga, hikayeler, plan):
         sl = None
     mp4 = cikti / f"bilgi{konu}-{damga}.mp4"
     liste = cikti / f"_reels-{konu}-{damga}.txt"
+    import tempfile
+    rozet_klasoru = Path(tempfile.mkdtemp(prefix="ses-rozet-"))   # yayına çıkmasın diye çıktı klasörü dışında
 
     def yap(sl_):
         sureler = sl_["kare_sn"] if sl_ else [rh.kare_suresi(i) for i in range(len(kareler))]
@@ -1938,8 +1975,19 @@ def rehber_reels_tam_uret(cikti, konu, damga, hikayeler, plan):
         satirlar.append(f"file '{(cikti / kareler[-1]).resolve().as_posix()}'")   # concat: son kare yinelenir
         liste.write_text("\n".join(satirlar) + "\n", encoding="utf-8")
         ses_girdi, ses_filtre = _rehber_reels_sesi(sure, sl_["wav"]) if sl_ else _hikaye_sesi(sure)
+        goruntu = f"[0:v]scale=1080:1920,fps={VIDEO_FPS},format=yuv420p[v]"
+        rozet_girdi = []
+        if sl_:   # sesliyse üst ortada "Sesi açın" rozeti (hareketli)
+            try:
+                desen = _ses_rozeti_kareleri(rozet_klasoru)
+                rozet_girdi = ["-stream_loop", "-1", "-framerate", str(VIDEO_FPS), "-i", desen]
+                r = 1 + ses_girdi.count("-i")
+                goruntu = (f"[0:v]scale=1080:1920,fps={VIDEO_FPS}[zemin];[{r}:v]format=rgba[rozet];"
+                           f"[zemin][rozet]overlay=x=(W-w)/2:y={SES_ROZETI_Y}:shortest=1,format=yuv420p[v]")
+            except Exception as e:
+                print(f"::warning::Ses rozeti çizilemedi ({type(e).__name__}: {str(e)[:120]}); rozetsiz.")
         komut = [ffmpeg_yolu(), "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", str(liste), *ses_girdi,
-                 "-filter_complex", f"[0:v]scale=1080:1920,fps={VIDEO_FPS},format=yuv420p[v];{ses_filtre}",
+                 *rozet_girdi, "-filter_complex", f"{goruntu};{ses_filtre}",
                  "-map", "[v]", "-map", "[a]", "-t", str(sure),
                  "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-r", str(VIDEO_FPS),
                  "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", str(mp4)]
@@ -1957,8 +2005,10 @@ def rehber_reels_tam_uret(cikti, konu, damga, hikayeler, plan):
             sl = None
             sure = yap(None)
     finally:
+        import shutil
         liste.unlink(missing_ok=True)
         (cikti / f"_ses-rehber{konu}.wav").unlink(missing_ok=True)   # ara dosya yayına çıkmasın
+        shutil.rmtree(rozet_klasoru, ignore_errors=True)
     if sl:
         print(f"Seslendirme: {sl['ses']} ({sl['model']}), {sure} sn, kareler {sl['kare_sn']}")
     return {"dosya": mp4.name, "kapak": kareler[0], "sure": sure, "seslendirme": sl}
@@ -2338,7 +2388,7 @@ def yorum_reels_uret(cikti, veri, metin, damga):
         mp4s = cikti / f"yorum-reels-sesli-{damga}.mp4"
         try:
             if not hareketli_video_uret("yorum-reels", {**veri, "vadeler": vadeler, "kapak_g": zaman[0],
-                                                        "sahne_sureleri": sureler},
+                                                        "sahne_sureleri": sureler, "sesli": True},
                                         mp4s, sure=sl["sure"], seslendirme=sl["wav"]):
                 raise RuntimeError("şablonda hareket yok")
             sonuc.update({"dosya": mp4s.name, "hikaye_dosya": mp4.name, "aciklama": _yorum_sesli_metin(reels_metin),

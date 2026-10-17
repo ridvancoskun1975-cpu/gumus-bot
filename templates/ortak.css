@@ -58,3 +58,9 @@ h1 { margin: 0; line-height: 0.9; font-weight: 800; }
 
 /* Goril maskotu (bot/goril.py; çizimler templates/goril/) */
 .maskot svg { width: 100%; height: 100%; display: block; overflow: visible; }
+
+/* Sesli Reels rozeti (makrolar.html → ses_rozeti) */
+.ses-rozet { display: inline-flex; align-items: center; gap: 0.45em; padding: 0.38em 0.85em 0.38em 0.7em;
+  border-radius: 999px; border: 3px solid var(--vurgu); background: rgba(18, 20, 24, 0.86); color: var(--yazi);
+  font-family: 'Archivo', sans-serif; font-weight: 800; letter-spacing: 0; line-height: 1; white-space: nowrap; }
+.ses-rozet .hoparlor { width: 1.45em; height: 1.12em; color: var(--vurgu); transform-origin: 30% 50%; }
