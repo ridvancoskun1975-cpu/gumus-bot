@@ -223,6 +223,11 @@ for g, no in bilgi.arsiv_takvim().items():
 dogrula(sorted(bilgi.arsiv_takvim().values()) == [3, 4, 5], f"arşiv bölümleri: {bilgi.arsiv_takvim()}")
 dogrula(bilgi.bugunun_arsiv_bolumu(date(2026, 10, 22)) == 3 and bilgi.bugunun_arsiv_bolumu(date(2026, 10, 24)) is None,
         "bugünün arşiv bölümü")
+dogrula("'yorum'" in adim["if"], "pazar yorumunda da seslendirme anahtarı alınır")
+uret_adimi = next(a_ for a_ in akis["jobs"]["uret"]["steps"] if a_.get("id") == "uret")
+dogrula("inputs.deneme && inputs.ornek" in uret_adimi["env"]["ORNEK"] and "--ornek" in uret_adimi["run"],
+        "örnek veri yalnız denemede (Claude API isteği yok)")
+dogrula(ses.YORUM_SES is None or ses.YORUM_SES != ses.SES, "pazar sesi rehberin kadın sesinden ayrı (erkek)")
 tur_adimi = next(a_ for a_ in akis["jobs"]["kontrol"]["steps"] if a_.get("id") == "tur")["run"]
 dogrula("bot/bilgi.py arsiv" in tur_adimi and "tur=kisa" in tur_adimi, "13:50 çalışması rehbersiz günde arşivi seçer")
 for is_ in ("uret",):
@@ -422,6 +427,76 @@ try:
         dogrula(olaylar[0] == ("reels", "bilgi7-x.mp4"), f"önce Reels: {olaylar}")
         dogrula(("rehber-hikaye", ("bilgi7-x-hikaye-video-1.mp4",)) in olaylar, "sonra müzikli rehber hikâyesi")
         dogrula(not any(o[0] == "hikaye" for o in olaylar), "Reels'in kendisi hikâyeye gitmez")
+    finally:
+        for k, v in yedek.items():
+            setattr(main, k, v)
+
+    # Pazar Reels'i sesli (Rıdvan 17 Ekim 2026): erkek sesi, analizin TAMAMI; hikâyeye 32 sn'lik müzikli sürüm
+    import yorum  # noqa: E402
+    eski_yorum_ses = ses.YORUM_SES
+    okumalar = []
+
+    def kayitli(metin, ses=None, uslup=None, anahtar_=None, model=None):
+        okumalar.append((ses, uslup, metin))
+        return yapay_ses(metin)
+
+    try:
+        ses.YORUM_SES = "Charon"
+        ses.seslendir = kayitli
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            main.yorum_hazirla(d, ornek=True)
+            r = json.loads((d / "meta.json").read_text(encoding="utf-8"))["reels"]
+            dogrula(r["seslendirme"] == "Charon" and r["dosya"].startswith("yorum-reels-sesli-"), f"sesli Reels: {r}")
+            dogrula(len(okumalar) == 5 and all(s_ == "Charon" and u == ses.USLUP_ERKEK for s_, u, _ in okumalar),
+                    "5 sahne, erkek sesi ve üslubu")
+            sn, ses_var = sure_olc(d / r["dosya"])
+            dogrula(ses_var and sn > 60 and abs(sn - r["sure"]) < 0.5, f"analizin tamamı okunur ({sn:.0f} sn)")
+            hs, h_ses = sure_olc(d / r["hikaye_dosya"])
+            dogrula(h_ses and abs(hs - 32) < 0.3, f"hikâyeye 32 sn'lik müzikli sürüm ({hs})")
+            tum = " ".join(r["ses_metni"])
+            for vk, vy in yorum.ORNEK_YORUM.items():
+                for alan in ("ozet", "durum", "seyir", "izlenecek"):
+                    dogrula(ses.okunur(vy[alan]).rstrip(".") in tum, f"{vk}/{alan} okunur")
+            dogrula("yatırım tavsiyesi değildir" in tum and "her pazar saat on birde" in tum, "kapanış okunur")
+            dogrula(not re.search(r"[%÷×=→~#₺$±/·•]", tum), "okunmayacak simge yok")
+            dogrula(ses.ACIKLAMA_SATIRI in r["aciklama"] and len(r["aciklama"]) <= 2200, "açıklamada seslendirme notu")
+            dogrula(r["kapak"] and (d / r["kapak"]).exists() and 0 < r["kapak_ms"] < r["sure"] * 1000, "kapak")
+            dogrula(not list(d.glob("_ses-*")), "ara ses dosyası kalmaz")
+
+        def bozuk3(*a, **k):
+            raise ses.SesHatasi("kota doldu")
+
+        ses.seslendir = bozuk3
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            main.yorum_hazirla(d, ornek=True)
+            r = json.loads((d / "meta.json").read_text(encoding="utf-8"))["reels"]
+            sn, ses_var = sure_olc(d / r["dosya"])
+            dogrula(r["seslendirme"] is None and "hikaye_dosya" not in r and abs(sn - 32) < 0.3 and ses_var,
+                    f"ses yoksa 32 sn müzikli Reels ({sn})")
+            dogrula(ses.ACIKLAMA_SATIRI not in r["aciklama"], "sessizde seslendirme notu yok")
+        okumalar.clear()
+        ses.seslendir = kayitli
+        ses.YORUM_SES = None
+        with tempfile.TemporaryDirectory() as d:
+            main.yorum_hazirla(Path(d), ornek=True)
+            dogrula(not okumalar, "ses seçilmeden okuma yapılmaz")
+    finally:
+        ses.YORUM_SES = eski_yorum_ses
+        ses.seslendir = yapay_ses
+
+    # Yayın: sesli Reels Reels olarak, hikâyeye 32 sn'lik müzikli sürüm
+    olaylar = []
+    yedek = {k: getattr(main, k) for k in ("_url_hazir_mi", "_reels_konteyneri", "_istek", "hikaye_paylas")}
+    main._url_hazir_mi = lambda *a, **k: True
+    main._reels_konteyneri = lambda kid, url, meta, taban: (olaylar.append(("reels", url)), {"id": "k"})[1]
+    main._istek = lambda yontem, yol, **p: {"id": "m"}
+    main.hikaye_paylas = lambda kid, url: olaylar.append(("hikaye", url))
+    try:
+        main.yorum_reelsi("1", {"dosya": "yorum-reels-sesli-x.mp4", "hikaye_dosya": "yorum-reels-x.mp4"}, "https://o/")
+        dogrula(olaylar == [("reels", "https://o/yorum-reels-sesli-x.mp4"), ("hikaye", "https://o/yorum-reels-x.mp4")],
+                f"pazar yayını: {olaylar}")
     finally:
         for k, v in yedek.items():
             setattr(main, k, v)

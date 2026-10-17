@@ -1715,7 +1715,9 @@ def yorum_reelsi(kullanici_id, reels, taban_url):
         print(f"::warning::Pazar Reels'i paylaşılamadı ({type(e).__name__}: {e}); kaydırmalı gönderi paylaşıldı. "
               "Reels'i sonradan göndermek için Claude'a yaz.")
         return
-    hikaye_paylas(kullanici_id, video_url)
+    # Sesli Reels 2–3 dk: hikâyeye 32 sn'lik müzikli sürüm gider (hikâye en çok 60 sn)
+    hikaye = reels.get("hikaye_dosya")
+    hikaye_paylas(kullanici_id, taban_url.rstrip("/") + "/" + hikaye if hikaye else video_url)
 
 
 def hikaye_paylas(kullanici_id, video_url):
@@ -2238,7 +2240,8 @@ def yorum_hazirla(cikti, ornek):
                                       + "".join(f"<p><a href='{d}'>{d}</a></p>" for d in dosyalar), encoding="utf-8")
     print(metin)
     print(f"\nÜretilen dosyalar ({len(metin)} karakter açıklama):", *dosyalar,
-          *([reels["dosya"], reels["kapak"]] if reels else []), sep="\n")
+          *([reels["dosya"], reels["kapak"]] + ([reels["hikaye_dosya"]] if reels.get("hikaye_dosya") else [])
+            if reels else []), sep="\n")
 
 
 # Pazar yorumunun Reels'i (Rıdvan, 15 Ekim 2026 21:25: "Reels bence şart"; 21:53: "Reels'te düzgün bir pazar
@@ -2252,16 +2255,69 @@ YORUM_REELS = True
 YORUM_REELS_SAHNELER = (8, 8, 8, 8)   # sn: kapak, kısa, orta, uzun vade (toplam 32 sn)
 
 
+# Pazar Reels'i sesli (Rıdvan, 17 Ekim 2026: "Pazar günü analiz sesli olsun"; Gemini erkek sesi, analizin TAMAMI):
+# analizi Claude yazar, ses ekrandaki metnin tamamını sahne sahne okur (bot/yorum.py → seslendirme_parcalari),
+# her sahne sesi kadar sürer (~2–3 dk) ve sonda kapanış sahnesi gelir. Ses seçilmediyse (ses.YORUM_SES None),
+# kapalıysa ya da herhangi bir hatada Reels bugünkü gibi 32 sn ve yalnızca müzikle gider. Hikâyeye her zaman 32 sn'lik
+# müzikli video gider (hikâye en çok 60 sn; rehberdeki gibi). Kapatmak için False.
+YORUM_SESLI = True
+
+
+def _yorum_zamanlari(parcalar, sl, sureler):
+    """Sahne öğelerinin belirme anı (sahne süresinin oranı): her öğe kendi cümlesi okunmaya başlarken belirir.
+    Konuşma süresi sahnedeki harf sayısına göre paylaştırılır (tek okuma, parça parça süre yok)."""
+    import ses
+    zaman = []
+    for sahne, konusma, d in zip(parcalar, sl["parca_sn"], sureler):
+        toplam = sum(len(m) for _, m in sahne) or 1
+        bas, g = 0, {}
+        for ad, m in sahne:
+            g[ad] = round(max(0.0, ses.KARE_ON + konusma * bas / toplam - 0.25) / d, 4)
+            bas += len(m) + 1
+        zaman.append(g)
+    return zaman
+
+
+def yorum_seslendirmesi(veri, cikti):
+    """Pazar Reels'inin erkek sesi seslendirmesi: (parçalar, sonuç) ya da None (o hafta sessiz Reels)."""
+    import ses
+    import yorum
+    if not YORUM_SESLI or not ses.SES_ACIK or not ses.YORUM_SES or os.environ.get("SES_KAPALI"):
+        return None
+    try:
+        parcalar = yorum.seslendirme_parcalari(veri)
+        metinler = [ses._cumle(ses.okunur(" ".join(m for _, m in sahne))) for sahne in parcalar]
+        sl = ses.rehber_seslendir(metinler, cikti, "yorum", ses=os.environ.get("SES_ADI", "").strip() or ses.YORUM_SES,
+                                  uslup=ses.USLUP_ERKEK, en_az=list(ses.YORUM_EN_AZ), en_uzun=ses.YORUM_EN_UZUN,
+                                  deneme=_deneme_mi())
+        return parcalar, sl
+    except Exception as e:
+        print(f"::warning::Pazar seslendirmesi yapılamadı ({type(e).__name__}: {str(e)[:200]}); "
+              "pazar Reels'i yalnızca müzikle gidiyor.")
+        return None
+
+
+def _yorum_sesli_metin(metin):
+    """Açıklamaya seslendirme notu (uyarıdan önce). Sınır aşılırsa önce soru satırı çıkar; yine aşarsa not eklenmez."""
+    import ses
+    ek = ses.ACIKLAMA_SATIRI + "\n\n"
+    yeni = metin.replace("Uyarı: ", ek + "Uyarı: ", 1) if "Uyarı: " in metin else metin + "\n\n" + ses.ACIKLAMA_SATIRI
+    if len(yeni) > 2200:
+        yeni = yeni.replace("Sizce gümüş önümüzdeki haftalarda ne yöne gider? Yorumlara yazın 👇\n\n", "")
+    return yeni if len(yeni) <= 2200 else metin
+
+
 def yorum_reels_uret(cikti, veri, metin, damga):
-    """Pazar Reels'inin videosu, kapağı ve açıklaması. Hata verirse None (kaydırmalı gönderi etkilenmez)."""
+    """Pazar Reels'inin videosu, kapağı ve açıklaması. Hata verirse None (kaydırmalı gönderi etkilenmez).
+    Sesliyse Reels uzun sesli video, hikâye 32 sn'lik müzikli video ("hikaye_dosya")."""
     sure = sum(YORUM_REELS_SAHNELER)
-    veri = {**veri, "sahne_sureleri": list(YORUM_REELS_SAHNELER)}
+    muzikli = {**veri, "sahne_sureleri": list(YORUM_REELS_SAHNELER)}
     try:
         mp4 = cikti / f"yorum-reels-{damga}.mp4"
-        if not hareketli_video_uret("yorum-reels", veri, mp4, sure=sure):
+        if not hareketli_video_uret("yorum-reels", muzikli, mp4, sure=sure):
             raise RuntimeError("şablonda hareket yok")
         kapak = cikti / f"kapak-yorum-reels-{damga}.jpg"
-        gorsel_uret("yorum-reels", veri, kapak)
+        gorsel_uret("yorum-reels", muzikli, kapak)
     except Exception as e:
         print(f"::warning::Pazar Reels'i üretilemedi ({type(e).__name__}: {e}); yalnızca kaydırmalı gönderi gidecek.")
         return None
@@ -2269,8 +2325,31 @@ def yorum_reels_uret(cikti, veri, metin, damga):
     reels_metin = metin.replace("Ayrıntılar görsellerde, kaydırın →",
                                 "Yorumun 4 sayfası profildeki kaydırmalı gönderide de var →")
     # Yedek kapak anı: kapak sahnesinin bütün öğeleri görünürken (kapak sahnesinin sonundan 1 sn önce)
-    return {"dosya": mp4.name, "kapak": kapak.name, "kapak_ms": int((YORUM_REELS_SAHNELER[0] - 1) * 1000),
-            "aciklama": reels_metin}
+    sonuc = {"dosya": mp4.name, "kapak": kapak.name, "kapak_ms": int((YORUM_REELS_SAHNELER[0] - 1) * 1000),
+             "aciklama": reels_metin, "seslendirme": None}
+    sesli = yorum_seslendirmesi(veri, cikti)
+    if sesli:
+        parcalar, sl = sesli
+        sureler = sl["kare_sn"]
+        zaman = _yorum_zamanlari(parcalar, sl, sureler)
+        vadeler = [{**v, "g": z} for v, z in zip(veri["vadeler"], zaman[1:])]
+        mp4s = cikti / f"yorum-reels-sesli-{damga}.mp4"
+        try:
+            if not hareketli_video_uret("yorum-reels", {**veri, "vadeler": vadeler, "kapak_g": zaman[0],
+                                                        "sahne_sureleri": sureler},
+                                        mp4s, sure=sl["sure"], seslendirme=sl["wav"]):
+                raise RuntimeError("şablonda hareket yok")
+            sonuc.update({"dosya": mp4s.name, "hikaye_dosya": mp4.name, "aciklama": _yorum_sesli_metin(reels_metin),
+                          "kapak_ms": int((sureler[0] - 0.5) * 1000), "seslendirme": sl["ses"],
+                          "ses_metni": sl["metin"], "sure": sl["sure"]})
+            print(f"Pazar seslendirmesi: {sl['ses']} ({sl['model']}), {sl['sure']} sn, sahneler {sureler}")
+        except Exception as e:
+            print(f"::warning::Sesli pazar Reels'i üretilemedi ({type(e).__name__}: {str(e)[:200]}); "
+                  "32 sn'lik müzikli Reels gidiyor.")
+            mp4s.unlink(missing_ok=True)
+        finally:
+            sl["wav"].unlink(missing_ok=True)   # ara dosya yayına çıkmasın
+    return sonuc
 
 
 def kart_hazirla(cikti, konu, ornek):
