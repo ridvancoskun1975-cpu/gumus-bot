@@ -44,9 +44,9 @@ ACIKLAMA_SATIRI = "🎙 Seslendirme yapay zekâ ile üretilmiştir."
 CAGRI = "Rehberin tamamı profilde. Kaydedin, lazım olunca bakarsınız."
 
 # Pazar analizinin erkek sesi (Rıdvan, 17 Ekim 2026: "Gemini erkek sesi seçelim"; analizin tamamı okunur).
-# Ses seçilene kadar None: pazar Reels'i bugünkü gibi sessiz (yalnızca müzik) gider. Aday örnekleri
-# `python bot/ses.py ornek` / "Ses örneği" iş akışı.
-YORUM_SES = None
+# Rıdvan 17 Ekim 2026 10:29'da 3 örnekten "Ses 2"yi seçti: Orus. None yapılırsa pazar Reels'i sessiz (yalnızca
+# müzik) gider. Başka aday dinlemek: `python bot/ses.py ornek` / "Ses örneği" iş akışı.
+YORUM_SES = "Orus"
 YORUM_EN_AZ = (6.0, 10.0, 10.0, 10.0, 5.0)    # sn: kapak, kısa/orta/uzun vade, kapanış
 YORUM_EN_UZUN = 300                            # analizin tamamı ~2–3 dk; 5 dk'yı aşarsa sessiz Reels'e düşer
 USLUP_ERKEK = ("Calm, trustworthy male narrator. Natural Istanbul Turkish, measured medium pace, clear articulation, "
