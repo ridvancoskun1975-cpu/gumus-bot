@@ -42,9 +42,13 @@ on:
         options: [yok, sevinen, uzulen, gezinen, istif]
         default: yok
       ses:
-        description: "Seslendirme önizlemesi (yalnız deneme açıkken, bilgi ve kisa türünde): kadın sesi adı, ör. Kore. Boş = seçili ses"
+        description: "Seslendirme önizlemesi (yalnız deneme açıkken; bilgi, kisa ve yorum türünde): ses adı, ör. Kore, Charon. Boş = seçili ses"
         type: string
         default: ""
+      ornek:
+        description: "Örnek veriyle önizleme (yalnız deneme açıkken, yorum türünde): Claude API'ye ve MetalCharts'a istek atmaz, ücretsiz"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -204,11 +208,11 @@ jobs:
           key: gunici-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: gunici-
 
-      # Rehber Reels'inin (rehber günü bilgi, arşiv günü kisa) kadın sesi seslendirmesi (bot/ses.py): anahtar GEMINI_API_KEY sırrında
+      # Rehber Reels'inin (rehber günü bilgi, arşiv günü kisa) kadın sesi ve pazar Reels'inin (yorum) erkek sesi seslendirmesi (bot/ses.py): anahtar GEMINI_API_KEY sırrında
       # (Rıdvan, 16 Ekim 2026), yoksa özel gumus-kayit deposunda; günlükte gizlenir. Alınamazsa Reels
       # bugünkü gibi yalnızca müzikle üretilir.
       - name: Seslendirme anahtarı
-        if: needs.kontrol.outputs.tur == 'kisa' || needs.kontrol.outputs.tur == 'bilgi'
+        if: needs.kontrol.outputs.tur == 'kisa' || needs.kontrol.outputs.tur == 'bilgi' || needs.kontrol.outputs.tur == 'yorum'
         continue-on-error: true
         timeout-minutes: 1
         env:
@@ -243,12 +247,15 @@ jobs:
           DENEME: ${{ github.event_name == 'workflow_dispatch' && inputs.deneme }}   # denemede gün içi nokta yazılmaz
           # Goril hâlini zorlar (bot/goril.py); yalnız paylaşmayan elle denemede, başlangıç tarihinden önce de.
           GORIL_DENEME: ${{ github.event_name == 'workflow_dispatch' && inputs.deneme && inputs.goril != 'yok' && inputs.goril || '' }}
-          # Seslendirmede başka kadın sesi dener (bot/ses.py); yalnız paylaşmayan elle denemede.
+          # Seslendirmede başka ses dener (bot/ses.py); yalnız paylaşmayan elle denemede.
           SES_ADI: ${{ github.event_name == 'workflow_dispatch' && inputs.deneme && inputs.ses || '' }}
+          # Pazar yorumunu örnek veriyle önizler (Claude API ve MetalCharts isteği yok); yalnız paylaşmayan elle denemede.
+          ORNEK: ${{ github.event_name == 'workflow_dispatch' && inputs.deneme && inputs.ornek && 'true' || '' }}
         run: |
           ek=()
           case "${{ needs.kontrol.outputs.tur }}" in
             bilgi|kisa|hikaye|kart) if [ -n "$KONU" ]; then ek=(--konu "$KONU"); fi ;;
+            yorum) if [ "$ORNEK" = "true" ]; then ek=(--ornek); echo "Örnek veriyle önizleme (Claude API isteği yok)."; fi ;;
           esac
           python bot/main.py hazirla --tur "${{ needs.kontrol.outputs.tur }}" --cikti site "${ek[@]}"
           if [ -f site/meta.json ]; then

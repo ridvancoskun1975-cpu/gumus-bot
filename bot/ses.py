@@ -44,7 +44,11 @@ ACIKLAMA_SATIRI = "🎙 Seslendirme yapay zekâ ile üretilmiştir."
 CAGRI = "Rehberin tamamı profilde. Kaydedin, lazım olunca bakarsınız."
 
 # Pazar analizinin erkek sesi (Rıdvan, 17 Ekim 2026: "Gemini erkek sesi seçelim"; analizin tamamı okunur).
-# Ses henüz seçilmedi: aday örnekleri `python bot/ses.py ornek` / "Ses örneği" iş akışı.
+# Ses seçilene kadar None: pazar Reels'i bugünkü gibi sessiz (yalnızca müzik) gider. Aday örnekleri
+# `python bot/ses.py ornek` / "Ses örneği" iş akışı.
+YORUM_SES = None
+YORUM_EN_AZ = (6.0, 10.0, 10.0, 10.0, 5.0)    # sn: kapak, kısa/orta/uzun vade, kapanış
+YORUM_EN_UZUN = 300                            # analizin tamamı ~2–3 dk; 5 dk'yı aşarsa sessiz Reels'e düşer
 USLUP_ERKEK = ("Calm, trustworthy male narrator. Natural Istanbul Turkish, measured medium pace, clear articulation, "
                "like a professional weekly markets bulletin. Neutral and sober, no hype, no exaggeration.")
 # Örnek okuma: pazar analizinin bir vade sayfası, seslendirmede okunacak biçimiyle (bot/yorum.py → ORNEK_YORUM).
@@ -392,14 +396,18 @@ def rehber_metinleri(no, bolum, kareler, sonraki=None):
     return metinler
 
 
-def rehber_seslendir(metinler, klasor, ad, ses=SES, anahtar_=None, deneme=False):
-    """Her karenin metnini okur, kareleri ses süresine göre zamanlar ve ses izini yazar.
+def rehber_seslendir(metinler, klasor, ad, ses=SES, anahtar_=None, deneme=False, uslup=USLUP, en_az=None,
+                     en_uzun=None):
+    """Her karenin (sahnenin) metnini okur, kareleri ses süresine göre zamanlar ve ses izini yazar.
+    en_az: her karenin en kısa süresi (liste; yoksa rehber: kapak 3, kare 4 sn). Pazar Reels'i de kullanır
+    (erkek sesi, kendi üslubu ve süreleri).
     Dönüş: {"kare_sn": [her karenin ekranda kalma süresi], "sure", "wav", "ses", "model", "metin", "parca_sn"}."""
     anahtar_ = anahtar_ or anahtar()
     hata = None
     for model in modeller(deneme):      # bütün kareler aynı modelden (ses tonu karışmasın)
         try:
-            ornekler = [kirp(seslendir(m, ses=ses, anahtar_=anahtar_, model=model)) if m else None for m in metinler]
+            ornekler = [kirp(seslendir(m, ses=ses, uslup=uslup, anahtar_=anahtar_, model=model)) if m else None
+                        for m in metinler]
             break
         except SesHatasi as e:
             hata = e
@@ -408,11 +416,11 @@ def rehber_seslendir(metinler, klasor, ad, ses=SES, anahtar_=None, deneme=False)
     parca = [sure(o) if o is not None else 0.0 for o in ornekler]
     kare_sn = []
     for i, p_ in enumerate(parca):
-        en_az = KARE_EN_AZ["kapak" if i == 0 else "kare"]
-        kare_sn.append(round(max(en_az, KARE_ON + p_ + KARE_ARD), 2))
+        alt = en_az[i] if en_az else KARE_EN_AZ["kapak" if i == 0 else "kare"]
+        kare_sn.append(round(max(alt, KARE_ON + p_ + KARE_ARD), 2))
     kare_sn[-1] = round(kare_sn[-1] + SON_EK, 2)
     toplam = round(sum(kare_sn), 2)
-    if toplam > REHBER_EN_UZUN:
+    if toplam > (en_uzun or REHBER_EN_UZUN):
         raise SesHatasi(f"seslendirme çok uzun ({toplam:.0f} sn)")
     bas, parcalar = 0.0, []
     for o, d in zip(ornekler, kare_sn):

@@ -617,6 +617,53 @@ def _nasil_hazirlandi(gelismeler):
             "değildir. Her pazar güncellenir. Bu yorum için hiçbir kurumdan ücret ya da menfaat alınmamıştır.")
 
 
+# ---------------------------------------------------------------- seslendirme (pazar Reels'i)
+# Rıdvan (17 Ekim 2026): pazar analizi sesli olsun, erkek sesiyle, analizin TAMAMI okunsun (kısaltma yok).
+# Metni Claude'un yazdığı analizden kurulur (ayrı bir istek yok): ekranda ne varsa o okunur. Sahneler pazar
+# Reels'iyle aynı: kapak, kısa/orta/uzun vade, kapanış. Her sahne parçalar listesidir: [(öğe, metin)];
+# öğe adları şablondaki (templates/yorum-reels.html) belirme anlarını sese göre ayarlamak için kullanılır.
+
+KAPANIS_OKUMA = ("Bu yorum üst düzey yapay zekâ ile üretilmiştir; bir değerlendirmedir, yatırım tavsiyesi değildir. "
+                 "Kısa, orta ve uzun vade gümüş görünümü her pazar saat on birde. Takip edin, kaçırmayın.")
+
+
+def _degisim_okuma(ad, deg):
+    if not deg:
+        return f"{ad} için veri yok"
+    fiil = "geriledi" if deg["yon"] == "dusus" else "yükseldi"
+    return f"{ad} {deg['metin']} {fiil}"
+
+
+def seslendirme_parcalari(v):
+    """Pazar Reels'inde okunacak metin, sahne sahne: [[(öğe, metin), …], …] (kapak, vadeler, kapanış).
+    v: main.yorum_hazirla'daki görsel verisi (vadeler: ad, ufuk, etiket, not, yorum, hucreler)."""
+    deg = v["gram_deg"]
+    fiil = "geriledi" if deg["yon"] == "dusus" else "yükseldi"
+    kapak = [("baslik", f"Gümüş görünümü: kısa, orta ve uzun vade. {v['tarih']}."),
+             ("fiyat", f"Gram gümüş {v['gram']} lira; bir haftada {deg['metin']} {fiil}.")]
+    for x in v["vadeler"]:
+        y = x["yorum"]
+        kapak.append((f"vade-{x['anahtar']}",
+                      f"{x['ad']}: {y['yon']} ağır basıyor, {GUC_ADI[y['guc']]}. {y['ozet']}."))
+    kapak.append(("ileri", "Ayrıntılar geliyor."))
+    sahneler = [kapak]
+    for x in v["vadeler"]:
+        y = x["yorum"]
+        veri = f"{x['etiket']}: " + ", ".join(_degisim_okuma(h["ad"], h["deg"]) for h in x["hucreler"]) + "."
+        if x.get("not"):
+            veri += f" {x['not']}."
+        sahneler.append([
+            ("baslik", f"{x['ad']}, {x['ufuk']}."),
+            ("veri", veri),
+            ("agir", f"Ağır basan: {y['yon']}, {GUC_ADI[y['guc']]}."),
+            ("durum", f"Durum. {y['durum']}"),
+            ("seyir", f"Olası seyir. {y['seyir']}"),
+            ("izle", f"İzlenecek: {y['izlenecek']}."),
+        ])
+    sahneler.append([("kapanis", KAPANIS_OKUMA)])
+    return sahneler
+
+
 def yon_metni(vade):
     """"▼ Düşüş ağır basıyor (orta eğilim)" — açıklamada ve görselde aynı ifade."""
     ok = "▲" if vade["yon"] == "yükseliş" else "▼"
