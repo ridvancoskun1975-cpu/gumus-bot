@@ -207,6 +207,13 @@ adim = next(a_ for a_ in akis["jobs"]["uret"]["steps"] if a_.get("name") == "Ses
 dogrula("'bilgi'" in adim["if"] and "'kisa'" in adim["if"], f"anahtar adımı koşulu: {adim['if']}")
 dogrula(not any(c.get("cron") == "50 10 * * 6" for c in akis[True]["schedule"]), "cumartesi kısa Reels zamanlaması yok")
 
+# Okuma 1,5 kat hızlı (Rıdvan, 17 Ekim 2026: "Sesleri 1,5 hızlandır hepsini"); perde korunur (ffmpeg atempo)
+dogrula(ses.HIZ == 1.5, f"okuma hızı {ses.HIZ}")
+_ham = array.array("h", [int(8000 * math.sin(i / 9)) for i in range(48000)])   # 2 sn
+_hizli = ses.hizlandir(_ham)
+dogrula(abs(ses.sure(_hizli) - 2 / 1.5) < 0.08, f"1,5 kat hızlı: {ses.sure(_hizli):.2f} sn")
+dogrula(ses.hizlandir(_ham, 1.0) is _ham and ses.hizlandir(array.array("h")) == array.array("h"), "1.0 ve boş dokunulmaz")
+
 # Rehber arşivi Reels'i günleri (bilgi.ARSIV_REELS, Rıdvan 17 Ekim 2026): hafta içi; rehber ya da aylık özet günü
 # değil; bölüm o günden önce yayımlanmış ve rehber günü sesli Reels'inden (#6) önce; günlük sınır (4) aşılmaz
 from datetime import date  # noqa: E402

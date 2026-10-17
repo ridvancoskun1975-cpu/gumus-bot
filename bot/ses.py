@@ -244,6 +244,38 @@ def kirp(ornek, esik=500, pay=0.05):
     return ornek[max(0, ilk - p): min(len(ornek), son + p)]
 
 
+# Okuma hızı (Rıdvan, 17 Ekim 2026: "Sesleri 1,5 hızlandır hepsini"): Gemini'nin okuması perdesi değişmeden
+# (ffmpeg atempo) bu kat hızlandırılır; rehber, arşiv ve pazar Reels'i ile ses örneklerinin hepsinde. 1.0: kapalı.
+HIZ = 1.5
+
+
+def hizlandir(ornek, oran=None):
+    """PCM örneklerini perdeyi koruyarak oran kat hızlandırır (ffmpeg atempo). ffmpeg yoksa ya da hata olursa
+    SesHatasi (seslendirme yapılamadı sayılır; Reels yalnızca müzikle gider)."""
+    import shutil
+    import subprocess
+    oran = HIZ if oran is None else oran
+    if not ornek or abs(oran - 1.0) < 1e-6:
+        return ornek
+    try:
+        ffmpeg = shutil.which("ffmpeg") or __import__("imageio_ffmpeg").get_ffmpeg_exe()
+    except Exception as e:
+        raise SesHatasi(f"hızlandırma için ffmpeg yok ({type(e).__name__})")
+    ham = array.array("h", ornek)
+    if sys.byteorder == "big":
+        ham.byteswap()
+    r = subprocess.run([ffmpeg, "-loglevel", "error", "-f", "s16le", "-ar", str(ORNEKLEME), "-ac", "1", "-i", "-",
+                        "-filter:a", f"atempo={oran}", "-f", "s16le", "-ar", str(ORNEKLEME), "-ac", "1", "-"],
+                       input=ham.tobytes(), capture_output=True)
+    if r.returncode != 0 or not r.stdout:
+        raise SesHatasi(f"hızlandırma yapılamadı ({r.stderr.decode(errors='replace')[:120]})")
+    cikti = array.array("h")
+    cikti.frombytes(r.stdout[: len(r.stdout) // 2 * 2])
+    if sys.byteorder == "big":
+        cikti.byteswap()
+    return cikti
+
+
 def sure(ornek):
     return len(ornek) / ORNEKLEME
 
@@ -304,7 +336,7 @@ def kisa_seslendir(konu, bolum, klasor, ses=SES, anahtar_=None, deneme=False):
     hata = None
     for model in modeller(deneme):
         try:
-            ornekler = {ad: kirp(seslendir(metin[ad], ses=ses, anahtar_=anahtar_, model=model))
+            ornekler = {ad: hizlandir(kirp(seslendir(metin[ad], ses=ses, anahtar_=anahtar_, model=model)))
                         for ad in ("soru", "cevap", "cumle", "cagri")}
             break
         except SesHatasi as e:
@@ -406,7 +438,7 @@ def rehber_seslendir(metinler, klasor, ad, ses=SES, anahtar_=None, deneme=False,
     hata = None
     for model in modeller(deneme):      # bütün kareler aynı modelden (ses tonu karışmasın)
         try:
-            ornekler = [kirp(seslendir(m, ses=ses, uslup=uslup, anahtar_=anahtar_, model=model)) if m else None
+            ornekler = [hizlandir(kirp(seslendir(m, ses=ses, uslup=uslup, anahtar_=anahtar_, model=model))) if m else None
                         for m in metinler]
             break
         except SesHatasi as e:
@@ -451,7 +483,7 @@ def ornek_sesler(sesler, klasor, metin=ORNEK_METIN, uslup=USLUP_ERKEK, anahtar_=
     sonuc = []
     for i, ad in enumerate(sesler, 1):
         try:
-            o = kirp(seslendir(okunur(metin), ses=ad, uslup=uslup, anahtar_=anahtar_, model=YEDEK_MODEL))
+            o = hizlandir(kirp(seslendir(okunur(metin), ses=ad, uslup=uslup, anahtar_=anahtar_, model=YEDEK_MODEL)))
         except SesHatasi as e:
             print(f"Uyarı: {ad} okunamadı ({e})", file=sys.stderr)
             if "per day" in str(e) or "günlük" in str(e):

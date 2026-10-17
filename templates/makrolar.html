@@ -35,3 +35,31 @@
   <span>{{ y.yon | capitalize }} ağır basıyor <small>· {{ guc[y.guc] }}</small></span>
 </span>
 {%- endmacro %}
+
+{# Sesli Reels'te "sesi açın" rozeti (Rıdvan, 17 Ekim 2026: "ekranda sesli olduğunu belirten bir şey olmalı: hareket
+   eden hoparlör simgesi ve sesi açın bildirisi"). Dalgalar sırayla yanıp söner: window.sesRozeti(t) her karede çağrılır
+   (çağrılmazsa üç dalga da yanık durur). Rehber Reels'inde bot/main.py bunu ayrı çizip videonun üstüne bindirir
+   (templates/ses-rozet.html); pazar Reels'inde şablonun üst şeridinde durur. #}
+{% macro ses_rozeti(yazi=32) -%}
+<span class="ses-rozet" style="font-size: {{ yazi }}px">
+  <svg class="hoparlor" viewBox="0 0 52 40" aria-hidden="true">
+    <path d="M3 14 H11 L21 5 V35 L11 26 H3 Z" fill="currentColor"></path>
+    <path class="dalga" d="M27 14 Q31 20 27 26" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
+    <path class="dalga" d="M33 9 Q40 20 33 31" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
+    <path class="dalga" d="M39 4 Q49 20 39 36" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
+  </svg>
+  <span>Sesi açın</span>
+</span>
+<script>
+window.sesRozeti = function (t) {
+  // 1,2 sn'lik döngü: dalgalar içten dışa sırayla belirir, hoparlör hafifçe nabız atar
+  const d = document.querySelectorAll('.ses-rozet .dalga'), h = document.querySelector('.ses-rozet .hoparlor');
+  const f = (t % 1.2) / 1.2;
+  d.forEach(function (el, i) {
+    const x = f * 4 - i * 0.9;
+    el.style.opacity = x > 0 && x < 2.2 ? 1 : 0.18;
+  });
+  if (h) h.style.transform = 'scale(' + (1 + 0.06 * Math.max(0, Math.sin(2 * Math.PI * f))) + ')';
+};
+</script>
+{%- endmacro %}
