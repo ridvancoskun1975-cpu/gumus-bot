@@ -61,4 +61,6 @@
 - Pazar yorumu **yalnız kısa ve orta vade, kalıcı** (Rıdvan, 17 Ekim 2026: "Kısa, orta, uzun yerine sadece kısa ve
   orta kalacak", "geleceği de etkilemeli"). Uzun vade hiçbir tarihte, veri birikse de geri gelmez; sesli okuma,
   müzikli video, Reels, kaydırmalı gönderi, cumartesi hatırlatması, bilgi sayfası hep kısa ve orta. Uzun vadeyi geri
-  getiren tarih ya da koşul ekleme; yalnızca Rıdvan açıkça isterse.
+  getiren tarih ya da koşul ekleme; yalnızca Rıdvan açıkça isterse. Kendi kayıtlarımız 1 yılı doldurunca 13 Ekim
+  2027'de TEK hatırlatma gelir (zamanlanmış görev; Rıdvan 17 Ekim 2026 13:01: "1 yıllık veri dolunca uzun vadeye
+  geçelim. bunun için 1 hatırlatma yeterli"); "evet" derse önizleme + onayla eklenir, ilk pazar 17 Ekim 2027.
