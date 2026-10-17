@@ -552,7 +552,27 @@ def haftalik_fiyatlari_al():
         "son_saat": son["saat"],
         "kismi": kismi, "baz_tarih": baz_gun.isoformat(),
         "gunluk": [{"tarih": g.isoformat(), "gram": gecmis[g]["gram"]} for g in gunler],
+        "donem_kayit": _donem_kayit(gecmis, gunler[-1]),
     }
+
+
+def _donem_kayit(gecmis, son_gun):
+    """Dönem özetinin goril kutlaması için (bot/baslik.py → donem_ozel) dönem sonuna kadarki bütün kayıtlar.
+    Anahtar bilerek "gecmis_gram" değil: o, günlük başlık ve özel gün görselini (gun_durumu) açar."""
+    return {g.isoformat(): v["gram"] for g, v in gecmis.items() if g <= son_gun}
+
+
+def donem_ozel_al(f, gunler):
+    """Haftalık/aylık özette gorilin kutlaması; kayıt yoksa ya da hata olursa None (paylaşım etkilenmez)."""
+    if not f.get("donem_kayit"):
+        return None
+    try:
+        import baslik
+        seri = {date.fromisoformat(k): v for k, v in f["donem_kayit"].items()}
+        return baslik.donem_ozel(seri, gunler)
+    except Exception as e:
+        print(f"::warning::Dönem özel günü hesaplanamadı, kutlamasız devam ediliyor: {type(e).__name__}: {e}")
+        return None
 
 
 def _ay_ayir(tarihler, bugun=None):
@@ -586,6 +606,7 @@ def aylik_fiyatlari_al(bugun=None):
         "son_saat": son["saat"],
         "ay": ay_bas.isoformat(), "kismi": kismi, "baz_tarih": baz_gun.isoformat(),
         "gunluk": [{"tarih": g.isoformat(), "gram": gecmis[g]["gram"]} for g in gunler],
+        "donem_kayit": _donem_kayit(gecmis, gunler[-1]),
     }
 
 
@@ -600,6 +621,8 @@ def ornek_aylik(kismi=False):
         gun += timedelta(days=1)
     f["gram"] = gunluk[-1]["gram"]
     f["gram_once"] = gunluk[0]["gram"] if kismi else 97.62
+    # Örnek kayıtlar: ay içinde 100 ₺ ilk kez aşılır → goril kutlar (bot/baslik.py → donem_ozel)
+    f["donem_kayit"] = {**({} if kismi else {"2026-09-30": 97.62}), **{g["tarih"]: g["gram"] for g in gunluk}}
     f.update({"son_saat": "20:00", "ay": "2026-10-01", "kismi": kismi,
               "baz_tarih": gunluk[0]["tarih"] if kismi else "2026-09-30", "gunluk": gunluk})
     return f
@@ -848,6 +871,7 @@ def haftalik_veri_hazirla(f, hesap):
                       else "önceki haftanın son değerine göre")
     v["baz_gorsel"] = v["baz_metin"] if v["kismi"] else "Önceki haftanın son değerine göre"
     v["buyuk_hareket"] = buyuk_hareket(v["gram_deg"], "bu hafta", BUYUK_HAREKET_HAFTALIK)
+    v["donem_ozel"] = donem_ozel_al(f, gunler)     # goril kutlaması (bot/goril.py)
     v["en_yuksek"] = tr_sayi(max(degerler), 2)
     v["en_dusuk"] = tr_sayi(min(degerler), 2)
     v["kaynak_satiri"] = kaynak_satiri(f, "Haftanın")
@@ -894,6 +918,7 @@ def aylik_veri_hazirla(f, hesap):
                       else "önceki ayın son değerine göre")
     zaman = f"{baz.day} {AY_DEN[baz.month - 1]} bu yana" if f["kismi"] else AY_DE[ay.month - 1]
     v["buyuk_hareket"] = buyuk_hareket(v["gram_deg"], zaman, BUYUK_HAREKET_AYLIK)
+    v["donem_ozel"] = donem_ozel_al(f, gunler)     # goril kutlaması (bot/goril.py)
     i_cok, i_az = degerler.index(max(degerler)), degerler.index(min(degerler))
     v["en_yuksek"] = tr_sayi(degerler[i_cok], 2)
     v["en_yuksek_gun"] = f"{gunler[i_cok].day} {AYLAR[gunler[i_cok].month - 1]}"
@@ -2465,7 +2490,7 @@ def kart_hazirla(cikti, konu, ornek):
     (cikti / "meta.json").write_text(json.dumps({"tur": "kart", "kart": hangi, "dosya": mp4.name, "aciklama": aciklama,
                                                  "kapak_ms": int((sure - 0.5) * 1000), "kapak": kapak,
                                                  "fiyatlar": {k: v for k, v in fiyat.items()
-                                                              if k not in ("gecmis_gram", "gecmis_parite")}},
+                                                              if k not in ("gecmis_gram", "gecmis_parite", "donem_kayit")}},
                                                 ensure_ascii=False, indent=2), encoding="utf-8")
     (cikti / "index.html").write_text("<!doctype html><meta charset='utf-8'><title>Gümüş bot</title>"
                                       f"<p>Son üretilen dosya: <a href='{mp4.name}'>{mp4.name}</a></p>", encoding="utf-8")
@@ -2590,7 +2615,7 @@ def hazirla(tur, cikti, ornek, konu=None):
                                                  "goril": veri.get("goril"),
                                                  "goril_cakisma": veri.get("goril_cakisma"),
                                                  "fiyatlar": {k: v for k, v in fiyat.items()
-                                                              if k not in ("gecmis_gram", "gecmis_parite")}},
+                                                              if k not in ("gecmis_gram", "gecmis_parite", "donem_kayit")}},
                                                 ensure_ascii=False, indent=2),
                                      encoding="utf-8")
     (cikti / "index.html").write_text("<!doctype html><meta charset='utf-8'><title>Gümüş bot</title>"

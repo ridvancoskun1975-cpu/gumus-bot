@@ -9,10 +9,13 @@ Yüzde: görseldeki okla aynı değer (2 ondalığa yuvarlanmış mutlak değiş
     büyük hareket manşeti (%2; main.BUYUK_HAREKET_GUNLUK) → sevinen / uzulen
     %0,50 – %2 (iki yönde)  → gezinen
     %0,50'nin altı (sakin)  → istif
-  Haftalık özet (önceki haftanın son değerine göre; özel gün yok):
+  Haftalık özet (önceki haftanın son değerine göre):
     manşet (%5) → sevinen / uzulen · %1,25 – %5 → gezinen · %1,25'in altı → istif
-  Aylık özet (önceki ayın son değerine göre; özel gün yok; Rıdvan, 18 Ekim 2026):
-    manşet (%8; main.BUYUK_HAREKET_AYLIK) → sevinen / uzulen · %2 – %8 → gezinen · %2'nin altı → istif
+  Aylık özet (önceki ayın son değerine göre; Rıdvan, 18 Ekim 2026):
+    %5 ve üstü (manşet %8'de kalır; goril daha erken sevinir) → sevinen / uzulen · %2 – %5 → gezinen · altı → istif
+  Haftalık ve aylık özette özel gün (Rıdvan, 18 Ekim 2026; bot/baslik.py → donem_ozel): dönemde yuvarlak bir eşik
+    kayıtlarda ilk kez aşıldı ve dönem eşiğin üstünde kapandı ya da dönem en az 1 aylık en yüksekte kapandı → ozel
+    (parti şapkalı kutlama; sevinenin önüne geçer). Olumlu olay olunca goril kutlar.
 Hâl manşetle aynı karardan (buyuk_hareket) türetilir; goril, rakam ve manşet hiç çelişmez.
 İstifleyici yönden bağımsızdır (sakin gün); külçe dizmek fiyatın yönüne bağlanmaz.
 
@@ -37,6 +40,8 @@ GORIL_ACIK = True
 GORIL_BASLANGIC = date(2026, 10, 16)           # ilk akşam 16 Ekim, ilk cumartesi 17 Ekim
 TURLER = ("reels", "post", "hafta", "ay")
 GUNLUK = ("reels", "post")                     # hafta içi, önceki iş gününe göre; özel gün hâli var
+DONEM = ("hafta", "ay")                        # dönem özeti: özel gün hâli dönem kuralıyla (veri "donem_ozel")
+SEVINME_ESIK = {"ay": 5.0}                     # %: manşetten (büyük hareket) ayrı, goril bundan itibaren sevinir/üzülür
 SAKIN_ESIK = {"reels": 0.5, "post": 0.5, "hafta": 1.25, "ay": 2.0}   # %: bunun altı istifleyici
 DURUMLAR = ("ozel", "sevinen", "istif", "gezinen", "uzulen")
 SATIR = {"reels": "🦍 Goril bu sabah sevinçli", "post": "🦍 Goril bugün sevinçli", "hafta": "🦍 Goril bu hafta sevinçli",
@@ -58,10 +63,14 @@ def durum(v, tur, gun):
         return None
     if tur in GUNLUK and v.get("ozel"):
         return "ozel"
+    if tur in DONEM and v.get("donem_ozel"):
+        return "ozel"
     b = v.get("buyuk_hareket")
     if b:
         return "sevinen" if b["yon"] == "artis" else "uzulen"
     yuzde = round(abs(v["gram_deg"]["yuzde"]), 2)
+    if tur in SEVINME_ESIK and yuzde >= SEVINME_ESIK[tur]:
+        return "sevinen" if v["gram_deg"]["yuzde"] > 0 else "uzulen"
     return "gezinen" if yuzde >= SAKIN_ESIK[tur] else "istif"
 
 
@@ -71,7 +80,7 @@ def _zorlanan(v, tur, ornek):
     z = (os.environ.get("GORIL_ZORLA", "").strip() if ornek else "") or os.environ.get("GORIL_DENEME", "").strip()
     if tur not in TURLER or z not in DURUMLAR:
         return None
-    if z == "ozel" and (tur not in GUNLUK or not v.get("ozel")):
+    if z == "ozel" and not ((tur in GUNLUK and v.get("ozel")) or (tur in DONEM and v.get("donem_ozel"))):
         return None
     return z
 
