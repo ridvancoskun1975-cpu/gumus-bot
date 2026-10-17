@@ -124,6 +124,24 @@ esit("özel gün zorlaması haftalıkta yok", goril.sablon_verisi(v_kur(1.0, 5.0
 _v = v_kur(1.0, 5.0)
 _v["donem_ozel"] = {"tur": "esik", "esik": 100}
 esit("özel gün zorlaması dönem özel veriyle", goril.sablon_verisi(_v, "hafta", CMT, ornek=True)["goril"], "ozel")
+
+# kutlama satırı (Rıdvan, 18 Ekim 2026): kutlamanın nedeni açıklamanın 2. satırında
+_e = {"tur": "esik", "esik": 100, "kisa": "100 lirayı aştı"}
+_z = {"tur": "zirve", "pencere": 30, "ad": "1 ayın", "kisa": "son 1 ayın en yükseğinde kapandı"}
+_ay = {"ay_adi": "Ekim 2026", "ay_de": "ekimde"}
+esit("kutlama hafta eşik", goril.kutlama_satiri(_e, "hafta"), "🦍 Goril kutluyor: gram gümüş bu hafta 100 lirayı aştı")
+esit("kutlama hafta zirve", goril.kutlama_satiri(_z, "hafta"),
+     "🦍 Goril kutluyor: gram gümüş haftayı son 1 ayın en yükseğinde kapattı")
+esit("kutlama ay eşik", goril.kutlama_satiri(_e, "ay", _ay), "🦍 Goril kutluyor: gram gümüş ekimde 100 lirayı aştı")
+esit("kutlama ay zirve", goril.kutlama_satiri(_z, "ay", _ay),
+     "🦍 Goril kutluyor: gram gümüş ekim sonunda son 1 ayın en yükseğinde")
+esit("kutlama bilinmeyen biçim", goril.kutlama_satiri({"tur": "?"}, "hafta"), "")
+_v = v_kur(1.0, 5.0)
+_v["donem_ozel"] = _e
+esit("kutlamada satır alanı", goril.sablon_verisi(_v, "hafta", CMT)["goril_satiri"],
+     "🦍 Goril kutluyor: gram gümüş bu hafta 100 lirayı aştı\n")
+_v = v_kur(1.0, 2.0, ozel={"tur": "esik"})
+esit("günlük özel günde satır yok", goril.sablon_verisi(_v, "post", SAL)["goril_satiri"], "")
 os.environ["GORIL_ZORLA"] = "kral"
 esit("bilinmeyen hâl yok sayılır", goril.sablon_verisi(v, "post", ONCE, ornek=True)["goril"], None)
 del os.environ["GORIL_ZORLA"]

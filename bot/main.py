@@ -912,6 +912,7 @@ def aylik_veri_hazirla(f, hesap):
     degerler = [g["gram"] for g in f["gunluk"]]
     baz = date.fromisoformat(f["baz_tarih"])
     v["ay_adi"] = f"{AYLAR[ay.month - 1]} {ay.year}"
+    v["ay_de"] = AY_DE[ay.month - 1]                # goril kutlama satırı: "ekimde"
     v["kismi"] = f["kismi"]
     v["aralik"] = (f"{gunler[0].day}–{gunler[-1].day} {AYLAR[ay.month - 1]}" if f["kismi"] else "")
     v["baz_metin"] = (f"{baz.day} {AY_DEN[baz.month - 1]} bu yana" if f["kismi"]

@@ -23,7 +23,9 @@ Goril GORIL_BASLANGIC'ten itibaren her gün çıkar (Rıdvan, 16 Ekim 2026 12:3x
 "her gün goril"; gorilsiz kıyas 13–15 Ekim akşamları). Sabah Reels'i 16 Ekim'e kadar karşılaştırma grubuydu
 (gorilsiz sabahlar 13–16 Ekim); Rıdvan 16 Ekim 22:25'te sabaha da istedi. Rehber, kart ve pazar
 yorumunda goril yok; pazar yorumunda hiçbir zaman.
-Açıklamaya yalnız sevinen hâlde 2. satır eklenir (SATIR); 1. satır (arama için fiyat satırı) değişmez. Sabah
+Açıklamaya sevinen hâlde 2. satır eklenir (SATIR); haftalık/aylık özette kutlarken 2. satır kutlamanın nedenini söyler
+(kutlama_satiri: "🦍 Goril kutluyor: gram gümüş bu hafta 100 lirayı aştı"; Rıdvan, 18 Ekim 2026). 1. satır (arama için
+fiyat satırı) değişmez. Sabah
 satırında "bugün" yok (gün daha başlamadı; parite cümlesindeki kararla aynı).
 
 Güvenlik: main.py gorilli görseli ayrı süreçte, SURE_SINIRI saniyede üretir; hata ya da süre aşımında aynı
@@ -85,13 +87,34 @@ def _zorlanan(v, tur, ornek):
     return z
 
 
+def kutlama_satiri(o, tur, v=None):
+    """Haftalık/aylık özette goril kutlarken açıklamanın 2. satırı: nedenini söyler (Rıdvan, 18 Ekim 2026: kutlamanın
+    nedeni görünsün). o: v["donem_ozel"] (bot/baslik.py → donem_ozel). Aylık özet ertesi ay paylaşıldığı için
+    "bu ay" değil ayın adı ("ekimde", "ekim sonunda") yazılır. Bilinmeyen biçimde boş satır."""
+    v = v or {}
+    ay = (v.get("ay_adi") or "").split(" ")[0].lower()
+    if o.get("tur") == "esik" and o.get("kisa"):
+        zaman = "bu hafta" if tur == "hafta" else (v.get("ay_de") or "bu ay")
+        return f"🦍 Goril kutluyor: gram gümüş {zaman} {o['kisa']}"
+    if o.get("tur") == "zirve" and o.get("ad"):
+        if tur == "hafta":
+            return f"🦍 Goril kutluyor: gram gümüş haftayı son {o['ad']} en yükseğinde kapattı"
+        return f"🦍 Goril kutluyor: gram gümüş {ay + ' sonunda' if ay else 'ay sonunda'} son {o['ad']} en yükseğinde"
+    return ""
+
+
 def sablon_verisi(v, tur, gun, ornek=False):
     """Şablona ve açıklamaya giden alanlar (goril, maskot, maskot_js, goril_satiri)."""
     d = _zorlanan(v, tur, ornek) or durum(v, tur, gun)
     if not d:
         return dict(YOK)
+    satir = ""
+    if d == "sevinen":
+        satir = SATIR[tur]
+    elif d == "ozel" and tur in DONEM and v.get("donem_ozel"):
+        satir = kutlama_satiri(v["donem_ozel"], tur, v)
     return {"goril": d, "maskot": f"goril/{d}.svg", "maskot_js": f"goril/{d}.js",
-            "goril_satiri": (SATIR[tur] + "\n") if d == "sevinen" else ""}
+            "goril_satiri": (satir + "\n") if satir else ""}
 
 
 def etiket_ekle(etiket, durum_):

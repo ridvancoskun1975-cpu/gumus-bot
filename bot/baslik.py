@@ -262,5 +262,6 @@ def donem_ozel(kayitlar, gunler):
         return {"tur": "esik", "esik": t, "kisa": f"{tr_sayi(t, 0)} lirayı aştı"}
     w = pencere(_oncesi(seri, son_gun), son_gun, son, "artis")
     if w and w >= OZEL_PENCERE:
-        return {"tur": "zirve", "pencere": w, "kisa": f"son {pencere_adi(w)} en yükseğinde kapandı"}
+        return {"tur": "zirve", "pencere": w, "ad": pencere_adi(w),
+                "kisa": f"son {pencere_adi(w)} en yükseğinde kapandı"}
     return None
