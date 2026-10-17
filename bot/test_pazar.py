@@ -78,7 +78,7 @@ kontrol(not v.get("ozel"), "haftalık özet özel gün şablonuna geçmez")
 kontrol("Yarın ~11:00" not in main.aciklama_yaz(v, "hafta"), "hatırlatma yoksa açıklamada da yok")
 v["pazar_hatirlatma"] = main.PAZAR_HATIRLATMA
 metin = main.aciklama_yaz(v, "hafta")
-kontrol("Yarın ~11:00 · Pazar derin analizi: kısa, orta ve uzun vade. Kaçırmayın." in metin, "açıklamada hatırlatma")
+kontrol("Yarın ~11:00 · Pazar derin analizi: kısa ve orta vade. Kaçırmayın." in metin, "açıklamada hatırlatma")
 kontrol(len(metin) <= 2200, "açıklama 2200 sınırında")
 
 # Görselde (Reels ve hikâyesi aynı şablondan) şerit

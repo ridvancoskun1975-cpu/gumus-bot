@@ -53,15 +53,18 @@ VADELER = [
     {"anahtar": "uzun", "ad": "Uzun vade", "ufuk": "1 yıl ve üzeri", "pencere": 365, "etiket": "Son 1 yıl", "esnek": False},
 ]
 
-# Uzun vade verisi (Rıdvan, 17 Ekim 2026): uzun vade yalnızca 1 yıllık gram/ons verisi varken yazılır. Kendi
-# kayıtlarımız 13 Ekim 2026'da başladı; 1 yılı MetalCharts Starter planının geçmişi karşılar (17 Ekim 2026'da alındı).
-# Plan iptal edilir ve kendi kayıtlarımız 1 yılı doldurmamışsa o pazar yorum kısa ve orta vade olur; kayıtlar
-# 1 yılı doldurunca (13 Ekim 2027) uzun vade kendiliğinden geri gelir. Kısa ve orta vade her zaman yazılır.
+# Uzun vade (Rıdvan, 17 Ekim 2026 11:20: "sadece kısa ve orta vade olsun"): pazar yorumu kısa ve orta vadedir.
+# Kendi kayıtlarımız 13 Ekim 2026'da başladı; 1 yılı doldurunca (UZUN_VADE_DONUS) uzun vade kendiliğinden geri
+# gelir, o gün de 1 yıllık veri yoksa yine yazılmaz. Orta vadenin 3 aylık geçmişini o zamana kadar MetalCharts
+# Starter planı karşılar (17 Ekim 2026'da alındı; ~13 Ocak 2027'den sonra kendi kayıtlarımız yeter).
+UZUN_VADE_DONUS = date(2027, 10, 13)
 
 
-def aktif_vadeler(ist):
-    """O pazar yazılacak vadeler: uzun vade yalnızca verisi yetiyorsa (ist: vade_istatistikleri sonucu)."""
-    return [v for v in VADELER if v["anahtar"] != "uzun" or (ist.get("uzun") or {}).get("veri_yeterli")]
+def aktif_vadeler(ist, bugun):
+    """O pazar yazılacak vadeler: kısa ve orta her zaman; uzun yalnızca UZUN_VADE_DONUS'tan sonra ve 1 yıllık veri
+    varken (ist: vade_istatistikleri sonucu)."""
+    uzun = bugun >= UZUN_VADE_DONUS and (ist.get("uzun") or {}).get("veri_yeterli")
+    return [v for v in VADELER if v["anahtar"] != "uzun" or uzun]
 
 
 def vade_metni(vadeler):

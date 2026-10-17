@@ -48,7 +48,7 @@ TUR_ADI = {
     "post": "Günün özeti",
     "hafta": "Haftalık özet ve grafik",
     "ay": "Aylık özet ve grafik",
-    "yorum": "Kısa, orta ve uzun vade yapay zekâ yorumu",
+    "yorum": "Kısa ve orta vade yapay zekâ yorumu",
     "bilgi": "Gümüş rehberi",
     "kisa": "Rehber Reels'i (önceki bölüm)",
     "kart": '"Kaç gram eder?" (çarşamba) ve altın–gümüş (cuma) kartı',

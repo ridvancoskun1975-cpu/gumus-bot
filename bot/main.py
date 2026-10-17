@@ -2178,8 +2178,8 @@ def kapanis_fiyati(ecb):
 
 
 def yorum_hazirla(cikti, ornek):
-    """Pazar yapay zekâ yorumu: kapak + kısa/orta/uzun vade, kaydırmalı 4 görsel (1 yıllık veri yoksa uzun vade
-    yazılmaz: 3 görsel; yorum.aktif_vadeler). Ayrıntı: bot/yorum.py
+    """Pazar yapay zekâ yorumu: kapak + kısa ve orta vade, kaydırmalı 3 görsel (Rıdvan, 17 Ekim 2026; uzun vade 13 Ekim
+    2027'de kendi kayıtlarımız 1 yılı doldurunca geri gelir: yorum.aktif_vadeler). Ayrıntı: bot/yorum.py
 
     Pazar sabahı bütün verilerle şekillenir: botun günlük kayıtları, o anki (haftanın kapanış)
     fiyatı, 13 aylık dolar/TL, varsa MetalCharts geçmişi ve web aramasıyla derlenen haftanın haberleri.
@@ -2213,9 +2213,7 @@ def yorum_hazirla(cikti, ornek):
             kaynak_notu += "; son değer pazar günü alınan güncel fiyat"
     seri = yorum.seri_kur(kayitlar, ecb, metal)
     ist = yorum.vade_istatistikleri(seri, ecb)
-    aktif = yorum.aktif_vadeler(ist)     # uzun vade yalnızca 1 yıllık veri varken (yorum.aktif_vadeler)
-    if len(aktif) < len(yorum.VADELER):
-        print("Bilgi: 1 yıllık gram/ons verisi yok; bu pazar yorum kısa ve orta vade.")
+    aktif = yorum.aktif_vadeler(ist, bugun)   # kısa ve orta vade; uzun vade 13 Ekim 2027'den sonra (yorum.UZUN_VADE_DONUS)
     ist = {v["anahtar"]: ist[v["anahtar"]] for v in aktif}
 
     if ornek:
@@ -2275,7 +2273,7 @@ def yorum_hazirla(cikti, ornek):
         "vadeler": vadeler,
         "hesap": hesap,
         "dayanak": "Fiyat ve kur verileri + haftanın haberleri" if gelismeler else "Fiyat ve kur verileri",
-        "baslik": yorum.vade_basligi(aktif),   # "Kısa, orta ve uzun vade" / 1 yıllık veri yoksa "Kısa ve orta vade"
+        "baslik": yorum.vade_basligi(aktif),   # "Kısa ve orta vade" (uzun vade dönünce "Kısa, orta ve uzun vade")
     }
 
     damga = datetime.now(TR_SAAT).strftime("%Y%m%d-%H%M")
@@ -2474,7 +2472,7 @@ def _baslik_ozeti(veri):
 # KURAL (Rıdvan, 15 Ekim 2026 23:22: "bu kural olmalı. her cumartesi bu yazı çıkmalı."): her cumartesi çıkar;
 # takvime ya da kayıtlara bakılmaz, hata yüzünden düşmez. Pazar yorumu her pazar zamanlı olduğu için söz boş
 # kalmaz; bot/test_pazar.py ikisini birlikte denetler (pazar yorumu takvimden çıkarsa sınama kırılır).
-PAZAR_HATIRLATMA = {"kalin": "Yarın ~11:00", "metin": "Pazar derin analizi: kısa, orta ve uzun vade. Kaçırmayın."}
+PAZAR_HATIRLATMA = {"kalin": "Yarın ~11:00", "metin": "Pazar derin analizi: kısa ve orta vade. Kaçırmayın."}
 
 
 def pazar_yorumu_yarin(bugun=None):
