@@ -452,8 +452,11 @@ try:
         for k, v in yedek.items():
             setattr(main, k, v)
 
-    # Pazar Reels'i sesli (Rıdvan 17 Ekim 2026): erkek sesi, analizin TAMAMI; hikâyeye 32 sn'lik müzikli sürüm
+    # Pazar Reels'i sesli (Rıdvan 17 Ekim 2026): erkek sesi, analizin TAMAMI; hikâyeye müzikli sürüm (sahne başına 8 sn).
+    # 13 Ekim 2027'ye kadar yalnız kısa ve orta vade (Rıdvan 17 Ekim 2026): kapak + 2 vade + kapanış = 4 okuma, 24 sn müzik
     import yorum  # noqa: E402
+    AKTIF = ("kisa", "orta")
+    MUZIKLI_SN = 8 * (len(AKTIF) + 1)
     eski_yorum_ses = ses.YORUM_SES
     okumalar = []
 
@@ -469,16 +472,19 @@ try:
             main.yorum_hazirla(d, ornek=True)
             r = json.loads((d / "meta.json").read_text(encoding="utf-8"))["reels"]
             dogrula(r["seslendirme"] == "Charon" and r["dosya"].startswith("yorum-reels-sesli-"), f"sesli Reels: {r}")
-            dogrula(len(okumalar) == 5 and all(s_ == "Charon" and u == ses.USLUP_ERKEK for s_, u, _ in okumalar),
-                    "5 sahne, erkek sesi ve üslubu")
+            dogrula(len(okumalar) == len(AKTIF) + 2 and all(s_ == "Charon" and u == ses.USLUP_ERKEK
+                                                            for s_, u, _ in okumalar),
+                    f"{len(AKTIF) + 2} sahne, erkek sesi ve üslubu ({len(okumalar)})")
             sn, ses_var = sure_olc(d / r["dosya"])
             dogrula(ses_var and sn > 60 and abs(sn - r["sure"]) < 0.5, f"analizin tamamı okunur ({sn:.0f} sn)")
             hs, h_ses = sure_olc(d / r["hikaye_dosya"])
-            dogrula(h_ses and abs(hs - 32) < 0.3, f"hikâyeye 32 sn'lik müzikli sürüm ({hs})")
+            dogrula(h_ses and abs(hs - MUZIKLI_SN) < 0.3, f"hikâyeye {MUZIKLI_SN} sn'lik müzikli sürüm ({hs})")
             tum = " ".join(r["ses_metni"])
             for vk, vy in yorum.ORNEK_YORUM.items():
                 for alan in ("ozet", "durum", "seyir", "izlenecek"):
-                    dogrula(ses.okunur(vy[alan]).rstrip(".") in tum, f"{vk}/{alan} okunur")
+                    okundu = ses.okunur(vy[alan]).rstrip(".") in tum
+                    dogrula(okundu == (vk in AKTIF), f"{vk}/{alan} {'okunur' if vk in AKTIF else 'okunmaz'}")
+            dogrula("uzun vade" not in tum.lower(), "uzun vade okunmaz")
             dogrula("yatırım tavsiyesi değildir" in tum and "her pazar saat on birde" in tum, "kapanış okunur")
             dogrula(not re.search(r"[%÷×=→~#₺$±/·•]", tum), "okunmayacak simge yok")
             dogrula(ses.ACIKLAMA_SATIRI in r["aciklama"] and len(r["aciklama"]) <= 2200, "açıklamada seslendirme notu")
@@ -494,8 +500,8 @@ try:
             main.yorum_hazirla(d, ornek=True)
             r = json.loads((d / "meta.json").read_text(encoding="utf-8"))["reels"]
             sn, ses_var = sure_olc(d / r["dosya"])
-            dogrula(r["seslendirme"] is None and "hikaye_dosya" not in r and abs(sn - 32) < 0.3 and ses_var,
-                    f"ses yoksa 32 sn müzikli Reels ({sn})")
+            dogrula(r["seslendirme"] is None and "hikaye_dosya" not in r and abs(sn - MUZIKLI_SN) < 0.3 and ses_var,
+                    f"ses yoksa {MUZIKLI_SN} sn müzikli Reels ({sn})")
             dogrula(ses.ACIKLAMA_SATIRI not in r["aciklama"], "sessizde seslendirme notu yok")
         okumalar.clear()
         ses.seslendir = kayitli
@@ -507,7 +513,7 @@ try:
         ses.YORUM_SES = eski_yorum_ses
         ses.seslendir = yapay_ses
 
-    # Yayın: sesli Reels Reels olarak, hikâyeye 32 sn'lik müzikli sürüm
+    # Yayın: sesli Reels Reels olarak, hikâyeye müzikli sürüm
     olaylar = []
     yedek = {k: getattr(main, k) for k in ("_url_hazir_mi", "_reels_konteyneri", "_istek", "hikaye_paylas")}
     main._url_hazir_mi = lambda *a, **k: True
