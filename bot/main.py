@@ -1070,6 +1070,7 @@ def aciklama_yaz(v, tur):
                    if v["kismi"] else "değişimler önceki ayın son değerine göredir."))
         return (
             f"{ilk}\n"
+            f"{v.get('goril_satiri', '')}"
             f"Aylık gümüş özeti · {v['ay_adi']}{' (' + v['aralik'] + ')' if v['kismi'] else ''}\n"
             f"{v['kaynak_satiri'] + chr(10) if v.get('kaynak_satiri') else ''}\n"
             f"Ayın en yükseği: {v['en_yuksek']} ₺ ({v['en_yuksek_gun']}) · en düşüğü: {v['en_dusuk']} ₺ ({v['en_dusuk_gun']})\n"

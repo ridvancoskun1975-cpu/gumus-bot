@@ -1,7 +1,7 @@
 """Goril maskotu: kurallar ve sabitler (Rıdvan, 16 Ekim 2026).
 
 Hafta içi sabah Reels'inde (`reels`, 19 Ekim 2026'dan; Rıdvan 16 Ekim 22:25 "sabaha şimdi koy"), akşam özetinde
-(`post`) ve cumartesi haftalık özette (`hafta`) fiyatın sağında, değişime göre 5 hâlden biri çıkar. Çizimler ve hareketleri templates/goril/<hâl>.svg ve .js; şablonlar `{% if maskot %}` ile içerir.
+(`post`), cumartesi haftalık özette (`hafta`) ve aylık özette (`ay`; Rıdvan, 18 Ekim 2026) fiyatın sağında, değişime göre 5 hâlden biri çıkar. Çizimler ve hareketleri templates/goril/<hâl>.svg ve .js; şablonlar `{% if maskot %}` ile içerir.
 
 Yüzde: görseldeki okla aynı değer (2 ondalığa yuvarlanmış mutlak değişim).
   Sabah Reels'i ve akşam özeti (önceki iş gününe göre; ikisinde aynı kural):
@@ -11,12 +11,14 @@ Yüzde: görseldeki okla aynı değer (2 ondalığa yuvarlanmış mutlak değiş
     %0,50'nin altı (sakin)  → istif
   Haftalık özet (önceki haftanın son değerine göre; özel gün yok):
     manşet (%5) → sevinen / uzulen · %1,25 – %5 → gezinen · %1,25'in altı → istif
+  Aylık özet (önceki ayın son değerine göre; özel gün yok; Rıdvan, 18 Ekim 2026):
+    manşet (%8; main.BUYUK_HAREKET_AYLIK) → sevinen / uzulen · %2 – %8 → gezinen · %2'nin altı → istif
 Hâl manşetle aynı karardan (buyuk_hareket) türetilir; goril, rakam ve manşet hiç çelişmez.
 İstifleyici yönden bağımsızdır (sakin gün); külçe dizmek fiyatın yönüne bağlanmaz.
 
 Goril GORIL_BASLANGIC'ten itibaren her gün çıkar (Rıdvan, 16 Ekim 2026 12:3x: "daha erken başlayalım", ölçüm
 "her gün goril"; gorilsiz kıyas 13–15 Ekim akşamları). Sabah Reels'i 16 Ekim'e kadar karşılaştırma grubuydu
-(gorilsiz sabahlar 13–16 Ekim); Rıdvan 16 Ekim 22:25'te sabaha da istedi. Aylık özet, rehber, kart ve pazar
+(gorilsiz sabahlar 13–16 Ekim); Rıdvan 16 Ekim 22:25'te sabaha da istedi. Rehber, kart ve pazar
 yorumunda goril yok; pazar yorumunda hiçbir zaman.
 Açıklamaya yalnız sevinen hâlde 2. satır eklenir (SATIR); 1. satır (arama için fiyat satırı) değişmez. Sabah
 satırında "bugün" yok (gün daha başlamadı; parite cümlesindeki kararla aynı).
@@ -33,11 +35,12 @@ from datetime import date
 
 GORIL_ACIK = True
 GORIL_BASLANGIC = date(2026, 10, 16)           # ilk akşam 16 Ekim, ilk cumartesi 17 Ekim
-TURLER = ("reels", "post", "hafta")
+TURLER = ("reels", "post", "hafta", "ay")
 GUNLUK = ("reels", "post")                     # hafta içi, önceki iş gününe göre; özel gün hâli var
-SAKIN_ESIK = {"reels": 0.5, "post": 0.5, "hafta": 1.25}   # %: bunun altı istifleyici
+SAKIN_ESIK = {"reels": 0.5, "post": 0.5, "hafta": 1.25, "ay": 2.0}   # %: bunun altı istifleyici
 DURUMLAR = ("ozel", "sevinen", "istif", "gezinen", "uzulen")
-SATIR = {"reels": "🦍 Goril bu sabah sevinçli", "post": "🦍 Goril bugün sevinçli", "hafta": "🦍 Goril bu hafta sevinçli"}
+SATIR = {"reels": "🦍 Goril bu sabah sevinçli", "post": "🦍 Goril bugün sevinçli", "hafta": "🦍 Goril bu hafta sevinçli",
+         "ay": "🦍 Goril bu ay sevinçli"}
 YOK = {"goril": None, "maskot": None, "maskot_js": None, "goril_satiri": ""}
 ETIKET_AYRAC = " · goril: "                    # takipci.md'deki paylaşım adına eklenir (bot/kayit.py)
 SURE_SINIRI = 120                              # sn: gorilli üretim bu sürede bitmezse gorilsiz üretilir
