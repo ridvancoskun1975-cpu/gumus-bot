@@ -2463,6 +2463,7 @@ def main():
                    help="Instagram geçici engel verirse en çok bu kadar dakika bekleyip yeniden dene (0: deneme)")
     alt.add_parser("token-yenile")
     alt.add_parser("gun-ici", help="paylaşımsız gün içi fiyat kaydı (kaydet.yml)")
+    alt.add_parser("gecmis-kontrol", help="MetalCharts 1 yıllık geçmişi geliyor mu (gecmis-kontrol.yml; paylaşım yok)")
     gc = alt.add_parser("goril-ciz", help="iç kullanım: gorilli görseli ayrı süreçte üretir (goril_ile_uret)")
     gc.add_argument("--girdi", required=True)
     gc.add_argument("--sonuc", required=True)
@@ -2476,6 +2477,13 @@ def main():
         yayinla(KOK / a.cikti if not os.path.isabs(a.cikti) else Path(a.cikti), a.url, a.bekle_dk)
     elif a.komut == "goril-ciz":
         goril_ciz(a.girdi, a.sonuc)
+    elif a.komut == "gecmis-kontrol":
+        # MetalCharts planında 1 yıllık geçmiş var mı (Starter, 17 Ekim 2026; Ocak 2027'de iptal edilince 403 beklenir)
+        g = metal_gecmisi()
+        if not g:
+            print("::warning::MetalCharts geçmişi gelmedi (ücretsiz plan ya da hata); pazar yorumu kendi kayıtlarla yazılır.")
+        for sembol, gunler in (g or {}).items():
+            print(f"{sembol}: {len(gunler)} gün, {min(gunler)} – {max(gunler)}")
     elif a.komut == "gun-ici":
         try:
             gun_ici_kaydet()

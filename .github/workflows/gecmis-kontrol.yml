@@ -1,0 +1,29 @@
+name: MetalCharts geçmiş kontrolü
+
+# Pazar yorumunun orta vadesi için MetalCharts 1 yıllık günlük geçmişi geliyor mu (Starter planı, Rıdvan
+# 17 Ekim 2026; ~13 Ocak 2027'den sonra iptal edilecek, o zaman ücretsiz plana dönüş ve 403 beklenir).
+# Paylaşım yapmaz; gün sayısını ve tarih aralığını yazar (4 hak harcar). Elle: Run workflow.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  kontrol:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            bot
+            templates
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -q requests jinja2
+      - name: Geçmiş
+        env:
+          METALCHARTS_KEY: ${{ secrets.METALCHARTS_KEY }}
+        run: python bot/main.py gecmis-kontrol
