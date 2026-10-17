@@ -7,6 +7,9 @@ name: Bilgi sayfasını yayınla
 # Not: Pages sitesini baştan kurar; o anki paylaşımın video/görsel dosyaları siteden kalkar
 # (Instagram onları paylaşım sırasında zaten almış olur). Paylaşım saatlerine (~10:00, ~14:00,
 # ~20:00) denk getirme: paylaşım işi dosyalarını yayınlarken bu iş araya girerse paylaşım bozulabilir.
+# Pazar yorumu paylaşılınca paylas.yml bu işi kendisi başlatır ("Son pazar analizi" düğmesi aynı gün güncellensin).
+# Rıdvan, 18 Ekim 2026: sayfa üretilemezse 2 kez yeniden denenir (bot/sayfa_uret.sh); yine olmazsa HİÇ yayınlanmaz,
+# canlı site önceki hâliyle kalır ve günlüğe "BİLGİ SAYFASI YEDEK YOL" yazılır (gece kontrolü bildirir).
 on:
   workflow_dispatch:
 
@@ -20,7 +23,9 @@ concurrency:
 jobs:
   uret:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 15
+    outputs:
+      sonuc: ${{ steps.sayfa.outputs.sonuc }}
     steps:
       - uses: actions/checkout@v4
 
@@ -43,17 +48,43 @@ jobs:
           key: gecmis-sayfa-${{ github.run_id }}
           restore-keys: gecmis-
 
+      # Önbellek boş ya da eksikse özel gumus-kayit'teki yedekten tamamlanır (bot/yedek.py); yalnızca okur.
+      - name: Günlük kayıtları yedekle tamamla
+        continue-on-error: true
+        timeout-minutes: 1
+        env:
+          KAYIT_PAT: ${{ secrets.KAYIT_PAT }}
+        run: python bot/yedek.py birlestir
+
       - name: Bilgi sayfasını üret
+        id: sayfa
+        continue-on-error: true
+        timeout-minutes: 6
+        env:
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}   # yalnızca son pazar analizinin bağlantısını bulmak için okur
+        run: bash bot/sayfa_uret.sh site   # içerik denetimi betikte (index, rehber, site haritası)
+
+      - name: Yayınlanmadı (önceki hâl kaldı)
+        if: steps.sayfa.outputs.sonuc != 'yeni'
         run: |
-          python bot/sayfa.py --cikti site
-          test -f site/og.png && grep -q "Gram gümüş fiyatı" site/index.html && grep -q "Gümüş rehberi" site/rehber/index.html
+          echo "::warning::BİLGİ SAYFASI YEDEK YOL: sayfa üretilemedi; yayınlanmadı, canlı site önceki hâliyle kaldı."
+
+      - name: Son başarılı hâli sakla
+        if: steps.sayfa.outputs.sonuc == 'yeni'
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: veri/sayfa_son
+          key: sayfa-${{ github.run_id }}-${{ github.run_attempt }}
 
       - uses: actions/upload-pages-artifact@v3
+        if: steps.sayfa.outputs.sonuc == 'yeni'
         with:
           path: site
 
   yayinla:
     needs: uret
+    if: needs.uret.outputs.sonuc == 'yeni'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:

@@ -1,5 +1,6 @@
 {#- Bilgi sayfası (bot/sayfa.py üretir): fiyat, hesap makinesi, son günler, takvim, kaynaklar.
-    Rehber ayrı sayfada (rehber.html → site/rehber/). -#}
+    Rehber ayrı sayfada (rehber.html → site/rehber/). "Kaç gram eder?" / "Kaç lira eder?" tabloları ve üstteki
+    "Hesap makinesi" düğmesi kaldırıldı (Rıdvan, 18 Ekim 2026 "6 çıkar"): aynı bilgi hesap makinesinde ve hesap/ sayfalarında. -#}
 {% extends "taban.html" %}
 {% block bas %}
 <title>Gram Gümüş Fiyatı Bugün: {{ gram }} ₺ · Hesap Makinesi · {{ hesap }}</title>
@@ -34,7 +35,6 @@
       <div class="kutu"><span>Altın / gümüş paritesi</span><b class="sayi">{{ parite }}</b><small>1 gram altın ≈ {{ parite }} gram gümüş{% if parite_deg %}{{ deg(parite_deg) }}{% endif %}</small></div>
     </div>
     <div class="dugmeler">
-      <a class="dugme ikincil" href="#hesap-makinesi">Hesap makinesi</a>
       <a class="dugme ikincil" href="rehber/">Gümüş rehberi</a>
       <a class="dugme ikincil" href="{{ whatsapp }}">WhatsApp'ta paylaş</a>
     </div>
@@ -50,18 +50,6 @@
         <label>Türk lirası (₺)<input id="tl" inputmode="decimal" autocomplete="off" aria-describedby="hesap-not"></label>
       </div>
       <p class="not" id="hesap-not">{{ guncelleme_kisa }} değeriyle (1 gram = {{ gram }} ₺). Ham gümüş değeridir; kuyumcu ve banka fiyatı işçilik, alış-satış farkı ve vergiler yüzünden farklıdır.</p>
-    </div>
-    <div class="ikili">
-      <table>
-        <caption class="etiket" style="text-align: left; padding-bottom: 6px">Kaç gram eder?</caption>
-        <thead><tr><th>Tutar</th><th class="s">Gümüş</th></tr></thead>
-        <tbody>{% for s in tl_tablo %}<tr><td class="sayi">{{ s.tl }} ₺</td><td class="s">{{ s.gram }} g</td></tr>{% endfor %}</tbody>
-      </table>
-      <table>
-        <caption class="etiket" style="text-align: left; padding-bottom: 6px">Kaç lira eder?</caption>
-        <thead><tr><th>Gümüş</th><th class="s">Tutar</th></tr></thead>
-        <tbody>{% for s in gram_tablo %}<tr><td>{{ s.ad }}</td><td class="s">{{ s.tl }} ₺</td></tr>{% endfor %}</tbody>
-      </table>
     </div>
     <a class="kart-bag" href="hesap/" style="margin-top: 16px">
       <span><b>Bütün hesaplar</b><small>100 gram, 1 kg, 1.000 ₺, ons, dolar, euro, altın–gümüş oranı, hurda</small></span>

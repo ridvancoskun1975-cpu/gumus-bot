@@ -85,8 +85,6 @@ table { width: 100%; border-collapse: collapse; font-size: 16px; }
 th, td { padding: 9px 6px; border-bottom: 1px solid var(--cizgi); text-align: left; }
 th { color: var(--soluk); font-weight: 600; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; }
 td.s, th.s { text-align: right; font-variant-numeric: tabular-nums; }
-.ikili { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
-@media (max-width: 520px) { .ikili { grid-template-columns: 1fr; } }
 
 .grafik { width: 100%; max-width: 560px; height: auto; display: block; margin: 6px 0 4px; }
 .grafik text { font: 600 14px 'JetBrains Mono', ui-monospace, monospace; fill: var(--yazi); }
@@ -137,6 +135,7 @@ footer p { margin: 6px 0; }
 .davet h2 { font-size: 20px; margin: 0 0 6px; text-wrap: balance; }
 .davet-satir { margin: 0 0 14px; color: var(--soluk); font-size: 15px; line-height: 1.5; }
 .davet-satir span { display: inline-block; }   /* madde ortadan bölünmesin; sığmazsa kendi içinde kırılır */
+.davet .dugmeler { margin-top: 0; }
 {% block stil %}{% endblock %}
 </style>
 </head>

@@ -53,7 +53,16 @@ kontrol("gece yarısını geçen cron günü kayar", prg.cron_coz("30 22 * * 1")
 # 14 Ekim sabah: ilk hafta her gün, sonra salı/perşembe; bugünkü bölüm listede
 a = p(2026, 10, 14)
 r = satir(a, "Gümüş rehberi")
-kontrol("14 Ekim: rehber satırı ilk hafta + düzen", "21 Ekim'e kadar hafta içi her gün, sonra salı ve perşembe" in r["ek"], r)
+kontrol("14 Ekim: rehber satırı ilk hafta + düzen",
+        "14–21 Ekim hafta içi her gün, 26 Ekim haftasından itibaren salı ve perşembe" in r["ek"], r)
+# 18 Ekim (Rıdvan "1 uygun"): kalan ilk hafta günleri ve düzenli günlerin başladığı hafta açık yazılır
+r18 = satir(p(2026, 10, 18), "Gümüş rehberi")
+kontrol("18 Ekim: 19–21 Ekim her gün, 26 Ekim haftasından salı/perşembe",
+        r18["ek"][:2] == ["19–21 Ekim her gün, 26 Ekim haftasından itibaren salı ve perşembe",
+                          "sıradaki: 19, 20, 21 ve 27 Ekim"], r18)
+kontrol("21 Ekim sabahı: tek gün", "21 Ekim Çarşamba, 26 Ekim haftasından itibaren salı ve perşembe"
+        in satir(p(2026, 10, 21), "Gümüş rehberi")["ek"])
+kontrol("aralık ay geçişi", prg.aralik_metni([date(2026, 10, 30), date(2026, 11, 2)]) == "30 Ekim–2 Kasım hafta içi her gün")
 kontrol("14 Ekim: sıradaki bugünle başlar", "sıradaki: 14, 15, 16 ve 19 Ekim" in r["ek"], r)
 kontrol("14 Ekim: haftalık ilki 17 Ekim (kısmi hafta), not yok", satir(a, "Haftalık")["ek"] == [], satir(a, "Haftalık"))
 kontrol("ilk haftalık 17 Ekim (kayıtlar 13 Ekim'de başladı, önceki hafta boş)",
@@ -67,13 +76,11 @@ kontrol("rehber satırı sesli Reels ve hikâye",
         satir(p(2026, 10, 14, rehber_hikaye=True), "Gümüş rehberi")["ne"] == "Gümüş rehberi (sesli Reels ve hikâye)")
 kontrol("rehber Reels kapalıyken kaydırmalı", prg.program(datetime(2026, 10, 14, 9, tzinfo=TR), rehber_reels=False,
         rehber_hikaye=True)["satirlar"][1]["ne"] == "Gümüş rehberi (kaydırmalı gönderi ve hikâye)")
-# Rehber arşivi Reels'i (Rıdvan 17 Ekim 2026): #3–#5 birer kez; geçen günler satırdan düşer
-kontrol("arşiv Reels'i rehber satırında",
-        "önceki bölümlerin sesli Reels'i: 22 Ekim #3, 26 Ekim #4, 28 Ekim #5" in satir(p(2026, 10, 17), "Gümüş rehberi")["ek"])
-kontrol("arşiv: 22 Ekim öğleden sonra yalnız kalanlar",
-        "önceki bölümlerin sesli Reels'i: 26 Ekim #4, 28 Ekim #5" in satir(p(2026, 10, 22, 15), "Gümüş rehberi")["ek"])
-kontrol("arşiv bitince satır yok",
-        not any("önceki bölümlerin" in e for e in satir(p(2026, 10, 29), "Gümüş rehberi")["ek"]))
+# Rehber arşivi Reels'i günleri sayfada yazılmaz (Rıdvan, 18 Ekim 2026 "5 çıkar"; Reels'ler yine gider)
+kontrol("arşiv Reels'i günleri takvimde yok",
+        not any("önceki bölümlerin" in e or "#3" in e for e in satir(p(2026, 10, 17), "Gümüş rehberi")["ek"]))
+kontrol("aylık satırında 'rehber varsa' notu yok", satir(p(2026, 10, 17), "Aylık")["ek"] == ["sıradaki: 2 Kasım Pazartesi"],
+        satir(p(2026, 10, 17), "Aylık"))
 kontrol("14 Ekim: aylık 2 Kasım", "2 Kasım Pazartesi" in " ".join(satir(a, "Aylık")["ek"]))
 kontrol("14 Ekim: ECB ~17:00 (yaz saati)", a["ecb"]["saat"] == "~17:00", a["ecb"])
 kontrol("güncelleme saatleri", a["guncelleme"] == "Hafta içi ~10:00 ve ~20:00" and a["son_deger_saati"] == "~20:00")
@@ -111,8 +118,8 @@ r_kapali = satir(a, "Gümüş rehberi")
 kontrol("otomatik kapalı: 'hikâye' ve 'Öne çıkanlar' yok", "hikâye" not in r_kapali["ne"]
         and not any("Öne çıkanlar" in e for e in r_kapali["ek"]) and a["rehber_hikaye"] is False, r_kapali)
 r_acik = satir(p(2026, 10, 14, rehber_hikaye=True), "Gümüş rehberi")
-kontrol("otomatik açık: 've hikâye' ve 'Öne çıkanlar' var", "ve hikâye" in r_acik["ne"]
-        and any("Öne çıkanlar" in e for e in r_acik["ek"]), r_acik)
+kontrol("otomatik açık: 've hikâye' var, 'Öne çıkanlar' notu yok (18 Ekim)", "ve hikâye" in r_acik["ne"]
+        and not any("Öne çıkanlar" in e for e in r_acik["ek"]), r_acik)
 import main as bot  # noqa: E402
 bot_etiket = lambda g: bot.HASHTAG_HAFTA.index(bot.hashtag_sec("hafta", g))
 # Haftalık özetin etiket sırası (Rıdvan 14 Ekim 2026: ilk özet 17 Ekim yatırım ağırlıklı 1. setle)

@@ -151,6 +151,23 @@ def tek_tarih(gun):
     return f"{gun.day} {AYLAR[gun.month - 1]} {GUN_ADLARI[gun.weekday()].capitalize()}"
 
 
+def aralik_metni(gunler):
+    """Ardışık iş günleri: "19–21 Ekim her gün", araya hafta sonu girerse "14–21 Ekim hafta içi her gün",
+    tek gün "21 Ekim Çarşamba"."""
+    ilk, son = gunler[0], gunler[-1]
+    if ilk == son:
+        return tek_tarih(ilk)
+    bas = f"{ilk.day}" if (ilk.year, ilk.month) == (son.year, son.month) else f"{ilk.day} {AYLAR[ilk.month - 1]}"
+    hafta_sonu_var = any((ilk + timedelta(days=i)).weekday() >= 5 for i in range((son - ilk).days + 1))
+    return f"{bas}–{son.day} {AYLAR[son.month - 1]} {'hafta içi her gün' if hafta_sonu_var else 'her gün'}"
+
+
+def haftasi(gun):
+    """O haftanın pazartesisi, "26 Ekim" ("26 Ekim haftasından itibaren")."""
+    pzt = gun - timedelta(days=gun.weekday())
+    return f"{pzt.day} {AYLAR[pzt.month - 1]}"
+
+
 def ecb_saati(gun):
     """"~17:00" — ECB yayın saatinin o günkü Türkiye karşılığı."""
     an = datetime(gun.year, gun.month, gun.day, *ECB_SAATI, tzinfo=ECB_YER).astimezone(TR_SAAT)
@@ -268,26 +285,21 @@ def program(simdi=None, kayit_gunleri=(), hikaye_turleri=None, rehber_saati=(13,
                 else:
                     zaman = f"Rehber günleri {saat}"
                     if ilk_hafta and all(_sonraki_is_gunu(a) == b for a, b in zip(ilk_hafta, ilk_hafta[1:])):
-                        son = ilk_hafta[-1]
-                        ekler.append(f"{son.day} {AY_YONELME[son.month - 1]} kadar hafta içi her gün, sonra {duzenli}"
-                                     if len(ilk_hafta) > 1 else f"{tek_tarih(son)}, sonra {duzenli}")
+                        # Rıdvan, 18 Ekim 2026 ("1 uygun"): "21 Ekim'e kadar her gün, sonra salı ve perşembe"
+                        # 22 Ekim perşembeyi de rehber günü gibi gösteriyordu; düzenli günler bilgi.DUZENLI_BASLANGIC
+                        # haftasından başlar, ara günleri açıkça yazılır.
+                        ekler.append(f"{aralik_metni(ilk_hafta)}, {haftasi(bilgi.DUZENLI_BASLANGIC)} "
+                                     f"haftasından itibaren {duzenli}")
                 ekler.append(f"sıradaki: {tarih_listesi(ilkler)}")
             else:
                 zaman, ekler = f"{gun_metni(gunler)} {saat}", ["şimdilik sıradaki bölüm yok"]
-            if rehber_hikaye:
-                ekler.append("bölümler Instagram'da Öne çıkanlar › Rehber'de de toplanır")
-            arsiv = [(date.fromisoformat(g), n) for g, n in bilgi.arsiv_takvim().items()
-                     if date.fromisoformat(g) > bugun
-                     or (date.fromisoformat(g) == bugun and (simdi.hour, simdi.minute) < rehber_saati)]
-            if arsiv:
-                ekler.append("önceki bölümlerin sesli Reels'i: "
-                             + ", ".join(f"{g.day} {AYLAR[g.month - 1]} #{n}" for g, n in arsiv))
+            # Rıdvan, 18 Ekim 2026 ("5 çıkar"): "Öne çıkanlar › Rehber" notu ve rehber arşivi Reels'i günleri
+            # ziyaretçiyi ilgilendirmeyen iç ayrıntı; takvimde yazılmaz (arşiv Reels'i yine bilgi.ARSIV_REELS'e göre gider).
             satirlar.append({"sira": sira, "zaman": zaman, "ne": ad("bilgi"), "ek": ekler})
             g_ay = siradaki_aylik(bugun, kayitlar)
             if g_ay:
                 satirlar.append({"sira": (min(gunler), s * 60 + d + 1), "zaman": f"Ayın ilk iş günü {saat}",
-                                 "ne": ad("ay"), "ek": ["o gün rehber varsa rehbersiz ilk iş günü",
-                                                        f"sıradaki: {tek_tarih(g_ay)}"]})
+                                 "ne": ad("ay"), "ek": [f"sıradaki: {tek_tarih(g_ay)}"]})
             continue
         ek = []
         if tur == "hafta":

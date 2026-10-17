@@ -33,11 +33,12 @@ import dar_sayfalar  # noqa: E402
 GRAFIK_GUN = 30        # grafikteki en fazla iş günü
 TABLO_GUN = 10         # tablodaki en fazla iş günü
 REHBER_SAATI = (13, 45)  # rehber bölümü o gün bu saatten sonra sayfaya girer (~14:00 paylaşımı)
-TL_MIKTARLAR = [1000, 5000, 10000, 50000]
 # Google Search Console sahiplik doğrulaması (URL ön eki mülkü, HTML dosyası yöntemi; 15 Ekim 2026).
 # Site her yayında baştan kurulduğu için dosya her çalıştırmada yazılır; kaldırılırsa doğrulama düşer.
 GOOGLE_DOGRULAMA = "googleade97aa5989bb9eb.html"
-GRAM_MIKTARLAR = [(1, "1 gram"), (10, "10 gram"), (100, "100 gram"), (1000, "1 kilogram")]
+# Son pazar analizi düğmesi (Rıdvan, 18 Ekim 2026 "2 uygun"): pazar yorumunun açıklaması bununla başlar
+# (bot/yorum.py → aciklama()); Instagram'daki son kaydırmalı yorum bu başlıkla bulunur.
+PAZAR_BASLIK = "Haftalık gümüş görünümü | Yapay zekâ yorumu"
 
 
 def site_adresi():
@@ -117,7 +118,31 @@ def _program(simdi, kayit_gunleri):
         return None
 
 
-def _tanitim(program):
+def son_pazar_analizi():
+    """Instagram'daki son pazar yorumu: {"url", "tarih"} ya da None. Kaydırmalı gönderi tercih edilir (aynı
+    açıklamayla giden Reels yalnız kaydırmalı bulunamazsa). Anahtar yoksa, istek başarısızsa ya da henüz yorum
+    yoksa None: düğme çıkmaz, sayfa yine üretilir. Pazar paylaşımı bitince sayfa yeniden kurulur (paylas.yml →
+    yayinla), böylece düğme aynı gün yeni yoruma gider."""
+    if not os.environ.get("IG_TOKEN"):
+        return None
+    try:
+        cevap = bot._istek("GET", "me/media", fields="caption,media_type,permalink,timestamp", limit=25)
+        yorumlar = [m for m in cevap.get("data", []) if (m.get("caption") or "").startswith(PAZAR_BASLIK)
+                    and m.get("permalink")]
+        if not yorumlar:
+            return None
+        en_yeni = max(m["timestamp"] for m in yorumlar)
+        ayni_gun = [m for m in yorumlar if m["timestamp"][:10] == en_yeni[:10]]
+        m = next((m for m in ayni_gun if m.get("media_type") == "CAROUSEL_ALBUM"),
+                 max(ayni_gun, key=lambda m: m["timestamp"]))
+        an = datetime.strptime(m["timestamp"], "%Y-%m-%dT%H:%M:%S%z").astimezone(bot.TR_SAAT)
+        return {"url": m["permalink"], "tarih": _kisa_tarih(an.date())}
+    except Exception as e:   # sayfa bu yüzden hiçbir zaman üretilmeden kalmasın
+        print(f"::warning::Bilgi sayfası: son pazar analizi bulunamadı, düğme gizlendi ({type(e).__name__}: {e})")
+        return None
+
+
+def _tanitim(program, pazar=None):
     """Google'dan gelen ziyaretçiye ilk temasta hesabın kısa tanıtımı (Rıdvan, 15 Ekim 2026: "benzersiz
     hizmetlerimiz ilk temasta kısaca tanıtılmalı; Instagram hesabını takip etmeye teşvik edici olmalı").
     Saat ve günler elle yazılmaz, botun takviminden (bot/program.py) alınır; takvimde olmayan hizmet
@@ -144,7 +169,7 @@ def _tanitim(program):
     if yorum:
         satir.append(f"{gun(yorum)} üst düzey yapay zekâ analizi")
     baslik = "Her gün fiyat, her pazar derin yorum" if yorum else "Gümüşü her gün saatinde takip edin"
-    return {"baslik": baslik, "satir": satir}
+    return {"baslik": baslik, "satir": satir, "pazar": pazar if yorum else None}
 
 
 def _ayrintili(simdi):
@@ -190,7 +215,7 @@ def _rehber(simdi):
     return sorted(yayimlanan, key=lambda b: b["no"])
 
 
-def veri_hazirla(gecmis, simdi=None):
+def veri_hazirla(gecmis, simdi=None, pazar=None):
     simdi = simdi or datetime.now(bot.TR_SAAT)
     kayitlar = sorted((date.fromisoformat(g), k) for g, k in gecmis.items())
     if not kayitlar:
@@ -232,24 +257,25 @@ def veri_hazirla(gecmis, simdi=None):
         "kur_tarihi": _kisa_tarih(kur_gunu),
         "parite": bot.tr_sayi(parite, 1),
         "parite_deg": bot.degisim(parite, once["altin"] / once["gumus"]) if once else None,
-        "tl_tablo": [{"tl": bot.tr_sayi(t, 0), "gram": bot.tr_sayi(t / gram)} for t in TL_MIKTARLAR],
-        "gram_tablo": [{"ad": ad, "tl": bot.tr_sayi(g * gram)} for g, ad in GRAM_MIKTARLAR],
         "tablo": tablo,
         "grafik": _grafik(kayitlar),
         "ilk_kayit": _tarih(kayitlar[0][0]),
         "rehber": rehber,
         "ayrintili": _ayrintili(simdi),
         "program": program,
-        "tanitim": _tanitim(program),
+        "tanitim": _tanitim(program, pazar),
         "kaynak": _kaynaklar(),
         "yil": simdi.year,
     }
 
 
-def uret(cikti, gecmis, simdi=None, euro=None):
+def uret(cikti, gecmis, simdi=None, euro=None, pazar=None, kati=False):
+    """kati=True (iş akışı): dar arama sayfaları da hatasız üretilmeli, yoksa hata verir; iş akışı yeniden dener,
+    olmazsa sitenin önceki hâlini yayınlar (Rıdvan, 18 Ekim 2026: "2 kere belirli aralıklarda tekrar denesin.
+    başarısız olursa önceki hali kalsın bana haber gelsin")."""
     from jinja2 import Environment, FileSystemLoader
 
-    v = veri_hazirla(gecmis, simdi)
+    v = veri_hazirla(gecmis, simdi, pazar)
     env = Environment(loader=FileSystemLoader(str(bot.SABLONLAR)), autoescape=True)
     (cikti / "index.html").write_text(env.get_template("sayfa.html").render(**v, kok=""), encoding="utf-8")
     (cikti / "rehber").mkdir(exist_ok=True)
@@ -269,6 +295,8 @@ def uret(cikti, gecmis, simdi=None, euro=None):
         harita, dar = dar_sayfalar.uret(cikti, env, v, gecmis, euro)
         v["dar_sayi"] = len(dar)
     except Exception as e:
+        if kati:
+            raise
         print(f"::warning::Dar arama sayfaları üretilemedi: {type(e).__name__}: {e}")
 
     gun = (simdi or datetime.now(bot.TR_SAAT)).date().isoformat()
@@ -281,6 +309,8 @@ def uret(cikti, gecmis, simdi=None, euro=None):
         + "".join(f"<url><loc>{a}</loc><lastmod>{s}</lastmod><changefreq>{c}</changefreq></url>" for a, s, c in satirlar)
         + '</urlset>\n', encoding="utf-8")
     (cikti / GOOGLE_DOGRULAMA).write_text(f"google-site-verification: {GOOGLE_DOGRULAMA}", encoding="utf-8")
+    # Olmayan adreste Türkçe sayfa (Rıdvan, 18 Ekim 2026 "4 uygun"); her derinlikte açıldığı için kok tam adres
+    (cikti / "404.html").write_text(env.get_template("bulunamadi.html").render(**v, kok=v["url"]), encoding="utf-8")
 
     # Bağlantı önizlemesi (WhatsApp, Instagram DM): güncel fiyatlı görsel
     try:
@@ -294,20 +324,28 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--cikti", default="site")
     ap.add_argument("--ornek", action="store_true", help="Örnek kayıtlarla üret (yerel deneme)")
+    ap.add_argument("--kati", action="store_true",
+                    help="Hata olursa çıkış kodu 1 (iş akışı yeniden dener, olmazsa önceki siteyi yayınlar)")
     a = ap.parse_args()
     cikti = Path(a.cikti) if os.path.isabs(a.cikti) else bot.KOK / a.cikti
     cikti.mkdir(parents=True, exist_ok=True)
     try:
         if a.ornek:   # örnek kayıtlar; euro kuru örnek (EUR/USD ≈ 1,16), ağa çıkılmaz
             gecmis = ornek_gecmis()
-            v = uret(cikti, gecmis, euro={k["kur_tarihi"]: k["dolar"] * 1.16 for k in gecmis.values()})
+            pazar = {"url": "https://www.instagram.com/gunlukgumus/", "tarih": "18 Ekim"}   # örnek düğme
+            v = uret(cikti, gecmis, euro={k["kur_tarihi"]: k["dolar"] * 1.16 for k in gecmis.values()},
+                     pazar=pazar, kati=a.kati)
         else:
-            v = uret(cikti, bot.gecmis_oku())
+            v = uret(cikti, bot.gecmis_oku(), pazar=son_pazar_analizi(), kati=a.kati)
     except bot.VeriYok as e:
         print(f"::warning::{e}")
+        if a.kati:
+            sys.exit(1)
         return
     except Exception as e:   # sayfa paylaşımı hiçbir zaman durdurmasın
         print(f"::warning::Bilgi sayfası üretilemedi: {type(e).__name__}: {e}")
+        if a.kati:
+            sys.exit(1)
         return
     print(f"Bilgi sayfası üretildi: {v['url']} (gram {v['gram']} ₺, {v['guncelleme']}; "
           f"rehber {len(v['rehber'])} bölüm)")

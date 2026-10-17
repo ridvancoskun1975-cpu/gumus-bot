@@ -1,0 +1,21 @@
+{#- 404 sayfası (Rıdvan, 18 Ekim 2026 "4 uygun"): olmayan bir adres açılınca GitHub'ın İngilizce sayfası yerine
+    bu çıkar ve 5 sn sonra ana sayfaya yönlendirir. GitHub Pages bunu her derinlikte aynı dosyadan sunar; bu
+    yüzden bütün bağlantılar ve yazı tipleri tam adresle (kok = site adresi). Arama motorları dizine eklemez. -#}
+{% extends "taban.html" %}
+{% block bas %}
+<title>Sayfa bulunamadı · {{ hesap }}</title>
+<meta name="robots" content="noindex">
+<meta http-equiv="refresh" content="5; url={{ url }}">
+{% endblock %}
+{% block icerik %}
+  <section aria-labelledby="baslik">
+    <p class="etiket">Sayfa bulunamadı</p>
+    <h1 id="baslik" style="font-size: 30px; margin-top: 6px">Aradığınız sayfa burada yok</h1>
+    <p class="soluk">Adres değişmiş ya da yanlış yazılmış olabilir. 5 saniye içinde ana sayfaya gidiyorsunuz.</p>
+    <div class="dugmeler">
+      <a class="dugme" href="{{ url }}">Gram gümüş fiyatı</a>
+      <a class="dugme ikincil" href="{{ url }}hesap/">Hesap makinesi</a>
+      <a class="dugme ikincil" href="{{ url }}rehber/">Gümüş rehberi</a>
+    </div>
+  </section>
+{% endblock %}

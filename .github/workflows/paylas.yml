@@ -206,6 +206,15 @@ jobs:
           key: gecmis-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: gecmis-
 
+      # Önbellek silinmiş ya da eksikse günler özel gumus-kayit deposundaki yedekten (yedek/gecmis.json)
+      # tamamlanır (bot/yedek.py; Rıdvan, 18 Ekim 2026 "8 önerin uygun"). Hata verirse yalnızca uyarı çıkar.
+      - name: Günlük kayıtları yedekle tamamla
+        continue-on-error: true
+        timeout-minutes: 1
+        env:
+          KAYIT_PAT: ${{ secrets.KAYIT_PAT }}
+        run: python bot/yedek.py birlestir
+
       # Gün içi noktalar (akşam özetindeki "Gün içi: en düşük … · en yüksek …" satırı) ayrı dosyada ve ayrı
       # önbellekte: yalnızca fiyat alan çalıştırmalar (Reels, özet, kart) ve kaydet.yml yazar.
       - name: Gün içi kayıtları getir
@@ -276,13 +285,50 @@ jobs:
           fi
 
       # Bilgi sayfası (Instagram biyografisindeki bağlantı): site/index.html'i son kayıtlarla yeniden
-      # üretir (fiyat, hesap makinesi, son günler, rehber, kaynaklar) ve bağlantı önizlemesi og.png'yi
-      # çizer. Hata verirse yalnızca uyarı çıkar; paylaşım etkilenmez.
+      # üretir (fiyat, hesap makinesi, son günler, rehber, kaynaklar, son pazar analizi düğmesi) ve bağlantı
+      # önizlemesi og.png'yi çizer. Paylaşım hiçbir durumda etkilenmez.
+      # Rıdvan, 18 Ekim 2026: hata verirse 30 sn ve 90 sn arayla 2 kez yeniden dener (bot/sayfa_uret.sh); yine
+      # olmazsa sitenin son başarılı hâli (önbellek "sayfa-") yayınlanır, günlüğe "BİLGİ SAYFASI YEDEK YOL"
+      # yazılır ve gece kontrolü Rıdvan'a bildirir. Böylece site hiçbir zaman dosya listesine dönmez.
       - name: Bilgi sayfası
+        id: sayfa
         if: steps.uret.outputs.devam == 'true'
         continue-on-error: true
-        timeout-minutes: 2
-        run: python bot/sayfa.py --cikti site
+        timeout-minutes: 6
+        env:
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}   # yalnızca son pazar analizinin bağlantısını bulmak için okur
+        run: bash bot/sayfa_uret.sh site
+
+      - name: Bilgi sayfası · son başarılı hâli getir
+        id: sayfa_onceki
+        if: steps.uret.outputs.devam == 'true' && steps.sayfa.outputs.sonuc != 'yeni'
+        continue-on-error: true
+        uses: actions/cache/restore@v4
+        with:
+          path: veri/sayfa_son
+          key: sayfa-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: sayfa-
+
+      - name: Bilgi sayfası · önceki hâli yayınla
+        if: steps.uret.outputs.devam == 'true' && steps.sayfa.outputs.sonuc != 'yeni'
+        continue-on-error: true
+        env:
+          ANAHTAR: ${{ steps.sayfa_onceki.outputs.cache-matched-key }}
+        run: |
+          if [ -s veri/sayfa_son/index.html ]; then
+            cp -r veri/sayfa_son/. site/
+            echo "::warning::BİLGİ SAYFASI YEDEK YOL: yeni sayfa üretilemedi, sitenin önceki hâli yayınlandı ($ANAHTAR)."
+          else
+            echo "::warning::BİLGİ SAYFASI YEDEK YOL: yeni sayfa üretilemedi, önceki hâl de bulunamadı; site bu paylaşımda yalnızca paylaşım dosyalarıyla yayınlanır."
+          fi
+
+      - name: Bilgi sayfası · son başarılı hâli sakla
+        if: steps.sayfa.outputs.sonuc == 'yeni'
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: veri/sayfa_son
+          key: sayfa-${{ github.run_id }}-${{ github.run_attempt }}
 
       # Takipçi sayısı yalnızca sana özel gumus-kayit deposuna (takipci.md) yazılır.
       # Bu depo ve günlükleri herkese açık olduğu için sayı günlüğe hiç yazdırılmaz.
@@ -315,6 +361,16 @@ jobs:
         with:
           path: veri/gecmis.json
           key: gecmis-${{ github.run_id }}-${{ github.run_attempt }}
+
+      # Günlük kayıtların yedeği (Rıdvan, 18 Ekim 2026): deneme olmayan her çalıştırmada özel gumus-kayit deposuna
+      # (yedek/gecmis.json). Yedek hiçbir zaman küçülmez, değişiklik yoksa yazılmaz, günlüğe fiyat yazılmaz.
+      - name: Günlük kayıtları yedekle
+        if: always() && hashFiles('veri/gecmis.json') != '' && !(github.event_name == 'workflow_dispatch' && inputs.deneme)
+        continue-on-error: true
+        timeout-minutes: 1
+        env:
+          KAYIT_PAT: ${{ secrets.KAYIT_PAT }}
+        run: python bot/yedek.py gonder
 
       # Yalnızca bu çalıştırma gün içi nokta yazdıysa (fiyat alan, deneme olmayan): başka işler eski dosyayı
       # yeniden yazıp bir kaydı silmesin.
@@ -352,6 +408,7 @@ jobs:
       contents: read
       pages: write
       id-token: write
+      actions: write   # pazar yorumundan sonra bilgi sayfasını yeniden kurmak için (sayfa.yml)
     environment:
       name: github-pages
       url: ${{ steps.yayin.outputs.page_url }}
@@ -378,3 +435,13 @@ jobs:
         env:
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
         run: python bot/main.py yayinla --cikti site --url "${{ steps.yayin.outputs.page_url }}" --bekle-dk 150
+
+      # Pazar yorumu paylaşılınca bilgi sayfası yeniden kurulur: "Son pazar analizi" düğmesi aynı gün yeni yoruma
+      # gitsin (Rıdvan, 18 Ekim 2026 "2 uygun"). Paylaşım bitmiş olduğu için Instagram dosyaları almıştır.
+      # Hata verirse yalnızca uyarı; düğme bir sonraki paylaşımda (pazartesi ~10:00) güncellenir.
+      - name: Bilgi sayfasını yenile (pazar yorumu)
+        if: needs.uret.outputs.tur == 'yorum'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/${{ github.repository }}/actions/workflows/sayfa.yml/dispatches" -f ref=main

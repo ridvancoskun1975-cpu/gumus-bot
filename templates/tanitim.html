@@ -1,13 +1,20 @@
 {#- İlk temasta kısa tanıtım ve Instagram'a davet (Rıdvan, 15 Ekim 2026). Bütün sayfalarda aynı, sayfa başına bir kez.
     Az ve öz (Rıdvan, 15 Ekim 08:46, "B" seçeneği): başlık, tek satır hizmet, tek düğme. Sayfada başka takip daveti
     olmaz (üst bardaki küçük "Takip et" hariç).
-    Saat ve günler v.tanitim'den (bot/sayfa.py → _tanitim(), botun takviminden); elle yazılmaz. -#}
+    Saat ve günler v.tanitim'den (bot/sayfa.py → _tanitim(), botun takviminden); elle yazılmaz.
+    "Son pazar analizi" düğmesi (Rıdvan, 18 Ekim 2026 "2 uygun"): Instagram'daki son pazar yorumunun
+    kaydırmalı gönderisine gider (bot/sayfa.py → son_pazar_analizi()); bulunamazsa düğme çıkmaz. -#}
 {% macro kart() -%}
 {%- if tanitim %}
 <aside class="davet" aria-labelledby="davet-baslik">
   <h2 id="davet-baslik">{{ tanitim.baslik }}</h2>
   <p class="davet-satir">{% for h in tanitim.satir %}<span>{{ h }}</span>{% if not loop.last %} · {% endif %}{% endfor %}</p>
-  <a class="dugme" href="{{ instagram }}">Instagram'da takip et</a>
+  <div class="dugmeler">
+    <a class="dugme" href="{{ instagram }}">Instagram'da takip et</a>
+    {%- if tanitim.pazar %}
+    <a class="dugme ikincil" href="{{ tanitim.pazar.url }}">Son pazar analizi · {{ tanitim.pazar.tarih }}</a>
+    {%- endif %}
+  </div>
 </aside>
 {%- endif %}
 {%- endmacro %}
