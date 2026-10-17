@@ -1,0 +1,90 @@
+name: Ses örneği
+
+# Seslendirme sesi seçmek için örnekler (paylaşım yapmaz, Instagram'a dokunmaz). Her ses aynı metni bir kez
+# okur: ses başına 1 okuma, yalnızca yedek model (ana modelin günlük kotası paylaşımlara kalır; bot/ses.py →
+# ornek_sesler). Sonuç "ses-ornek" eserinde: ses-1.mp4, ses-2.mp4 … (siyah ekran + ses, telefonda açılır).
+# Kendi eşzamanlılık grubu var: paylaşım kuyruğunu (gumus-paylasim) bekletmez, iptal etmez.
+on:
+  workflow_dispatch:
+    inputs:
+      komut:
+        description: "ornek: seçilen sesler örnek metni okur · sesler: Türkçe ses listesi (okuma harcamaz)"
+        type: choice
+        options: [ornek, sesler]
+        default: ornek
+      sesler:
+        description: "ornek: virgülle ses adları, ör. Charon,Orus,Sadaltager"
+        type: string
+        default: ""
+      cinsiyet:
+        description: "sesler: listelenecek sesler"
+        type: choice
+        options: [male, female]
+        default: male
+      uslup:
+        description: "ornek: okuma üslubu (İngilizce); boşsa erkek anlatıcı (ses.USLUP_ERKEK)"
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gumus-ses-ornek
+  cancel-in-progress: false
+
+jobs:
+  ornek:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: bot
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pip install -q requests imageio-ffmpeg
+
+      # paylas.yml'deki gibi: GEMINI_API_KEY sırrı, yoksa özel gumus-kayit; günlükte gizlenir.
+      - name: Seslendirme anahtarı
+        timeout-minutes: 1
+        env:
+          GEMINI_SIRRI: ${{ secrets.GEMINI_API_KEY }}
+          KAYIT_PAT: ${{ secrets.KAYIT_PAT }}
+        run: |
+          a=$(printf '%s' "$GEMINI_SIRRI" | tr -d '[:space:]')
+          if [ -z "$a" ]; then
+            a=$(curl -fsS -H "Authorization: Bearer $KAYIT_PAT" -H "Accept: application/vnd.github.raw" \
+                  "https://api.github.com/repos/ridvancoskun1975-cpu/gumus-kayit/contents/anahtarlar/gemini.txt" \
+                  2>/dev/null | tr -d '[:space:]') || a=""
+          fi
+          if [ -z "$a" ]; then
+            echo "::error::Seslendirme anahtarı alınamadı."
+            exit 1
+          fi
+          echo "::add-mask::$a"
+          echo "GEMINI_API_KEY=$a" >> "$GITHUB_ENV"
+
+      - name: Örnek
+        env:
+          KOMUT: ${{ inputs.komut }}
+          SESLER: ${{ inputs.sesler }}
+          CINSIYET: ${{ inputs.cinsiyet }}
+          USLUP: ${{ inputs.uslup }}
+        run: |
+          if [ "$KOMUT" = "sesler" ]; then
+            python bot/ses.py sesler --cinsiyet "$CINSIYET"
+          else
+            python bot/ses.py ornek --sesler "$SESLER" --uslup "$USLUP" --cikti ses-ornek
+          fi
+
+      - name: Örnekleri sakla
+        if: inputs.komut == 'ornek'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ses-ornek
+          path: ses-ornek
+          retention-days: 7

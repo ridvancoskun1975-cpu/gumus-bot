@@ -43,6 +43,16 @@ ACIKLAMA_SATIRI = "🎙 Seslendirme yapay zekâ ile üretilmiştir."
 
 CAGRI = "Rehberin tamamı profilde. Kaydedin, lazım olunca bakarsınız."
 
+# Pazar analizinin erkek sesi (Rıdvan, 17 Ekim 2026: "Gemini erkek sesi seçelim"; analizin tamamı okunur).
+# Ses henüz seçilmedi: aday örnekleri `python bot/ses.py ornek` / "Ses örneği" iş akışı.
+USLUP_ERKEK = ("Calm, trustworthy male narrator. Natural Istanbul Turkish, measured medium pace, clear articulation, "
+               "like a professional weekly markets bulletin. Neutral and sober, no hype, no exaggeration.")
+# Örnek okuma: pazar analizinin bir vade sayfası, seslendirmede okunacak biçimiyle (bot/yorum.py → ORNEK_YORUM).
+ORNEK_METIN = ("Kısa vade, bir ile dört hafta. Yükseliş ağır basıyor, orta eğilim. Cuma toparlanması, kur desteği. "
+               "Hafta başında gerileyen ons cuma günü toparlandı; gram fiyattaki artışa dolar kuru da katkı verdi. "
+               "Ons toparlanmayı sürdürürse gram fiyat desteklenebilir; enflasyon verisi faiz beklentilerini "
+               "sertleştirirse dalgalanma artabilir. İzlenecekler: ABD enflasyon verisi, TCMB kararı ve ons.")
+
 # Kısa Reels'te okunacak metin: (soru, kısa cevap, cümle). Ekrandaki yazıyla aynı bilgiyi verir; rakamlar
 # yanlış okunmasın diye yazıyla yazılır. Yeni bölüm eklenince buraya da satır eklenir; eklenmezse
 # okuma_metni() bölümden kendisi üretir (sınama uyarır: python bot/test_ses.py).
@@ -417,9 +427,46 @@ def rehber_seslendir(metinler, klasor, ad, ses=SES, anahtar_=None, deneme=False)
 
 # ---------------------------------------------------------------- komut satırı
 
-def _sesler(dil="tr-TR"):
+def ornek_sesler(sesler, klasor, metin=ORNEK_METIN, uslup=USLUP_ERKEK, anahtar_=None):
+    """Ses seçimi için örnek: her ses aynı metni bir kez okur (ses başına 1 okuma, yalnızca yedek model; ana
+    modelin kotası paylaşıma kalır). Her biri telefonda açılsın diye siyah ekranlı mp4 olur: ses-1.mp4, ses-2.mp4…
+    Dönüş: [(dosya adı, ses, süre sn)]. Günlük kota dolarsa kalanlar atlanır, hata yazılır."""
+    import subprocess
+    anahtar_ = anahtar_ or anahtar()
+    klasor = Path(klasor)
+    klasor.mkdir(parents=True, exist_ok=True)
+    try:
+        import shutil
+        ffmpeg = shutil.which("ffmpeg") or __import__("imageio_ffmpeg").get_ffmpeg_exe()
+    except Exception:
+        ffmpeg = None
+    sonuc = []
+    for i, ad in enumerate(sesler, 1):
+        try:
+            o = kirp(seslendir(okunur(metin), ses=ad, uslup=uslup, anahtar_=anahtar_, model=YEDEK_MODEL))
+        except SesHatasi as e:
+            print(f"Uyarı: {ad} okunamadı ({e})", file=sys.stderr)
+            if "per day" in str(e) or "günlük" in str(e):
+                break
+            continue
+        wav = klasor / f"ses-{i}.wav"
+        iz_yaz([(0.3, o)], sure(o) + 0.8, wav)
+        dosya = wav
+        if ffmpeg:
+            mp4 = klasor / f"ses-{i}.mp4"
+            subprocess.run([ffmpeg, "-y", "-loglevel", "error", "-f", "lavfi", "-i", "color=c=0x14161a:s=720x1280:r=10",
+                            "-i", str(wav), "-shortest", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac",
+                            "-b:a", "128k", "-movflags", "+faststart", str(mp4)], check=True)
+            wav.unlink()
+            dosya = mp4
+        sonuc.append((dosya.name, ad, round(sure(o), 1)))
+        print(f"Ses {i}: {ad} → {dosya.name} ({sure(o):.1f} sn)")
+    return sonuc
+
+
+def _sesler(dil="tr-TR", cinsiyet="female"):
     r = requests.get(SESLER_URL, headers={"x-goog-api-key": anahtar()},
-                     params={"language_code": dil, "gender": "female", "page_size": 200}, timeout=60)
+                     params={"language_code": dil, "gender": cinsiyet, "page_size": 200}, timeout=60)
     r.raise_for_status()
     for v in r.json().get("voices", []):
         print(v.get("id"), "|", v.get("display_name"), "|", v.get("language_code"), "|", v.get("gender"),
@@ -428,7 +475,10 @@ def _sesler(dil="tr-TR"):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("komut", choices=["dene", "sesler", "metin"])
+    ap.add_argument("komut", choices=["dene", "sesler", "metin", "ornek"])
+    ap.add_argument("--cinsiyet", default="female", choices=["female", "male"])
+    ap.add_argument("--sesler", default="", help="ornek: virgülle ses adları, ör. Charon,Orus,Sadaltager")
+    ap.add_argument("--uslup", default="", help="ornek: boşsa erkek anlatıcı üslubu (USLUP_ERKEK)")
     ap.add_argument("--konu", type=int, default=3)
     ap.add_argument("--ses", default=SES)
     ap.add_argument("--dil", default="tr-TR")
@@ -438,7 +488,14 @@ def main():
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     import bilgi
     if a.komut == "sesler":
-        _sesler(a.dil)
+        _sesler(a.dil, a.cinsiyet)
+        return
+    if a.komut == "ornek":
+        sesler = [x.strip() for x in a.sesler.split(",") if x.strip()]
+        if not sesler:
+            raise SystemExit("--sesler gerekli")
+        if not ornek_sesler(sesler, a.cikti, uslup=a.uslup.strip() or USLUP_ERKEK):
+            raise SystemExit("Hiçbir ses örneği üretilemedi")
         return
     b = bilgi.BOLUMLER[a.konu - 1]
     if a.komut == "metin":

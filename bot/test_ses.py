@@ -425,6 +425,26 @@ try:
     finally:
         for k, v in yedek.items():
             setattr(main, k, v)
+
+    # Ses seçimi örnekleri: ses başına 1 okuma, yalnızca yedek model; günlük kota dolunca kalanlar atlanır
+    cagri_ = []
+
+    def ornek_ses(metin, ses=None, uslup=None, anahtar_=None, model=None):
+        cagri_.append((ses, model, uslup))
+        if ses == "Dolu":
+            raise ses_mod.SesHatasi("429 limit: 10 requests per day")
+        return yapay_ses(metin)
+
+    ses.seslendir = ornek_ses
+    with tempfile.TemporaryDirectory() as d:
+        sonuc = ses.ornek_sesler(["Charon", "Orus", "Dolu", "Sonraki"], d, anahtar_="x")
+        dogrula([s_[1] for s_ in sonuc] == ["Charon", "Orus"], f"örnek sesler: {sonuc}")
+        dogrula(all(m == ses.YEDEK_MODEL and u == ses.USLUP_ERKEK for _, m, u in cagri_), f"yedek model: {cagri_}")
+        dogrula([c[0] for c in cagri_] == ["Charon", "Orus", "Dolu"], "günlük kota dolunca durur")
+        dogrula(sorted(p_.name for p_ in Path(d).iterdir()) == ["ses-1.mp4", "ses-2.mp4"], "telefonda açılır mp4")
+        sn, ses_var = sure_olc(Path(d) / "ses-1.mp4")
+        dogrula(ses_var and sn > 5, f"örnek süresi {sn}")
+    ses.seslendir = yapay_ses
 finally:
     ses.seslendir = gercek
     del os.environ["GEMINI_API_KEY"]
