@@ -1,0 +1,47 @@
+name: Dal temizliği
+
+# İşi bitmiş dalları kendiliğinden siler (Rıdvan, 17 Ekim 2026: "Otomatiğe al"; dalları elle silmesin).
+# Silinen dal: main değil, son kaydı 24 saatten eski VE içindeki her değişiklik zaten main'de
+# (dalı main'e katmak main'de hiçbir şeyi değiştirmiyor). İçinde main'e alınmamış iş olan dala dokunulmaz;
+# günlükte "bekliyor" diye listelenir. Paylaşımlara etkisi yok. Elle: Actions → Dal temizliği → Run workflow.
+on:
+  schedule:
+    - cron: '17 0 * * *'   # Her gece 03:17 TR
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gumus-dal-temizle
+  cancel-in-progress: false
+
+jobs:
+  temizle:
+    runs-on: ubuntu-24.04   # sabit sürüm: ubuntu-latest 19 Ekim 2026 itibarıyla Ubuntu 26e geçiyor
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: İşi bitmiş dalları sil
+        run: |
+          git config user.name "gumus-bot"
+          git config user.email "gumus-bot@users.noreply.github.com"
+          ana_agac=$(git rev-parse origin/main^{tree})
+          simdi=$(date +%s)
+          silinen=0
+          for ref in $(git for-each-ref --format='%(refname:short)' refs/remotes/origin); do
+            dal=${ref#origin/}
+            case "$dal" in main|HEAD|origin) continue ;; esac
+            yas=$(( (simdi - $(git log -1 --format=%ct "$ref")) / 3600 ))
+            if [ "$yas" -lt 24 ]; then echo "yeni ($yas sa), dokunulmadı: $dal"; continue; fi
+            agac=$(git merge-tree --write-tree origin/main "$ref" 2>/dev/null | head -1)
+            if [ "$agac" = "$ana_agac" ]; then
+              git push origin --delete "$dal" && silinen=$((silinen+1)) && echo "silindi: $dal"
+            else
+              echo "bekliyor (main'de olmayan değişiklik var): $dal"
+            fi
+          done
+          echo "Silinen dal sayısı: $silinen"
