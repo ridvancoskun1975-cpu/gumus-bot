@@ -30,9 +30,9 @@
   kimse bakmaz"; `bot/main.py` → `REHBER_REELS`). Ses **Sulafat** (Rıdvan, 16 Ekim 2026, 3 önizlemeden seçti; README →
   "Rehber Reels seslendirmesi", `bot/ses.py`). Rehber hikâye videoları sesli değil, müzikli kalır. Reels üretilemezse
   o gün kaydırmalı gider; bu yedek yol kaldırılmaz. Ses, üslup ya da okunan metin değişecekse önce önizleme ve onay. Seslendirmenin her hatası Reels'i
-  yalnızca müzikle paylaşmaya düşmeli; bu yedek yol kaldırılmaz. Ücretsiz kota günde ~10 okuma/model, modeller ayrı:
-  denemeler yalnızca yedek modelle (Rıdvan, 16 Ekim 2026), ana model paylaşıma kalır; rehber günü 14:00'ten önce
-  aynı gün art arda deneme yapma (yedeğin kotası da paylaşımın güvencesi). Yeni rehber bölümü eklenince `ses.OKUMA`'ya satır ekle.
+  yalnızca müzikle paylaşmaya düşmeli; bu yedek yol kaldırılmaz. Gemini 17 Ekim 2026'dan beri ücretli katmanda (Rıdvan, ön
+  ödemeli kredi + otomatik yenileme; günlük 10 okuma sınırı yok). Denemeler yine yalnızca yedek modelle (Rıdvan,
+  16 Ekim 2026). Kredi biterse ses 402 verir, Reels müzikle gider; gece kontrolü bildirir. Yeni rehber bölümü eklenince `ses.OKUMA`'ya satır ekle.
 - Rehber arşivi Reels'i (Rıdvan, 17 Ekim 2026 "öneriyi uygula"): sesli rehber Reels'inden önce yayımlanan #3–#5 birer
   kez, rehbersiz hafta içi günü ~14:00'te aynı tam okumalı sesli Reels olarak gider (`bot/bilgi.py` → `ARSIV_REELS`:
   22, 26, 28 Ekim; tür `kisa`). Yalnız Reels: kaydırmalı ve hikâye tekrar gitmez; Reels üretilemezse o gün paylaşım
