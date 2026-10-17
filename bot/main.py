@@ -293,7 +293,7 @@ def gecmis_oku():
 def gecmis_yaz(gecmis, gun, kayit):
     gecmis = dict(gecmis)
     gecmis[gun.isoformat()] = kayit
-    # Pazar yorumunun orta/uzun vadesi için kayıtlar ~2 yıl tutulur (dosya yine de birkaç yüz KB'yi geçmez).
+    # Pazar yorumu ve aylık/yıllık özetler için kayıtlar ~2 yıl tutulur (dosya yine de birkaç yüz KB'yi geçmez).
     sinir = (gun - timedelta(days=800)).isoformat()
     gecmis = {k: gecmis[k] for k in sorted(gecmis) if k >= sinir}
     GECMIS_DOSYASI.parent.mkdir(parents=True, exist_ok=True)
@@ -2179,8 +2179,8 @@ def kapanis_fiyati(ecb):
 
 
 def yorum_hazirla(cikti, ornek):
-    """Pazar yapay zekâ yorumu: kapak + kısa ve orta vade, kaydırmalı 3 görsel (Rıdvan, 17 Ekim 2026; uzun vade 13 Ekim
-    2027'de kendi kayıtlarımız 1 yılı doldurunca geri gelir: yorum.aktif_vadeler). Ayrıntı: bot/yorum.py
+    """Pazar yapay zekâ yorumu: kapak + kısa ve orta vade, kaydırmalı 3 görsel (Rıdvan, 17 Ekim 2026; uzun vade
+    kalıcı olarak yok, geri gelmez). Ayrıntı: bot/yorum.py
 
     Pazar sabahı bütün verilerle şekillenir: botun günlük kayıtları, o anki (haftanın kapanış)
     fiyatı, 13 aylık dolar/TL, varsa MetalCharts geçmişi ve web aramasıyla derlenen haftanın haberleri.
@@ -2214,7 +2214,7 @@ def yorum_hazirla(cikti, ornek):
             kaynak_notu += "; son değer pazar günü alınan güncel fiyat"
     seri = yorum.seri_kur(kayitlar, ecb, metal)
     ist = yorum.vade_istatistikleri(seri, ecb)
-    aktif = yorum.aktif_vadeler(ist, bugun)   # kısa ve orta vade; uzun vade 13 Ekim 2027'den sonra (yorum.UZUN_VADE_DONUS)
+    aktif = yorum.aktif_vadeler(ist, bugun)   # her zaman kısa ve orta vade (uzun vade kalıcı olarak yok)
     ist = {v["anahtar"]: ist[v["anahtar"]] for v in aktif}
 
     if ornek:
@@ -2274,7 +2274,7 @@ def yorum_hazirla(cikti, ornek):
         "vadeler": vadeler,
         "hesap": hesap,
         "dayanak": "Fiyat ve kur verileri + haftanın haberleri" if gelismeler else "Fiyat ve kur verileri",
-        "baslik": yorum.vade_basligi(aktif),   # "Kısa ve orta vade" (uzun vade dönünce "Kısa, orta ve uzun vade")
+        "baslik": yorum.vade_basligi(aktif),   # "Kısa ve orta vade"
     }
 
     damga = datetime.now(TR_SAAT).strftime("%Y%m%d-%H%M")
@@ -2302,20 +2302,20 @@ def yorum_hazirla(cikti, ornek):
 
 
 # Pazar yorumunun Reels'i (Rıdvan, 15 Ekim 2026 21:25: "Reels bence şart"; 21:53: "Reels'te düzgün bir pazar
-# analizi videosu olmalı. Zaten 4 sayfa. Süre biraz uzun olabilir"): kaydırmalı gönderinin 4 sayfası sırayla,
-# 9:16 ekranı dolduran bir video (kapak → kısa → orta → uzun vade). Kaydırmalıyla AYNI çalıştırmada,
+# analizi videosu olmalı. Zaten 4 sayfa. Süre biraz uzun olabilir"): kaydırmalı gönderinin sayfaları sırayla,
+# 9:16 ekranı dolduran bir video (kapak → kısa → orta vade; uzun vade 17 Ekim 2026'da kalıcı olarak kaldırıldı). Kaydırmalıyla AYNI çalıştırmada,
 # gönderiden hemen sonra paylaşılır ve aynı video hikâyeye de konur. Reels üretilemez ya da paylaşılamazsa
 # kaydırmalı gönderi yine gider (yalnızca uyarı). Kapatmak için False.
 YORUM_REELS = True
 # Rıdvan 21:59: "3 sn giriş 6 sn sayfalar"; 22:05: "Giriş çok kısa oldu. Hepsi 8 saniye olsun".
-# 5. bir süre eklenirse kapanış sahnesi de çıkar.
-YORUM_REELS_SAHNELER = (8, 8, 8, 8)   # sn: kapak, kısa, orta, uzun vade (toplam 32 sn)
+# Vade sayısından fazla bir süre eklenirse kapanış sahnesi de çıkar.
+YORUM_REELS_SAHNELER = (8, 8, 8)   # sn: kapak, kısa, orta vade (toplam 24 sn)
 
 
 # Pazar Reels'i sesli (Rıdvan, 17 Ekim 2026: "Pazar günü analiz sesli olsun"; Gemini erkek sesi, analizin TAMAMI):
 # analizi Claude yazar, ses ekrandaki metnin tamamını sahne sahne okur (bot/yorum.py → seslendirme_parcalari),
 # her sahne sesi kadar sürer (~2–3 dk) ve sonda kapanış sahnesi gelir. Ses seçilmediyse (ses.YORUM_SES None),
-# kapalıysa ya da herhangi bir hatada Reels bugünkü gibi 32 sn ve yalnızca müzikle gider. Hikâyeye her zaman 32 sn'lik
+# kapalıysa ya da herhangi bir hatada Reels 24 sn ve yalnızca müzikle gider. Hikâyeye her zaman 24 sn'lik
 # müzikli video gider (hikâye en çok 60 sn; rehberdeki gibi). Kapatmak için False.
 YORUM_SESLI = True
 
@@ -2370,7 +2370,7 @@ def _yorum_sesli_metin(metin):
 
 def yorum_reels_uret(cikti, veri, metin, damga):
     """Pazar Reels'inin videosu, kapağı ve açıklaması. Hata verirse None (kaydırmalı gönderi etkilenmez).
-    Sesliyse Reels uzun sesli video, hikâye 32 sn'lik müzikli video ("hikaye_dosya")."""
+    Sesliyse Reels uzun sesli video, hikâye 24 sn'lik müzikli video ("hikaye_dosya")."""
     sahneler_ = [YORUM_REELS_SAHNELER[0]] * (len(veri["vadeler"]) + 1)   # kapak + vadeler, 8'er sn
     sure = sum(sahneler_)
     muzikli = {**veri, "sahne_sureleri": sahneler_}
@@ -2407,7 +2407,7 @@ def yorum_reels_uret(cikti, veri, metin, damga):
             print(f"Pazar seslendirmesi: {sl['ses']} ({sl['model']}), {sl['sure']} sn, sahneler {sureler}")
         except Exception as e:
             print(f"::warning::Sesli pazar Reels'i üretilemedi ({type(e).__name__}: {str(e)[:200]}); "
-                  "32 sn'lik müzikli Reels gidiyor.")
+                  "24 sn'lik müzikli Reels gidiyor.")
             mp4s.unlink(missing_ok=True)
         finally:
             sl["wav"].unlink(missing_ok=True)   # ara dosya yayına çıkmasın

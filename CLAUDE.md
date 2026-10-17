@@ -15,8 +15,8 @@
 - Taahhüt: hafta içi her gün 2 kez gram fiyatı (~10:00 Reels, ~20:00 özet); bu ikisi kaldırılmaz, başka içerikle
   değiştirilmez.
 - Pazar yorumu 2 paylaşım sayılır (kaydırmalı + Reels). Pazar Reels'i sesli (Rıdvan, 17 Ekim 2026: Gemini erkek
-  sesi, analizin tamamı okunur; okumayı ona sormadan kısaltma). Ses **Orus** (`ses.YORUM_SES`; Rıdvan, 3 örnekten "Ses 2"); hikâyeye 32 sn müzikli sürüm
-  gider; ses alınamazsa Reels 32 sn müzikli gider (yedek yol kaldırılmaz). Ses, üslup ya da okunan metin
+  sesi, analizin tamamı okunur; okumayı ona sormadan kısaltma). Ses **Orus** (`ses.YORUM_SES`; Rıdvan, 3 örnekten "Ses 2"); hikâyeye 24 sn müzikli sürüm
+  gider; ses alınamazsa Reels 24 sn müzikli gider (yedek yol kaldırılmaz). Ses, üslup ya da okunan metin
   değişecekse önce önizleme ve onay.
 - Instagram'a tarayıcıyla bakılmaz.
 - Sitede ve açıklamalarda model ya da şirket adı yazılmaz.
@@ -50,3 +50,7 @@
   --tarih <ISO> --kaynak "makbuz #<no>" --yerel <gumus-kayit klonu>/api-bakiye.md`, commit + push; aynı makbuz iki
   kez işlenmez). Rıdvan Billing'deki bakiyeyi kendisi söylerse `okuma` ile işle. Tutarları herkese açık yerlere
   (bu depo, iş akışı günlükleri, girdiler) yazma. Billing: https://platform.claude.com/settings/billing
+- Pazar yorumu **yalnız kısa ve orta vade, kalıcı** (Rıdvan, 17 Ekim 2026: "Kısa, orta, uzun yerine sadece kısa ve
+  orta kalacak", "geleceği de etkilemeli"). Uzun vade hiçbir tarihte, veri birikse de geri gelmez; sesli okuma,
+  müzikli video, Reels, kaydırmalı gönderi, cumartesi hatırlatması, bilgi sayfası hep kısa ve orta. Uzun vadeyi geri
+  getiren tarih ya da koşul ekleme; yalnızca Rıdvan açıkça isterse.

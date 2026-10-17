@@ -57,7 +57,7 @@ m["caption"] = "Gram gümüş 88 ₺\nGüncel gümüş fiyatları · 15.10.2026"
 rapor.paylasim_adlari([m], satirlar)
 esit(m["_ad"], "Fiyat Reels'i", "açıklamadan ad")
 m = medya(16, (11, 3), "REELS")
-m["caption"] = "…\nYorumun 4 sayfası profildeki kaydırmalı gönderide de var →"
+m["caption"] = "…\nYorumun 3 sayfası profildeki kaydırmalı gönderide de var →"
 rapor.paylasim_adlari([m], [])
 esit(m["_ad"], "Pazar yorumu Reels", "pazar Reels'i açıklamadan")
 

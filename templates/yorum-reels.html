@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <title>Gümüş Görünümü Reels</title>
 <style>{% include "ortak.css" %}
-/* Pazar yorumunun Reels'i (1080×1920): kaydırmalı gönderinin 4 sayfası sırayla, ekranı dolduran bir video
+/* Pazar yorumunun Reels'i (1080×1920): kaydırmalı gönderinin sayfaları sırayla, ekranı dolduran bir video
    (Rıdvan, 15 Ekim 2026 21:53: "Reels'te düzgün bir pazar analizi videosu olmalı. Zaten 4 sayfa. Süre biraz
-   uzun olabilir"; 21:59: "21 sn olsun, 3 sn giriş 6 sn sayfalar"). Sahneler: kapak → kısa → orta → uzun vade
+   uzun olabilir"; 21:59: "21 sn olsun, 3 sn giriş 6 sn sayfalar"). Sahneler: kapak → kısa → orta vade (uzun vade kalıcı olarak kaldırıldı)
    (+ isteğe bağlı kapanış). Süreler bot/main.py →
    YORUM_REELS_SAHNELER (sahne_sureleri olarak gelir); sesli Reels'te (17 Ekim 2026) süreler sesten gelir, kapanış
    sahnesi eklenir ve öğeler kendi cümlesi okunurken belirir (kapak_g, v.g: sahne süresine oran). Profil ızgarası ortadaki 3:4 alanı (y 240–1680) gösterir;
@@ -76,7 +76,7 @@
   <div class="sahne-k" id="s0" data-sayac="HER PAZAR">
     {% set kg = kapak_g or {} %}
     <div class="blok" data-g="{{ kg.baslik or 0 }}" style="top: 250px">
-      <h1>{{ baslik or 'Kısa, orta ve uzun vade' }}</h1>
+      <h1>{{ baslik or 'Kısa ve orta vade' }}</h1>
       <div class="tarih">{{ tarih }} · {{ gun }}</div>
     </div>
     <div class="blok fiyat-blok" data-g="{{ kg.fiyat or 0.1 }}" style="top: 600px">
@@ -134,7 +134,7 @@
   <div class="sahne-k gizli kapanis" id="s{{ vadeler | length + 1 }}" data-sayac="HER PAZAR">
     <div class="blok" data-g="0" style="top: 560px">
       <h2>Her pazar<br>~11:00</h2>
-      <div class="ufuk" style="font-size: 42px; margin-top: 30px">{{ baslik or 'Kısa, orta ve uzun vade' }} gümüş görünümü</div>
+      <div class="ufuk" style="font-size: 42px; margin-top: 30px">{{ baslik or 'Kısa ve orta vade' }} gümüş görünümü</div>
     </div>
     <div class="blok" data-g="0.6" style="top: 1000px">
       <span class="cagri">Takip edin, kaçırmayın</span>

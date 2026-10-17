@@ -6,7 +6,7 @@ on:
     - cron: '50 6 * * 1-5'    # 09:50 TR -> Reels
     - cron: '50 16 * * 1-5'   # 19:50 TR -> Günlük özet
     - cron: '50 6 * * 6'      # Cumartesi 09:50 TR -> Haftalık özet
-    - cron: '50 7 * * 0'      # Pazar 10:50 TR -> Yapay zekâ yorumu (kısa/orta/uzun vade, kaydırmalı 4 görsel)
+    - cron: '50 7 * * 0'      # Pazar 10:50 TR -> Yapay zekâ yorumu (kısa/orta vade, kaydırmalı 3 görsel)
     # Hafta içi 13:50 TR -> Gümüş rehberi (bilgi). Hangi gün hangi bölüm: bot/bilgi.py → takvim()
     # (ilk hafta her gün, sonra salı ve perşembe). Rehber olmayan günlerden ayın ilk iş günü aylık özet
     # gider (bot/aylik.py; ilki 2 Kasım 2026). İkisi de yoksa "kontrol" işi birkaç saniyede biter.
@@ -257,7 +257,7 @@ jobs:
             bilgi|kisa|hikaye|kart) if [ -n "$KONU" ]; then ek=(--konu "$KONU"); fi ;;
             yorum) if [ "$ORNEK" = "true" ]; then
                      ek=(--ornek); echo "Örnek veriyle önizleme (Claude API isteği yok)."
-                     # konu = YYYY-AA-GG: örneği o pazar için üret (ör. uzun vade arası 2026-10-25)
+                     # konu = YYYY-AA-GG: örneği o pazar için üret (ör. 2026-10-25)
                      if [ -n "$KONU" ]; then export ORNEK_GUN="$KONU"; echo "Örnek günü: $KONU"; fi
                    fi ;;
           esac

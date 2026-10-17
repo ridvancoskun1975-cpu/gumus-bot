@@ -207,18 +207,18 @@ adim = next(a_ for a_ in akis["jobs"]["uret"]["steps"] if a_.get("name") == "Ses
 dogrula("'bilgi'" in adim["if"] and "'kisa'" in adim["if"], f"anahtar adımı koşulu: {adim['if']}")
 dogrula(not any(c.get("cron") == "50 10 * * 6" for c in akis[True]["schedule"]), "cumartesi kısa Reels zamanlaması yok")
 
-# Pazar yorumu kısa ve orta vade (Rıdvan, 17 Ekim 2026 11:20); uzun vade 13 Ekim 2027'de, veri varsa
+# Pazar yorumu yalnız kısa ve orta vade, KALICI (Rıdvan, 17 Ekim 2026 11:47: "geleceği de etkilemeli")
 import yorum as _y  # noqa: E402
 from datetime import date as _d  # noqa: E402
+dogrula([v["anahtar"] for v in _y.VADELER] == ["kisa", "orta"], "VADELER yalnız kısa ve orta")
 _iki = _y.aktif_vadeler({"uzun": {"veri_yeterli": True}}, _d(2026, 10, 18))
-_tam = _y.aktif_vadeler({"uzun": {"veri_yeterli": True}}, _d(2027, 10, 17))
-dogrula([v["anahtar"] for v in _iki] == ["kisa", "orta"], "veri olsa da 13 Ekim 2027'ye kadar kısa ve orta vade")
-dogrula([v["anahtar"] for v in _tam] == ["kisa", "orta", "uzun"], "13 Ekim 2027'den sonra uzun vade geri gelir")
-dogrula([v["anahtar"] for v in _y.aktif_vadeler({"uzun": {"veri_yeterli": False}}, _d(2027, 10, 17))]
-        == ["kisa", "orta"], "o gün 1 yıllık veri yoksa yine yok")
-dogrula(_y.vade_basligi(_iki) == "Kısa ve orta vade" and _y.vade_basligi(_tam) == "Kısa, orta ve uzun vade", "başlık")
-dogrula("uzun" not in _y.sema(_iki)["required"] and "uzun vadede" not in _y.sistem(_iki)
-        and "kısa ve orta vadeli" in _y.sistem(_iki) and _y.sistem(_tam) == _y.SISTEM, "Claude'a giden şema ve talimat")
+for _gun in (_d(2026, 10, 18), _d(2027, 10, 17), _d(2030, 1, 6)):
+    dogrula([v["anahtar"] for v in _y.aktif_vadeler({"uzun": {"veri_yeterli": True}}, _gun)] == ["kisa", "orta"],
+            f"{_gun}: 1 yıllık veri olsa da uzun vade geri gelmez")
+dogrula(not hasattr(_y, "UZUN_VADE_DONUS"), "uzun vade dönüş tarihi yok")
+dogrula(_y.vade_basligi(_iki) == "Kısa ve orta vade", "başlık")
+dogrula("uzun" not in _y.sema(_iki)["required"] and "uzun vade" not in _y.sistem(_iki)
+        and "kısa ve orta vadeli" in _y.sistem(_iki) and "uzun" not in _y.ORNEK_YORUM, "Claude'a giden şema ve talimat")
 dogrula("Kısa ve orta vade gümüş görünümü" in _y.kapanis_okuma(_iki), "kapanış okuması")
 
 # Okuma 1,5 kat hızlı (Rıdvan, 17 Ekim 2026: "Sesleri 1,5 hızlandır hepsini"); perde korunur (ffmpeg atempo)
@@ -453,7 +453,7 @@ try:
             setattr(main, k, v)
 
     # Pazar Reels'i sesli (Rıdvan 17 Ekim 2026): erkek sesi, analizin TAMAMI; hikâyeye müzikli sürüm (sahne başına 8 sn).
-    # 13 Ekim 2027'ye kadar yalnız kısa ve orta vade (Rıdvan 17 Ekim 2026): kapak + 2 vade + kapanış = 4 okuma, 24 sn müzik
+    # Yalnız kısa ve orta vade (kalıcı, Rıdvan 17 Ekim 2026): kapak + 2 vade + kapanış = 4 okuma, 24 sn müzik
     import yorum  # noqa: E402
     AKTIF = ("kisa", "orta")
     MUZIKLI_SN = 8 * (len(AKTIF) + 1)
