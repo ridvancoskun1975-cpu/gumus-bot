@@ -9,7 +9,7 @@
 </style>
 </head>
 <body>
-<div class="sahne" style="position: relative; width: 1080px; height: 1350px; padding: 116px 88px 60px">
+<div class="sahne" style="position: relative; width: 1080px; height: 1350px; padding: 116px 180px 140px 88px">
   <div class="isik" aria-hidden="true"></div>
   <div class="ust">
     <div class="ust-sol" style="gap: 10px">
@@ -22,7 +22,7 @@
 
   <div class="kahraman" style="gap: 8px; padding-top: 22px; position: relative">
     {#- Goril maskotu (bot/goril.py): hafta içi sabah Reels'i ve akşam özeti, cumartesi haftalık özet -#}
-    {% if maskot %}<div class="maskot" aria-hidden="true" style="position: absolute; right: -14px; bottom: 48px; width: 226px; height: 247px">{% include maskot %}</div>{% endif %}
+    {% if maskot %}<div class="maskot" aria-hidden="true" style="position: absolute; right: -14px; bottom: 22px; width: 226px; height: 247px">{% include maskot %}</div>{% endif %}
     {% if buyuk_hareket %}{{ manset(buyuk_hareket, 38, 28) }}{% else %}
     <div class="kahraman-baslik" style="font-size: 34px">GRAM GÜMÜŞ · <span style="text-transform: uppercase">{{ son_an }}</span></div>
     {% endif %}

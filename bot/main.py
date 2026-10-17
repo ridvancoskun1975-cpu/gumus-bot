@@ -685,6 +685,10 @@ def tr_sayi(x, basamak=2):
 # Büyük hareket manşeti: değişim bu eşiği (yüzde, mutlak) aşınca görselde "GRAM GÜMÜŞ" başlığının
 # yerine ve açıklamanın ilk satırında "Gümüş bugün %3,1 yükseldi" gibi manşet çıkar.
 BUYUK_HAREKET_GUNLUK = 2.0   # günlük paylaşımlar: önceki iş gününe göre
+# 4:5 videoların (akşam, haftalık, aylık özet) içerik genişliği: 1080 − sol 88 − sağ 180. Sağdaki 180 px ve alttaki
+# 140 px telefonda Reels ekranının beğeni/yorum düğmelerine ve hesap adı satırına bırakılır (Rıdvan'ın 17 Ekim 2026
+# ekran görüntüleriyle ölçüldü; Rıdvan onayladı: "A için önerilen çizimler uygun. uygula.").
+GEN_45 = 1080 - 88 - 180
 BUYUK_HAREKET_HAFTALIK = 5.0  # haftalık özet: önceki haftanın son değerine göre
 
 
@@ -850,7 +854,7 @@ def haftalik_veri_hazirla(f, hesap):
     v["parite_cumle"] = parite_cumlesi(v["parite_deg"], "bu hafta")
 
     # Grafik: gram gümüşün günlük değerleri, önceki haftanın son değeri kesikli çizgi (kısmi haftada çizgi yok)
-    gen, yuk, kenar, yan = 904, 150, 30, 64      # yükseklik 230 → 150: büyüyen yazılara yer (16 Ekim 2026)
+    gen, yuk, kenar, yan = GEN_45, 150, 30, 64   # yükseklik 230 → 150: büyüyen yazılara yer (16 Ekim 2026)
     tum = degerler + ([] if v["kismi"] else [f["gram_once"]])
     alt_s, ust_s = min(tum), max(tum)
     aralik = (ust_s - alt_s) or 1
@@ -900,7 +904,7 @@ def aylik_veri_hazirla(f, hesap):
     v["parite_cumle"] = parite_cumlesi(v["parite_deg"], "bu ay")
 
     # Grafik: ayın her iş günü; önceki ayın son değeri kesikli çizgi (kısmi ayda yok)
-    gen, yuk, ust, alt, yan = 904, 320, 56, 76, 14   # altta en düşük etiketine ve tarihlere yer
+    gen, yuk, ust, alt, yan = GEN_45, 320, 56, 76, 14   # altta en düşük etiketine ve tarihlere yer
     tum = degerler + ([] if f["kismi"] else [f["gram_once"]])
     alt_s, ust_s = min(tum), max(tum)
     aralik = (ust_s - alt_s) or 1
