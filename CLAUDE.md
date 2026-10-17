@@ -18,10 +18,9 @@
   sesi, analizin tamamı okunur; okumayı ona sormadan kısaltma). Ses **Orus** (`ses.YORUM_SES`; Rıdvan, 3 örnekten "Ses 2"); hikâyeye 24 sn müzikli sürüm
   gider; ses alınamazsa Reels 24 sn müzikli gider (yedek yol kaldırılmaz). Ses, üslup ya da okunan metin
   değişecekse önce önizleme ve onay.
-- Pazar yorumu yalnız kısa ve orta vade, kalıcı (Rıdvan, 17 Ekim 2026: "sadece kısa ve orta vade olsun"; 11:47:
-  "geleceği de etkilemeli"); uzun vade hiçbir tarihte geri gelmez, sormadan ekleme. Orta vadenin geçmişini
-  MetalCharts Starter verir; Ocak 2027'de iptal (11 Ocak hatırlatması), sonra kendi kayıtlarımız. Pazar yorumunun
-  önizlemesini gösterirken gerçek veriyle üret (deneme, ornek işaretsiz): örnek veride orta vade boş görünür.
+- Pazar yorumunun orta vade geçmişini MetalCharts Starter verir (17 Ekim 2026); Ocak 2027'de iptal (11 Ocak
+  hatırlatması), sonra kendi kayıtlarımız. Pazar yorumu önizlemesini Rıdvan'a gerçek veriyle üret (deneme, ornek
+  işaretsiz): örnek veride orta vade boş görünür. (Yalnız kısa ve orta vade kuralı aşağıda.)
 - Bütün seslendirmeler 1,5 kat hızlı (`ses.HIZ`) ve sesli Reels'te hareketli "Sesi açın" rozeti var (Rıdvan,
   17 Ekim 2026); hız ya da rozet değişecekse önce önizleme ve onay.
 - Instagram'a tarayıcıyla bakılmaz.
