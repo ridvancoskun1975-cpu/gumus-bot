@@ -293,7 +293,7 @@ def gecmis_oku():
 def gecmis_yaz(gecmis, gun, kayit):
     gecmis = dict(gecmis)
     gecmis[gun.isoformat()] = kayit
-    # Pazar yorumunun orta/uzun vadesi için kayıtlar ~2 yıl tutulur (dosya yine de birkaç yüz KB'yi geçmez).
+    # Pazar yorumu ve aylık/yıllık özetler için kayıtlar ~2 yıl tutulur (dosya yine de birkaç yüz KB'yi geçmez).
     sinir = (gun - timedelta(days=800)).isoformat()
     gecmis = {k: gecmis[k] for k in sorted(gecmis) if k >= sinir}
     GECMIS_DOSYASI.parent.mkdir(parents=True, exist_ok=True)
@@ -2302,14 +2302,15 @@ def yorum_hazirla(cikti, ornek):
 
 
 # Pazar yorumunun Reels'i (Rıdvan, 15 Ekim 2026 21:25: "Reels bence şart"; 21:53: "Reels'te düzgün bir pazar
-# analizi videosu olmalı. Zaten 4 sayfa. Süre biraz uzun olabilir"): kaydırmalı gönderinin 4 sayfası sırayla,
-# 9:16 ekranı dolduran bir video (kapak → kısa → orta → uzun vade). Kaydırmalıyla AYNI çalıştırmada,
+# analizi videosu olmalı. Zaten 4 sayfa. Süre biraz uzun olabilir"): kaydırmalı gönderinin sayfaları sırayla,
+# 9:16 ekranı dolduran bir video (kapak → kısa → orta vade; uzun vade 17 Ekim 2026'da kaldırıldı). Kaydırmalıyla AYNI çalıştırmada,
 # gönderiden hemen sonra paylaşılır ve aynı video hikâyeye de konur. Reels üretilemez ya da paylaşılamazsa
 # kaydırmalı gönderi yine gider (yalnızca uyarı). Kapatmak için False.
 YORUM_REELS = True
 # Rıdvan 21:59: "3 sn giriş 6 sn sayfalar"; 22:05: "Giriş çok kısa oldu. Hepsi 8 saniye olsun".
-# 5. bir süre eklenirse kapanış sahnesi de çıkar.
-YORUM_REELS_SAHNELER = (8, 8, 8, 8)   # sn: kapak, kısa, orta, uzun vade (toplam 32 sn)
+# Müzikli sürümde sahne sayısı vadelere göre: kapak + vade başına YORUM_REELS_SAHNELER[0] sn (kısa ve orta vade: 24 sn;
+# uzun vade 13 Ekim 2027'de dönünce 32 sn).
+YORUM_REELS_SAHNELER = (8, 8, 8)   # sn: kapak, kısa, orta vade (toplam 24 sn)
 
 
 # Pazar Reels'i sesli (Rıdvan, 17 Ekim 2026: "Pazar günü analiz sesli olsun"; Gemini erkek sesi, analizin TAMAMI):

@@ -15,9 +15,15 @@
 - Taahhüt: hafta içi her gün 2 kez gram fiyatı (~10:00 Reels, ~20:00 özet); bu ikisi kaldırılmaz, başka içerikle
   değiştirilmez.
 - Pazar yorumu 2 paylaşım sayılır (kaydırmalı + Reels). Pazar Reels'i sesli (Rıdvan, 17 Ekim 2026: Gemini erkek
-  sesi, analizin tamamı okunur; okumayı ona sormadan kısaltma). Ses **Orus** (`ses.YORUM_SES`; Rıdvan, 3 örnekten "Ses 2"); hikâyeye 32 sn müzikli sürüm
-  gider; ses alınamazsa Reels 32 sn müzikli gider (yedek yol kaldırılmaz). Ses, üslup ya da okunan metin
+  sesi, analizin tamamı okunur; okumayı ona sormadan kısaltma). Ses **Orus** (`ses.YORUM_SES`; Rıdvan, 3 örnekten "Ses 2"); hikâyeye 24 sn müzikli sürüm
+  gider; ses alınamazsa Reels 24 sn müzikli gider (yedek yol kaldırılmaz). Ses, üslup ya da okunan metin
   değişecekse önce önizleme ve onay.
+- Pazar yorumu yalnız kısa ve orta vade (Rıdvan, 17 Ekim 2026: "sadece kısa ve orta vade olsun"); uzun vade
+  13 Ekim 2027'de kendi 1 yıllık kayıtlarımızla kendiliğinden döner (`yorum.aktif_vadeler`). Orta vadenin geçmişini
+  MetalCharts Starter verir; Ocak 2027'de iptal (11 Ocak hatırlatması), sonra kendi kayıtlarımız. Pazar yorumunun
+  önizlemesini gösterirken gerçek veriyle üret (deneme, ornek işaretsiz): örnek veride orta vade boş görünür.
+- Bütün seslendirmeler 1,5 kat hızlı (`ses.HIZ`) ve sesli Reels'te hareketli "Sesi açın" rozeti var (Rıdvan,
+  17 Ekim 2026); hız ya da rozet değişecekse önce önizleme ve onay.
 - Instagram'a tarayıcıyla bakılmaz.
 - Sitede ve açıklamalarda model ya da şirket adı yazılmaz.
   (Bu dört kural: Rıdvan, 16 Ekim 2026 "CLAUDE.md'ye ekle".)

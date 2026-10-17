@@ -1,4 +1,6 @@
-"""Pazar yapay zekâ yorumu: gram gümüş için kısa, orta ve uzun vadeli görünüm (kaydırmalı, 4 görsel).
+"""Pazar yapay zekâ yorumu: gram gümüş için kısa ve orta vadeli görünüm (kaydırmalı, 3 görsel).
+Uzun vade 17 Ekim 2026'da çıkarıldı (Rıdvan: "sadece kısa ve orta vade olsun"); kendi kayıtlarımız 1 yılı doldurunca
+13 Ekim 2027'de kendiliğinden geri gelir (aktif_vadeler, UZUN_VADE_DONUS).
 
 Yorum pazar sabahı, o anki bütün verilerle şekillenir. İki adımda üretilir:
   1. Haftanın gelişmeleri: Claude, web aramasıyla haftanın gümüş, dolar, faiz, sanayi talebi ve
