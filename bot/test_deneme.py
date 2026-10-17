@@ -66,9 +66,15 @@ main.GUN_ICI_DOSYASI.write_text(json.dumps({"gunler": {"2026-10-16": [
 m = main.metal_fiyatlari()
 kontrol(istekler == [] and m["XAG"]["fiyat"] == 57.70, "deneme en yeni gün içi noktadan")
 
-# 3) Geçmiş ve kapanış istekleri de denemede yok
-kontrol(main.metal_gecmisi() is None and istekler == [], "denemede /v1/history isteği yok")
+# 3) Kapanış isteği denemede yok; geçmiş (yalnız okunur, yazılmaz) 17 Ekim 2026'dan beri denemede de istenir
 kontrol(main.kapanis_fiyati({}) is None and istekler == [], "denemede kapanış fiyatı isteği yok")
+_eski_anahtar = os.environ.pop("METALCHARTS_KEY", None)
+kontrol(main.metal_gecmisi() is None and istekler == [], "anahtar yoksa /v1/history isteği yok")
+if _eski_anahtar is not None:
+    os.environ["METALCHARTS_KEY"] = _eski_anahtar
+main.metal_gecmisi()          # sahte yanıt geçmiş biçiminde değil: None döner, önemli olan istek atılması
+kontrol(any("/v1/history/XAG" in u for u in istekler), "denemede de geçmiş istenir (önizleme gerçek veriyle)")
+istekler.clear()
 
 # 4) Denemede fiyatlari_al günlük kayıt yazmaz, gün içi nokta da yazmaz
 once = main.GECMIS_DOSYASI.read_text(encoding="utf-8")

@@ -250,9 +250,10 @@ def ecb_gecmisi(gun_sayisi=400):
 def metal_gecmisi():
     """MetalCharts günlük geçmişi (1 yıl). Yalnızca ücretli planlarda var; ücretsiz planda 403 döner
     (MetalCharts'a göre reddedilen istekler aylık hakka sayılmaz) ve None döndürülür.
-    Deneme çalıştırmasında istek atılmaz (botun kendi kayıtları kullanılır)."""
+    Denemede de istenir (17 Ekim 2026): pazar yorumu önizlemesi yarınki gerçek yorumla aynı veriyi göstersin. Starter
+    planında ayda 10.000 hak var, iptalden sonra 403 hakka sayılmaz; geçmiş hiçbir yere yazılmaz."""
     anahtar = os.environ.get("METALCHARTS_KEY", "").strip()
-    if not anahtar or _deneme_mi():
+    if not anahtar:
         return None
     sonuc = {}
     for sembol in ("XAG", "XAU"):
