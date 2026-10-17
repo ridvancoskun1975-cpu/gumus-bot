@@ -56,3 +56,6 @@
   --tarih <ISO> --kaynak "makbuz #<no>" --yerel <gumus-kayit klonu>/api-bakiye.md`, commit + push; aynı makbuz iki
   kez işlenmez). Rıdvan Billing'deki bakiyeyi kendisi söylerse `okuma` ile işle. Tutarları herkese açık yerlere
   (bu depo, iş akışı günlükleri, girdiler) yazma. Billing: https://platform.claude.com/settings/billing
+- Dal temizliği otomatik (Rıdvan, 17 Ekim 2026: "Otomatiğe al"): `.github/workflows/dal-temizle.yml` her gece 03:17 TR'de
+  içeriği tamamen main'de olan ve 24 saatten eski dalları siler; main'e alınmamış işi olan dala dokunmaz. Rıdvan'a
+  dal silmesini söyleme. Onay bekleyen önizlemeyi main'e almadan ayrı dalda tutmak bu yüzden güvenli.
