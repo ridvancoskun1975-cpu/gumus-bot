@@ -53,6 +53,30 @@ VADELER = [
     {"anahtar": "uzun", "ad": "Uzun vade", "ufuk": "1 yıl ve üzeri", "pencere": 365, "etiket": "Son 1 yıl", "esnek": False},
 ]
 
+# Uzun vade arası (Rıdvan, 17 Ekim 2026: "Sadace kısa ve orta olsa" → "1"): kendi kayıtlarımız 13 Ekim 2026'da başladı;
+# 1 yıllık gram/ons geçmişi için ücretli veri bir yıl gerekirdi. Bu yüzden 25 Ekim 2026'dan 13 Ekim 2027'ye kadar
+# pazar yorumu yalnız kısa ve orta vadedir (orta vadeyi ~3 aylık ücretli MetalCharts geçmişi, sonra kayıtlarımız
+# karşılar). 13 Ekim 2027'de kayıtlarımız 1 yılı doldurunca uzun vade kendiliğinden geri gelir.
+UZUN_VADE_ARA = (date(2026, 10, 25), date(2027, 10, 13))
+
+
+def aktif_vadeler(bugun):
+    """O pazar yazılacak vadeler (VADELER'in alt kümesi, aynı sırayla)."""
+    bas, son = UZUN_VADE_ARA
+    return [v for v in VADELER if not (v["anahtar"] == "uzun" and bas <= bugun < son)]
+
+
+def vade_metni(vadeler):
+    """"kısa ve orta vade" / "kısa, orta ve uzun vade"."""
+    adlar = [v["ad"].split()[0].lower() for v in vadeler]
+    return (", ".join(adlar[:-1]) + " ve " + adlar[-1] if len(adlar) > 1 else adlar[0]) + " vade"
+
+
+def vade_basligi(vadeler):
+    m = vade_metni(vadeler)
+    return m[0].upper() + m[1:]
+
+
 # Ağır basan yön (14 Ekim 2026, Rıdvan: "fazla nötr; ağır basan bir taraf olmalı, sonuç yine yasalara uygun").
 # Her vade için model yükseliş ya da düşüş seçer (yatay/belirsiz seçeneği yok) ve gücünü dürüstçe belirtir.
 YONLER = ("yükseliş", "düşüş")
@@ -114,6 +138,15 @@ Her vade için alanlar:
 - izlenecek: izlenecek etkenler, en fazla 8 kelime, cümle değil."""
 
 
+def sistem(vadeler=None):
+    """Sistem talimatı, o pazarın vadelerine göre (uzun vade arasında "kısa ve orta vadeli", 9. kuralda uzun vade yok)."""
+    vadeler = vadeler or VADELER
+    if any(v["anahtar"] == "uzun" for v in vadeler):
+        return SISTEM
+    return (SISTEM.replace("kısa, orta ve uzun vadeli görünümünü", "kısa ve orta vadeli görünümünü")
+            .replace("; uzun vadede yıllık eğilim ve arz-talep gibi yapısal etkenler.", "."))
+
+
 def _vade_sema():
     alan = lambda a: {"type": "string", "description": f"en fazla {SINIR[a]} kelime"}
     ozellik = {"yon": {"type": "string", "enum": list(YONLER), "description": "ağır basan yön"},
@@ -122,9 +155,14 @@ def _vade_sema():
     return {"type": "object", "additionalProperties": False, "properties": ozellik, "required": list(ozellik)}
 
 
-SEMA = {"type": "object", "additionalProperties": False,
-        "properties": {v["anahtar"]: _vade_sema() for v in VADELER},
-        "required": [v["anahtar"] for v in VADELER]}
+def sema(vadeler=None):
+    vadeler = vadeler or VADELER
+    return {"type": "object", "additionalProperties": False,
+            "properties": {v["anahtar"]: _vade_sema() for v in vadeler},
+            "required": [v["anahtar"] for v in vadeler]}
+
+
+SEMA = sema()
 
 
 # ---------------------------------------------------------------- haftanın gelişmeleri (web araması)
@@ -311,7 +349,7 @@ def _yuzde(simdi, once):
     return (simdi / once - 1) * 100
 
 
-def vade_istatistikleri(seri, ecb):
+def vade_istatistikleri(seri, ecb, vadeler=None):
     """Her vade için gram (₺), ons ($), parite ve dolar/TL değişimi; veri yetmiyorsa None."""
     if len(seri) < 2:
         raise ValueError("seri çok kısa")
@@ -320,7 +358,7 @@ def vade_istatistikleri(seri, ecb):
     ilk_gun = min(seri)
     ecb_son_gun = max(d for d in ecb if d <= son_gun)
     sonuc = {}
-    for v in VADELER:
+    for v in vadeler or VADELER:
         hedef = son_gun - timedelta(days=v["pencere"])
         gun, once = _deger_once(seri, hedef)
         etiket, kisa_kayit = v["etiket"], False
@@ -395,14 +433,14 @@ def _kucuk(s):
     return s.replace("I", "ı").replace("İ", "i").lower()
 
 
-def denetle(yorum, gelismeler=None):
+def denetle(yorum, gelismeler=None, vadeler=None):
     """Kurallara uymayan alanların listesi (boşsa yorum yayımlanabilir).
 
     gelismeler: haftanın gelişmeleri özeti; yorumdaki kurum/olay adları bu metinde geçmeli.
     """
     ozet = _kucuk(gelismeler["metin"]) if gelismeler else ""
     hatalar = []
-    for v in VADELER:
+    for v in vadeler or VADELER:
         alanlar = yorum.get(v["anahtar"]) or {}
         if alanlar.get("yon") not in YONLER:
             hatalar.append(f"{v['anahtar']}.yon: 'yükseliş' ya da 'düşüş' olmalı (verilen: {alanlar.get('yon')!r})")
@@ -479,13 +517,13 @@ def _harcama_ekle(model, kullanim):
         print(f"Uyarı: API harcaması kaydedilemedi ({type(e).__name__})", file=sys.stderr)
 
 
-def _cagir(anahtar, mesajlar):
+def _cagir(anahtar, mesajlar, vadeler=None):
     cevap = _api(anahtar, {
         "model": MODEL,
         "max_tokens": YANIT_SINIRI,
-        "system": SISTEM,
+        "system": sistem(vadeler),
         "messages": mesajlar,
-        "output_config": {"effort": CABA, "format": {"type": "json_schema", "schema": SEMA}},
+        "output_config": {"effort": CABA, "format": {"type": "json_schema", "schema": sema(vadeler)}},
     })
     if cevap.get("stop_reason") not in ("end_turn", "stop_sequence"):
         raise RuntimeError(f"Claude yanıtı tamamlanmadı (stop_reason: {cevap.get('stop_reason')})")
@@ -493,22 +531,22 @@ def _cagir(anahtar, mesajlar):
     return metin, cevap
 
 
-def yz_yorum(girdi, gelismeler=None):
+def yz_yorum(girdi, gelismeler=None, vadeler=None):
     """Claude'dan yorum alır; kurallara uymazsa hataları göstererek en fazla 2 kez yeniden ister."""
     anahtar = os.environ.get("ANTHROPIC_API_KEY", "").strip()
     if not anahtar:
         return None
     mesajlar = [{"role": "user", "content":
-                 "Bu haftanın gram gümüş verileri ve haftanın gelişmeleri aşağıda (JSON). Kısa, orta ve uzun "
-                 "vade için yorumu yaz.\n\n" + json.dumps(girdi, ensure_ascii=False, indent=1)}]
+                 "Bu haftanın gram gümüş verileri ve haftanın gelişmeleri aşağıda (JSON). "
+                 f"{vade_basligi(vadeler or VADELER)} için yorumu yaz.\n\n" + json.dumps(girdi, ensure_ascii=False, indent=1)}]
     for tur in range(3):
-        metin, cevap = _cagir(anahtar, mesajlar)
+        metin, cevap = _cagir(anahtar, mesajlar, vadeler)
         try:
             yorum = json.loads(metin)
         except ValueError:
             hatalar = ["yanıt geçerli JSON değil"]
         else:
-            hatalar = denetle(yorum, gelismeler)
+            hatalar = denetle(yorum, gelismeler, vadeler)
             if not hatalar:
                 kullanim = cevap.get("usage", {})
                 print(f"Yapay zekâ yorumu alındı ({MODEL}, {kullanim.get('input_tokens')} girdi / "
@@ -623,8 +661,12 @@ def _nasil_hazirlandi(gelismeler):
 # Reels'iyle aynı: kapak, kısa/orta/uzun vade, kapanış. Her sahne parçalar listesidir: [(öğe, metin)];
 # öğe adları şablondaki (templates/yorum-reels.html) belirme anlarını sese göre ayarlamak için kullanılır.
 
-KAPANIS_OKUMA = ("Bu yorum üst düzey yapay zekâ ile üretilmiştir; bir değerlendirmedir, yatırım tavsiyesi değildir. "
-                 "Kısa, orta ve uzun vade gümüş görünümü her pazar saat on birde. Takip edin, kaçırmayın.")
+def kapanis_okuma(vadeler=None):
+    return ("Bu yorum üst düzey yapay zekâ ile üretilmiştir; bir değerlendirmedir, yatırım tavsiyesi değildir. "
+            f"{vade_basligi(vadeler or VADELER)} gümüş görünümü her pazar saat on birde. Takip edin, kaçırmayın.")
+
+
+KAPANIS_OKUMA = kapanis_okuma()
 
 
 def _degisim_okuma(ad, deg):
@@ -639,7 +681,7 @@ def seslendirme_parcalari(v):
     v: main.yorum_hazirla'daki görsel verisi (vadeler: ad, ufuk, etiket, not, yorum, hucreler)."""
     deg = v["gram_deg"]
     fiil = "geriledi" if deg["yon"] == "dusus" else "yükseldi"
-    kapak = [("baslik", f"Gümüş görünümü: kısa, orta ve uzun vade. {v['tarih']}."),
+    kapak = [("baslik", f"Gümüş görünümü: {vade_metni(v['vadeler'])}. {v['tarih']}."),
              ("fiyat", f"Gram gümüş {v['gram']} lira; bir haftada {deg['metin']} {fiil}.")]
     for x in v["vadeler"]:
         y = x["yorum"]
@@ -660,7 +702,7 @@ def seslendirme_parcalari(v):
             ("seyir", f"Olası seyir. {y['seyir']}"),
             ("izle", f"İzlenecek: {y['izlenecek']}."),
         ])
-    sahneler.append([("kapanis", KAPANIS_OKUMA)])
+    sahneler.append([("kapanis", kapanis_okuma(v["vadeler"]))])
     return sahneler
 
 

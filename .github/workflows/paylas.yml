@@ -25,7 +25,7 @@ on:
         options: [reels, post, hafta, ay, yasal, bilgi, kisa, yorum, hikaye, kart]
         default: reels
       konu:
-        description: "bilgi, kisa, hikaye: rehber bölüm no (boşsa bilgi için bugünün rehberi, kisa için bugünün arşiv Reels'i; hikaye için zorunlu). kart: gram ya da parite (boşsa günün kartı)."
+        description: "bilgi, kisa, hikaye: rehber bölüm no (boşsa bilgi için bugünün rehberi, kisa için bugünün arşiv Reels'i; hikaye için zorunlu). kart: gram ya da parite (boşsa günün kartı). yorum + ornek: örneğin pazarı (YYYY-AA-GG)."
         type: string
         default: ""
       deneme:
@@ -255,7 +255,11 @@ jobs:
           ek=()
           case "${{ needs.kontrol.outputs.tur }}" in
             bilgi|kisa|hikaye|kart) if [ -n "$KONU" ]; then ek=(--konu "$KONU"); fi ;;
-            yorum) if [ "$ORNEK" = "true" ]; then ek=(--ornek); echo "Örnek veriyle önizleme (Claude API isteği yok)."; fi ;;
+            yorum) if [ "$ORNEK" = "true" ]; then
+                     ek=(--ornek); echo "Örnek veriyle önizleme (Claude API isteği yok)."
+                     # konu = YYYY-AA-GG: örneği o pazar için üret (ör. uzun vade arası 2026-10-25)
+                     if [ -n "$KONU" ]; then export ORNEK_GUN="$KONU"; echo "Örnek günü: $KONU"; fi
+                   fi ;;
           esac
           python bot/main.py hazirla --tur "${{ needs.kontrol.outputs.tur }}" --cikti site "${ek[@]}"
           if [ -f site/meta.json ]; then

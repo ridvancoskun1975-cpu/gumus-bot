@@ -2178,7 +2178,8 @@ def kapanis_fiyati(ecb):
 
 
 def yorum_hazirla(cikti, ornek):
-    """Pazar yapay zekâ yorumu: kapak + kısa/orta/uzun vade, kaydırmalı 4 görsel. Ayrıntı: bot/yorum.py
+    """Pazar yapay zekâ yorumu: kapak + kısa/orta/uzun vade, kaydırmalı 4 görsel (25 Ekim 2026 – 13 Ekim 2027 uzun
+    vade yok: 3 görsel; yorum.UZUN_VADE_ARA). Ayrıntı: bot/yorum.py
 
     Pazar sabahı bütün verilerle şekillenir: botun günlük kayıtları, o anki (haftanın kapanış)
     fiyatı, 13 aylık dolar/TL, varsa MetalCharts geçmişi ve web aramasıyla derlenen haftanın haberleri.
@@ -2188,6 +2189,8 @@ def yorum_hazirla(cikti, ornek):
     kapanis = None
     if ornek:
         bugun += timedelta(days=(6 - bugun.weekday()) % 7)   # örnekte bu haftanın pazarı gibi
+        if os.environ.get("ORNEK_GUN", "").strip():          # örnek önizlemede başka bir pazar (ör. uzun vade arası)
+            bugun = date.fromisoformat(os.environ["ORNEK_GUN"].strip())
         kayitlar, ecb = yorum.ornek_veri(bugun)
         kayitlar[max(kayitlar)]["saat"] = "kapanış"
         kapanis = max(kayitlar)
@@ -2209,11 +2212,12 @@ def yorum_hazirla(cikti, ornek):
         if kapanis:
             kaynak_notu += "; son değer pazar günü alınan güncel fiyat"
     seri = yorum.seri_kur(kayitlar, ecb, metal)
-    ist = yorum.vade_istatistikleri(seri, ecb)
+    aktif = yorum.aktif_vadeler(bugun)   # 25 Ekim 2026 – 13 Ekim 2027 uzun vade yok (yorum.UZUN_VADE_ARA)
+    ist = yorum.vade_istatistikleri(seri, ecb, aktif)
 
     if ornek:
         gelismeler, yz = yorum.ORNEK_GELISMELER, yorum.ORNEK_YORUM
-        hatalar = yorum.denetle(yz, gelismeler)
+        hatalar = yorum.denetle(yz, gelismeler, aktif)
         if hatalar:
             raise RuntimeError(f"Örnek yorum denetimden geçmedi: {hatalar}")
     else:
@@ -2246,7 +2250,7 @@ def yorum_hazirla(cikti, ornek):
         return {"ad": ad, "deg": None if yuzde is None else degisim(1 + yuzde / 100, 1)}
 
     vadeler = []
-    for v in yorum.VADELER:
+    for v in aktif:
         x = ist[v["anahtar"]]
         not_ = ""
         if not x["veri_yeterli"]:
@@ -2268,6 +2272,7 @@ def yorum_hazirla(cikti, ornek):
         "vadeler": vadeler,
         "hesap": hesap,
         "dayanak": "Fiyat ve kur verileri + haftanın haberleri" if gelismeler else "Fiyat ve kur verileri",
+        "baslik": yorum.vade_basligi(aktif),   # "Kısa, orta ve uzun vade" / uzun vade arasında "Kısa ve orta vade"
     }
 
     damga = datetime.now(TR_SAAT).strftime("%Y%m%d-%H%M")
@@ -2340,7 +2345,9 @@ def yorum_seslendirmesi(veri, cikti):
         parcalar = yorum.seslendirme_parcalari(veri)
         metinler = [ses._cumle(ses.okunur(" ".join(m for _, m in sahne))) for sahne in parcalar]
         sl = ses.rehber_seslendir(metinler, cikti, "yorum", ses=ad,
-                                  uslup=ses.USLUP_ERKEK, en_az=list(ses.YORUM_EN_AZ), en_uzun=ses.YORUM_EN_UZUN,
+                                  uslup=ses.USLUP_ERKEK, en_uzun=ses.YORUM_EN_UZUN,
+                                  en_az=[ses.YORUM_EN_AZ[0]] + [ses.YORUM_EN_AZ[1]] * len(veri["vadeler"])
+                                  + [ses.YORUM_EN_AZ[-1]],
                                   deneme=_deneme_mi())
         return parcalar, sl
     except Exception as e:
@@ -2362,8 +2369,9 @@ def _yorum_sesli_metin(metin):
 def yorum_reels_uret(cikti, veri, metin, damga):
     """Pazar Reels'inin videosu, kapağı ve açıklaması. Hata verirse None (kaydırmalı gönderi etkilenmez).
     Sesliyse Reels uzun sesli video, hikâye 32 sn'lik müzikli video ("hikaye_dosya")."""
-    sure = sum(YORUM_REELS_SAHNELER)
-    muzikli = {**veri, "sahne_sureleri": list(YORUM_REELS_SAHNELER)}
+    sahneler_ = [YORUM_REELS_SAHNELER[0]] * (len(veri["vadeler"]) + 1)   # kapak + vadeler, 8'er sn
+    sure = sum(sahneler_)
+    muzikli = {**veri, "sahne_sureleri": sahneler_}
     try:
         mp4 = cikti / f"yorum-reels-{damga}.mp4"
         if not hareketli_video_uret("yorum-reels", muzikli, mp4, sure=sure):
@@ -2375,9 +2383,9 @@ def yorum_reels_uret(cikti, veri, metin, damga):
         return None
     # Açıklama kaydırmalıyla aynı (uyarılar, kaynaklar, etiketler); yalnızca "kaydırın" satırı profile yönlendirir.
     reels_metin = metin.replace("Ayrıntılar görsellerde, kaydırın →",
-                                "Yorumun 4 sayfası profildeki kaydırmalı gönderide de var →")
+                                f"Yorumun {len(veri['vadeler']) + 1} sayfası profildeki kaydırmalı gönderide de var →")
     # Yedek kapak anı: kapak sahnesinin bütün öğeleri görünürken (kapak sahnesinin sonundan 1 sn önce)
-    sonuc = {"dosya": mp4.name, "kapak": kapak.name, "kapak_ms": int((YORUM_REELS_SAHNELER[0] - 1) * 1000),
+    sonuc = {"dosya": mp4.name, "kapak": kapak.name, "kapak_ms": int((sahneler_[0] - 1) * 1000),
              "aciklama": reels_metin, "seslendirme": None}
     sesli = yorum_seslendirmesi(veri, cikti)
     if sesli:
@@ -2466,6 +2474,14 @@ def _baslik_ozeti(veri):
 PAZAR_HATIRLATMA = {"kalin": "Yarın ~11:00", "metin": "Pazar derin analizi: kısa, orta ve uzun vade. Kaçırmayın."}
 
 
+def pazar_hatirlatmasi(cumartesi=None):
+    """Ertesi pazarın vadelerine göre hatırlatma (uzun vade arasında "kısa ve orta vade"; yorum.UZUN_VADE_ARA)."""
+    import yorum
+    gun = (cumartesi or datetime.now(TR_SAAT).date()) + timedelta(days=1)
+    return {**PAZAR_HATIRLATMA,
+            "metin": f"Pazar derin analizi: {yorum.vade_metni(yorum.aktif_vadeler(gun))}. Kaçırmayın."}
+
+
 def pazar_yorumu_yarin(bugun=None):
     """Haftalık özette pazar hatırlatması çıkacak mı: KURAL, her cumartesi evet (TR saatine göre).
     Başka gün elle çalıştırılan haftalık özette "Yarın ~11:00" yanlış olacağı için çıkmaz."""
@@ -2517,7 +2533,7 @@ def hazirla(tur, cikti, ornek, konu=None):
     hazirlayici = {"hafta": haftalik_veri_hazirla, "ay": aylik_veri_hazirla}.get(tur)
     veri = hazirlayici(fiyat, hesap) if hazirlayici else veri_hazirla(fiyat, hesap, tur)
     if tur == "hafta":
-        veri["pazar_hatirlatma"] = PAZAR_HATIRLATMA if (ornek or pazar_yorumu_yarin()) else None
+        veri["pazar_hatirlatma"] = pazar_hatirlatmasi() if (ornek or pazar_yorumu_yarin()) else None
 
     veri["parite_cumle"] = gorsel_parite_cumlesi(veri, tur)
     veri.update(goril_alanlari(veri, tur, ornek))
