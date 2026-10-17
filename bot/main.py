@@ -2282,12 +2282,14 @@ def yorum_seslendirmesi(veri, cikti):
     """Pazar Reels'inin erkek sesi seslendirmesi: (parçalar, sonuç) ya da None (o hafta sessiz Reels)."""
     import ses
     import yorum
-    if not YORUM_SESLI or not ses.SES_ACIK or not ses.YORUM_SES or os.environ.get("SES_KAPALI"):
+    # SES_ADI: yalnız paylaşmayan elle denemede (paylas.yml → ses girdisi); ses seçilmeden önizleme için de
+    ad = os.environ.get("SES_ADI", "").strip() or ses.YORUM_SES
+    if not YORUM_SESLI or not ses.SES_ACIK or not ad or os.environ.get("SES_KAPALI"):
         return None
     try:
         parcalar = yorum.seslendirme_parcalari(veri)
         metinler = [ses._cumle(ses.okunur(" ".join(m for _, m in sahne))) for sahne in parcalar]
-        sl = ses.rehber_seslendir(metinler, cikti, "yorum", ses=os.environ.get("SES_ADI", "").strip() or ses.YORUM_SES,
+        sl = ses.rehber_seslendir(metinler, cikti, "yorum", ses=ad,
                                   uslup=ses.USLUP_ERKEK, en_az=list(ses.YORUM_EN_AZ), en_uzun=ses.YORUM_EN_UZUN,
                                   deneme=_deneme_mi())
         return parcalar, sl
