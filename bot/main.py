@@ -2624,6 +2624,16 @@ def main():
             print("::warning::MetalCharts geçmişi gelmedi (ücretsiz plan ya da hata); pazar yorumu kendi kayıtlarla yazılır.")
         for sembol, gunler in (g or {}).items():
             print(f"{sembol}: {len(gunler)} gün, {min(gunler)} – {max(gunler)}")
+        if g:
+            # Pazar yorumunun vadeleri bu geçmişle doluyor mu (yalnız MetalCharts + ECB; kendi kayıtlar katılmaz)
+            import yorum
+            ecb = ecb_gecmisi()
+            ist = yorum.vade_istatistikleri(yorum.seri_kur({}, ecb, g), ecb)
+            yz = lambda x: "—" if x is None else f"%{x:+.2f}"
+            for v in yorum.VADELER:
+                s = ist[v["anahtar"]]
+                print(f"{v['anahtar']}: veri {'tam' if s['veri_yeterli'] and not s['kisa_kayit'] else 'EKSİK'}, "
+                      f"başlangıç {s['baslangic']}, gram {yz(s['gram'])}, ons {yz(s['ons'])}, dolar/TL {yz(s['dolar'])}")
     elif a.komut == "gun-ici":
         try:
             gun_ici_kaydet()
