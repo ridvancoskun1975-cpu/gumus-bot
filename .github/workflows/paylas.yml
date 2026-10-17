@@ -139,6 +139,13 @@ jobs:
               echo "Bugünün kartı: $kart"
             fi
           fi
+          # Pazar yorumu bekletme (Rıdvan, 17 Ekim 2026 14:09: "pazar yorumu bizim işimiz bitene kadar beklesin"):
+          # bot/PAZAR_BEKLET varken zamanlı pazar çalışması paylaşmadan biter. Elle (Run workflow → tür: yorum) çalışır.
+          # İş bitince dosya silinir.
+          if [ "$tur" = "yorum" ] && [ "${{ github.event_name }}" = "schedule" ] && [ -f bot/PAZAR_BEKLET ]; then
+            calis=false
+            echo "::warning::Pazar yorumu bekletiliyor (bot/PAZAR_BEKLET). Paylaşılmadı; iş bitince elle gönderilecek."
+          fi
           echo "tur=$tur" >> "$GITHUB_OUTPUT"
           echo "calis=$calis" >> "$GITHUB_OUTPUT"
 
