@@ -7,3 +7,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
 | 18 Ekim 00:30 | Site düzeni (rehber satırı, pazar analizi bağlantısı, 404, takvim sadeleşmesi, tablolar) + sayfa adımı yeniden deneme/önceki hâl + gecmis.json yedeği | bot/sayfa.py, bot/program.py, templates/sayfa.html, templates/tanitim.html, templates/bulunamadi.html, bot/test_program.py, .github/workflows/paylas.yml, .github/workflows/sayfa.yml | site-duzen-18-ekim · pazar paylaşımları bitince main'e |
+| 18 Ekim 01:28 | Haftalık/aylık özette goril kutlama satırı (açıklama; önizleme, onay bekleniyor) | bot/goril.py, bot/baslik.py, bot/main.py (aylık veri), bot/test_goril.py, README.md | kutlama-satiri · onay sonrası main'e |
