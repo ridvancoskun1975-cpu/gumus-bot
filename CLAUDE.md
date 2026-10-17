@@ -14,7 +14,10 @@
   bir arayüz gerektiren çözüm önerme.
 - Taahhüt: hafta içi her gün 2 kez gram fiyatı (~10:00 Reels, ~20:00 özet); bu ikisi kaldırılmaz, başka içerikle
   değiştirilmez.
-- Pazar yorumu 2 paylaşım sayılır (kaydırmalı + Reels).
+- Pazar yorumu 2 paylaşım sayılır (kaydırmalı + Reels). Pazar Reels'i sesli (Rıdvan, 17 Ekim 2026: Gemini erkek
+  sesi, analizin tamamı okunur; okumayı ona sormadan kısaltma). Ses `ses.YORUM_SES`; hikâyeye 32 sn müzikli sürüm
+  gider; ses alınamazsa Reels 32 sn müzikli gider (yedek yol kaldırılmaz). Ses, üslup ya da okunan metin
+  değişecekse önce önizleme ve onay.
 - Instagram'a tarayıcıyla bakılmaz.
 - Sitede ve açıklamalarda model ya da şirket adı yazılmaz.
   (Bu dört kural: Rıdvan, 16 Ekim 2026 "CLAUDE.md'ye ekle".)
