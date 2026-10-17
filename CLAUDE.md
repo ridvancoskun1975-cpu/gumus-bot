@@ -7,6 +7,16 @@
     sohbette açıkça "onayla" / "gitsin" demeden **kullanma**. Bir paylaşımın onayı yalnızca o paylaşım içindir.
   - Paylaşım yapan bir çalıştırmayı elle başlatmadan önce bugünkü sayıyı söyle; o paylaşım akşamki zamanlı
     paylaşımları 5.'ye itecekse bunu da söyle.
+- **Ortak çalışma: bu depoda aynı anda birden çok sohbet çalışır** (Rıdvan, 17 Ekim 2026 "Ekle"; o gün bir sohbet
+  pazar Reels'ini sesli yaparken diğeri eski kopya üstünde aynı şablona önizleme hazırladı):
+  1. İşe başlarken, Rıdvan'a önizleme göstermeden önce ve main'e almadan önce `git fetch origin main` ile son hâli çek;
+     son baktığından beri gelen commit'leri (`git log`) oku. Başka bir sohbet aynı dosyalara ya da aynı paylaşım türüne
+     dokunmuşsa devam etmeden Rıdvan'a söyle.
+  2. Rıdvan'a gösterilen her önizleme o anki main'in (ya da onun üstüne kurulmuş dalın) üstüne kurulur; eski bir
+     kopyadan önizleme gösterme.
+  3. `CALISMA.md`: işe başlamadan önce oku. İşe başlarken konuyu, dokunacağın dosyaları ve dalı bir satır olarak ekle
+     (commit + push); iş bitince ya da bırakılınca satırı sil. Aynı dosyalarda ya da aynı paylaşım türünde başka bir iş
+     yazılıysa Rıdvan'a sor. Satır 24 saatten eskiyse Rıdvan'a "hâlâ sürüyor mu" diye sor, kendiliğinden silme.
 - Bakım güncellemeleri (eylem ve kütüphane sürümleri) ayrı dalda yapılır. Deneme başarılıysa ve paylaşım çıktısı
   değişmiyorsa main'e alınır, sonra bildirilir. Paylaşım içeriğini ya da takvimi değiştiren her şey önce önizleme ve
   onay ister. (Rıdvan'ın 15 Ekim 2026 tarihli açık isteği; metni kendisi verdi.)
