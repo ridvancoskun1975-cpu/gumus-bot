@@ -244,12 +244,7 @@ def program(simdi=None, kayit_gunleri=(), hikaye_turleri=None, rehber_saati=(13,
             bicim = f"{bicim}, Reels ve hikâye" if bicim else "Reels ve hikâye"
         elif tur in hikaye_turleri:
             bicim = f"{bicim} ve hikâye" if bicim else "hikâye"
-        isim = TUR_ADI.get(tur, tur)
-        if tur == "yorum":   # uzun vade arasında "Kısa ve orta vade …" (bot/yorum.py → UZUN_VADE_ARA)
-            import yorum
-            pazar = bugun + timedelta(days=(6 - bugun.weekday()) % 7)
-            isim = f"{yorum.vade_basligi(yorum.aktif_vadeler(pazar))} yapay zekâ yorumu"
-        return f"{isim} ({bicim})" if bicim else isim
+        return f"{TUR_ADI.get(tur, tur)} ({bicim})" if bicim else TUR_ADI.get(tur, tur)
 
     satirlar, saatler = [], {}
     for cron, tur in cronlar():

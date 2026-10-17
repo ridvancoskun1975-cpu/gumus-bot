@@ -2178,8 +2178,8 @@ def kapanis_fiyati(ecb):
 
 
 def yorum_hazirla(cikti, ornek):
-    """Pazar yapay zekâ yorumu: kapak + kısa/orta/uzun vade, kaydırmalı 4 görsel (25 Ekim 2026 – 13 Ekim 2027 uzun
-    vade yok: 3 görsel; yorum.UZUN_VADE_ARA). Ayrıntı: bot/yorum.py
+    """Pazar yapay zekâ yorumu: kapak + kısa/orta/uzun vade, kaydırmalı 4 görsel (1 yıllık veri yoksa uzun vade
+    yazılmaz: 3 görsel; yorum.aktif_vadeler). Ayrıntı: bot/yorum.py
 
     Pazar sabahı bütün verilerle şekillenir: botun günlük kayıtları, o anki (haftanın kapanış)
     fiyatı, 13 aylık dolar/TL, varsa MetalCharts geçmişi ve web aramasıyla derlenen haftanın haberleri.
@@ -2189,7 +2189,7 @@ def yorum_hazirla(cikti, ornek):
     kapanis = None
     if ornek:
         bugun += timedelta(days=(6 - bugun.weekday()) % 7)   # örnekte bu haftanın pazarı gibi
-        if os.environ.get("ORNEK_GUN", "").strip():          # örnek önizlemede başka bir pazar (ör. uzun vade arası)
+        if os.environ.get("ORNEK_GUN", "").strip():          # örnek önizlemede başka bir pazar
             bugun = date.fromisoformat(os.environ["ORNEK_GUN"].strip())
         kayitlar, ecb = yorum.ornek_veri(bugun)
         kayitlar[max(kayitlar)]["saat"] = "kapanış"
@@ -2212,8 +2212,11 @@ def yorum_hazirla(cikti, ornek):
         if kapanis:
             kaynak_notu += "; son değer pazar günü alınan güncel fiyat"
     seri = yorum.seri_kur(kayitlar, ecb, metal)
-    aktif = yorum.aktif_vadeler(bugun)   # 25 Ekim 2026 – 13 Ekim 2027 uzun vade yok (yorum.UZUN_VADE_ARA)
-    ist = yorum.vade_istatistikleri(seri, ecb, aktif)
+    ist = yorum.vade_istatistikleri(seri, ecb)
+    aktif = yorum.aktif_vadeler(ist)     # uzun vade yalnızca 1 yıllık veri varken (yorum.aktif_vadeler)
+    if len(aktif) < len(yorum.VADELER):
+        print("Bilgi: 1 yıllık gram/ons verisi yok; bu pazar yorum kısa ve orta vade.")
+    ist = {v["anahtar"]: ist[v["anahtar"]] for v in aktif}
 
     if ornek:
         gelismeler, yz = yorum.ORNEK_GELISMELER, yorum.ORNEK_YORUM
@@ -2272,7 +2275,7 @@ def yorum_hazirla(cikti, ornek):
         "vadeler": vadeler,
         "hesap": hesap,
         "dayanak": "Fiyat ve kur verileri + haftanın haberleri" if gelismeler else "Fiyat ve kur verileri",
-        "baslik": yorum.vade_basligi(aktif),   # "Kısa, orta ve uzun vade" / uzun vade arasında "Kısa ve orta vade"
+        "baslik": yorum.vade_basligi(aktif),   # "Kısa, orta ve uzun vade" / 1 yıllık veri yoksa "Kısa ve orta vade"
     }
 
     damga = datetime.now(TR_SAAT).strftime("%Y%m%d-%H%M")
@@ -2474,14 +2477,6 @@ def _baslik_ozeti(veri):
 PAZAR_HATIRLATMA = {"kalin": "Yarın ~11:00", "metin": "Pazar derin analizi: kısa, orta ve uzun vade. Kaçırmayın."}
 
 
-def pazar_hatirlatmasi(cumartesi=None):
-    """Ertesi pazarın vadelerine göre hatırlatma (uzun vade arasında "kısa ve orta vade"; yorum.UZUN_VADE_ARA)."""
-    import yorum
-    gun = (cumartesi or datetime.now(TR_SAAT).date()) + timedelta(days=1)
-    return {**PAZAR_HATIRLATMA,
-            "metin": f"Pazar derin analizi: {yorum.vade_metni(yorum.aktif_vadeler(gun))}. Kaçırmayın."}
-
-
 def pazar_yorumu_yarin(bugun=None):
     """Haftalık özette pazar hatırlatması çıkacak mı: KURAL, her cumartesi evet (TR saatine göre).
     Başka gün elle çalıştırılan haftalık özette "Yarın ~11:00" yanlış olacağı için çıkmaz."""
@@ -2533,7 +2528,7 @@ def hazirla(tur, cikti, ornek, konu=None):
     hazirlayici = {"hafta": haftalik_veri_hazirla, "ay": aylik_veri_hazirla}.get(tur)
     veri = hazirlayici(fiyat, hesap) if hazirlayici else veri_hazirla(fiyat, hesap, tur)
     if tur == "hafta":
-        veri["pazar_hatirlatma"] = pazar_hatirlatmasi() if (ornek or pazar_yorumu_yarin()) else None
+        veri["pazar_hatirlatma"] = PAZAR_HATIRLATMA if (ornek or pazar_yorumu_yarin()) else None
 
     veri["parite_cumle"] = gorsel_parite_cumlesi(veri, tur)
     veri.update(goril_alanlari(veri, tur, ornek))
