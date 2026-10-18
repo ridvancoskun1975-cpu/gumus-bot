@@ -171,6 +171,35 @@ esit("altına indi yönü", s["baslik"]["yon"], "dusus")
 s = bak(SALI, [99.5, 100.6, 100.9, 100.2, 100.3], 99.6)
 esit("aşağı gidip gelme başlık olmaz", bool(s["baslik"] and s["baslik"]["kural"] == "esik"), False)
 
+# ---- dönem özel günü (haftalık/aylık özette goril kutlaması; Rıdvan, 18 Ekim 2026)
+from datetime import timedelta as _td
+
+
+def donem(onceki, bu):
+    """onceki: dönemden önceki iş günleri, bu: dönemin iş günleri (değerler); 2 Kasım 2026 pazartesiden geriye."""
+    gunler, g = [], date(2026, 11, 6)
+    while len(gunler) < len(onceki) + len(bu):
+        if g.weekday() < 5:
+            gunler.append(g)
+        g -= _td(days=1)
+    gunler.reverse()
+    kayit = dict(zip(gunler, onceki + bu))
+    return baslik.donem_ozel(kayit, gunler[len(onceki):])
+
+
+d = donem([97.0, 98.0, 99.0], [99.5, 100.4, 101.0, 100.8, 101.2])
+esit("dönemde eşik ilk kez aşıldı", (d["tur"], d["esik"], d["kisa"]), ("esik", 100, "100 lirayı aştı"))
+esit("eşiği aşıp altında kapanırsa kutlama yok", donem([97.0, 98.0, 99.0], [99.5, 100.4, 99.6, 99.1, 99.0]), None)
+esit("eşik daha önce aşılmışsa kutlama yok", donem([101.0, 98.0, 99.0], [99.5, 100.4, 100.6, 100.8, 100.9]), None)
+esit("en yüksek eşik", donem([97.0], [99.0, 105.0, 111.0, 112.0])["esik"], 110)
+esit("düşen dönemde kutlama yok", donem([97.0, 98.0, 99.0, 99.4, 99.6], [99.0, 98.0, 97.5]), None)
+uzun = [90.0 + 0.1 * i for i in range(30)]       # 6 haftalık kayıt, hep altta
+d = donem(uzun, [93.5, 93.8, 94.2, 94.0, 94.6])
+esit("dönem en az 1 aylık en yüksekte kapandı", (d["tur"], d["pencere"] >= 30), ("zirve", True))
+esit("zirve kısa metni", d["kisa"].startswith("son ") and d["kisa"].endswith("en yükseğinde kapandı"), True)
+esit("dönem sonu en yüksek değilse yok", donem(uzun, [93.5, 95.0, 94.2, 94.0, 94.6]), None)
+esit("kayıtlar 1 ayı kapsamıyorsa zirve yok", donem([90.0, 91.0], [92.0, 93.0, 94.0]), None)
+
 # ---- yardımcılar
 esit("önceki iş günü (pazartesi → cuma)", baslik.onceki_is_gunu(PAZARTESI), date(2026, 11, 13))
 esit("büyük harf", baslik.tr_buyuk("Son 1 yılın en yükseği"), "SON 1 YILIN EN YÜKSEĞİ")

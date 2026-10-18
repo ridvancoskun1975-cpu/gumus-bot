@@ -22,7 +22,9 @@
     {{ ag_etiketi(128, 146, '12px 14px', 22, 48, 18) }}
   </div>
 
-  <div class="kahraman" style="gap: 10px; padding-top: 30px">
+  <div class="kahraman" style="gap: 10px; padding-top: 30px; position: relative">
+    {#- Goril maskotu (bot/goril.py; Rıdvan, 18 Ekim 2026): aylık özette de, haftalıktaki yerinde -#}
+    {% if maskot %}<div class="maskot" aria-hidden="true" style="position: absolute; right: -14px; bottom: 22px; width: 226px; height: 247px">{% include maskot %}</div>{% endif %}
     {% if buyuk_hareket %}{{ manset(buyuk_hareket, 38, 28) }}{% else %}
     <div class="kahraman-baslik" style="font-size: 28px">GRAM GÜMÜŞ · AY SONU</div>
     {% endif %}
@@ -97,5 +99,6 @@
   </div>
 </div>
 <script>{% include "hareket.js" %}</script>
+{% if maskot_js %}<script>{% include maskot_js %}</script>{% endif %}
 </body>
 </html>

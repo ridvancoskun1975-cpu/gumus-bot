@@ -41,7 +41,8 @@
 - Sitede ve açıklamalarda model ya da şirket adı yazılmaz.
   (Bu dört kural: Rıdvan, 16 Ekim 2026 "CLAUDE.md'ye ekle".)
 - Goril maskotu (README → "Goril maskotu", `bot/goril.py`): hafta içi sabah Reels'i (19 Ekim 2026'dan; Rıdvan 16 Ekim
-  22:25 "sabaha şimdi koy"), akşam özeti ve cumartesi haftalık özetinde her gün. Pazar yorumuna hiçbir zaman goril
+  22:25 "sabaha şimdi koy"), akşam özeti, cumartesi haftalık özeti ve aylık özette (Rıdvan, 18 Ekim 2026: aylıkta %5'te
+  sevinir; haftalık ve aylıkta dönemde eşik ilk kez aşılır ya da dönem 1 aylık en yüksekte kapanırsa kutlar). Pazar yorumuna hiçbir zaman goril
   eklenmez. Hâller, eşikler ya da açıklama satırı değişecekse önce önizleme ve Rıdvan'ın onayı. Gorilli üretim her
   hatada ve süre aşımında gorilsiz paylaşıma düşmeli; bu yedek yol kaldırılmaz. Goril bir yazıyla üst üste binerse
   paylaşım durmaz, goril kalır ve Rıdvan'a bildirilir (gece kontrolü; Rıdvan, 16 Ekim 2026 22:43).

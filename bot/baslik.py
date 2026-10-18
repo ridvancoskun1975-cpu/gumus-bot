@@ -232,3 +232,36 @@ def degerlendir(kayitlar, gun, deger, sabah=False):
     if not (baslik or sonuc["ozel"]):
         sonuc["not"] = None
     return sonuc
+
+
+def donem_ozel(kayitlar, gunler):
+    """Haftalık ve aylık özette gorilin kutlama (özel gün) hâli (Rıdvan, 18 Ekim 2026: "İki öneriyi de kabul
+    ediyorum"; olumlu bir olay olduysa goril sevinsin). Günlük özel gün kurallarının dönem karşılığı:
+
+      1) Dönemin bir gününde gram gümüş yuvarlak bir eşiği kayıtlarda ilk kez aştı (günlük "eşik aşıldı" ile
+         aynı kural) ve dönem bu eşiğin üstünde kapandı → {"tur": "esik", "esik": 100, "kisa": "100 lirayı aştı"}
+      2) Dönemin son değeri en az OZEL_PENCERE günlük en yüksek (kayıtlar pencerenin tamamını kapsıyorsa)
+         → {"tur": "zirve", "pencere": 30, "kisa": "son 1 ayın en yükseğinde kapandı"}
+
+    Eşik önce gelir; ikisi de yoksa None. İkisi de dönemin artıda kapandığı anlamına gelir (dönem başındaki
+    değer eşiğin / pencerenin altında kalır), goril düşen bir dönemde kutlamaz.
+    kayitlar: {tarih: gram} (dönemin son gününe kadar), gunler: dönemin kayıtlı günleri."""
+    seri = {d: _y(v) for d, v in kayitlar.items() if d <= gunler[-1]}
+    son_gun = gunler[-1]
+    son = seri[son_gun]
+    esikler = []
+    for g in gunler:
+        once = {d: v for d, v in seri.items() if d < g}
+        if not once or g not in seri:
+            continue
+        e = _esik(once, seri[g], once[max(once)])
+        if e and e[0] == "yukari" and e[2] and son > e[1]:
+            esikler.append(e[1])
+    if esikler:
+        t = max(esikler)
+        return {"tur": "esik", "esik": t, "kisa": f"{tr_sayi(t, 0)} lirayı aştı"}
+    w = pencere(_oncesi(seri, son_gun), son_gun, son, "artis")
+    if w and w >= OZEL_PENCERE:
+        return {"tur": "zirve", "pencere": w, "ad": pencere_adi(w),
+                "kisa": f"son {pencere_adi(w)} en yükseğinde kapandı"}
+    return None
