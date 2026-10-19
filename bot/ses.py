@@ -395,7 +395,12 @@ def _cumle(metin):
     return metin if not metin or metin[-1] in ".!?…:" else metin + "."
 
 
-def rehber_metinleri(no, bolum, kareler, sonraki=None):
+# Rehber Reels'inin son karesi (site kartı) okunurken (Rıdvan, 19 Ekim 2026: web sayfası tanıtımı). Alan adı Türkçe
+# okunuşuyla yazılır ("gunlukgumus.com" harf harf okunmasın).
+SITE_OKUMA = "Rehberin tamamı, hesap makinesi ve son fiyatlar günlük gümüş nokta com'da. Bağlantı biyografide."
+
+
+def rehber_metinleri(no, bolum, kareler, sonraki=None, site_karti=False):
     """Rehber Reels'inin kare kare okunacak metinleri: [kapak, kare 1, …]. kareler: rehber_hikaye.kareleri_planla
     çıktısı (kapak hariç öğe listeleri). Kapakta soru ve elle yazılmış kısa cevap (OKUMA), sonra her karenin yazısı
     (sayfa başlığı, büyük rakam, formül, tablo, maddeler; kaynak notu okunmaz). Son kareye kapanış eklenir."""
@@ -425,6 +430,8 @@ def rehber_metinleri(no, bolum, kareler, sonraki=None):
     if sonraki:
         kapanis += f" Sıradaki bölüm: {_cumle(okunur(sonraki))}"
     metinler[-1] = f"{metinler[-1]} {kapanis}".strip()
+    if site_karti:
+        metinler.append(SITE_OKUMA)
     return metinler
 
 

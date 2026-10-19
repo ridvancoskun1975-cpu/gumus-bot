@@ -185,10 +185,12 @@ class Cizici:
         return self.sayfa.evaluate(OLC_JS)
 
 
-def uret(b, no, sonraki, seri, hesap, cikti, damga, plan=None, reels_kapak=False):
+def uret(b, no, sonraki, seri, hesap, cikti, damga, plan=None, reels_kapak=False, site=None):
     """Bölümün hikâye karelerini cikti klasörüne yazar; dosya adlarını sırayla döndürür.
     plan (liste) verilirse kare planı (kapak hariç her karenin öğeleri) ona eklenir (rehber Reels'inin okuması).
-    reels_kapak: kapağın Reels sürümü de çizilir (hikâyedeki "Dokunun →" yok): bilgi<no>-<damga>-reels-kapak.jpg"""
+    reels_kapak: kapağın Reels sürümü de çizilir (hikâyedeki "Dokunun →" yok): bilgi<no>-<damga>-reels-kapak.jpg
+    site (alan adı) verilirse Reels'e özel son kare de çizilir: bilgi<no>-<damga>-reels-son.jpg (site kartı; Rıdvan,
+    19 Ekim 2026: web sayfası tanıtımı). Hikâye videosuna girmez; dönüş listesinde de yok."""
     ortak = {"b": b, "no": no, "seri": seri, "hesap": hesap, "sonraki": sonraki}
     dosyalar = []
     with Cizici() as c:
@@ -202,6 +204,10 @@ def uret(b, no, sonraki, seri, hesap, cikti, damga, plan=None, reels_kapak=False
         if reels_kapak:
             c.ciz({**ortak, "k": 1, "n": n, "son": False, "kapak": True, "reels": True},
                   Path(cikti) / f"bilgi{no}-{damga}-reels-kapak.jpg")
+            if site:
+                if not c.ciz({**ortak, "k": n + 1, "n": n, "son": False, "kapak": False, "site_karti": True,
+                              "site": site, "ogeler": []}, Path(cikti) / f"bilgi{no}-{damga}-reels-son.jpg"):
+                    uyarilar.append("site kartı taşıyor")
         for k in range(1, n + 1):
             veri = {**ortak, "k": k, "n": n, "son": k == n}
             if k == 1:

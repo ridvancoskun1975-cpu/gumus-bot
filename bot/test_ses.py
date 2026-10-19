@@ -59,6 +59,11 @@ for no_, b_ in enumerate(bilgi.BOLUMLER, 1):
     dogrula(m_[0].startswith(ses.OKUMA[no_][0]), f"#{no_}: kapakta soru")
     dogrula(m_[-1].endswith("Sıradaki bölüm: Sonraki."), f"#{no_}: kapanış")
     dogrula(400 < len(" ".join(m_)) < 1600, f"#{no_}: okuma uzunluğu {len(' '.join(m_))}")
+    s_ = ses.rehber_metinleri(no_, b_, kareler_, "Sonraki", site_karti=True)
+    dogrula(s_[:-1] == m_ and s_[-1] == ses.SITE_OKUMA, f"#{no_}: site kartının okuması en sona eklenir")
+# Site kartı (Rıdvan, 19 Ekim 2026: web sayfası tanıtımı): alan adı Türkçe okunuşuyla, simgesiz
+dogrula("günlük gümüş nokta com" in ses.SITE_OKUMA and not re.search(r"[%÷×=→~#₺$±/·•]", ses.SITE_OKUMA),
+        "site okuması")
 
 # Elle yazılmamış bölüm için yedek metin rakam ve simgeyi okunur hâle getirir
 dogrula(ses._sozlu("%50+") == "yüzde 50'den fazla", ses._sozlu("%50+"))
@@ -306,6 +311,9 @@ try:
         dogrula(meta["kapak"].endswith("-reels-kapak.jpg") and (d / meta["kapak"]).exists(), "Reels kapağı (Dokunun'suz)")
         dogrula(meta["seslendirme"] == ses.SES, f"meta seslendirme: {meta['seslendirme']}")
         dogrula(isinstance(meta["ses_metni"], list) and len(meta["ses_metni"]) >= 3, "kare kare okuma metni")
+        dogrula(meta["ses_metni"][-1] == ses.SITE_OKUMA, "arşiv Reels'i site kartıyla biter")
+        dogrula(not list(d.glob("*-reels-son.jpg")), "site kartı yalnızca videoya girer, yayına çıkmaz")
+        dogrula(bilgi.SITE_REHBER in meta["aciklama"], "arşiv Reels açıklamasında site satırı")
         tum = " ".join(meta["ses_metni"])
         for sf in b3["sayfalar"]:
             dogrula(ses.okunur(sf["baslik"]) in tum, f"sayfa başlığı okunur: {sf['baslik']}")
@@ -376,8 +384,12 @@ try:
         dogrula("dosyalar" not in meta and meta["dosya"].endswith(".mp4"), f"rehber günü Reels: {meta.get('dosya')}")
         dogrula(meta["kapak"].endswith("-reels-kapak.jpg") and (d / meta["kapak"]).exists(), "Reels kapağı (Dokunun'suz)")
         dogrula(meta["seslendirme"] == ses.SES, "rehber Reels sesli")
-        dogrula(isinstance(meta["ses_metni"], list) and len(meta["ses_metni"]) == len(meta["hikayeler"]),
-                "her kare için bir okuma")
+        dogrula(isinstance(meta["ses_metni"], list) and len(meta["ses_metni"]) == len(meta["hikayeler"]) + 1,
+                "her kare için bir okuma + site kartı")
+        dogrula(meta["ses_metni"][-1] == ses.SITE_OKUMA, "Reels site kartıyla biter")
+        dogrula(not list(d.glob("*-reels-son.jpg")) and not any("reels-son" in h_ for h_ in meta["hikayeler"]),
+                "site kartı hikâyeye ve yayına girmez")
+        dogrula(bilgi.SITE_REHBER in meta["aciklama"], "rehber Reels açıklamasında site satırı")
         b7 = bilgi.BOLUMLER[6]
         tum = " ".join(meta["ses_metni"])
         for sf in b7["sayfalar"]:
@@ -391,7 +403,7 @@ try:
         dogrula(ses.ACIKLAMA_SATIRI in a_ and "Müzik:" in a_ and "kaydırmalı" not in a_, "açıklama satırları")
         dogrula(len(a_) <= 2200, "açıklama sınırı")
         sn, ses_var = sure_olc(d / meta["dosya"])
-        beklenen = sum(ses.KARE_EN_AZ["kapak" if i == 0 else "kare"] for i in range(len(meta["hikayeler"])))
+        beklenen = sum(ses.KARE_EN_AZ["kapak" if i == 0 else "kare"] for i in range(len(meta["hikayeler"]) + 1))
         dogrula(ses_var and sn > beklenen + 10, f"tam okuma uzun sürer ({sn:.0f} sn)")
         dogrula(kayit.paylasim_adi("bilgi", meta_yolu=d / "meta.json") == "Rehber Reels · sesli", "kayıt adı")
         dogrula(not list(d.glob("_ses-*")) and not list(d.glob("_reels-*")), "ara dosyalar kalmaz")
@@ -406,7 +418,8 @@ try:
         meta = json.loads((d / "meta.json").read_text(encoding="utf-8"))
         sn, ses_var = sure_olc(d / meta["dosya"])
         n = len(meta["hikayeler"])
-        dogrula(meta["seslendirme"] is None and abs(sn - (3 + 6 * (n - 1))) < 0.3 and ses_var,
+        # sessizde de son kare site kartıdır (Rıdvan, 19 Ekim 2026: web sayfası tanıtımı): kapak 3 + (n - 1 + 1) × 6 sn
+        dogrula(meta["seslendirme"] is None and abs(sn - (3 + 6 * n)) < 0.3 and ses_var,
                 f"sessiz yedek: müzikli Reels {sn}")
         dogrula(ses.ACIKLAMA_SATIRI not in meta["aciklama"], "sessizde seslendirme satırı yok")
         dogrula(kayit.paylasim_adi("bilgi", meta_yolu=d / "meta.json") == "Rehber Reels", "sessiz kayıt adı")

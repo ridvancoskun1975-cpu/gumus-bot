@@ -46,19 +46,40 @@ h1 { letter-spacing: -3px; line-height: 0.98; text-wrap: balance; }
 .satir + .not, .madde + .not { margin-top: 26px; }
 
 .alt { min-height: 96px; padding-top: 30px; }
+
+/* Reels'e özel son kare: site kartı (Rıdvan, 19 Ekim 2026: web sayfası tanıtımı). Hikâye videosunda yok.
+   Reels'te sağdaki düğmeler ve alttaki açıklama şeridi yazının üstüne binmesin diye blok dar ve ortada durur. */
+.site { max-width: 840px; }
+.site-etiket { font-size: 34px; font-weight: 600; letter-spacing: 5px; color: var(--soluk); text-transform: uppercase; }
+.site-adres { margin-top: 22px; font-size: 88px; line-height: 1.05; font-weight: 800; letter-spacing: -2px;
+  color: var(--yazi); white-space: nowrap; }
+.site-cizgi { margin-top: 44px; border-top: 2px solid var(--cizgi); }
+.site-madde { display: grid; grid-template-columns: 40px 1fr; gap: 20px; padding: 24px 0; border-bottom: 2px solid var(--cizgi);
+  font-size: 50px; line-height: 1.3; }
+.site-alt { margin-top: 44px; font-size: 44px; font-weight: 700; color: var(--vurgu); }
 </style>
 </head>
 <body>
 <div class="sahne">
   <div class="ust" style="align-items: center">
     <div class="etiket seri"><span class="nokta" style="width: 14px; height: 14px"></span><span>{{ seri }} · {{ '%02d' % no }}</span></div>
-    {% if kapak %}{{ ag_etiketi(112, 126, '10px 13px', 19, 44, 16) }}
+    {% if kapak or site_karti %}{{ ag_etiketi(112, 126, '10px 13px', 19, 44, 16) }}
     {% else %}<span class="mono soluk kare-no">{{ '%02d' % k }} / {{ '%02d' % n }}</span>{% endif %}
   </div>
 
   <div class="govde">
     <div class="icerik">
-{% if kapak %}
+{% if site_karti %}
+      <div class="site">
+        <div class="site-etiket">Rehberin tamamı</div>
+        <div class="site-adres">{{ site }}</div>
+        <div class="site-cizgi"></div>
+        <div class="site-madde"><span class="isaret"></span><span>Bütün bölümler</span></div>
+        <div class="site-madde"><span class="isaret"></span><span>Hesap makinesi</span></div>
+        <div class="site-madde"><span class="isaret"></span><span>Son 30 günün fiyatları</span></div>
+        <div class="site-alt">Bağlantı biyografide ↗</div>
+      </div>
+{% elif kapak %}
   {% set uz = b.baslik | length %}
   {% set h1_boy = 136 if uz <= 14 else (116 if uz <= 32 else 100) %}
   {% set dev_boy = [260, (900 / (b.buyuk | length * 0.6)) | int] | min %}
@@ -95,7 +116,9 @@ h1 { letter-spacing: -3px; line-height: 0.98; text-wrap: balance; }
   <div class="alt">
     <b style="font-size: 34px">{{ hesap }}</b>
     <div class="alt-sag">
-      {% if kapak %}
+      {% if site_karti %}
+      <span class="soluk" style="font-size: 28px">Bilgi amaçlıdır, yatırım tavsiyesi değildir.</span>
+      {% elif kapak %}
       <span class="soluk" style="font-size: 28px">Bütün bölümler: Öne çıkanlar › Rehber</span>
       {% if not reels %}<span class="vurgu" style="font-size: 32px; font-weight: 700">Dokunun →</span>{% endif %}
       {% else %}

@@ -116,6 +116,14 @@ a = main.ornek_aylik(kismi=False)
 a.update({"ons": 60.0, "ons_once": 55.0, "dolar": 50.2, "dolar_once": 49.3})
 ay = main.aciklama_yaz(main.aylik_veri_hazirla(a, "gunlukgumus"), "ay")
 kontrol("\nAyın kaynağı: ons gümüş ▲ %9,1 · dolar/TL ▲ %1,8\n\n" in ay, "aylık: kaynak satırı")
+# Site satırı (Rıdvan, 19 Ekim 2026: web sayfası tanıtımı): haftalık ve aylık özette, uyarının hemen üstünde;
+# günlük fiyat paylaşımlarında yok
+site_ = main.site_satiri()
+kontrol("gunlukgumus.com" in site_, "site satırında alan adı")
+for ad_, metin_ in (("haftalık", hafta), ("aylık", ay)):
+    kontrol(f"\n{site_}\n\nBilgi amaçlıdır, yatırım tavsiyesi değildir." in metin_, f"{ad_}: site satırı uyarının üstünde")
+kontrol(site_ not in eski_reels and site_ not in sade and "gunlukgumus.com" not in eski_reels + sade,
+        "günlük fiyat paylaşımlarında site satırı yok")
 
 # --- 5b) Parite cümlesi (Rıdvan, 16 Ekim 2026): görselde paritenin altında; ok renkleri standart kalır
 pc = main.parite_cumlesi

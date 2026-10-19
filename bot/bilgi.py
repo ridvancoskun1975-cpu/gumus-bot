@@ -18,6 +18,10 @@ from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
 SERI = "GÜMÜŞ REHBERİ"
+# Sitenin alan adı, paylaşımlarda yazıldığı biçimiyle (bot/sayfa.py → ALAN_ADI ile aynı; test_sayfa.py denetler).
+# Rıdvan, 19 Ekim 2026 ("1 den başlayalım"): web sayfası tanıtımı, ek paylaşım açmadan var olan paylaşımlara site satırı.
+SITE = "gunlukgumus.com"
+SITE_REHBER = f"Rehberin tamamı ve hesap makinesi sitemizde: {SITE}/rehber (bağlantı biyografide)"
 GUNLER = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"]
 
 # Takvim dışında elle paylaşılan bölümler: {bölüm no: TR tarihi}. 13 Ekim 2026 akşamı profil boş
@@ -684,7 +688,7 @@ def aciklama(no, reels=False, ek=(), muzik=None):
            if reels else "Kaydedin, lazım olunca bakarsınız.")
     if no < len(BOLUMLER):
         son += f" Sıradaki bölüm: {BOLUMLER[no]['baslik']}"
-    parcalar += [son, b["soru"], *ek, "Bilgi amaçlıdır, yatırım tavsiyesi değildir."]
+    parcalar += [son, SITE_REHBER, b["soru"], *ek, "Bilgi amaçlıdır, yatırım tavsiyesi değildir."]
     if muzik:
         parcalar.append(f"Müzik: {muzik}")
     parcalar.append(b["hashtag"])

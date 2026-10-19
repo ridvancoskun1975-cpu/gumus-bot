@@ -1061,6 +1061,13 @@ def _ozet_ek(v):
     return "".join(s + "\n" for s in satirlar)
 
 
+def site_satiri():
+    """Haftalık ve aylık özetin açıklamasındaki site satırı (Rıdvan, 19 Ekim 2026: web sayfası tanıtımı, 1. madde;
+    günlük fiyat paylaşımlarına ve pazar analizine eklenmez)."""
+    import bilgi
+    return f"Son 30 günün grafiği ve hesap makinesi: {bilgi.SITE} (bağlantı biyografide)"
+
+
 def aciklama_yaz(v, tur):
     # İlk satır aranan kelimeyle ("gram gümüş fiyatı") ve rakamla başlar: Instagram araması ve
     # Google ilk satıra en çok ağırlığı verir, akışta da "devamı"ndan önce yalnızca o görünür.
@@ -1080,6 +1087,7 @@ def aciklama_yaz(v, tur):
             + "Sizce gümüş gelecek hafta ne yöne gider? Yorumlara yazın 👇\n"
             + (f"{v['pazar_hatirlatma']['kalin']} · {v['pazar_hatirlatma']['metin']}\n" if v.get("pazar_hatirlatma") else "")
             + f"{PAYLASIM_SATIRI + chr(10) if v.get('buyuk_hareket') else ''}\n"
+            + f"{site_satiri()}\n\n"
             "Bilgi amaçlıdır, yatırım tavsiyesi değildir.\n\n"
             f"{_kaynak_satirlari(v)}\n\n"
             f"{hashtag_sec(tur)}"
@@ -1104,6 +1112,7 @@ def aciklama_yaz(v, tur):
             f"Dolar/TL: {v['dolar']} ₺ ({d['isaret']} {d['metin']})\n\n"
             f"{not_}\n"
             f"{PAYLASIM_SATIRI + chr(10) if v.get('buyuk_hareket') else ''}\n"
+            f"{site_satiri()}\n\n"
             "Bilgi amaçlıdır, yatırım tavsiyesi değildir.\n\n"
             f"{_kaynak_satirlari(v)}\n\n"
             f"{HASHTAG_AY}"
@@ -1892,6 +1901,7 @@ def bilgi_hazirla(cikti, konu=None):
             print(f"::warning::Rehber Reels'i üretilemedi ({type(e).__name__}: {str(e)[:200]}); "
                   "bugün kaydırmalı gönderi gidiyor.")
             (cikti / f"bilgi{konu}-{damga}.mp4").unlink(missing_ok=True)
+    (cikti / f"bilgi{konu}-{damga}-reels-son.jpg").unlink(missing_ok=True)   # site kartı yalnızca Reels videosuna girer
     dosyalar = []
     if reels:
         metin = bilgi.aciklama(konu, reels=True, ek=_reels_ek_satirlari(reels["seslendirme"]),
@@ -1935,10 +1945,11 @@ def rehber_hikaye_uret(cikti, konu, hesap, damga, plan=None, reels_kapak=False):
     import rehber_hikaye
     b = bilgi.BOLUMLER[konu - 1]
     sonraki = bilgi.BOLUMLER[konu]["baslik"] if konu < len(bilgi.BOLUMLER) else None
-    return rehber_hikaye.uret(b, konu, sonraki, bilgi.SERI, hesap, cikti, damga, plan=plan, reels_kapak=reels_kapak)
+    return rehber_hikaye.uret(b, konu, sonraki, bilgi.SERI, hesap, cikti, damga, plan=plan, reels_kapak=reels_kapak,
+                              site=bilgi.SITE if reels_kapak else None)
 
 
-def rehber_tam_seslendirmesi(konu, plan, cikti):
+def rehber_tam_seslendirmesi(konu, plan, cikti, site_karti=False):
     """Rehber günü Reels'i için bölümün tamamının kare kare seslendirmesi (bot/ses.py → rehber_seslendir). Kapalıysa
     ya da herhangi bir hata olursa None: Reels o gün yalnızca müzikle (hikâye videosu gibi) gider."""
     import bilgi
@@ -1948,7 +1959,7 @@ def rehber_tam_seslendirmesi(konu, plan, cikti):
     try:
         b = bilgi.BOLUMLER[konu - 1]
         sonraki = bilgi.BOLUMLER[konu]["baslik"] if konu < len(bilgi.BOLUMLER) else None
-        metinler = ses.rehber_metinleri(konu, b, plan, sonraki)
+        metinler = ses.rehber_metinleri(konu, b, plan, sonraki, site_karti=site_karti)
         return ses.rehber_seslendir(metinler, cikti, f"rehber{konu}",
                                     ses=os.environ.get("SES_ADI", "").strip() or ses.SES, deneme=_deneme_mi())
     except Exception as e:
@@ -2031,7 +2042,12 @@ def rehber_reels_tam_uret(cikti, konu, damga, hikayeler, plan):
     reels_kapak = f"bilgi{konu}-{damga}-reels-kapak.jpg"
     if (cikti / reels_kapak).exists():
         kareler[0] = reels_kapak
-    sl = rehber_tam_seslendirmesi(konu, plan, cikti)
+    # Son kare: site kartı (Rıdvan, 19 Ekim 2026: web sayfası tanıtımı). Çizilemediyse Reels onsuz gider.
+    site_son = f"bilgi{konu}-{damga}-reels-son.jpg"
+    site_karti = (cikti / site_son).exists()
+    if site_karti:
+        kareler.append(site_son)
+    sl = rehber_tam_seslendirmesi(konu, plan, cikti, site_karti=site_karti)
     if sl and len(sl["kare_sn"]) != len(kareler):
         print(f"::warning::Rehber seslendirmesi kare sayısıyla uyuşmuyor ({len(sl['kare_sn'])} ≠ {len(kareler)}); "
               "rehber Reels'i yalnızca müzikle gidiyor.")
@@ -2095,6 +2111,7 @@ def rehber_reels_tam_uret(cikti, konu, damga, hikayeler, plan):
     finally:
         import shutil
         liste.unlink(missing_ok=True)
+        (cikti / site_son).unlink(missing_ok=True)                    # yalnızca videoya girer
         (cikti / f"_ses-rehber{konu}.wav").unlink(missing_ok=True)   # ara dosya yayına çıkmasın
         shutil.rmtree(rozet_klasoru, ignore_errors=True)
     if sl:
@@ -2195,7 +2212,8 @@ def kisa_hazirla(cikti, konu):
         reels = rehber_reels_tam_uret(cikti, konu, damga, hikayeler, plan)
     except Exception as e:
         print(f"::warning::Paylaşım atlandı: rehber #{konu} Reels'i üretilemedi ({type(e).__name__}: {str(e)[:200]})")
-        for f in hikayeler + [f"bilgi{konu}-{damga}-reels-kapak.jpg", f"bilgi{konu}-{damga}.mp4"]:
+        for f in hikayeler + [f"bilgi{konu}-{damga}-reels-kapak.jpg", f"bilgi{konu}-{damga}-reels-son.jpg",
+                              f"bilgi{konu}-{damga}.mp4"]:
             (cikti / f).unlink(missing_ok=True)
         return
     for f in hikayeler:   # kareler yalnızca videoya girdi; hikâye bu türde paylaşılmaz

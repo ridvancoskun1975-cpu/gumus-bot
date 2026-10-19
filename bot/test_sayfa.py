@@ -77,6 +77,8 @@ kontrol("404: noindex, yönlendirme, tam adresler",
         and f"url('{url}fonts/" in bulunamadi and f'href="{url}hesap/"' in bulunamadi and "Sayfa bulunamadı" in bulunamadi)
 kontrol("robots.txt site haritasını gösterir",
         (cikti / "robots.txt").read_text(encoding="utf-8") == f"User-agent: *\nAllow: /\n\nSitemap: {url}sitemap.xml\n")
+import bilgi  # noqa: E402
+kontrol("paylaşımlardaki site adı bilgi sayfasının alan adıyla aynı", sayfa.ALAN_ADI == f"https://{bilgi.SITE}/")
 kontrol("adres alan adı", url == "https://gunlukgumus.com/" and "github.io" not in ana
         and "github.io" not in (cikti / "sitemap.xml").read_text(encoding="utf-8"))
 cikti2 = Path(tempfile.mkdtemp())
