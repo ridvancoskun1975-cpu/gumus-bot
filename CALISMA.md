@@ -6,3 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
+| 19 Ekim 15:00 | "Üst düzey yapay zekâ": yasal bildiri (yeniden paylaşım), pazar yorumu etiketi + açıklama başlığı, seslendirme satırı; önizleme, onay bekliyor | bot/yasal.py, templates/yorum.html, bot/yorum.py (açıklama başlığı), bot/sayfa.py (PAZAR_BASLIK), bot/ses.py (ACIKLAMA_SATIRI) | ust-duzey-yz |
