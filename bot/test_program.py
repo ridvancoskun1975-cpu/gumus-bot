@@ -86,6 +86,8 @@ kontrol("aylık satırında 'rehber varsa' notu yok", satir(p(2026, 10, 17), "Ay
         satir(p(2026, 10, 17), "Aylık"))
 kontrol("14 Ekim: aylık 2 Kasım", "2 Kasım Pazartesi" in " ".join(satir(a, "Aylık")["ek"]))
 kontrol("14 Ekim: ECB ~17:00 (yaz saati)", a["ecb"]["saat"] == "~17:00", a["ecb"])
+kontrol("akşam özeti: bazı günler hikâyesiz (günlük sınır, 19 Ekim 2026)",
+        satir(a, "Günün özeti")["ek"] == ["bazı günler hikâyesiz"], satir(a, "Günün özeti"))
 kontrol("güncelleme saatleri", a["guncelleme"] == "Hafta içi ~10:00 ve ~20:00" and a["son_deger_saati"] == "~20:00")
 kontrol("ECB kullanım cümlesi", a["ecb"]["kullanim"] == "~10:00 değeri önceki iş gününün, ~20:00 değeri o günün kurunu kullanır")
 

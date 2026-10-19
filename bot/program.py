@@ -313,6 +313,10 @@ def program(simdi=None, kayit_gunleri=(), hikaye_turleri=None, rehber_saati=(13,
             import kart
             if bugun < kart.KART_BASLANGIC:
                 ek = [f"ilki {tek_tarih(kart.KART_BASLANGIC)}"]
+        elif tur == "post" and tur in hikaye_turleri:
+            # Günlük sınır (bot/sinir.py; Rıdvan, 19 Ekim 2026): gün 4'ü aşacaksa akşam özetinin hikâye kopyası düşer
+            # (rehber günü, ayın ilk iş günü). Sayfa her gün hikâye gidiyormuş gibi yazmasın.
+            ek = ["bazı günler hikâyesiz"]
         elif tur == "yorum":
             ilk = ilk_yorum(bugun, kayitlar)
             sonraki_pz = bugun + timedelta(days=(6 - bugun.weekday()) % 7)
