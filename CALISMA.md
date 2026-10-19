@@ -6,3 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
+| 19 Ekim 13:10 | Haftalık soru hikâyesi (cuma) + sonuç karesi; önizleme, Rıdvan'ın onayını bekliyor | bot/anket.py, templates/anket*.html, bot/main.py (görsel boyutu) | anket-haftalik |
