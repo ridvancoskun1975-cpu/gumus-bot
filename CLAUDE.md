@@ -52,6 +52,8 @@
   eklenmez. Hâller, eşikler ya da açıklama satırı değişecekse önce önizleme ve Rıdvan'ın onayı. Gorilli üretim her
   hatada ve süre aşımında gorilsiz paylaşıma düşmeli; bu yedek yol kaldırılmaz. Goril bir yazıyla üst üste binerse
   paylaşım durmaz, goril kalır ve Rıdvan'a bildirilir (gece kontrolü; Rıdvan, 16 Ekim 2026 22:43).
+  Sitede yalnız istifçi goril, tanıtım kartında ve 404 sayfasında; fiyattan bağımsız, yön göstermez (Rıdvan, 19 Ekim
+  2026 "2 ama istifçi goril", "onaylıyorum uygula"). Fiyatın yanına ya da güne göre değişen hâl koyma; kapatma `bot/sayfa.py` → `SITE_GORIL`.
 - Rehber hikâyesi kareler tek tek değil, tek müzikli video olarak gider (kapak 3 sn, kare 6 sn), rehber gönderisiyle
   aynı çalıştırmada (`bot/main.py` → `REHBER_HIKAYE_OTOMATIK = True`); hikâye kalabalık olmamalı.
 - Takvimi azaltma kararı (Rıdvan, 19 Ekim 2026: "takipçileri bıktırmamak ve kaçırmamak için … paylaşım sayısını
