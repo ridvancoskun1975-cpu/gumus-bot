@@ -6,4 +6,3 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
-| 19 Ekim 15:00 | "Üst düzey yapay zekâ": pazar yorumu görsel etiketi + açıklama başlığı; önizleme, Rıdvan zamanı gelince (25 Ekim pazarı) yayına alınmasını istedi (onay bekliyor). Yasal bildiri bu işte değil: 20 Ekim yasal kontrol görevi. Seslendirme satırı değişmiyor | templates/yorum.html, bot/yorum.py (açıklama başlığı), bot/sayfa.py (PAZAR_BASLIK) | ust-duzey-yz |
