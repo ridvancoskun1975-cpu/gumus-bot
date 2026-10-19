@@ -38,7 +38,9 @@ REHBER_SAATI = (13, 45)  # rehber bölümü o gün bu saatten sonra sayfaya gire
 GOOGLE_DOGRULAMA = "googleade97aa5989bb9eb.html"
 # Son pazar analizi düğmesi (Rıdvan, 18 Ekim 2026 "2 uygun"): pazar yorumunun açıklaması bununla başlar
 # (bot/yorum.py → aciklama()); Instagram'daki son kaydırmalı yorum bu başlıkla bulunur.
-PAZAR_BASLIK = "Haftalık gümüş görünümü | Yapay zekâ yorumu"
+PAZAR_BASLIK = "Haftalık gümüş görünümü | Üst düzey yapay zekâ yorumu"
+# 19 Ekim 2026 (Rıdvan: "ikisini de değiştir") öncesi yorumların başlığı; düğme eski yorumu da bulsun.
+ESKI_PAZAR_BASLIK = "Haftalık gümüş görünümü | Yapay zekâ yorumu"
 
 
 def site_adresi():
@@ -127,7 +129,7 @@ def son_pazar_analizi():
         return None
     try:
         cevap = bot._istek("GET", "me/media", fields="caption,media_type,permalink,timestamp", limit=25)
-        yorumlar = [m for m in cevap.get("data", []) if (m.get("caption") or "").startswith(PAZAR_BASLIK)
+        yorumlar = [m for m in cevap.get("data", []) if (m.get("caption") or "").startswith((PAZAR_BASLIK, ESKI_PAZAR_BASLIK))
                     and m.get("permalink")]
         if not yorumlar:
             return None

@@ -42,6 +42,9 @@ kontrol("en yeni pazarın kaydırmalısı", sayfa.son_pazar_analizi() == {"url":
 bot._istek = lambda *a, **kw: {"data": [MEDYA["data"][1]]}
 kontrol("kaydırmalı yoksa Reels", sayfa.son_pazar_analizi()["url"] == "https://i/reel/yorum-reels/")
 bot._istek = lambda *a, **kw: {"data": [MEDYA["data"][0]]}
+bot._istek = lambda *a, **kw: {"data": [dict(MEDYA["data"][2], caption=sayfa.ESKI_PAZAR_BASLIK + " · 18 Ekim 2026")]}
+kontrol("eski başlıklı yorum da bulunur", (sayfa.son_pazar_analizi() or {}).get("url") == "https://i/p/yorum-kay/")
+bot._istek = lambda *a, **kw: {"data": [MEDYA["data"][0]]}
 kontrol("yorum yoksa düğme yok", sayfa.son_pazar_analizi() is None)
 
 

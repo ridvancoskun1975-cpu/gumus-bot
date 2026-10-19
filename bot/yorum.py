@@ -704,7 +704,7 @@ def aciklama(v, yorum, kaynak_satirlari, gelismeler=None):
             ek = f" ve {len(alanlar) - len(secili)} kaynak daha" if len(secili) < len(alanlar) else ""
             satirlar += f"\nHaber kaynakları (web araması): {', '.join(secili)}{ek}"
         parcalar = [
-            f"Haftalık gümüş görünümü | Yapay zekâ yorumu · {v['tarih']}",
+            f"Haftalık gümüş görünümü | Üst düzey yapay zekâ yorumu · {v['tarih']}",
             f"Gram gümüş: {v['gram']} ₺ (haftalık {v['gram_deg']['isaret']} {v['gram_deg']['metin']}) · {v['veri_ani']}",
             "\n".join(vade_satirlari) + "\nAyrıntılar görsellerde, kaydırın →",
             "Sizce gümüş önümüzdeki haftalarda ne yöne gider? Yorumlara yazın 👇" if soru else None,

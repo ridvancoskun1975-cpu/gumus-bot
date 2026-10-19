@@ -39,7 +39,7 @@ SESLER_URL = "https://generativelanguage.googleapis.com/v1beta/voices"
 KAYIT_DEPO = "ridvancoskun1975-cpu/gumus-kayit"
 ANAHTAR_DOSYASI = "anahtarlar/gemini.txt"
 ORNEKLEME = 24000                     # Gemini tek parça yanıtı: 24 kHz, mono, 16 bit WAV
-ACIKLAMA_SATIRI = "🎙 Seslendirme yapay zekâ ile üretilmiştir."
+ACIKLAMA_SATIRI = "🎙 Seslendirme üst düzey yapay zekâ ile üretilmiştir."
 
 CAGRI = "Rehberin tamamı profilde. Kaydedin, lazım olunca bakarsınız."
 
