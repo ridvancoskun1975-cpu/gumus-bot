@@ -7,4 +7,3 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
 | 19 Ekim 16:25 | Paylaşım sayısını azaltma: günlük sınıra hikâyeler, kartlar kalkıyor, rehber haftada 1 çarşamba, arşiv sıraya | bot/sinir.py, bot/main.py, bot/kart.py, bot/bilgi.py, bot/program.py, paylas.yml, README, CLAUDE.md | main (bu sohbet) |
-| 19 Ekim 16:30 | Yeni adres (gunlukgumus.com) her yerde: robots.txt, görev istemleri, belgeler | bot/sayfa.py, bot/test_sayfa.py | main (alan adı sohbeti) |
