@@ -999,9 +999,13 @@ def hashtag_sec(tur, tarih=None):
 HIKAYE_TURLERI = {"post", "hafta", "ay"}
 
 
-# 20:00 özetinin açıklamasında güne göre dönen soru (yorum almak için). Yön tahmini, al/sat
-# ya da kişisel finans sorusu yok; takipçinin deneyimini ve ne görmek istediğini sorar.
+# Haftalık soru (Rıdvan, 19 Ekim 2026: hikâye anketi yerine "2 uygun"): yalnızca cuma 20:00 özetinin
+# açıklamasına haftada bir soru eklenir; yeni paylaşım ya da hikâye yok, Rıdvan'ın yapacağı iş yok.
+# Sıra 23 Ekim 2026 cumasından başlar ve havuz bitince başa döner. Yön tahmini, al/sat ya da kişisel
+# finans sorusu yok; takipçinin deneyimini ve ne görmek istediğini sorar.
 SORULAR_OZET = [
+    "Gümüşte en çok hangi rakama bakıyorsunuz: gram, ons, parite?",
+    "Gümüş hakkında en çok merak ettiğiniz konu ne?",
     "Gram gümüşü en çok nereden takip ediyorsunuz: kuyumcu, banka, uygulama?",
     "Rehberde hangi konuyu görmek istersiniz?",
     "Kuyumcudaki fiyatla buradaki fiyat arasındaki farkı fark ettiniz mi?",
@@ -1013,20 +1017,28 @@ SORULAR_OZET = [
     "Bu sayfada başka hangi bilgiyi görmek istersiniz?",
     "Gümüş külçeyi hiç elinize alıp gördünüz mü?",
 ]
+SORU_GUNU = 4                       # cuma
+SORU_BASLANGIC = date(2026, 10, 23)
 PAYLASIM_SATIRI = "Gümüşü takip eden bir tanıdığınıza gönderebilirsiniz."
-# Rıdvan (13 Ekim 2026): takipçi yokken sorular erken. Takipçi artınca SORU_ACIK = True ve
-# PAYLASIM_GUNLERI = {1, 3} (salı, perşembe) yapılır. Büyük hareket günlerinde paylaşım satırı
-# her zaman çıkar: o paylaşımlar takip etmeyenlere de gösterilir.
-SORU_ACIK = False
+# Büyük hareket ve özel günlerde paylaşım satırı her zaman çıkar: o paylaşımlar takip etmeyenlere de gösterilir.
+# Salı/perşembe paylaşım satırı (PAYLASIM_GUNLERI) kapalı.
 PAYLASIM_GUNLERI = set()
+
+
+def haftanin_sorusu(gun):
+    """O cumanın sorusu; cuma değilse ya da başlangıçtan önceyse None."""
+    if gun.weekday() != SORU_GUNU or gun < SORU_BASLANGIC:
+        return None
+    return SORULAR_OZET[((gun - SORU_BASLANGIC).days // 7) % len(SORULAR_OZET)]
 
 
 def _cagri_satirlari(v, tur, gun=None):
     """Açıklamaya eklenecek soru ve paylaşım satırları (boş olabilir)."""
     gun = gun or datetime.now(TR_SAAT).date()
     satirlar = []
-    if tur == "post" and SORU_ACIK:
-        satirlar.append(f"{SORULAR_OZET[gun.toordinal() % len(SORULAR_OZET)]} Yorumlara yazın 👇")
+    soru = haftanin_sorusu(gun) if tur == "post" else None
+    if soru:
+        satirlar.append(f"Haftanın sorusu: {soru} Yorumlara yazın 👇")
     if v.get("buyuk_hareket") or v.get("ozel") or (tur == "post" and gun.weekday() in PAYLASIM_GUNLERI):
         satirlar.append(PAYLASIM_SATIRI)
     return ("\n" + "".join(s + "\n" for s in satirlar) + "\n") if satirlar else ""
