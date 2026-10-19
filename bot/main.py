@@ -2600,7 +2600,7 @@ def tanitim_aciklamasi(muzik=None):
         "· Son 30 günün grafiği ve son günlerin fiyatları",
         "· Ay ay geçmiş fiyatlar",
         "· Gümüş rehberinin bütün bölümleri",
-        "· Gümüş uzmanlık kitabı: ücretsiz PDF, 1 Ocak 2027'den itibaren sitede (3 ayda bir güncellenir)",
+        "· Gümüş uzmanlık kitabı: ücretsiz PDF, 1 Ocak 2027'den itibaren sitede (her yıl yeni baskı)",
         "",
         "Sayfa her paylaşımla kendiliğinden güncellenir; çerez kullanmaz.",
         "Hafta içi ~10:00 ve ~20:00 gram gümüş fiyatı, cumartesi haftalık özet, pazar üst düzey yapay zekâ analizi: "

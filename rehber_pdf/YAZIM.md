@@ -9,8 +9,8 @@ numarası). Kitabı `bot/rehber_pdf.py` derler (`templates/rehber-pdf.html`). Ö
 
 - Yeni bölümler: aylık rehber paketiyle birlikte (her ayın 25'i). Bölümün kısa hâli `BOLUMLER`'e girerken uzun hâli de
   bu klasöre girer; ikisi aynı iki kontrolden geçer (paket görevi).
-- Baskı: 3 ayda bir (1 Ocak, 1 Nisan, 1 Temmuz, 1 Ekim). Baskıya o tarihe kadar Instagram'da yayımlanmış bölümler
-  girer; yayımlanmamış bölüm girmez (Reels'in önüne geçmesin).
+- Baskı: yılda bir, 1 Ocak ("2027 baskısı"; Rıdvan, 19 Ekim 2026: "1 yıl"). Baskıya o tarihe kadar Instagram'da
+  yayımlanmış bölümler girer; yayımlanmamış bölüm girmez (Reels'in önüne geçmesin).
 
 ## İçerik kuralları
 

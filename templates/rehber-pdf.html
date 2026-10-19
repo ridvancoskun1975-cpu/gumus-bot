@@ -4,7 +4,7 @@
 <html lang="tr">
 <head>
 <meta charset="utf-8">
-<title>Gümüş Rehberi · {{ baski.no }}. baskı · {{ baski.ay_yil }}</title>
+<title>Gümüş Rehberi · {{ baski.ad }}</title>
 <style>
 @font-face { font-family: 'Archivo'; font-weight: 100 900; src: url('../assets/fonts/archivo-latin-wght-normal.woff2') format('woff2');
   unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
@@ -20,7 +20,7 @@
 
 @page {
   size: A5; margin: 14mm 12.5mm 16mm;
-  @bottom-left { content: "Gümüş Rehberi · {{ baski.no }}. baskı · {{ baski.ay_yil }}"; font-family: 'Archivo', sans-serif; font-size: 7.5pt; color: #8A93A0; letter-spacing: 0.2pt; }
+  @bottom-left { content: "Gümüş Rehberi · {{ baski.ad }}"; font-family: 'Archivo', sans-serif; font-size: 7.5pt; color: #8A93A0; letter-spacing: 0.2pt; }
   @bottom-right { content: counter(page); font-family: 'Archivo', sans-serif; font-size: 8pt; font-weight: 700; color: #5E6878; }
 {% if onizleme %}  @top-right { content: "ÖNİZLEME"; font-family: 'Archivo', sans-serif; font-size: 6.5pt; font-weight: 700; letter-spacing: 1.5pt; color: #B5532F; }{% endif %}
 }
@@ -196,7 +196,7 @@ ul.duz li { margin-bottom: 1.8mm; font-size: 9.8pt; }
   </svg>
 
   <div class="kapak-alt">
-    <div class="sol"><b>{{ baski.no }}. baskı · {{ baski.ay_yil }}</b><br>{{ bolumler | length }} bölüm · 3 ayda bir güncellenir</div>
+    <div class="sol"><b>{{ baski.ad }}</b><br>{{ bolumler | length }} bölüm · her yıl yeni baskı</div>
     <div class="sag">{{ site }}<span>Instagram: {{ hesap }}</span></div>
   </div>
 </section>
@@ -208,7 +208,7 @@ ul.duz li { margin-bottom: 1.8mm; font-size: 9.8pt; }
   <div class="dortlu">
     <div class="kart"><b>Eksiksiz hâli</b>Instagram'daki kısa bölümlerin uzun hâli: formüller, örnekler, sık hatalar, özet.</div>
     <div class="kart"><b>Fiyat içermez</b>Rakamlar örnektir. Güncel fiyat her iş günü {{ site }}'da.</div>
-    <div class="kart"><b>3 ayda bir güncellenir</b>En güncel sürüm her zaman {{ site }}/rehber.pdf</div>
+    <div class="kart"><b>Her yıl yeni baskı</b>Yeni bölümlerle her 1 Ocak'ta. En güncel sürüm: {{ site }}/rehber.pdf</div>
     <div class="kart"><b>Paylaşmak serbest</b>Değiştirmeden ve ücretsiz olarak dilediğinizle paylaşın.</div>
   </div>
 

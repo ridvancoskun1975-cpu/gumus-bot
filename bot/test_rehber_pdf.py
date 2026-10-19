@@ -1,5 +1,6 @@
 """PDF Gümüş Rehberi sınamaları (bot/rehber_pdf.py; Rıdvan, 19 Ekim 2026): baskı takvimi, sitedeki yakında/indirme
 kartı, bölüm metinlerinin denetimi. Ağa çıkmaz, tarayıcı açmaz. Çalıştır: python bot/test_rehber_pdf.py"""
+import re
 import sys
 import tempfile
 from datetime import date
@@ -21,10 +22,12 @@ def kontrol(ad, kosul, ek=""):
     print("TAMAM", ad)
 
 
-# Baskı takvimi: 1 Ocak / 1 Nisan / 1 Temmuz / 1 Ekim
+# Baskı takvimi: yılda bir, 1 Ocak (Rıdvan, 19 Ekim 2026: "1 yıl")
 kontrol("sonraki baskı 1 Ocak 2027", rp.sonraki_baski(date(2026, 10, 19)) == date(2027, 1, 1))
-kontrol("baskı günü sayılmaz, sonrakine geçer", rp.sonraki_baski(date(2027, 1, 1)) == date(2027, 4, 1))
-kontrol("eylülden ekime", rp.sonraki_baski(date(2027, 9, 30)) == date(2027, 10, 1))
+kontrol("baskı günü sayılmaz, sonrakine geçer", rp.sonraki_baski(date(2027, 1, 1)) == date(2028, 1, 1))
+kontrol("yıl içinde ara baskı yok", rp.sonraki_baski(date(2027, 6, 30)) == date(2028, 1, 1))
+kontrol("baskı adı", rp.baski_adi(date(2027, 1, 1)) == "2027 baskısı")
+kontrol("tarih eki", rp.tarih_bulunma(date(2027, 1, 1)) == "1 Ocak 2027'de" and rp.tarih_bulunma(date(2028, 1, 1)) == "1 Ocak 2028'de")
 
 # Baskıya yalnız o günden önce Instagram'da yayımlanmış bölümler girer (#13 30 Aralık 2026, #14 6 Ocak 2027)
 ilk = rp.baski_bolumleri(date(2027, 1, 1))
@@ -40,13 +43,13 @@ kontrol("tarih geçti, baskı yok: eski tarih görünmez", g["durum"] == "yakind
 with tempfile.TemporaryDirectory() as d:
     yayin_eski, baskilar_eski = rp.YAYIN, list(rp.BASKILAR)
     rp.YAYIN = Path(d)
-    (rp.YAYIN / "gumus-rehberi-1.pdf").write_bytes(b"%PDF-1.4\n" + b"0" * 2048)
-    rp.BASKILAR[:] = [{"no": 1, "tarih": date(2027, 1, 1), "dosya": "gumus-rehberi-1.pdf"}]
+    (rp.YAYIN / "gumus-rehberi-2027.pdf").write_bytes(b"%PDF-1.4\n" + b"0" * 2048)
+    rp.BASKILAR[:] = [{"tarih": date(2027, 1, 1), "dosya": "gumus-rehberi-2027.pdf"}]
     try:
         kontrol("baskı tarihinden önce yine yakında", rp.site_durumu(date(2026, 12, 31))["durum"] == "yakinda")
         h = rp.site_durumu(date(2027, 1, 1))
-        kontrol("baskı günü indirme", h["durum"] == "hazir" and h["baski"] == "1. baskı · Ocak 2027"
-                and h["sonraki"] == "Nisan 2027" and h["boyut"].endswith("KB"), str(h))
+        kontrol("baskı günü indirme", h["durum"] == "hazir" and h["baski"] == "2027 baskısı"
+                and h["sonraki"] == "Ocak 2028" and h["boyut"].endswith("KB"), str(h))
 
         # Site üretimi: indirme kartı ve rehber.pdf sitenin kökünde
         with tempfile.TemporaryDirectory() as s:
@@ -72,15 +75,15 @@ with tempfile.TemporaryDirectory() as s:
     a = (cikti / "index.html").read_text(encoding="utf-8")
     kontrol("rehber sayfasında yakında kartı", "Gümüşte uzmanlaşmanın kısa yolu" in r and "Ücretsiz PDF kitap · 1 Ocak 2027" in r
             and 'data-hedef="2027-01-01"' in r and ">74<" in r)
-    kontrol("ana sayfada yakında kartı", "Gümüşte uzmanlaşmanın kısa yolu" in a and "1 Ocak 2027'de" in a
+    kontrol("ana sayfada yakında kartı", "Gümüşte uzmanlaşmanın kısa yolu" in a and "1 Ocak 2027&#39;de" in a
             and 'href="rehber/#pdf"' in a)
     kontrol("henüz PDF yok", not (cikti / "rehber.pdf").exists())
     kontrol("site haritasında henüz PDF yok", "rehber.pdf" not in (cikti / "sitemap.xml").read_text(encoding="utf-8"))
 
 # Baskı günleri sitede kendiliğinden güncellensin (sayfa.yml zamanlaması, TR 00:07)
 akis = (rp.KOK / ".github/workflows/sayfa.yml").read_text(encoding="utf-8")
-for cron in ("7 21 31 12 *", "7 21 31 3 *", "7 21 30 6 *", "7 21 30 9 *"):
-    kontrol(f"sayfa.yml baskı günü zamanı {cron}", f"cron: '{cron}'" in akis)
+kontrol("sayfa.yml baskı günü zamanı (1 Ocak 00:07 TR)", "cron: '7 21 31 12 *'" in akis
+        and len(re.findall(r"cron: '", akis)) == 1)
 
 # Bölüm metinleri: hepsi denetimden geçmeli; onaylanmış örnek #2 var
 kontrol("#2 uzun metni var", rp.bolum_dosyasi(2).exists())

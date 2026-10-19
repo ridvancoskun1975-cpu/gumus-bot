@@ -1,13 +1,14 @@
 """PDF Gümüş Rehberi: Instagram rehber bölümlerinin uzun, eksiksiz hâllerini tek PDF kitapta toplar.
 
-Rıdvan, 19 Ekim 2026: "gümüş rehberi pdf kitap yapsak, 3 ayda bir güncellesek"; "kısa olan bilgiler pdf te eksiksiz
-doyurucu olmalı"; önizlemeye "uygundur başlayalım. bunu site tanıtımına da ekleyelim. beklenti olsun."
+Rıdvan, 19 Ekim 2026: "gümüş rehberi pdf kitap yapsak"; "kısa olan bilgiler pdf te eksiksiz doyurucu olmalı";
+önizlemeye "uygundur başlayalım. bunu site tanıtımına da ekleyelim. beklenti olsun."; güncelleme aralığı için
+(3 ay önerilmişti) 22:34 "1 yıl".
 
 - Bölüm metinleri: rehber_pdf/bolum-NN.html (yazım kuralları rehber_pdf/YAZIM.md). Yeni bölümün uzun hâli aylık
   rehber paketiyle birlikte yazılır ve aynı iki kontrolden geçer.
 - Ekler: rehber_pdf/ek-<harf>.html (ilk satırdaki yorumda <!-- BAŞLIK: ... --> başlığı verir).
-- Baskı 3 ayda bir (1 Ocak, 1 Nisan, 1 Temmuz, 1 Ekim). Baskıya o günden önce Instagram'da yayımlanmış bölümler girer;
-  yayımlanmamış bölüm girmez (Reels'in önüne geçmesin). Önizleme ayın 25'inde paketle birlikte Rıdvan'a gider;
+- Baskı yılda bir, 1 Ocak'ta ("2027 baskısı"). Baskıya o günden önce Instagram'da yayımlanmış bölümler girer;
+  yayımlanmamış bölüm girmez (Reels'in önüne geçmesin). Önizleme 25 Aralık'ta aylık paketle birlikte Rıdvan'a gider;
   onaylanan PDF rehber_pdf/yayin/ altına konur ve BASKILAR'a eklenir. Site o baskıyı tarihi gelince kendiliğinden
   yayınlar (gunlukgumus.com/rehber.pdf); yayınlanmış bir baskı yokken sitede "Yakında" tanıtımı görünür.
 
@@ -37,9 +38,9 @@ AYLAR = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağu
 
 # Sitedeki "Yakında" tanıtımının tarihi (Rıdvan, 19 Ekim 2026: "beklenti olsun"). İlk baskı bu gün yayınlanır.
 ILK_BASKI = date(2027, 1, 1)
-BASKI_AYLARI = (1, 4, 7, 10)
+BASKI_AYLARI = (1,)   # yılda bir, 1 Ocak (Rıdvan, 19 Ekim 2026 22:34: "1 yıl")
 # Onaylanmış baskılar, eskiden yeniye. Rıdvan onaylayınca (ya da paketteki 7 gün sessiz kabulden sonra) eklenir:
-#   {"no": 1, "tarih": date(2027, 1, 1), "dosya": "gumus-rehberi-1.pdf"}
+#   {"tarih": date(2027, 1, 1), "dosya": "gumus-rehberi-2027.pdf"}
 # Dosya rehber_pdf/yayin/ altında durur; site, tarihi gelmiş en yeni baskıyı rehber.pdf olarak yayınlar.
 BASKILAR = []
 
@@ -69,8 +70,13 @@ def tarih_metni(g):
     return f"{g.day} {AYLAR[g.month - 1]} {g.year}"
 
 
+def baski_adi(tarih):
+    """2027 baskısı"""
+    return f"{tarih.year} baskısı"
+
+
 def sonraki_baski(bugun):
-    """bugun'den sonraki ilk baskı günü (1 Ocak / 1 Nisan / 1 Temmuz / 1 Ekim)."""
+    """bugun'den sonraki ilk baskı günü (her yıl 1 Ocak)."""
     for yil in (bugun.year, bugun.year + 1):
         for ay in BASKI_AYLARI:
             g = date(yil, ay, 1)
@@ -100,6 +106,17 @@ def _boyut_metni(bayt):
     return f"{mb:.1f} MB".replace(".", ",") if mb >= 1 else f"{max(1, round(bayt / 1024))} KB"
 
 
+# Türkçe bulunma eki: "1 Ocak 2027'de" (yılın okunuşunun son hecesine göre; 2030 gibi sıfırla bitenler onlar
+# basamağıyla değişir, yalnız 2027–2029 için doğrulandı)
+_RAKAM_EKI = {"0": "'da", "1": "'de", "2": "'de", "3": "'te", "4": "'te", "5": "'te", "6": "'da", "7": "'de",
+              "8": "'de", "9": "'da"}
+
+
+def tarih_bulunma(g):
+    """1 Ocak 2027'de"""
+    return f"{tarih_metni(g)}{_RAKAM_EKI[str(g.year)[-1]]}"
+
+
 def site_durumu(bugun):
     """Sitedeki PDF kartının verisi.
     hazir: yayınlanmış baskı var → indirme düğmesi. yakinda: yok → tanıtım (ilk baskıdan önce tarih ve geri sayımla;
@@ -108,15 +125,15 @@ def site_durumu(bugun):
     if b:
         dosya = YAYIN / b["dosya"]
         sonraki = sonraki_baski(bugun)
-        return {"durum": "hazir", "adres": SITE_ADRES, "kaynak": str(dosya), "no": b["no"],
-                "baski": f"{b['no']}. baskı · {_ay_yil(b['tarih'])}", "bolum": b.get("bolum"),
+        return {"durum": "hazir", "adres": SITE_ADRES, "kaynak": str(dosya),
+                "baski": baski_adi(b["tarih"]), "bolum": b.get("bolum"),
                 "boyut": _boyut_metni(dosya.stat().st_size), "sonraki": _ay_yil(sonraki)}
     if bugun < ILK_BASKI:
         return {"durum": "yakinda", "tarih": ILK_BASKI.isoformat(), "tarih_metni": tarih_metni(ILK_BASKI),
-                "gun": (ILK_BASKI - bugun).days}
+                "tarih_bulunma": tarih_bulunma(ILK_BASKI), "gun": (ILK_BASKI - bugun).days}
     print("::warning::PDF rehber: tanıtım tarihi geçti ama yayınlanmış baskı yok (bot/rehber_pdf.py → BASKILAR); "
           "sitede tarihsiz 'yakında' görünüyor.")
-    return {"durum": "yakinda", "tarih": None, "tarih_metni": None, "gun": None}
+    return {"durum": "yakinda", "tarih": None, "tarih_metni": None, "tarih_bulunma": None, "gun": None}
 
 
 # ---------------------------------------------------------------- denetim
@@ -214,7 +231,7 @@ def _ek_basligi(yol):
 
 # ---------------------------------------------------------------- üretim
 
-def kitap_verisi(tarih, onizleme=False, bolumler=None, baski_no=None):
+def kitap_verisi(tarih, onizleme=False, bolumler=None):
     from markupsafe import Markup
 
     nolar = bolumler or baski_bolumleri(tarih)
@@ -228,20 +245,19 @@ def kitap_verisi(tarih, onizleme=False, bolumler=None, baski_no=None):
         ekler.append({"harf": yol.stem.split("-", 1)[1].upper(), "baslik": _ek_basligi(yol) or yol.stem,
                       "metin": Markup(yol.read_text(encoding="utf-8"))})
     goril_yol = SABLONLAR / "goril" / "istif.svg"
-    no = baski_no or (max((b["no"] for b in BASKILAR), default=0) + 1)
-    return {"baski": {"no": no, "ay_yil": _ay_yil(tarih), "yil": tarih.year},
+    return {"baski": {"ad": baski_adi(tarih), "yil": tarih.year},
             "bolumler": liste, "ekler": ekler, "onizleme": onizleme,
             "goril": Markup(goril_yol.read_text(encoding="utf-8")) if goril_yol.exists() else None,
             "site": bilgi.SITE, "hesap": "@gunlukgumus"}
 
 
-def uret(cikti, tarih, onizleme=False, bolumler=None, baski_no=None):
+def uret(cikti, tarih, onizleme=False, bolumler=None):
     """Kitabı PDF olarak üretir; sayfa sayısını döndürür."""
     import os
     from jinja2 import Environment, FileSystemLoader
     from playwright.sync_api import sync_playwright
 
-    v = kitap_verisi(tarih, onizleme, bolumler, baski_no)
+    v = kitap_verisi(tarih, onizleme, bolumler)
     env = Environment(loader=FileSystemLoader(str(SABLONLAR)), autoescape=True)
     gecici = SABLONLAR / "_cikti_rehber_pdf.html"     # yazı tipleri göreli yolla (../assets/fonts) yüklensin
     gecici.write_text(env.get_template("rehber-pdf.html").render(**v), encoding="utf-8")
@@ -272,7 +288,6 @@ def main():
     u.add_argument("--tarih", help="baskı tarihi (YYYY-AA-GG); verilmezse bir sonraki baskı günü")
     u.add_argument("--onizleme", action="store_true", help="kapakta ve sayfa başında ÖNİZLEME damgası")
     u.add_argument("--bolumler", help="yalnız bu bölümler (ör. 1,2,3); verilmezse tarihten önce yayımlananlar")
-    u.add_argument("--no", type=int, help="baskı numarası (verilmezse BASKILAR'dan bir sonraki)")
     d = alt.add_parser("durum")
     d.add_argument("--tarih")
     a = ap.parse_args()
@@ -294,8 +309,8 @@ def main():
     if not denetle(yazdir=False):
         denetle()
         sys.exit(1)
-    sayfa = uret(a.cikti, tarih, a.onizleme, nolar, a.no)
-    print(f"PDF rehber üretildi: {a.cikti} ({sayfa} sayfa, {tarih_metni(tarih)} baskısı, "
+    sayfa = uret(a.cikti, tarih, a.onizleme, nolar)
+    print(f"PDF rehber üretildi: {a.cikti} ({sayfa} sayfa, {baski_adi(tarih)}, "
           f"{len(nolar or baski_bolumleri(tarih))} bölüm)")
 
 

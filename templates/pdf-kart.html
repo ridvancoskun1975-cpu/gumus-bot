@@ -35,7 +35,7 @@
 {% else %}
   {% if kucuk %}
   <a class="kart-bag pdf-kucuk" href="{{ kok }}rehber/#pdf">
-    <span><b>Gümüşte uzmanlaşmanın kısa yolu</b><small>Ücretsiz PDF kitap{% if d.tarih_metni %} · <span class="tek">{{ d.tarih_metni }}'de</span>{% else %} · çok yakında{% endif %}{% if d.gun %}<span class="tek"> · <span class="sayi" data-hedef="{{ d.tarih }}">{{ d.gun }}</span> gün kaldı</span>{% endif %}</small></span>
+    <span><b>Gümüşte uzmanlaşmanın kısa yolu</b><small>Ücretsiz PDF kitap{% if d.tarih_metni %} · <span class="tek">{{ d.tarih_bulunma }}</span>{% else %} · çok yakında{% endif %}{% if d.gun %}<span class="tek"> · <span class="sayi" data-hedef="{{ d.tarih }}">{{ d.gun }}</span> gün kaldı</span>{% endif %}</small></span>
     <span class="ok" aria-hidden="true">→</span>
   </a>
   {% else %}
