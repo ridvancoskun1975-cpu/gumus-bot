@@ -122,6 +122,7 @@ site_ = main.site_satiri()
 kontrol("gunlukgumus.com" in site_, "site satırında alan adı")
 for ad_, metin_ in (("haftalık", hafta), ("aylık", ay)):
     kontrol(f"\n{site_}\n\nBilgi amaçlıdır, yatırım tavsiyesi değildir." in metin_, f"{ad_}: site satırı uyarının üstünde")
+kontrol("ne yöne gider" not in hafta and "Yorumlara yazın" not in hafta, "haftalık özette soru yok (19 Ekim 2026)")
 kontrol(site_ not in eski_reels and site_ not in sade and "gunlukgumus.com" not in eski_reels + sade,
         "günlük fiyat paylaşımlarında site satırı yok")
 

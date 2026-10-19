@@ -1084,7 +1084,7 @@ def aciklama_yaz(v, tur):
             "Günlük değerler iş günlerinin son paylaşımına (yaklaşık 20:00) aittir; "
             + (f"değişimler {v['baz_metin']}dır (günlük kayıtlar o gün başladı; önceki haftaya ait kayıt yok).\n"
                if v["kismi"] else "değişimler önceki haftanın son değerine göredir.\n")
-            + "Sizce gümüş gelecek hafta ne yöne gider? Yorumlara yazın 👇\n"
+            # Haftalık soru kalktı (Rıdvan, 19 Ekim 2026: 'evet zaten anket iptal ettik').
             + (f"{v['pazar_hatirlatma']['kalin']} · {v['pazar_hatirlatma']['metin']}\n" if v.get("pazar_hatirlatma") else "")
             + f"{PAYLASIM_SATIRI + chr(10) if v.get('buyuk_hareket') else ''}\n"
             + f"{site_satiri()}\n\n"
