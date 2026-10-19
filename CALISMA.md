@@ -6,4 +6,3 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
-| 20 Ekim 00:50 | PDF kitap uzun bölüm metinleri, partiler hâlinde: 1. parti (#1, #3, #4) onaylandı, main'de. Sürüyor: 2. parti #5–#9 (Rıdvan 00:56 "hızlandır") bu sohbette; #10–#13 paralel başka sohbette (rehber-pdf-parti-3) — ikisi de onaylı, birbirini durdurmaz | rehber_pdf/bolum-*.html, rehber_pdf/ek-*.html, rehber_pdf/DURUM.md | rehber-pdf-parti-2 (yazılıyor) |
