@@ -115,6 +115,22 @@ details[open] summary::after { content: '−'; }
 .kart-bag small { display: block; color: var(--soluk); }
 .kart-bag .ok { flex: none; color: var(--soluk); font-size: 22px; }
 .geri { display: inline-block; margin-top: 18px; font-size: 15px; }
+/* PDF Gümüş Rehberi kartı (templates/pdf-kart.html): yakında tanıtımı ya da indirme düğmesi */
+.pdf-kart { display: flex; gap: 14px; align-items: flex-start; margin: 18px 0 6px; padding: 16px;
+  background: linear-gradient(160deg, rgba(201, 209, 218, 0.10), rgba(201, 209, 218, 0.02) 60%), var(--kart);
+  border: 1px solid rgba(201, 209, 218, 0.38); border-radius: 14px; }
+.pdf-simge { flex: none; width: 44px; height: 55px; margin-top: 2px; }
+.pdf-govde { min-width: 0; }
+.pdf-etiket { display: block; font-size: 12px; letter-spacing: 2.4px; font-weight: 800; color: var(--vurgu);
+  text-transform: uppercase; }
+.pdf-baslik { display: block; font-size: 20px; line-height: 1.2; margin: 4px 0 6px; text-wrap: balance; }
+.pdf-kart p { margin: 0 0 12px; color: var(--soluk); font-size: 15px; line-height: 1.5; }
+.pdf-kart .pdf-not { margin: 10px 0 0; font-size: 14px; }
+.pdf-kart .dugme small { font-weight: 600; opacity: 0.75; }
+.geri-sayim { display: inline-flex; align-items: baseline; gap: 6px; padding: 6px 14px; border-radius: 999px;
+  border: 1.5px solid var(--cizgi); color: var(--soluk); font-weight: 600; }
+.geri-sayim b { font: 800 22px 'JetBrains Mono', ui-monospace, monospace; color: var(--yazi); }
+.pdf-kucuk { margin-top: 10px; }
 .grup { margin: 26px 0 4px; }
 details { scroll-margin-top: 90px; }
 .a-tablo-kap { overflow-x: auto; margin: 12px 0; }   /* çok büyük yazıda tablo kendi içinde kayar, sayfa kaymaz */

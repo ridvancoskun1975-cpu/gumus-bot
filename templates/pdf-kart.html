@@ -1,0 +1,69 @@
+{#- PDF Gümüş Rehberi kartı (bot/rehber_pdf.py → site_durumu; Rıdvan, 19 Ekim 2026: "bunu site tanıtımına da
+    ekleyelim. beklenti olsun."). Yayınlanmış baskı yokken "Yakında" tanıtımı ve geri sayım; baskı yayınlanınca
+    aynı yerde indirme düğmesi. Rehber sayfasında tam kart, ana sayfada rehber kartının altında kısa hâli. -#}
+{% macro simge() -%}
+<svg class="pdf-simge" viewBox="0 0 48 60" aria-hidden="true">
+  <path d="M6 2h26l12 12v42a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#1F2329" stroke="#C9D1DA" stroke-width="2"/>
+  <path d="M32 2v10a2 2 0 0 0 2 2h10" fill="none" stroke="#C9D1DA" stroke-width="2"/>
+  <rect x="10" y="22" width="22" height="3" rx="1.5" fill="#C9D1DA" opacity="0.55"/>
+  <rect x="10" y="29" width="28" height="3" rx="1.5" fill="#C9D1DA" opacity="0.35"/>
+  <rect x="10" y="36" width="24" height="3" rx="1.5" fill="#C9D1DA" opacity="0.35"/>
+  <text x="24" y="53" text-anchor="middle" font-family="Archivo, sans-serif" font-size="10" font-weight="800" fill="#EDEFF2" letter-spacing="1">PDF</text>
+</svg>
+{%- endmacro %}
+
+{% macro pdf_kart(d, kok, kucuk=False) -%}
+{% if d %}
+{% if d.durum == "hazir" %}
+  {% if kucuk %}
+  <a class="kart-bag pdf-kucuk" href="{{ kok }}{{ d.adres }}" download>
+    <span><b>Rehberin PDF'ini indir</b><small>Ücretsiz · {{ d.baski }} · {{ d.boyut }}</small></span>
+    <span class="ok" aria-hidden="true">↓</span>
+  </a>
+  {% else %}
+  <div class="pdf-kart" id="pdf">
+    {{ simge() }}
+    <div class="pdf-govde">
+      <span class="pdf-etiket">Ücretsiz PDF · {{ d.baski }}</span>
+      <b class="pdf-baslik">Gümüş Rehberi'nin tamamı tek dosyada</b>
+      <p>Bütün bölümler eksiksiz: formüller, adım adım örnekler, sık yapılan hatalar. Telefonunuza indirin, dilediğinizle paylaşın. Yeni baskı {{ d.sonraki }}.</p>
+      <a class="dugme" href="{{ kok }}{{ d.adres }}" download>PDF'i indir <small>({{ d.boyut }})</small></a>
+    </div>
+  </div>
+  {% endif %}
+{% else %}
+  {% if kucuk %}
+  <a class="kart-bag pdf-kucuk" href="{{ kok }}rehber/#pdf">
+    <span><b>Yakında: rehberin PDF hâli</b><small>Ücretsiz{% if d.tarih_metni %} · {{ d.tarih_metni }}{% endif %}{% if d.gun %} · <span class="sayi" data-hedef="{{ d.tarih }}">{{ d.gun }}</span> gün kaldı{% endif %}</small></span>
+    <span class="ok" aria-hidden="true">→</span>
+  </a>
+  {% else %}
+  <div class="pdf-kart" id="pdf">
+    {{ simge() }}
+    <div class="pdf-govde">
+      <span class="pdf-etiket">Yakında{% if d.tarih_metni %} · {{ d.tarih_metni }}{% endif %}</span>
+      <b class="pdf-baslik">Gümüş Rehberi PDF olarak geliyor</b>
+      <p>Bütün bölümler eksiksiz ve tek dosyada: formüller, adım adım örnekler, sık yapılan hatalar. Ücretsiz; telefonunuza indirip dilediğinizle paylaşabileceksiniz.</p>
+      {% if d.gun %}<div class="geri-sayim"><b class="sayi" data-hedef="{{ d.tarih }}">{{ d.gun }}</b> gün kaldı</div>{% endif %}
+      <p class="pdf-not">Çıktığı gün Instagram'da duyuracağız.</p>
+    </div>
+  </div>
+  {% endif %}
+{% endif %}
+{% endif %}
+{%- endmacro %}
+
+{% macro geri_sayim_betigi() -%}
+<script>
+// Geri sayım: sayfa en son üretildiği günün sayısını taşır; ziyaret günü için yeniden hesaplanır (Türkiye saati).
+(function () {
+  var el = document.querySelectorAll('[data-hedef]');
+  for (var i = 0; i < el.length; i++) {
+    var h = new Date(el[i].getAttribute('data-hedef') + 'T00:00:00+03:00');
+    var g = Math.ceil((h.getTime() - Date.now()) / 864e5);
+    if (g > 0) { el[i].textContent = g; }
+    else { var k = el[i].closest('.geri-sayim'); if (k) { k.remove(); } else { el[i].parentNode.textContent = 'Ücretsiz · çok yakında'; } }
+  }
+})();
+</script>
+{%- endmacro %}

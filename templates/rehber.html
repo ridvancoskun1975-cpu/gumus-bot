@@ -25,6 +25,9 @@
   <section aria-labelledby="h-rehber" style="padding-top: 14px">
     <h1 id="h-rehber" style="font-size: 30px">Gümüş rehberi</h1>
     <p class="soluk" style="margin: 8px 0 0">Başlığa dokunun, açılsın. Yeni bölümler Instagram'da paylaşıldıkça eklenir.</p>
+    {% from "pdf-kart.html" import pdf_kart, geri_sayim_betigi %}
+    {{ pdf_kart(rehber_pdf, kok) }}
+    {% if rehber_pdf %}{{ geri_sayim_betigi() }}{% endif %}
 
     {% if rehber %}
     <h2 class="etiket grup">Bölümler</h2>

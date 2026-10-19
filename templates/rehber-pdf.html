@@ -1,0 +1,273 @@
+{#- PDF Gümüş Rehberi kitabı (bot/rehber_pdf.py derler; Rıdvan, 19 Ekim 2026: "uygundur başlayalım").
+    A5; kapak ve kapanış koyu, iç sayfalar açık zemin. Bölüm metinleri rehber_pdf/bolum-NN.html (rehber_pdf/YAZIM.md). -#}
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Gümüş Rehberi · {{ baski.no }}. baskı · {{ baski.ay_yil }}</title>
+<style>
+@font-face { font-family: 'Archivo'; font-weight: 100 900; src: url('../assets/fonts/archivo-latin-wght-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: 'Archivo'; font-weight: 100 900; src: url('../assets/fonts/archivo-latin-ext-wght-normal.woff2') format('woff2');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: 'JetBrains Mono'; font-weight: 100 800; src: url('../assets/fonts/jetbrains-mono-latin-wght-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: 'JetBrains Mono'; font-weight: 100 800; src: url('../assets/fonts/jetbrains-mono-latin-ext-wght-normal.woff2') format('woff2');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+
+:root { --zemin: #121418; --yazi: #EDEFF2; --soluk: #9AA3AE; --cizgi: #2C313A; --vurgu: #C9D1DA;
+  --metin: #1B1E24; --metin2: #434B57; --ince: #DDE2E8; --acik: #F1F3F6; --koyu-vurgu: #5E6878; }
+
+@page {
+  size: A5; margin: 14mm 12.5mm 16mm;
+  @bottom-left { content: "Gümüş Rehberi · {{ baski.no }}. baskı · {{ baski.ay_yil }}"; font-family: 'Archivo', sans-serif; font-size: 7.5pt; color: #8A93A0; letter-spacing: 0.2pt; }
+  @bottom-right { content: counter(page); font-family: 'Archivo', sans-serif; font-size: 8pt; font-weight: 700; color: #5E6878; }
+{% if onizleme %}  @top-right { content: "ÖNİZLEME"; font-family: 'Archivo', sans-serif; font-size: 6.5pt; font-weight: 700; letter-spacing: 1.5pt; color: #B5532F; }{% endif %}
+}
+@page tam { margin: 0;
+  @bottom-left { content: none; } @bottom-right { content: none; } @top-right { content: none; } }
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body { font-family: 'Archivo', sans-serif; color: var(--metin); font-size: 10.4pt; line-height: 1.52;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact; font-variant-numeric: tabular-nums; }
+p { margin: 0 0 2.6mm; }
+b, strong { font-weight: 700; }
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+/* ---------- tam sayfa (kapak ve kapanış) ---------- */
+.tam { page: tam; width: 148mm; height: 210mm; background: var(--zemin); color: var(--yazi);
+  position: relative; overflow: hidden; break-after: page; }
+.kapak { padding: 13mm 12mm 12mm; display: flex; flex-direction: column; }
+.kapak-ust { display: flex; justify-content: space-between; align-items: center; font-size: 7.6pt;
+  font-weight: 600; letter-spacing: 2.4pt; color: var(--soluk); }
+.kapak-ust .nokta { display: inline-block; width: 2.2mm; height: 2.2mm; border-radius: 50%; background: var(--vurgu); margin-right: 2.4mm; vertical-align: 0.2mm; }
+.damga { border: 1px solid #B5532F; color: #E08B66; padding: 0.8mm 2mm; border-radius: 1.5mm; letter-spacing: 1.6pt; font-size: 6.6pt; font-weight: 700; }
+.kapak-orta { margin-top: 30mm; }
+.kapak-ust-baslik { font-size: 8.6pt; letter-spacing: 3pt; color: var(--soluk); font-weight: 600; margin-bottom: 4mm; }
+.kapak h1 { margin: 0; font-weight: 800; font-size: 48pt; line-height: 0.92; letter-spacing: -1pt; color: #F1F4F7; }
+.kapak h1 .ikinci { color: #A9B3BE; }
+.kapak-alt-baslik { margin-top: 7mm; font-size: 11.6pt; line-height: 1.42; color: #C3CAD3; max-width: 104mm; }
+.kapak-cizgi { width: 18mm; height: 0.8mm; background: var(--vurgu); margin-top: 8mm; }
+.kulceler { position: absolute; right: 9mm; bottom: 32mm; width: 66mm; }
+.kapak-alt { margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid var(--cizgi); padding-top: 4mm; }
+.kapak-alt .sol { font-size: 8.4pt; color: var(--soluk); line-height: 1.5; }
+.kapak-alt .sol b { color: var(--yazi); font-weight: 700; }
+.kapak-alt .sag { text-align: right; font-size: 9.2pt; font-weight: 700; color: var(--yazi); line-height: 1.45; }
+.kapak-alt .sag span { display: block; font-weight: 500; color: var(--soluk); font-size: 8.2pt; }
+
+/* ---------- iç sayfalar ---------- */
+.yeni-sayfa { break-before: page; }
+.ust-etiket { font-size: 7.4pt; letter-spacing: 2.2pt; font-weight: 700; color: var(--koyu-vurgu); margin-bottom: 2mm; }
+h2.sayfa-baslik { font-size: 17pt; font-weight: 800; line-height: 1.1; margin: 0 0 3.6mm; letter-spacing: -0.3pt; }
+
+.bilgi-kutu { background: var(--acik); border-radius: 2.4mm; padding: 3.2mm 4.2mm 2.2mm; margin-bottom: 4.6mm; }
+.bilgi-kutu ul { margin: 0; padding-left: 4.4mm; }
+.bilgi-kutu li { margin-bottom: 1.2mm; font-size: 8.9pt; line-height: 1.4; color: var(--metin2); }
+.bilgi-kutu li b { color: var(--metin); }
+
+.dortlu { display: grid; grid-template-columns: 1fr 1fr; gap: 2.2mm; margin-bottom: 4.2mm; }
+.dortlu .kart { background: var(--acik); border-radius: 2mm; padding: 2.6mm 3.2mm; font-size: 8.5pt; line-height: 1.38; color: var(--metin2); }
+.dortlu .kart b { display: block; color: var(--metin); font-size: 9.2pt; margin-bottom: 0.6mm; }
+.icindekiler { width: 100%; border-collapse: collapse; }
+.icindekiler td { padding: 0.75mm 0; border-bottom: 1px solid var(--ince); font-size: 9.2pt; vertical-align: baseline; }
+.icindekiler td.no { width: 9mm; font-weight: 800; color: var(--koyu-vurgu); }
+.icindekiler td.ad { font-weight: 600; }
+.icindekiler tr.ek td.no { font-size: 8pt; letter-spacing: 0.6pt; }
+.icindekiler tr.ara td { border-bottom: none; padding-top: 2.6mm; font-size: 7.4pt; letter-spacing: 2pt; font-weight: 700; color: var(--koyu-vurgu); }
+
+/* bölüm açılışı */
+.bolum-acilis { display: flex; align-items: flex-end; gap: 4mm; margin-bottom: 5mm; border-bottom: 1.2px solid var(--metin); padding-bottom: 4mm; }
+.bolum-no { font-size: 58pt; font-weight: 800; line-height: 0.78; color: #B9C1CB; letter-spacing: -2pt; }
+.bolum-acilis .kicker { font-size: 7.4pt; letter-spacing: 2.4pt; font-weight: 700; color: var(--koyu-vurgu); margin-bottom: 1.6mm; }
+.bolum-acilis h2 { margin: 0; font-size: 20pt; font-weight: 800; line-height: 1.08; letter-spacing: -0.3pt; }
+.giris { font-size: 11.2pt; line-height: 1.5; color: var(--metin2); margin-bottom: 5mm; }
+
+h3 { font-size: 12.6pt; font-weight: 800; margin: 6.4mm 0 2.6mm; line-height: 1.2; break-after: avoid; }
+h3 .num { display: inline-block; min-width: 6.5mm; color: #9AA3AE; font-weight: 800; }
+
+.formul-kutu { background: var(--zemin); color: var(--yazi); border-radius: 2.6mm; padding: 4.6mm 5mm 4.4mm; margin: 0 0 4mm; break-inside: avoid; }
+.formul-kutu .etiket { font-size: 7pt; letter-spacing: 2.2pt; font-weight: 700; color: var(--soluk); margin-bottom: 2mm; }
+.formul-kutu .formul { font-family: 'JetBrains Mono', monospace; font-size: 11.2pt; font-weight: 700; line-height: 1.35; }
+.formul-kutu .formul .sabit { color: #FFFFFF; background: rgba(201,209,218,0.16); padding: 0 1.2mm; border-radius: 1mm; }
+.formul-kutu .not { font-size: 8.4pt; color: var(--soluk); margin-top: 2mm; line-height: 1.4; }
+
+.parca { display: flex; gap: 3.4mm; margin-bottom: 3mm; break-inside: avoid; }
+.parca .rozet { flex: none; width: 21mm; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 9.6pt; text-align: center;
+  border: 1.2px solid var(--metin); border-radius: 1.6mm; padding: 1.2mm 0; height: fit-content; }
+.parca .rozet.koyu { background: var(--zemin); color: var(--yazi); border-color: var(--zemin); }
+.parca p { margin: 0; font-size: 9.9pt; }
+
+table.tablo { width: 100%; border-collapse: collapse; margin: 1mm 0 2.6mm; break-inside: avoid; font-size: 9.6pt; }
+table.tablo th { text-align: left; font-size: 7.4pt; letter-spacing: 1.2pt; font-weight: 700; color: var(--koyu-vurgu); padding: 1.4mm 2mm; border-bottom: 1.2px solid var(--metin); }
+table.tablo td { padding: 1.7mm 2mm; border-bottom: 1px solid var(--ince); }
+table.tablo td.r, table.tablo th.r { text-align: right; }
+table.tablo tr.son td { border-bottom: 1.2px solid var(--metin); font-weight: 800; }
+table.tablo td.adim { width: 13mm; font-weight: 800; color: var(--koyu-vurgu); }
+table.tablo .mono { font-size: 9pt; }
+
+table.izgara { width: 100%; border-collapse: separate; border-spacing: 1mm; margin: 1mm 0 2mm; break-inside: avoid; }
+table.izgara th { font-size: 7.6pt; font-weight: 700; color: var(--koyu-vurgu); letter-spacing: 0.4pt; padding: 1mm; }
+table.izgara th.kose { text-align: left; font-size: 6.8pt; line-height: 1.25; }
+table.izgara td { text-align: center; padding: 2.2mm 1mm; background: var(--acik); border-radius: 1.2mm; font-size: 10pt; font-weight: 600; }
+table.izgara td.merkez { background: var(--zemin); color: #FFFFFF; font-weight: 800; }
+table.izgara td.capraz { background: #E2E7ED; box-shadow: inset 0 0 0 1.2px #8C96A3; font-weight: 800; }
+table.izgara th.satir { text-align: right; padding-right: 2mm; }
+
+.aciklama { font-size: 8.3pt; color: #6B7482; line-height: 1.4; margin: 0 0 3mm; }
+.not-kutu { border-left: 2.4px solid #9AA3AE; padding: 0.6mm 0 0.6mm 3.6mm; margin: 2mm 0 3.6mm; font-size: 9.6pt; color: var(--metin2); break-inside: avoid; }
+.not-kutu b { color: var(--metin); }
+
+.hatalar { counter-reset: hata; margin: 0; padding: 0; list-style: none; }
+.hatalar li { position: relative; padding-left: 9mm; margin-bottom: 3.2mm; break-inside: avoid; font-size: 9.8pt; }
+.hatalar li::before { counter-increment: hata; content: counter(hata); position: absolute; left: 0; top: 0.2mm;
+  width: 6mm; height: 6mm; border-radius: 50%; background: var(--zemin); color: #fff; font-weight: 800; font-size: 8.4pt; text-align: center; line-height: 6mm; }
+.hatalar li b { display: block; font-size: 10.2pt; margin-bottom: 0.4mm; }
+
+ul.duz { margin: 0 0 3mm; padding-left: 4.6mm; }
+ul.duz li { margin-bottom: 1.8mm; font-size: 9.8pt; }
+
+.deneme { border: 1.4px dashed #8C96A3; border-radius: 2.6mm; padding: 4mm 4.6mm; margin: 5mm 0 4mm; break-inside: avoid; }
+.deneme .etiket { font-size: 7.2pt; letter-spacing: 2.2pt; font-weight: 800; color: var(--koyu-vurgu); margin-bottom: 1.6mm; }
+.deneme p { font-size: 10pt; margin-bottom: 1.4mm; }
+.deneme .cevap { margin-top: 2.6mm; padding-top: 2.2mm; border-top: 1px solid var(--ince); font-size: 8.6pt; color: #6B7482; }
+
+.akilda { background: var(--zemin); color: var(--yazi); border-radius: 2.6mm; padding: 4.4mm 5mm 3mm; margin-top: 5mm; break-inside: avoid; }
+.akilda .etiket { font-size: 7.2pt; letter-spacing: 2.2pt; font-weight: 800; color: var(--soluk); margin-bottom: 2mm; }
+.akilda ul { margin: 0; padding-left: 4.4mm; }
+.akilda li { font-size: 9.8pt; margin-bottom: 1.8mm; line-height: 1.42; }
+.akilda .mono { font-size: 9pt; }
+
+.bolum-sonu { margin-top: 4mm; font-size: 7.8pt; color: #7A8390; line-height: 1.45; border-top: 1px solid var(--ince); padding-top: 2.4mm; }
+
+/* ---------- kapanış ---------- */
+.kapanis { padding: 13mm 12mm 11mm; display: flex; flex-direction: column; }
+.kapanis .maskot { width: 50mm; margin: 6mm auto 0; }
+.kapanis .maskot svg { width: 100%; height: auto; display: block; }
+.kapanis h2 { text-align: center; font-size: 19pt; font-weight: 800; margin: 5mm 0 1.6mm; line-height: 1.12; color: #FFFFFF; }
+.kapanis .slogan { text-align: center; font-size: 10.4pt; color: #C3CAD3; margin-bottom: 6mm; }
+.adresler { display: flex; gap: 3mm; justify-content: center; margin-bottom: 7mm; }
+.adres { border: 1.2px solid var(--cizgi); border-radius: 2.4mm; padding: 3mm 4mm; text-align: center; min-width: 50mm; background: rgba(201,209,218,0.05); }
+.adres .tur { font-size: 6.8pt; letter-spacing: 1.8pt; color: var(--soluk); font-weight: 700; margin-bottom: 1mm; }
+.adres .deger { font-size: 11pt; font-weight: 800; color: #FFFFFF; }
+.yasal { margin-top: auto; border-top: 1px solid var(--cizgi); padding-top: 3.4mm; font-size: 7.4pt; line-height: 1.5; color: var(--soluk); }
+.yasal b { color: var(--yazi); letter-spacing: 1.4pt; font-size: 6.8pt; display: block; margin-bottom: 1mm; }
+.yasal p { margin: 0 0 1.4mm; }
+.kaynaklar { margin: 4mm 0 0; font-size: 7.8pt; color: #7A8390; line-height: 1.45; }
+.birlikte { break-inside: avoid; }
+.bolum-bas { break-before: page; }
+.ek-bas { break-before: page; }
+</style>
+</head>
+<body>
+
+<!-- ===================== KAPAK ===================== -->
+<section class="tam kapak">
+  <div class="kapak-ust">
+    <div><span class="nokta"></span>{{ hesap | upper }}</div>
+    {% if onizleme %}<div class="damga">ÖNİZLEME</div>{% endif %}
+  </div>
+
+  <div class="kapak-orta">
+    <div class="kapak-ust-baslik">ÜCRETSİZ PDF REHBER</div>
+    <h1>Gümüş<br><span class="ikinci">Rehberi</span></h1>
+    <div class="kapak-alt-baslik">Onstan külçeye, pariteden kuyumcu fiyatına: gram gümüşü anlamak için bilmeniz gerekenler.</div>
+    <div class="kapak-cizgi"></div>
+  </div>
+
+  <svg class="kulceler" viewBox="0 0 240 150" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <linearGradient id="k-on" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D5DBE2"/><stop offset="1" stop-color="#7F8995"/></linearGradient>
+      <linearGradient id="k-ust" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#F2F5F8"/><stop offset="1" stop-color="#C3CBD4"/></linearGradient>
+      <radialGradient id="k-isik" cx="50%" cy="60%" r="55%"><stop offset="0" stop-color="#C9D1DA" stop-opacity="0.14"/><stop offset="1" stop-color="#C9D1DA" stop-opacity="0"/></radialGradient>
+      <g id="kulce">
+        <path d="M-52 0 L52 0 L44 -20 L-44 -20 Z" fill="url(#k-on)"/>
+        <path d="M-44 -20 L44 -20 L38 -27 L-38 -27 Z" fill="url(#k-ust)"/>
+        <path d="M-26 -11 L-10 -11" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" opacity="0.75"/>
+      </g>
+    </defs>
+    <ellipse cx="120" cy="100" rx="120" ry="60" fill="url(#k-isik)"/>
+    <ellipse cx="120" cy="143" rx="104" ry="5" fill="#000" opacity="0.5"/>
+    <use href="#kulce" x="66" y="140"/>
+    <use href="#kulce" x="174" y="140"/>
+    <use href="#kulce" x="120" y="113"/>
+    <use href="#kulce" x="120" y="86"/>
+  </svg>
+
+  <div class="kapak-alt">
+    <div class="sol"><b>{{ baski.no }}. baskı · {{ baski.ay_yil }}</b><br>{{ bolumler | length }} bölüm · 3 ayda bir güncellenir</div>
+    <div class="sag">{{ site }}<span>Instagram: {{ hesap }}</span></div>
+  </div>
+</section>
+
+<!-- ===================== HAKKINDA + İÇİNDEKİLER ===================== -->
+<section>
+  <div class="ust-etiket">BU REHBER HAKKINDA</div>
+  <h2 class="sayfa-baslik">Rehberi nasıl kullanmalı?</h2>
+  <div class="dortlu">
+    <div class="kart"><b>Eksiksiz hâli</b>Instagram'daki kısa bölümlerin uzun hâli: formüller, örnekler, sık hatalar, özet.</div>
+    <div class="kart"><b>Fiyat içermez</b>Rakamlar örnektir. Güncel fiyat her iş günü {{ site }}'da.</div>
+    <div class="kart"><b>3 ayda bir güncellenir</b>En güncel sürüm her zaman {{ site }}/rehber.pdf</div>
+    <div class="kart"><b>Paylaşmak serbest</b>Değiştirmeden ve ücretsiz olarak dilediğinizle paylaşın.</div>
+  </div>
+
+  <div class="ust-etiket">İÇİNDEKİLER</div>
+  <table class="icindekiler">
+    {% for b in bolumler %}<tr><td class="no">{{ b.no }}</td><td class="ad">{{ b.baslik }}</td></tr>
+    {% endfor %}{% for e in ekler %}<tr class="ek"><td class="no">{{ e.harf }}</td><td class="ad">Ek: {{ e.baslik }}</td></tr>
+    {% endfor %}
+  </table>
+</section>
+
+<!-- ===================== BÖLÜMLER ===================== -->
+{% for b in bolumler %}
+<section class="bolum-bas" id="bolum-{{ b.no }}">
+  <div class="bolum-acilis">
+    <div class="bolum-no">{{ b.no }}</div>
+    <div>
+      <div class="kicker">BÖLÜM {{ b.no }}</div>
+      <h2>{{ b.baslik }}</h2>
+    </div>
+  </div>
+{{ b.metin }}
+  <div class="bolum-sonu">Bilgi amaçlıdır, yatırım tavsiyesi değildir. Bu bölümün kısa hâli Instagram'da “Gümüş rehberi #{{ b.no }}” olarak yayımlandı. Güncel gram gümüş fiyatı her iş günü {{ site }}'da.</div>
+</section>
+{% endfor %}
+
+<!-- ===================== EKLER ===================== -->
+{% for e in ekler %}
+<section class="ek-bas" id="ek-{{ e.harf }}">
+  <div class="bolum-acilis">
+    <div class="bolum-no">{{ e.harf }}</div>
+    <div>
+      <div class="kicker">EK {{ e.harf }}</div>
+      <h2>{{ e.baslik }}</h2>
+    </div>
+  </div>
+{{ e.metin }}
+</section>
+{% endfor %}
+
+<!-- ===================== KAPANIŞ ===================== -->
+<section class="tam kapanis yeni-sayfa">
+  <div class="kapak-ust">
+    <div><span class="nokta"></span>{{ hesap | upper }}</div>
+    {% if onizleme %}<div class="damga">ÖNİZLEME</div>{% endif %}
+  </div>
+  {% if goril %}<div class="maskot">{{ goril }}</div>{% endif %}
+  <h2>Her gün fiyat,<br>her pazar derin yorum</h2>
+  <div class="slogan">Hafta içi her gün iki kez gram gümüş fiyatı.<br>Pazar günleri üst düzey yapay zekâ analizi.</div>
+  <div class="adresler">
+    <div class="adres"><div class="tur">WEB</div><div class="deger">{{ site }}</div></div>
+    <div class="adres"><div class="tur">INSTAGRAM</div><div class="deger">{{ hesap }}</div></div>
+  </div>
+  <div class="yasal">
+    <b>YASAL BİLGİLENDİRME</b>
+    <p>Bu rehber yalnızca bilgi amaçlıdır; alım-satım önerisi içermez ve yatırım danışmanlığı değildir. Yatırım danışmanlığı, SPK'dan yetki almış kuruluşlarla imzalanan sözleşme çerçevesinde verilir. Rehberdeki rakamlar örnektir, güncel fiyat değildir; yalnızca bu bilgilere dayanarak karar vermeyin.</p>
+    <p>Bilgiler baskı tarihi itibarıyla hazırlanmıştır ve zamanla değişebilir. Hatalı bir bilgi görürseniz Instagram'dan DM ile bildirebilirsiniz. En güncel sürüm: {{ site }}/rehber.pdf</p>
+    <p>© {{ baski.yil }} {{ hesap }} · Değiştirmeden ve ücretsiz paylaşılabilir.</p>
+  </div>
+</section>
+
+</body>
+</html>

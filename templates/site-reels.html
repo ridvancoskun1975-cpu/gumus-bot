@@ -22,6 +22,10 @@
 .ozellik .simge * { fill: none; stroke: var(--vurgu); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
 .ozellik b { font-size: 46px; line-height: 1.15; font-weight: 700; }
 .ozellik span { font-size: 46px; line-height: 1.15; font-weight: 500; color: var(--soluk); }
+/* Beş madde (PDF rehber eklendi, 19 Ekim 2026): satırlar biraz sıkışır, ikinci satırlı madde goril ve düğmeye taşmaz */
+.liste.sik .ozellik { padding: 19px 0; }
+.liste.sik .ozellik:last-child { border-bottom: none; }
+.ozellik span.ikinci { display: block; font-size: 40px; margin-top: 2px; }
 .cagri { position: absolute; left: 96px; top: 1388px; display: inline-flex; align-items: center; gap: 16px;
   font-size: 46px; font-weight: 800; color: var(--zemin); background: var(--vurgu); border-radius: 999px;
   padding: 18px 34px 20px; }
@@ -41,11 +45,11 @@
   <div style="position: absolute; left: 96px; right: 170px; top: 400px">
     <div class="baslik" id="baslik">Gram gümüş için<br>tek adres</div>
     <div class="adres" id="adres"><span>{{ site }}</span></div>
-    <div class="liste">
+    <div class="liste{% if ozellikler | length > 4 %} sik{% endif %}">
       {% for o in ozellikler %}
       <div class="ozellik" id="oz{{ loop.index0 }}">
         <svg class="simge" viewBox="0 0 52 52" aria-hidden="true">{{ o.simge | safe }}</svg>
-        <div><b>{{ o.baslik }}</b>{% if o.alt %}<span> · {{ o.alt }}</span>{% endif %}</div>
+        <div><b>{{ o.baslik }}</b>{% if o.alt %}{% if o.ikinci_satir %}<span class="ikinci">{{ o.alt }}</span>{% else %}<span> · {{ o.alt }}</span>{% endif %}{% endif %}</div>
       </div>
       {% endfor %}
     </div>

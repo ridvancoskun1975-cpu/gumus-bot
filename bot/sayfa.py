@@ -29,6 +29,7 @@ import main as bot  # noqa: E402
 import ayrintili  # noqa: E402
 import program as prg  # noqa: E402
 import dar_sayfalar  # noqa: E402
+import rehber_pdf  # noqa: E402
 
 GRAFIK_GUN = 30        # grafikteki en fazla iş günü
 TABLO_GUN = 10         # tablodaki en fazla iş günü
@@ -222,6 +223,16 @@ def _rehber(simdi):
     return sorted(yayimlanan, key=lambda b: b["no"])
 
 
+def _rehber_pdf(bugun):
+    """PDF Gümüş Rehberi kartı (bot/rehber_pdf.py; Rıdvan, 19 Ekim 2026: "bunu site tanıtımına da ekleyelim.
+    beklenti olsun."). Yayınlanmış baskı yokken "Yakında" + geri sayım; varsa indirme düğmesi. Hata olursa kart çıkmaz."""
+    try:
+        return rehber_pdf.site_durumu(bugun)
+    except Exception as e:
+        print(f"::warning::PDF rehber kartı hazırlanamadı: {type(e).__name__}: {e}")
+        return None
+
+
 def veri_hazirla(gecmis, simdi=None, pazar=None):
     simdi = simdi or datetime.now(bot.TR_SAAT)
     kayitlar = sorted((date.fromisoformat(g), k) for g, k in gecmis.items())
@@ -269,6 +280,7 @@ def veri_hazirla(gecmis, simdi=None, pazar=None):
         "ilk_kayit": _tarih(kayitlar[0][0]),
         "rehber": rehber,
         "ayrintili": _ayrintili(simdi),
+        "rehber_pdf": _rehber_pdf(simdi.date()),
         "program": program,
         "tanitim": _tanitim(program, pazar),
         "site_goril": SITE_GORIL,
@@ -284,6 +296,13 @@ def uret(cikti, gecmis, simdi=None, euro=None, pazar=None, kati=False):
     from jinja2 import Environment, FileSystemLoader
 
     v = veri_hazirla(gecmis, simdi, pazar)
+    # Yayınlanmış PDF baskısı sitenin köküne (gunlukgumus.com/rehber.pdf); kopyalanamazsa indirme kartı çıkmaz
+    if v["rehber_pdf"] and v["rehber_pdf"]["durum"] == "hazir":
+        try:
+            shutil.copy2(v["rehber_pdf"]["kaynak"], cikti / rehber_pdf.SITE_ADRES)
+        except Exception as e:
+            print(f"::warning::PDF rehber siteye kopyalanamadı: {type(e).__name__}: {e}")
+            v["rehber_pdf"] = None
     env = Environment(loader=FileSystemLoader(str(bot.SABLONLAR)), autoescape=True)
     (cikti / "index.html").write_text(env.get_template("sayfa.html").render(**v, kok=""), encoding="utf-8")
     (cikti / "rehber").mkdir(exist_ok=True)

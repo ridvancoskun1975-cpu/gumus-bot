@@ -103,6 +103,9 @@
       <span><b>Rehberi aç</b><small>{% if rehber %}{{ rehber | length }} bölüm{% if ayrintili %} ve ayrıntılı bilgi{% endif %}{% else %}Ayrıntılı bilgi{% endif %}, başlık başlık.</small></span>
       <span class="ok" aria-hidden="true">→</span>
     </a>
+    {% from "pdf-kart.html" import pdf_kart, geri_sayim_betigi %}
+    {{ pdf_kart(rehber_pdf, kok, kucuk=True) }}
+    {% if rehber_pdf %}{{ geri_sayim_betigi() }}{% endif %}
   </section>
 
   <section id="takvim" aria-labelledby="h-takvim">
