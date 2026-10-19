@@ -43,13 +43,15 @@ PAZAR_BASLIK = "Haftalık gümüş görünümü | Üst düzey yapay zekâ yorumu
 ESKI_PAZAR_BASLIK = "Haftalık gümüş görünümü | Yapay zekâ yorumu"
 
 
+# Sitenin kendi alan adı (Rıdvan, 19 Ekim 2026: GoDaddy'den alındı, "tam bağlama başla"). GitHub Pages'te özel
+# alan adı olarak tanımlı; eski <sahip>.github.io/<depo>/ adresi kendiliğinden buraya yönlenir. Kanonik adres,
+# site haritası, paylaşım önizlemesi ve "WhatsApp'ta paylaş" metni bu adresi kullanır.
+ALAN_ADI = "https://gunlukgumus.com/"
+
+
 def site_adresi():
-    """GitHub Pages adresi: SAYFA_URL ya da <sahip>.github.io/<depo>/."""
-    url = os.environ.get("SAYFA_URL", "").strip()
-    if not url:
-        depo = os.environ.get("GITHUB_REPOSITORY", "ridvancoskun1975-cpu/gumus-bot")
-        sahip, ad = depo.split("/", 1)
-        url = f"https://{sahip.lower()}.github.io/{ad}/"
+    """Sitenin adresi: SAYFA_URL (deneme için) ya da ALAN_ADI."""
+    url = os.environ.get("SAYFA_URL", "").strip() or ALAN_ADI
     return url.rstrip("/") + "/"
 
 
