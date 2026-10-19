@@ -236,11 +236,14 @@ for g, no in bilgi.arsiv_takvim().items():
     dogrula(yayim[no] < gun and no < 6, f"bölüm #{no} önceden yayımlanmış, sesli rehber Reels'i yok: {g}")
     dogrula(1 + 1 + 2 <= 4, f"günlük sınır: {g}")   # sabah Reels'i + arşiv Reels'i + akşam özeti ve hikâyesi
 dogrula(list(bilgi.arsiv_takvim().values()) == [3, 4, 5], f"arşiv bölümleri sırayla: {bilgi.arsiv_takvim()}")
-dogrula(min(bilgi.arsiv_takvim()) == "2026-10-28", f"ilk arşiv Reels'i 28 Ekim: {bilgi.arsiv_takvim()}")
-dogrula(max(bilgi.arsiv_takvim()) < min(g for g in bilgi.takvim() if g > "2026-10-21"),
-        "arşiv Reels'leri yeni bölümlerden önce")
-dogrula(bilgi.bugunun_arsiv_bolumu(date(2026, 10, 28)) == 3 and bilgi.bugunun_arsiv_bolumu(date(2026, 10, 22)) is None,
-        "bugünün arşiv bölümü (22 Ekim ayrı günü kaldırıldı)")
+# 19 Ekim 2026 (Rıdvan "evet"): 20–21 Ekim kalktı; sıra 28 Ekim #7, 4 Kasım #8, sonra arşiv #3–#5, sonra #9
+dogrula(list(bilgi.arsiv_takvim()) == ["2026-11-11", "2026-11-18", "2026-11-25"], f"arşiv günleri: {bilgi.arsiv_takvim()}")
+_t = bilgi.takvim()
+dogrula(_t.get("2026-10-28") == 7 and _t.get("2026-11-04") == 8 and _t.get("2026-12-02") == 9,
+        "#7 ve #8 arşivden önce, #9 arşivden sonra")
+dogrula("2026-10-20" not in _t and "2026-10-21" not in _t, "20–21 Ekim rehber yok")
+dogrula(bilgi.bugunun_arsiv_bolumu(date(2026, 11, 11)) == 3 and bilgi.bugunun_arsiv_bolumu(date(2026, 10, 28)) is None,
+        "bugünün arşiv bölümü")
 dogrula("'yorum'" in adim["if"], "pazar yorumunda da seslendirme anahtarı alınır")
 uret_adimi = next(a_ for a_ in akis["jobs"]["uret"]["steps"] if a_.get("id") == "uret")
 dogrula("inputs.deneme && inputs.ornek" in uret_adimi["env"]["ORNEK"] and "--ornek" in uret_adimi["run"],

@@ -1,9 +1,9 @@
 """Gümüş rehberi: profili çeşitlendiren, fiyat verisi kullanmayan bilgi gönderileri (kaydırmalı).
 
 Her bölüm kapak + 3 sayfa olarak paylaşılır, hafta içi ~14:00'te otomatik gider.
-Takvim: 1-2. bölümler 13 Ekim 2026 akşamı elle paylaşıldı (ONCEDEN_YAYIMLANAN); 3-8. bölümler
-14-21 Ekim'de her iş günü (BASLANGIC); sonrası haftada 1, DUZENLI_GUNLER'de (çarşamba; Rıdvan 19 Ekim 2026) sırayla:
-önce rehber arşivi Reels'i (ARSIV_SIRASI: #3–#5), sonra sıradaki yeni bölüm. Yeni bölüm eklemek için BOLUMLER'in
+Takvim: 1-2. bölümler 13 Ekim 2026 akşamı elle paylaşıldı (ONCEDEN_YAYIMLANAN); 3-6. bölümler
+14-19 Ekim'de her iş günü (BASLANGIC); sonrası haftada 1, DUZENLI_GUNLER'de (çarşamba; Rıdvan 19 Ekim 2026) sırayla:
+önce #7–#8, sonra rehber arşivi Reels'i (ARSIV_SIRASI: #3–#5), sonra #9 ve sonrası. Yeni bölüm eklemek için BOLUMLER'in
 sonuna ekle; takvime kendiliğinden girer. Bölümler bitince zamanlı çalışma bir şey paylaşmaz.
 Elle göndermek için Actions → Run workflow → tür: bilgi, konu: <no>.
 Rakamlar örnek ya da sabit değerlerdir (güncel fiyat içermez), bu yüzden MetalCharts hakkı harcanmaz.
@@ -26,14 +26,13 @@ ONCEDEN_YAYIMLANAN = {
     1: "2026-10-13",
     2: "2026-10-13",
 }
-# İlk hafta her iş günü bir bölüm (TR tarihi)
+# İlk hafta her iş günü bir bölüm (TR tarihi). 20 ve 21 Ekim (#7, #8) Rıdvan'ın 19 Ekim 2026 kararıyla kaldırıldı
+# ("rehber bölümlerini haftada 1'e düşürelim. ben de rahatça öne çıkarabilirim." — "evet"): #7 ve #8 haftalık sıraya girdi.
 BASLANGIC = {
     "2026-10-14": 3,
     "2026-10-15": 4,
     "2026-10-16": 5,
     "2026-10-19": 6,
-    "2026-10-20": 7,
-    "2026-10-21": 8,
 }
 # Sonrasında haftada 1: çarşamba (Pazartesi = 0). Rıdvan, 19 Ekim 2026: takipçiyi bıktırmamak için paylaşım
 # sayısı azaltıldı; salı ve perşembe (haftada 2) yerine haftada 1. Ayda 4 yeni bölüm gelen aylık paketle aynı hız.
@@ -625,10 +624,10 @@ def _duzenli_gunler():
 
 
 def _haftalik_sira():
-    """{"YYYY-AA-GG": ("arsiv" | "yeni", bölüm no)} — DUZENLI_GUNLER'deki haftalık rehber sırası: önce rehber arşivi
-    Reels'i (ARSIV_SIRASI), sonra sıradaki yeni bölümler."""
-    kuyruk = [("arsiv", n) for n in ARSIV_SIRASI]
-    kuyruk += [("yeni", n) for n in range(max(BASLANGIC.values()) + 1, len(BOLUMLER) + 1)]
+    """{"YYYY-AA-GG": ("arsiv" | "yeni", bölüm no)} — DUZENLI_GUNLER'deki haftalık rehber sırası: önce ARSIVDEN_ONCE
+    kadar yeni bölüm (#7, #8), sonra rehber arşivi Reels'i (ARSIV_SIRASI), sonra kalan yeni bölümler."""
+    yeniler = [("yeni", n) for n in range(max(BASLANGIC.values()) + 1, len(BOLUMLER) + 1)]
+    kuyruk = yeniler[:ARSIVDEN_ONCE] + [("arsiv", n) for n in ARSIV_SIRASI] + yeniler[ARSIVDEN_ONCE:]
     return {g.isoformat(): k for g, k in zip(_duzenli_gunler(), kuyruk)}
 
 
@@ -650,9 +649,11 @@ def yayim_listesi():
 # başladı; ondan önce yayımlanan #3–#5'in hiç Reels'i yoktu (onları taşıyacak cumartesi kısa Reels'i 16 Ekim'de
 # kaldırıldı). Her biri bir kez, bölümün tamamını okuyan sesli Reels olarak gider: yalnız Reels, kaydırmalı ve
 # hikâye videosu zaten paylaşıldı (main.kisa_hazirla). 19 Ekim 2026'da Rıdvan ayrı günleri (22, 26, 28 Ekim)
-# kaldırdı: "rehber sırasına girsinler" — haftalık rehber gününde (çarşamba ~14:00) yeni bölümlerden önce giderler.
+# kaldırdı: "rehber sırasına girsinler" — haftalık rehber gününde (çarşamba ~14:00), #7 ve #8'den sonra, #9'dan önce
+# (ARSIVDEN_ONCE; 28 Ekim #7, 4 Kasım #8, 11/18/25 Kasım #3/#4/#5, 2 Aralık #9).
 # #1–#2'nin 13 Ekim'de sessiz kısa Reels'i var, listede yok. Elle: Run workflow → tür: kisa, konu: <no>.
 ARSIV_SIRASI = [3, 4, 5]
+ARSIVDEN_ONCE = 2   # haftalık sırada arşiv Reels'lerinden önce gidecek yeni bölüm sayısı (#7, #8)
 
 
 def arsiv_takvim():

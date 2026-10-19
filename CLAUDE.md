@@ -59,7 +59,7 @@
   rehber haftada 1 çarşamba, arşiv Reels'i haftalık sıraya girdi, pazar kaydırmalı + Reels olduğu gibi kaldı.
   Yeni bir rutin paylaşım ya da hikâye eklemeyi önermeden önce olağan haftanın gün gün sayısını (README → "Günlük
   sınır") göster; hiçbir gün 4'ü aşmamalı.
-- Rehber günü (19–21 Ekim 2026 her gün; sonra haftada 1, çarşamba ~14:00) akışa kaydırmalı gönderinin yerine bölümün tamamını kare kare okuyan (Rıdvan, 17 Ekim 2026: "Tabii ki tamamının okunması gerekiyor"; okumayı ona sormadan kısaltma) kadın sesli Reels gider,
+- Rehber günü (14–19 Ekim 2026 her iş günü; sonra haftada 1, çarşamba ~14:00 — 20–21 Ekim Rıdvan'ın 19 Ekim kararıyla kalktı, #7 28 Ekim, #8 4 Kasım) akışa kaydırmalı gönderinin yerine bölümün tamamını kare kare okuyan (Rıdvan, 17 Ekim 2026: "Tabii ki tamamının okunması gerekiyor"; okumayı ona sormadan kısaltma) kadın sesli Reels gider,
   hikâyeye müzikli rehber videosu; cumartesi kısa Reels'i kaldırıldı (Rıdvan, 16 Ekim 2026 23:4x: "Kaydırmalı rehber
   kimse bakmaz"; `bot/main.py` → `REHBER_REELS`). Ses **Sulafat** (Rıdvan, 16 Ekim 2026, 3 önizlemeden seçti; README →
   "Rehber Reels seslendirmesi", `bot/ses.py`). Rehber hikâye videoları sesli değil, müzikli kalır. Reels üretilemezse
@@ -69,7 +69,7 @@
   16 Ekim 2026). Kredi biterse ses 402 verir, Reels müzikle gider; gece kontrolü bildirir. Yeni rehber bölümü eklenince `ses.OKUMA`'ya satır ekle.
 - Rehber arşivi Reels'i (Rıdvan, 17 Ekim 2026 "öneriyi uygula"): sesli rehber Reels'inden önce yayımlanan #3–#5 birer
   kez, aynı tam okumalı sesli Reels olarak gider; 19 Ekim 2026'dan beri haftalık rehber sırasında, çarşamba (Rıdvan:
-  "rehber sırasına girsinler"; `bot/bilgi.py` → `ARSIV_SIRASI`: 28 Ekim, 4 ve 11 Kasım; tür `kisa`). Yalnız Reels: kaydırmalı ve hikâye tekrar gitmez; Reels üretilemezse o gün paylaşım
+  "rehber sırasına girsinler"; `bot/bilgi.py` → `ARSIV_SIRASI`: 11, 18 ve 25 Kasım, #7–#8'den sonra; tür `kisa`). Yalnız Reels: kaydırmalı ve hikâye tekrar gitmez; Reels üretilemezse o gün paylaşım
   yok. Tarih ya da bölüm değişecekse önce Rıdvan'a sor.
 - "Rehber" öne çıkanının standardı (Rıdvan, 14 Ekim 2026): her bölüm tek video; öne çıkandaki sıra önemli değil,
   eksik olmaması önemli. Ekleme hatırlatması çarşamba ~14:15'te gelir (zamanlanmış görev "Çarşamba hatırlatması:

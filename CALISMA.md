@@ -7,4 +7,3 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
 | 19 Ekim 16:55 | Site satırı (tanıtım 1. madde): rehber Reels'ine site son karesi + kapanış sesi, rehber ve haftalık/aylık özet açıklamasına gunlukgumus.com | templates/rehber-hikaye.html, bot/rehber_hikaye.py, bot/main.py, bot/ses.py, bot/bilgi.py, test_* | site-satiri (önizleme bekliyor) |
-| 19 Ekim 16:57 | Rehber 20–21 Ekim günleri kalkıyor, #7–#8 haftalık sıraya | bot/bilgi.py, testler, README, CLAUDE.md | main (bu sohbet) |
