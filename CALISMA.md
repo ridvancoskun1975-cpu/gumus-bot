@@ -6,3 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
+| 19 Ekim 20:00 | Site tanıtım Reels'i (tanıtım 2. madde): yeni tür tanitim, şablon site-reels.html | bot/main.py, templates/site-reels.html, bot/sinir.py, bot/kayit.py, bot/rapor.py, paylas.yml, README, bot/test_tanitim.py | site-tanitim-reels (önizleme bekliyor) |
