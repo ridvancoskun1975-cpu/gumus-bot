@@ -397,7 +397,7 @@ def _cumle(metin):
 
 # Rehber Reels'inin son karesi (site kartı) okunurken (Rıdvan, 19 Ekim 2026: web sayfası tanıtımı). Alan adı Türkçe
 # okunuşuyla yazılır ("gunlukgumus.com" harf harf okunmasın).
-SITE_OKUMA = "Rehberin tamamı, hesap makinesi ve son fiyatlar günlük gümüş nokta com'da. Link bio'da."
+SITE_OKUMA = "Gümüş rehberinin tamamı, hesap makinesi ve son fiyatlar günlük gümüş nokta com'da. Link bio'da."
 
 
 def rehber_metinleri(no, bolum, kareler, sonraki=None, site_karti=False):
