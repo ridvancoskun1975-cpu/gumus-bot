@@ -20,6 +20,8 @@ import sys
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
+import bilgi
+
 # Python hafta günü (pazartesi 0) → kart
 KART_GUNLERI = {2: "gram", 4: "parite"}
 KART_BASLANGIC = date(2026, 10, 21)   # ilk kart (çarşamba); ilk hafta (13–16 Ekim) zaten kalabalık
@@ -123,7 +125,7 @@ def aciklama(v, kaynaklar):
             "".join(f"{s['tl']} ₺ ≈ {s['gram']} gram gümüş\n" for s in v["tl_tablo"])
             + "".join(f"{s['ad']} ≈ {s['tl']} ₺\n" for s in v["gram_tablo"])
             + "\nGram fiyatı ons gümüş ve dolar/TL'den hesaplanır; kuyumcu ve bankalarda işçilik, vergi ve "
-            "alış-satış farkı yüzünden fiyat farklıdır. Başka tutarlar için hesap makinesi biyografideki bağlantıda.\n"
+            f"alış-satış farkı yüzünden fiyat farklıdır. Başka tutarlar için hesap makinesi: {bilgi.SITE} ({bilgi.LINK_BIO}).\n"
             "Gram gümüşteki değişim önceki iş gününe göredir.\n"
         )
     else:

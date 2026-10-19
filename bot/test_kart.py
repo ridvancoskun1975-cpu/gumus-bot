@@ -86,6 +86,8 @@ esit(a.splitlines()[0], "1.000 ₺ kaç gram gümüş eder? Bugün 10,37 gram (g
      "ilk satır aranan soru ve rakam")
 esit(a.splitlines()[1], "Kaç gram eder? · 21 Ekim 2026 · 12:03", "ikinci satır kart adı")
 esit("Bilgi amaçlıdır, yatırım tavsiyesi değildir." in a, True, "uyarı var")
+esit("hesap makinesi: gunlukgumus.com (link bio'da)" in a and "biyografi" not in a, True,
+     "site ve link bio'da (Rıdvan, 19 Ekim 2026)")
 esit(a.endswith(kart.HASHTAG["gram"]), True, "etiketler sonda")
 esit(len(kart.HASHTAG["gram"].split()), 5, "en çok 5 etiket (gram)")
 esit(len(kart.HASHTAG["parite"].split()), 5, "en çok 5 etiket (parite)")
