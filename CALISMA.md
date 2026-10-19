@@ -6,3 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
+| 19 Ekim 15:58 | Alan adı gunlukgumus.com: GoDaddy DNS, GitHub Pages özel alan adı, site adresi, Search Console | bot/sayfa.py, README.md, Pages ayarı | alan-adi (Rıdvan 15:54 "tam bağlama başla") |
