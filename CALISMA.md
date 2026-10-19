@@ -6,3 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
+| 19 Ekim 2026 15:00 | Rehber Reels "Sesi açın" rozeti masaüstü akışta kırpılıyor; görünür yerleşim önizlemesi | bot/main.py (ses rozeti), templates/ses-rozet.html | ses-rozeti-gorunur, önizleme |
