@@ -50,7 +50,7 @@ tr.vurgu td { color: var(--yazi); font-weight: 700; background: rgba(201, 209, 2
     {% if s.deg %}<div>{{ deg(s.deg) }} <span class="soluk">önceki iş gününe göre</span></div>{% endif %}
     <p class="zaman">Son güncelleme: {{ guncelleme }} (Türkiye saati). Anlık (canlı) fiyat değildir.</p>
     <p class="ozet">{{ s.ozet }}</p>
-    {% if s.formul %}<div class="formul" style="margin-top: 12px">{{ s.formul }}</div>{% endif %}
+    {% if s.formul %}<div class="formul" style="margin-top: 12px">{{ s.formul | replace(" ₺", " ₺") | replace(" $", " $") | replace(" €", " €") | replace(" g", " g") | replace("(1 gram)", "(1 gram)") }}</div>{% endif %}
   </section>
   {{ kart() }}
 
