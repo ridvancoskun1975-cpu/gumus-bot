@@ -1014,8 +1014,8 @@ SORULAR_OZET = [
     "Gümüş külçeyi hiç elinize alıp gördünüz mü?",
 ]
 PAYLASIM_SATIRI = "Gümüşü takip eden bir tanıdığınıza gönderebilirsiniz."
-# Rıdvan (13 Ekim 2026): takipçi yokken sorular erken. Takipçi artınca SORU_ACIK = True ve
-# PAYLASIM_GUNLERI = {1, 3} (salı, perşembe) yapılır. Büyük hareket günlerinde paylaşım satırı
+# Rıdvan 19 Ekim 2026: soru (günlük, haftalık ve hikâye anketi) iptal, açılmaz; açmak için yeni karar
+# gerekir. PAYLASIM_GUNLERI de kapalı. Büyük hareket günlerinde paylaşım satırı
 # her zaman çıkar: o paylaşımlar takip etmeyenlere de gösterilir.
 SORU_ACIK = False
 PAYLASIM_GUNLERI = set()
