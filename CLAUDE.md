@@ -88,7 +88,8 @@
     Kitaba dokunan her iş (sohbetler, aylık rehber paketi, 25 Aralık baskı önizlemesi) işe başlamadan DURUM.md'yi okur
     ve durum her değiştiğinde günceller: başlarken main'de `yazılıyor · <dal>`, önizleme gidince `önizlemede`, onayla
     main'e alınırken `onaylandı`. `python bot/rehber_pdf.py denetle` dosyayı gerçek durumla karşılaştırır; hata
-    verirken önizleme gösterme, main'e alma.
+    verirken önizleme gösterme, main'e alma. GitHub'da `rehber-durum.yml` aynı denetimi bu dosyalara dokunan her itmede
+    çalıştırır (Rıdvan, 20 Ekim 2026: "durum raporu ile github uyumlu olmalı"); kırmızıysa düzelt.
 - Rehber arşivi Reels'i (Rıdvan, 17 Ekim 2026 "öneriyi uygula"): sesli rehber Reels'inden önce yayımlanan #3–#5 birer
   kez, aynı tam okumalı sesli Reels olarak gider; 19 Ekim 2026'dan beri haftalık rehber sırasında, çarşamba (Rıdvan:
   "rehber sırasına girsinler"; `bot/bilgi.py` → `ARSIV_SIRASI`: 11, 18 ve 25 Kasım, #7–#8'den sonra; tür `kisa`). Yalnız Reels: kaydırmalı ve hikâye tekrar gitmez; Reels üretilemezse o gün paylaşım

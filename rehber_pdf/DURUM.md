@@ -16,10 +16,10 @@ durumla karşılaştırır; uyuşmazlık hatadır. Yazım kuralları: `YAZIM.md`
 
 | No | Başlık | Instagram | Uzun metin | Kontrol | Baskı |
 |---|---|---|---|---|---|
-| 1 | Ons nedir? | 13 Ekim 2026 | önizlemede · rehber-pdf-parti-1 | kaynak ✓ · denetle ✓ | 2027 |
+| 1 | Ons nedir? | 13 Ekim 2026 | onaylandı | kaynak ✓ · denetle ✓ | 2027 |
 | 2 | Gram gümüş nasıl hesaplanır? | 13 Ekim 2026 | onaylandı | kaynak ✓ · denetle ✓ | 2027 |
-| 3 | Külçede 999 ne demek? | 14 Ekim 2026 | önizlemede · rehber-pdf-parti-1 | kaynak ✓ · denetle ✓ | 2027 |
-| 4 | Altın/gümüş paritesi ne anlatır? | 15 Ekim 2026 | önizlemede · rehber-pdf-parti-1 | kaynak ✓ · denetle ✓ | 2027 |
+| 3 | Külçede 999 ne demek? | 14 Ekim 2026 | onaylandı | kaynak ✓ · denetle ✓ | 2027 |
+| 4 | Altın/gümüş paritesi ne anlatır? | 15 Ekim 2026 | onaylandı | kaynak ✓ · denetle ✓ | 2027 |
 | 5 | Gümüş fiyatını ne hareket ettirir? | 16 Ekim 2026 | yok | kaynak — · denetle — | 2027 |
 | 6 | Kuyumcudaki fiyat neden farklı? | 19 Ekim 2026 | yok | kaynak — · denetle — | 2027 |
 | 7 | Gümüş nerede kullanılır? | 28 Ekim 2026 | yok | kaynak — · denetle — | 2027 |

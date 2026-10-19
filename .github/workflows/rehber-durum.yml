@@ -1,0 +1,33 @@
+name: PDF rehber durum denetimi
+
+# PDF Gümüş Rehberi (Gümüş uzmanlık kitabı): rehber_pdf/DURUM.md GitHub'daki gerçek durumla uyumlu olmalı
+# (Rıdvan, 20 Ekim 2026: "gümüş rehberi durum raporu ile github uyumlu olmalı"). Bölüm metinlerine, DURUM.md'ye,
+# rehber takvimine (bot/bilgi.py) ya da denetime dokunan her itmede `python bot/rehber_pdf.py denetle` çalışır;
+# uyuşmazlıkta kırmızı biter. Paylaşım yapmaz, ağa çıkmaz.
+on:
+  push:
+    paths:
+      - 'rehber_pdf/**'
+      - 'bot/bilgi.py'
+      - 'bot/rehber_pdf.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  denetle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            bot
+            rehber_pdf
+            templates
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Bölüm metinleri ve DURUM.md
+        run: python bot/rehber_pdf.py denetle
