@@ -70,8 +70,10 @@ with tempfile.TemporaryDirectory() as s:
     sayfa.uret(cikti, sayfa.ornek_gecmis(), simdi=simdi)
     r = (cikti / "rehber" / "index.html").read_text(encoding="utf-8")
     a = (cikti / "index.html").read_text(encoding="utf-8")
-    kontrol("rehber sayfasında yakında kartı", "PDF olarak geliyor" in r and 'data-hedef="2027-01-01"' in r and ">74<" in r)
-    kontrol("ana sayfada yakında kartı", "Yakında: rehberin PDF hâli" in a and 'href="rehber/#pdf"' in a)
+    kontrol("rehber sayfasında yakında kartı", "Gümüşte uzmanlaşmanın kısa yolu" in r and "Ücretsiz PDF kitap · 1 Ocak 2027" in r
+            and 'data-hedef="2027-01-01"' in r and ">74<" in r)
+    kontrol("ana sayfada yakında kartı", "Gümüşte uzmanlaşmanın kısa yolu" in a and "1 Ocak 2027'de" in a
+            and 'href="rehber/#pdf"' in a)
     kontrol("henüz PDF yok", not (cikti / "rehber.pdf").exists())
     kontrol("site haritasında henüz PDF yok", "rehber.pdf" not in (cikti / "sitemap.xml").read_text(encoding="utf-8"))
 

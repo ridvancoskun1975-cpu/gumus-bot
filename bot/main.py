@@ -2582,7 +2582,8 @@ TANITIM_OZELLIKLER = [
     # PDF Gümüş Rehberi (bot/rehber_pdf.py; Rıdvan, 19 Ekim 2026: "bunu site tanıtımına da ekleyelim. beklenti olsun.").
     # "itibaren": Reels sabitlenip reklamda da kullanılacağı için 1 Ocak'tan sonra da doğru kalır. ikinci_satir: alt
     # yazı ayrı satırda, goril maskotunun üstüne taşmasın.
-    {"baslik": "Ücretsiz PDF rehber", "alt": "1 Ocak 2027'den itibaren", "ikinci_satir": True,
+    # 22:21: "Gümüş uzmanlık kitabı · ücretsiz PDF, 1 Ocak 2027'den itibaren" ("Ücretsiz PDF rehber" fazla basitti).
+    {"baslik": "Gümüş uzmanlık kitabı", "alt": "Ücretsiz PDF, 1 Ocak 2027'den itibaren", "ikinci_satir": True,
      "simge": '<path d="M13 5h19l9 9v33H13z"/><path d="M32 5v9h9"/><path d="M20 26h14M20 33h14M20 40h9"/>'},
 ]
 HASHTAG_TANITIM = "#gümüş #gramgümüş #gümüşfiyatları #gümüşyatırımı #külçegümüş"
@@ -2599,7 +2600,7 @@ def tanitim_aciklamasi(muzik=None):
         "· Son 30 günün grafiği ve son günlerin fiyatları",
         "· Ay ay geçmiş fiyatlar",
         "· Gümüş rehberinin bütün bölümleri",
-        "· Ücretsiz PDF Gümüş Rehberi: 1 Ocak 2027'den itibaren sitede, 3 ayda bir güncellenir",
+        "· Gümüş uzmanlık kitabı: ücretsiz PDF, 1 Ocak 2027'den itibaren sitede (3 ayda bir güncellenir)",
         "",
         "Sayfa her paylaşımla kendiliğinden güncellenir; çerez kullanmaz.",
         "Hafta içi ~10:00 ve ~20:00 gram gümüş fiyatı, cumartesi haftalık özet, pazar üst düzey yapay zekâ analizi: "

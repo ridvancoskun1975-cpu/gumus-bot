@@ -1,5 +1,6 @@
 {#- PDF Gümüş Rehberi kartı (bot/rehber_pdf.py → site_durumu; Rıdvan, 19 Ekim 2026: "bunu site tanıtımına da
-    ekleyelim. beklenti olsun."). Yayınlanmış baskı yokken "Yakında" tanıtımı ve geri sayım; baskı yayınlanınca
+    ekleyelim. beklenti olsun."; 22:21 "fazla basit… gümüş uzmanı olmak için gibi" → başlık "Gümüşte uzmanlaşmanın
+    kısa yolu", "ücretsiz PDF kitap"). Yayınlanmış baskı yokken "Yakında" tanıtımı ve geri sayım; baskı yayınlanınca
     aynı yerde indirme düğmesi. Rehber sayfasında tam kart, ana sayfada rehber kartının altında kısa hâli. -#}
 {% macro simge() -%}
 <svg class="pdf-simge" viewBox="0 0 48 60" aria-hidden="true">
@@ -17,16 +18,16 @@
 {% if d.durum == "hazir" %}
   {% if kucuk %}
   <a class="kart-bag pdf-kucuk" href="{{ kok }}{{ d.adres }}" download>
-    <span><b>Rehberin PDF'ini indir</b><small>Ücretsiz · {{ d.baski }} · {{ d.boyut }}</small></span>
+    <span><b>Gümüş uzmanlık kitabını indir</b><small>Ücretsiz PDF · {{ d.baski }} · {{ d.boyut }}</small></span>
     <span class="ok" aria-hidden="true">↓</span>
   </a>
   {% else %}
   <div class="pdf-kart" id="pdf">
     {{ simge() }}
     <div class="pdf-govde">
-      <span class="pdf-etiket">Ücretsiz PDF · {{ d.baski }}</span>
-      <b class="pdf-baslik">Gümüş Rehberi'nin tamamı tek dosyada</b>
-      <p>Bütün bölümler eksiksiz: formüller, adım adım örnekler, sık yapılan hatalar. Telefonunuza indirin, dilediğinizle paylaşın. Yeni baskı {{ d.sonraki }}.</p>
+      <span class="pdf-etiket">Ücretsiz PDF kitap · {{ d.baski }}</span>
+      <b class="pdf-baslik">Gümüşte uzmanlaşmanın kısa yolu</b>
+      <p>Gümüşü bir uzman gibi okuyun: onstan pariteye, külçeden kuyumcu fiyatına bütün bölümler eksiksiz, tek dosyada. Formüller, adım adım örnekler, sık yapılan hatalar. Telefonunuza indirin, dilediğinizle paylaşın. Yeni baskı {{ d.sonraki }}.</p>
       <a class="dugme" href="{{ kok }}{{ d.adres }}" download>PDF'i indir <small>({{ d.boyut }})</small></a>
     </div>
   </div>
@@ -34,16 +35,16 @@
 {% else %}
   {% if kucuk %}
   <a class="kart-bag pdf-kucuk" href="{{ kok }}rehber/#pdf">
-    <span><b>Yakında: rehberin PDF hâli</b><small>Ücretsiz{% if d.tarih_metni %} · {{ d.tarih_metni }}{% endif %}{% if d.gun %} · <span class="sayi" data-hedef="{{ d.tarih }}">{{ d.gun }}</span> gün kaldı{% endif %}</small></span>
+    <span><b>Gümüşte uzmanlaşmanın kısa yolu</b><small>Ücretsiz PDF kitap{% if d.tarih_metni %} · <span class="tek">{{ d.tarih_metni }}'de</span>{% else %} · çok yakında{% endif %}{% if d.gun %}<span class="tek"> · <span class="sayi" data-hedef="{{ d.tarih }}">{{ d.gun }}</span> gün kaldı</span>{% endif %}</small></span>
     <span class="ok" aria-hidden="true">→</span>
   </a>
   {% else %}
   <div class="pdf-kart" id="pdf">
     {{ simge() }}
     <div class="pdf-govde">
-      <span class="pdf-etiket">Yakında{% if d.tarih_metni %} · {{ d.tarih_metni }}{% endif %}</span>
-      <b class="pdf-baslik">Gümüş Rehberi PDF olarak geliyor</b>
-      <p>Bütün bölümler eksiksiz ve tek dosyada: formüller, adım adım örnekler, sık yapılan hatalar. Ücretsiz; telefonunuza indirip dilediğinizle paylaşabileceksiniz.</p>
+      <span class="pdf-etiket">Ücretsiz PDF kitap{% if d.tarih_metni %} · {{ d.tarih_metni }}{% else %} · çok yakında{% endif %}</span>
+      <b class="pdf-baslik">Gümüşte uzmanlaşmanın kısa yolu</b>
+      <p>Gümüşü bir uzman gibi okuyun: onstan pariteye, külçeden kuyumcu fiyatına bütün bölümler eksiksiz, tek dosyada. Formüller, adım adım örnekler, sık yapılan hatalar. Telefonunuza indirip dilediğinizle paylaşabileceksiniz.</p>
       {% if d.gun %}<div class="geri-sayim"><b class="sayi" data-hedef="{{ d.tarih }}">{{ d.gun }}</b> gün kaldı</div>{% endif %}
       <p class="pdf-not">Çıktığı gün Instagram'da duyuracağız.</p>
     </div>
@@ -62,7 +63,7 @@
     var h = new Date(el[i].getAttribute('data-hedef') + 'T00:00:00+03:00');
     var g = Math.ceil((h.getTime() - Date.now()) / 864e5);
     if (g > 0) { el[i].textContent = g; }
-    else { var k = el[i].closest('.geri-sayim'); if (k) { k.remove(); } else { el[i].parentNode.textContent = 'Ücretsiz · çok yakında'; } }
+    else { var k = el[i].closest('.geri-sayim, .tek'); if (k) { k.remove(); } }
   }
 })();
 </script>

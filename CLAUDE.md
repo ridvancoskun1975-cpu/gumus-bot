@@ -77,7 +77,9 @@
   aynı iki kontrolden geçer; baskı ayın 25'inde (Aralık, Mart, Haziran, Eylül) pakete ek önizleme olarak gider, aynı 7 gün
   kuralı. Onaylanan PDF `rehber_pdf/yayin/` altına konur ve `BASKILAR`'a eklenir; site baskı günü kendiliğinden
   yayınlar (gunlukgumus.com/rehber.pdf; `sayfa.yml` o gece çalışır). Baskı yokken sitede "Yakında · 1 Ocak 2027" kartı
-  (`ILK_BASKI`). Tanıtım Reels'inde "Ücretsiz PDF rehber · 1 Ocak 2027'den itibaren" maddesi. PDF değiştirmeden ve
+  (`ILK_BASKI`). Dil (Rıdvan, 22:21; "Ücretsiz PDF rehber" fazla basitti): sitede "Gümüşte uzmanlaşmanın kısa yolu ·
+  ücretsiz PDF kitap", Reels'te "Gümüş uzmanlık kitabı · ücretsiz PDF, 1 Ocak 2027'den itibaren", kapakta "Gümüş uzmanlık
+  kitabı" ve "Gümüşü bir uzman gibi okuyun"; "uzman olursunuz" gibi söz verilmez. PDF değiştirmeden ve
   ücretsiz paylaşılabilir; sayfalarda model ya da şirket adı yok.
 - Rehber arşivi Reels'i (Rıdvan, 17 Ekim 2026 "öneriyi uygula"): sesli rehber Reels'inden önce yayımlanan #3–#5 birer
   kez, aynı tam okumalı sesli Reels olarak gider; 19 Ekim 2026'dan beri haftalık rehber sırasında, çarşamba (Rıdvan:

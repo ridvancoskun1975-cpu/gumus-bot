@@ -33,8 +33,9 @@ kontrol(a.startswith(f"Gram gümüş için tek adres: {bilgi.SITE} (link bio'da)
 kontrol("biyografi" not in a and "Kaç gram" not in a, "terim link bio'da; kaç gram/kaç lira yok (Rıdvan, 19 Ekim 2026)")
 kontrol(len(main.TANITIM_OZELLIKLER) == 5 and not any("Kaç gram" in o["baslik"] for o in main.TANITIM_OZELLIKLER),
         "videoda beş özellik (PDF rehber dahil), kaç gram/kaç lira yok")
-kontrol(main.TANITIM_OZELLIKLER[-1]["baslik"] == "Ücretsiz PDF rehber" and "itibaren" in main.TANITIM_OZELLIKLER[-1]["alt"]
-        and "1 Ocak 2027'den itibaren sitede" in a, "PDF rehber: 1 Ocak 2027'den itibaren (Rıdvan, 19 Ekim 2026)")
+kontrol(main.TANITIM_OZELLIKLER[-1]["baslik"] == "Gümüş uzmanlık kitabı" and "itibaren" in main.TANITIM_OZELLIKLER[-1]["alt"]
+        and "Gümüş uzmanlık kitabı: ücretsiz PDF, 1 Ocak 2027'den itibaren sitede" in a,
+        "PDF kitap: Gümüş uzmanlık kitabı, 1 Ocak 2027'den itibaren (Rıdvan, 19 Ekim 2026 22:21)")
 kontrol("Link bio'da" in (KOK / "templates/site-reels.html").read_text(encoding="utf-8"), "videodaki düğme Link bio'da")
 kontrol(len(a) <= 2200, f"açıklama {len(a)} ≤ 2200")
 kontrol("Bilgi amaçlıdır, yatırım tavsiyesi değildir." in a and "Müzik: Örnek müzik" in a, "uyarı ve müzik künyesi")
