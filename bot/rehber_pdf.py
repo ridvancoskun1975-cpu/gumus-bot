@@ -7,6 +7,8 @@ Rıdvan, 19 Ekim 2026: "gümüş rehberi pdf kitap yapsak"; "kısa olan bilgiler
 - Bölüm metinleri: rehber_pdf/bolum-NN.html (yazım kuralları rehber_pdf/YAZIM.md). Yeni bölümün uzun hâli aylık
   rehber paketiyle birlikte yazılır ve aynı iki kontrolden geçer.
 - Ekler: rehber_pdf/ek-<harf>.html (ilk satırdaki yorumda <!-- BAŞLIK: ... --> başlığı verir).
+- Takip: rehber_pdf/DURUM.md, kitabın tek takip yeri (Rıdvan, 20 Ekim 2026). Her bölüm ve ek için bir satır: Instagram
+  tarihi, uzun metin durumu, kontrol, baskı yılı. `denetle` dosyayı gerçek durumla karşılaştırır, uyuşmazlık hatadır.
 - Baskı yılda bir, 1 Ocak'ta ("2027 baskısı"). Baskıya o günden önce Instagram'da yayımlanmış bölümler girer;
   yayımlanmamış bölüm girmez (Reels'in önüne geçmesin). Önizleme 25 Aralık'ta aylık paketle birlikte Rıdvan'a gider;
   onaylanan PDF rehber_pdf/yayin/ altına konur ve BASKILAR'a eklenir. Site o baskıyı tarihi gelince kendiliğinden
@@ -56,6 +58,9 @@ IZINLI = {
     "ul": {"", "duz"}, "ol": {"hatalar"}, "li": {""},
 }
 EN_AZ_KELIME, EN_COK_KELIME = 600, 1500
+DURUM = METINLER / "DURUM.md"
+# DURUM.md'deki "Uzun metin" sütunu: yok | yazılıyor · <dal> | önizlemede · <dal> | onaylandı
+DURUM_DALLI = ("yazılıyor", "önizlemede")
 
 
 def bolum_dosyasi(no):
@@ -212,7 +217,119 @@ def denetle(yazdir=True):
                 print(f"  ✗ {h}")
             for u in uyarilar:
                 print(f"  ! {u}")
+    durum_hatalari = durum_denetle()
+    tamam &= not durum_hatalari
+    if yazdir:
+        print(f"DURUM.md: {'HATA' if durum_hatalari else 'gerçek durumla uyuşuyor'}")
+        for h in durum_hatalari:
+            print(f"  ✗ {h}")
     return tamam
+
+
+def _durum_tablolari(metin):
+    """DURUM.md'den {"bolum": [hücreler], "ek": [hücreler]} — "## Bölümler" ve "## Ekler" altındaki tablo satırları."""
+    tablolar, bolum = {"bolum": [], "ek": []}, None
+    for satir in metin.splitlines():
+        if satir.startswith("## "):
+            bolum = {"## Bölümler": "bolum", "## Ekler": "ek"}.get(satir.strip())
+            continue
+        if bolum and satir.startswith("|") and not re.match(r"^\|\s*-", satir):
+            hucreler = [h.strip() for h in satir.strip().strip("|").split("|")]
+            if hucreler[0] not in ("No", "Ek"):
+                tablolar[bolum].append(hucreler)
+    return tablolar
+
+
+def _metin_durumu_denetle(ad, yol, durum, kontrol):
+    """Bir bölüm/ek satırının "Uzun metin" ve "Kontrol" sütunlarını dosyanın gerçek hâliyle karşılaştırır."""
+    hatalar, var = [], yol.exists()
+    tur = durum.split("·")[0].strip()
+    if tur not in ("yok", "onaylandı", *DURUM_DALLI):
+        return [f"{ad}: uzun metin durumu anlaşılmadı: '{durum}' (yok / yazılıyor · dal / önizlemede · dal / onaylandı)"]
+    if tur in DURUM_DALLI and not durum.partition("·")[2].strip():
+        hatalar.append(f"{ad}: '{tur}' durumunda dal adı yazılmalı ('{tur} · <dal>')")
+    if tur == "yok" and var:
+        hatalar.append(f"{ad}: DURUM.md 'yok' diyor ama {yol.name} var")
+    if tur == "onaylandı" and not var:
+        hatalar.append(f"{ad}: DURUM.md 'onaylandı' diyor ama {yol.name} yok")
+    m = re.fullmatch(r"kaynak (✓|—) · denetle (✓|—)", kontrol)
+    if not m:
+        return hatalar + [f"{ad}: kontrol sütunu anlaşılmadı: '{kontrol}' (kaynak ✓/— · denetle ✓/—)"]
+    kaynak, denet = m.group(1) == "✓", m.group(2) == "✓"
+    if tur == "onaylandı" and not (kaynak and denet):
+        hatalar.append(f"{ad}: onaylanmış metnin iki kontrolü de ✓ olmalı")
+    if not var:
+        if kaynak or denet:
+            hatalar.append(f"{ad}: {yol.name} bu dalda yok, kontrol ✓ olamaz")
+        return hatalar
+    ham = yol.read_text(encoding="utf-8")
+    gercek = not (parca_denetle(yol)[0] if yol.name.startswith("bolum-") else _ek_denetle(yol)[0])
+    if denet != gercek:
+        hatalar.append(f"{ad}: DURUM.md 'denetle {m.group(2)}' diyor ama denetim {'geçiyor' if gercek else 'geçmiyor'}")
+    if kaynak and 'class="kaynaklar"' in ham and ham.count("<!-- KAYNAK:") < 2:
+        hatalar.append(f"{ad}: 'kaynak ✓' için dosyada en az iki <!-- KAYNAK: … --> adresi olmalı")
+    return hatalar
+
+
+def durum_denetle():
+    """rehber_pdf/DURUM.md'yi gerçek durumla karşılaştırır (bölüm listesi, başlık, Instagram tarihi, baskı yılı,
+    uzun metin dosyası, kontroller, ekler). Hata listesi döndürür; boşsa uyuşuyor."""
+    if not DURUM.exists():
+        return ["rehber_pdf/DURUM.md yok"]
+    t = _durum_tablolari(DURUM.read_text(encoding="utf-8"))
+    hatalar, gorulen = [], set()
+    ilk_yayim = {}
+    for gun, no in bilgi.yayim_listesi():
+        ilk_yayim.setdefault(no, gun)
+    for h in t["bolum"]:
+        if len(h) != 6 or not h[0].lstrip("#").isdigit():
+            hatalar.append(f"bölüm satırı okunamadı: {' | '.join(h)}")
+            continue
+        no = int(h[0].lstrip("#"))
+        _, baslik, insta, durum, kontrol, baski = h
+        ad = f"#{no}"
+        if not 1 <= no <= len(bilgi.BOLUMLER):
+            hatalar.append(f"{ad}: BOLUMLER'de böyle bir bölüm yok")
+            continue
+        if no in gorulen:
+            hatalar.append(f"{ad}: iki satır var")
+        gorulen.add(no)
+        if baslik != bilgi.BOLUMLER[no - 1]["baslik"]:
+            hatalar.append(f"{ad}: başlık '{baslik}', BOLUMLER'de '{bilgi.BOLUMLER[no - 1]['baslik']}'")
+        gun = ilk_yayim.get(no)
+        if insta != (tarih_metni(gun) if gun else "—"):
+            hatalar.append(f"{ad}: Instagram tarihi '{insta}', takvimde '{tarih_metni(gun) if gun else '—'}'")
+        beklenen_baski = str(sonraki_baski(gun).year) if gun else "—"
+        if baski != beklenen_baski:
+            hatalar.append(f"{ad}: baskı '{baski}', takvime göre '{beklenen_baski}'")
+        hatalar += _metin_durumu_denetle(ad, bolum_dosyasi(no), durum, kontrol)
+    for no in range(1, len(bilgi.BOLUMLER) + 1):
+        if no not in gorulen:
+            hatalar.append(f"#{no}: DURUM.md'de satırı yok")
+    ek_dosyalar = {y.stem.split("-", 1)[1].upper(): y for y in sorted(METINLER.glob("ek-*.html"))}
+    ek_gorulen = set()
+    for h in t["ek"]:
+        if len(h) != 5:
+            hatalar.append(f"ek satırı okunamadı: {' | '.join(h)}")
+            continue
+        harf, baslik, durum, kontrol, baski = h
+        if harf == "—":                      # "henüz ek yok" satırı
+            if ek_dosyalar:
+                hatalar.append("DURUM.md 'henüz ek yok' diyor ama ek dosyası var")
+            continue
+        ad, yol = f"Ek {harf}", METINLER / f"ek-{harf.lower()}.html"
+        ek_gorulen.add(harf)
+        if yol.exists() and baslik != _ek_basligi(yol):
+            hatalar.append(f"{ad}: başlık '{baslik}', dosyada '{_ek_basligi(yol)}'")
+        if not re.fullmatch(r"\d{4}", baski):
+            hatalar.append(f"{ad}: baskı yılı yazılmalı (ör. 2027)")
+        hatalar += _metin_durumu_denetle(ad, yol, durum, kontrol)
+    for harf in ek_dosyalar:
+        if harf not in ek_gorulen:
+            hatalar.append(f"Ek {harf}: DURUM.md'de satırı yok")
+    if not t["ek"]:
+        hatalar.append("DURUM.md'de Ekler tablosu boş (ek yoksa '— | henüz ek yok' satırı)")
+    return hatalar
 
 
 def _ek_denetle(yol):

@@ -87,7 +87,7 @@ kontrol("sayfa.yml baskı günü zamanı (1 Ocak 00:07 TR)", "cron: '7 21 31 12 
 
 # Bölüm metinleri: hepsi denetimden geçmeli; onaylanmış örnek #2 var
 kontrol("#2 uzun metni var", rp.bolum_dosyasi(2).exists())
-kontrol("bütün bölüm metinleri denetimden geçiyor", rp.denetle(yazdir=False))
+kontrol("bütün bölüm metinleri ve DURUM.md denetimden geçiyor", rp.denetle(yazdir=False))
 h, u, k = rp.parca_denetle(rp.bolum_dosyasi(2))
 kontrol("#2 denetimi temiz", not h and 600 <= k <= 1500, f"{h} {k}")
 
@@ -98,6 +98,40 @@ with tempfile.TemporaryDirectory() as d:
     h, _, _ = rp.parca_denetle(kotu)
     kontrol("izinsiz sınıf, satır içi stil, numarasız başlık, akılda kalsın yok, model adı",
             len(h) >= 5 and any("Claude" in x for x in h), str(h))
+
+# DURUM.md (Rıdvan, 20 Ekim 2026): kitabın tek takip yeri; denetim gerçek durumla karşılaştırır
+kontrol("DURUM.md gerçek durumla uyuşuyor", rp.durum_denetle() == [], str(rp.durum_denetle()))
+gercek_durum = rp.DURUM.read_text(encoding="utf-8")
+with tempfile.TemporaryDirectory() as d:
+    durum_eski = rp.DURUM
+    rp.DURUM = Path(d) / "DURUM.md"
+    try:
+        def bozuk(eski, yeni):
+            assert eski in gercek_durum, eski
+            rp.DURUM.write_text(gercek_durum.replace(eski, yeni, 1), encoding="utf-8")
+            return rp.durum_denetle()
+        kontrol("var olan metne 'yok' denirse hata", any("'yok' diyor" in h for h in bozuk(
+            "| 2 | Gram gümüş nasıl hesaplanır? | 13 Ekim 2026 | onaylandı |",
+            "| 2 | Gram gümüş nasıl hesaplanır? | 13 Ekim 2026 | yok |")))
+        kontrol("olmayan metne 'onaylandı' denirse hata", any("'onaylandı' diyor" in h for h in bozuk(
+            "| 14 | Gerçek gümüş nasıl anlaşılır? | 6 Ocak 2027 | yok | kaynak — · denetle — |",
+            "| 14 | Gerçek gümüş nasıl anlaşılır? | 6 Ocak 2027 | onaylandı | kaynak ✓ · denetle ✓ |")))
+        kontrol("yanlış Instagram tarihi hata", any("Instagram tarihi" in h for h in bozuk(
+            "| 13 | Akçeden kuruşa: gümüş para | 30 Aralık 2026 |", "| 13 | Akçeden kuruşa: gümüş para | 6 Ocak 2027 |")))
+        kontrol("yanlış baskı yılı hata", any("baskı" in h for h in bozuk(
+            "| kaynak — · denetle — | 2028 |", "| kaynak — · denetle — | 2027 |")))
+        kontrol("eksik satır hata", any("#14: DURUM.md'de satırı yok" in h for h in bozuk(
+            "| 14 | Gerçek gümüş nasıl anlaşılır? |", "| 99 | Gerçek gümüş nasıl anlaşılır? |")))
+        kontrol("dalsız 'yazılıyor' hata", any("dal adı" in h for h in bozuk(
+            "| 5 | Gümüş fiyatını ne hareket ettirir? | 16 Ekim 2026 | yok |",
+            "| 5 | Gümüş fiyatını ne hareket ettirir? | 16 Ekim 2026 | yazılıyor |")))
+        kontrol("olmayan metne 'denetle ✓' hata", any("kontrol ✓ olamaz" in h for h in bozuk(
+            "| 5 | Gümüş fiyatını ne hareket ettirir? | 16 Ekim 2026 | yok | kaynak — · denetle — |",
+            "| 5 | Gümüş fiyatını ne hareket ettirir? | 16 Ekim 2026 | yazılıyor · x | kaynak — · denetle ✓ |")))
+        kontrol("denetle() uyuşmazlıkta False", (bozuk("| 2 | Gram gümüş nasıl hesaplanır? | 13 Ekim 2026 | onaylandı |",
+                "| 2 | Gram gümüş nasıl hesaplanır? | 13 Ekim 2026 | yok |") and not rp.denetle(yazdir=False)))
+    finally:
+        rp.DURUM = durum_eski
 
 # Eksik metinle kitap üretilmez
 try:

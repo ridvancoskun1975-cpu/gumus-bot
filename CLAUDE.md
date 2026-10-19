@@ -83,6 +83,12 @@
   ve site tanıtım Reels'inde tanıtılır: rehber Reels'inin site kartı ve okuması, sitenin tanıtım kartı ve özet/rehber
   açıklamalarındaki site satırı için Rıdvan 19 Ekim 2026'da "gerek yok" dedi ("her yere kitap yazmak bana biraz garip
   geldi"; 22:44 "karar değiştirdim"); ekleme, Aralık geri sayımı da önerme.
+  - **Kitabın tek takip yeri `rehber_pdf/DURUM.md`** (Rıdvan, 20 Ekim 2026): her bölüm ve ek için Instagram tarihi,
+    uzun metin durumu (yok / yazılıyor · dal / önizlemede · dal / onaylandı), kontrol (kaynak · denetle) ve baskı yılı.
+    Kitaba dokunan her iş (sohbetler, aylık rehber paketi, 25 Aralık baskı önizlemesi) işe başlamadan DURUM.md'yi okur
+    ve durum her değiştiğinde günceller: başlarken main'de `yazılıyor · <dal>`, önizleme gidince `önizlemede`, onayla
+    main'e alınırken `onaylandı`. `python bot/rehber_pdf.py denetle` dosyayı gerçek durumla karşılaştırır; hata
+    verirken önizleme gösterme, main'e alma.
 - Rehber arşivi Reels'i (Rıdvan, 17 Ekim 2026 "öneriyi uygula"): sesli rehber Reels'inden önce yayımlanan #3–#5 birer
   kez, aynı tam okumalı sesli Reels olarak gider; 19 Ekim 2026'dan beri haftalık rehber sırasında, çarşamba (Rıdvan:
   "rehber sırasına girsinler"; `bot/bilgi.py` → `ARSIV_SIRASI`: 11, 18 ve 25 Kasım, #7–#8'den sonra; tür `kisa`). Yalnız Reels: kaydırmalı ve hikâye tekrar gitmez; Reels üretilemezse o gün paylaşım

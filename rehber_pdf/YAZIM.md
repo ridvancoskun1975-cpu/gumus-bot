@@ -58,5 +58,7 @@ Kaynakların adresleri ikinci kontrol için dosyanın sonunda yorum satırı ola
 
 ## Kontrol
 
+Kitabın takibi `rehber_pdf/DURUM.md`'dedir (Rıdvan, 20 Ekim 2026): işe başlamadan oku, durum değişince güncelle.
+
 `python bot/rehber_pdf.py denetle` bütün parçaları denetler (izinli yapı taşları, akılda kalsın kutusu, kelime sayısı,
-kaynak yorumları). `python bot/rehber_pdf.py uret --cikti <dosya.pdf> --tarih 2027-01-01 [--onizleme]` kitabı üretir.
+kaynak yorumları) ve DURUM.md'yi gerçek durumla karşılaştırır. `python bot/rehber_pdf.py uret --cikti <dosya.pdf> --tarih 2027-01-01 [--onizleme]` kitabı üretir.
