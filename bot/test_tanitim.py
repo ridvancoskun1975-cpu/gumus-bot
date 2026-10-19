@@ -44,6 +44,16 @@ kontrol("pazar üst düzey yapay zekâ analizi" in a, "pazar analizi 'üst düze
 kontrol(not re.search(r"\d+,\d{2}\s*₺", a), "fiyat yok (video ve açıklama eskimesin)")
 kontrol(a.rstrip().endswith(main.HASHTAG_TANITIM) and len(main.HASHTAG_TANITIM.split()) == 5, "5 etiket sonda")
 
+# Tanıtım müziği (Rıdvan, 19 Ekim 2026 "3"): Motivate, 1:47'den; özel depodan indirilir, açık depoya girmez
+kontrol(main.TANITIM_MUZIK["kunye"] == '"Motivate" – NastelBom (Pixabay)' and main.TANITIM_MUZIK["baslangic"] == 107.0,
+        "tanıtım müziği Motivate, 1:47'den")
+kontrol("assets/muzik-tanitim.mp3" in (KOK / ".gitignore").read_text(encoding="utf-8"), "müzik dosyası depoya girmez")
+_akis = (KOK / ".github/workflows/paylas.yml").read_text(encoding="utf-8")
+kontrol("name: Tanıtım müziği" in _akis and "gumus-kayit/contents/$yol" in _akis and "continue-on-error: true" in _akis,
+        "paylas.yml müziği özel depodan indirir, olmazsa durmaz")
+_g, _f = main._ses_girdisi(12, KOK / "README.md", 107.0)
+kontrol(_g[:2] == ["-ss", "107.00"] and str(KOK / "README.md") in _g, "başka parça ve başlangıç saniyesi verilebiliyor")
+
 # Sayım ve adlar: hikâyesiz tek Reels
 kontrol(sinir.TAHMIN.get("tanitim") == 1 and "tanitim" not in sinir.HIKAYESIZ, "günlük sınırda 1 sayılır")
 kontrol("tanitim" not in main.HIKAYE_TURLERI, "hikâyeye gitmez")
@@ -58,7 +68,7 @@ kontrol((KOK / "templates/site-reels.html").exists(), "Reels şablonu ayrı dosy
 
 # Üretim: meta, kapak, video (HIZLI=1'de video yerine boş dosya)
 if os.environ.get("HIZLI"):
-    def sahte_video(tur, veri, mp4, sure=7, seslendirme=None):
+    def sahte_video(tur, veri, mp4, sure=7, seslendirme=None, muzik=None, muzik_baslangic=0.0):
         Path(mp4).write_bytes(b"0")
         return True
     main.hareketli_video_uret = sahte_video

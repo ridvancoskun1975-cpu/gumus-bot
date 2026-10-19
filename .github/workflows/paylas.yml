@@ -201,6 +201,25 @@ jobs:
               -in assets/muzik.mp3.enc -out assets/muzik.mp3 -pass env:MUZIK_ANAHTAR
           fi
 
+      # Site tanıtım Reels'inin kendi müziği (Rıdvan, 19 Ekim 2026: "harekete geçirecek bir reklam müziği"; "3" = Motivate):
+      # yalnız özel gumus-kayit deposunda durur (Pixabay lisansı), KAYIT_PAT ile indirilir. Olmazsa her zamanki müzik.
+      - name: Tanıtım müziği
+        if: needs.kontrol.outputs.tur == 'tanitim'
+        continue-on-error: true
+        timeout-minutes: 2
+        env:
+          KAYIT_PAT: ${{ secrets.KAYIT_PAT }}
+        run: |
+          yol=$(python -c "import sys; sys.path.insert(0, 'bot'); import main; print(main.TANITIM_MUZIK['kayit_yolu'])")
+          if curl -fsS -H "Authorization: Bearer $KAYIT_PAT" -H "Accept: application/vnd.github.raw" \
+               "https://api.github.com/repos/ridvancoskun1975-cpu/gumus-kayit/contents/$yol" -o assets/muzik-tanitim.mp3 \
+             && [ -s assets/muzik-tanitim.mp3 ]; then
+            echo "Tanıtım müziği hazır: $yol"
+          else
+            rm -f assets/muzik-tanitim.mp3
+            echo "::warning::Tanıtım müziği indirilemedi; Reels her zamanki müzikle üretilecek."
+          fi
+
       # Günlük fiyat kayıtları ("önceki gün" ve haftalık özet için) GitHub önbelleğinde durur.
       - name: Günlük kayıtları getir
         uses: actions/cache/restore@v4

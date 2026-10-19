@@ -1219,10 +1219,12 @@ def video_suresi(tur, sablon=None):
     return VIDEO_SURESI["ozel"] if sablon == "ozel" else VIDEO_SURESI.get(tur, 10)
 
 
-def _ses_girdisi(sure):
-    muzik = KOK / "assets" / "muzik.mp3"
+def _ses_girdisi(sure, muzik=None, baslangic=0.0):
+    """Müzik girdisi. muzik/baslangic: başka bir parça ve parçanın kaçıncı saniyesinden başlanacağı (tanıtım Reels'i)."""
+    muzik = Path(muzik) if muzik else KOK / "assets" / "muzik.mp3"
     if muzik.exists():
-        return (["-stream_loop", "-1", "-i", str(muzik)],
+        bas = ["-ss", f"{baslangic:.2f}"] if baslangic else []
+        return ([*bas, "-stream_loop", "-1", "-i", str(muzik)],
                 ["-af", f"loudnorm=I=-16:TP=-1.5:LRA=11,afade=t=in:d=0.5,afade=t=out:st={sure - 1.5}:d=1.5,aresample=44100"])
     print("Uyarı: assets/muzik.mp3 yok, video müziksiz üretiliyor", file=sys.stderr)
     return ["-f", "lavfi", "-i", "anullsrc=r=44100:cl=stereo"], []
@@ -1266,7 +1268,7 @@ def _seslendirme_girdisi(sure, wav):
 SESLI_MUZIK_SEVIYE = 0.45   # seslendirmede müziğin payı (1 = sessiz Reels'teki yükseklik; ~-7 dB)
 
 
-def hareketli_video_uret(tur, veri, mp4_yolu, sure=7, seslendirme=None):
+def hareketli_video_uret(tur, veri, mp4_yolu, sure=7, seslendirme=None, muzik=None, muzik_baslangic=0.0):
     """Şablonda window.kare(t) varsa her kareyi tarayıcıda çizip sesli video üretir.
 
     Şablon hareket tanımlamıyorsa False döner; o zaman durağan video_uret() kullanılır.
@@ -1286,7 +1288,7 @@ def hareketli_video_uret(tur, veri, mp4_yolu, sure=7, seslendirme=None):
         ses, ses_filtre = _seslendirme_girdisi(sure, seslendirme)
         akis = ["-filter_complex", f"[0:v]{goruntu}[v];{ses_filtre}", "-map", "[v]", "-map", "[a]"]
     else:
-        ses, ses_filtre = _ses_girdisi(sure)
+        ses, ses_filtre = _ses_girdisi(sure, muzik, muzik_baslangic)
         akis = ["-vf", goruntu, *ses_filtre]
     komut = [ffmpeg_yolu(), "-y", "-loglevel", "error",
              "-f", "image2pipe", "-framerate", str(VIDEO_FPS), "-c:v", "mjpeg", "-i", "-", *ses,
@@ -2587,6 +2589,13 @@ TANITIM_OZELLIKLER = [
      "simge": '<path d="M13 5h19l9 9v33H13z"/><path d="M32 5v9h9"/><path d="M20 26h14M20 33h14M20 40h9"/>'},
 ]
 HASHTAG_TANITIM = "#gümüş #gramgümüş #gümüşfiyatları #gümüşyatırımı #külçegümüş"
+# Tanıtım Reels'inin müziği (Rıdvan, 19 Ekim 2026 23:10: "müzik harekete geçirecek bir reklam müziği olmalı"; 3 önizlemeden
+# 23:14 "3"): Reklam 1'deki "Motivate", parçanın en güçlü 12 saniyesi (1:47'den). Parça Pixabay lisansı gereği yalnız özel
+# gumus-kayit deposunda (muzik/); paylas.yml "Tanıtım müziği" adımı KAYIT_PAT ile assets/muzik-tanitim.mp3'e indirir.
+# İndirilemezse Reels her zamanki müzikle (assets/muzik.mp3) gider; paylaşım durmaz.
+TANITIM_MUZIK = {"yerel": KOK / "assets" / "muzik-tanitim.mp3", "baslangic": 107.0,
+                 "kunye": '"Motivate" – NastelBom (Pixabay)',
+                 "kayit_yolu": "muzik/nastelbom-motivate-motivate-music-606732.mp3"}
 
 
 def tanitim_aciklamasi(muzik=None):
@@ -2624,9 +2633,14 @@ def tanitim_hazirla(cikti):
     kapak = cikti / f"tanitim-{damga}-kapak.jpg"
     gorsel_uret("site-reels", veri, kapak)                       # kare çağrılmadan: son hâl
     mp4 = cikti / f"tanitim-{damga}.mp4"
-    if not hareketli_video_uret("site-reels", veri, mp4, sure=TANITIM_SURE):
+    ozel = TANITIM_MUZIK["yerel"].exists()
+    if not ozel:
+        print("::warning::Tanıtım müziği yok (assets/muzik-tanitim.mp3); Reels her zamanki müzikle üretiliyor.")
+    if not hareketli_video_uret("site-reels", veri, mp4, sure=TANITIM_SURE,
+                                muzik=TANITIM_MUZIK["yerel"] if ozel else None,
+                                muzik_baslangic=TANITIM_MUZIK["baslangic"] if ozel else 0.0):
         raise RuntimeError("tanıtım Reels'i hareketli üretilemedi")
-    aciklama = tanitim_aciklamasi(muzik_kunyesi())
+    aciklama = tanitim_aciklamasi(TANITIM_MUZIK["kunye"] if ozel else muzik_kunyesi())
     if len(aciklama) > 2200:
         raise RuntimeError(f"Açıklama Instagram sınırını aşıyor ({len(aciklama)} > 2200 karakter)")
     (cikti / "meta.json").write_text(json.dumps({"tur": "tanitim", "dosya": mp4.name, "aciklama": aciklama,

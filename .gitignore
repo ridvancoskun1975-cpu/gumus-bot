@@ -5,3 +5,4 @@ templates/_cikti_*.html
 assets/muzik.mp3
 # Günlük fiyat kayıtları GitHub önbelleğinde saklanır, depoya girmez
 veri/
+assets/muzik-tanitim.mp3
