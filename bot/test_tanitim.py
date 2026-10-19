@@ -29,7 +29,11 @@ KOK = Path(__file__).resolve().parent.parent
 
 # Açıklama: fiyatsız, site adresiyle başlar, model ya da şirket adı yok, Instagram sınırında
 a = main.tanitim_aciklamasi("Örnek müzik – Pixabay")
-kontrol(a.startswith(f"Gram gümüş için tek adres: {bilgi.SITE} (bağlantı biyografide)"), "ilk satır site adresi")
+kontrol(a.startswith(f"Gram gümüş için tek adres: {bilgi.SITE} (link bio'da)"), "ilk satır site adresi")
+kontrol("biyografi" not in a and "Kaç gram" not in a, "terim link bio'da; kaç gram/kaç lira yok (Rıdvan, 19 Ekim 2026)")
+kontrol(len(main.TANITIM_OZELLIKLER) == 4 and not any("Kaç gram" in o["baslik"] for o in main.TANITIM_OZELLIKLER),
+        "videoda dört özellik, kaç gram/kaç lira yok")
+kontrol("Link bio'da" in (KOK / "templates/site-reels.html").read_text(encoding="utf-8"), "videodaki düğme Link bio'da")
 kontrol(len(a) <= 2200, f"açıklama {len(a)} ≤ 2200")
 kontrol("Bilgi amaçlıdır, yatırım tavsiyesi değildir." in a and "Müzik: Örnek müzik" in a, "uyarı ve müzik künyesi")
 kontrol(not re.search(r"claude|anthropic|opus|sonnet|gemini", a, re.I), "model ya da şirket adı yok")

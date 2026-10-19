@@ -20,8 +20,10 @@ from zoneinfo import ZoneInfo
 SERI = "GÜMÜŞ REHBERİ"
 # Sitenin alan adı, paylaşımlarda yazıldığı biçimiyle (bot/sayfa.py → ALAN_ADI ile aynı; test_sayfa.py denetler).
 # Rıdvan, 19 Ekim 2026 ("1 den başlayalım"): web sayfası tanıtımı, ek paylaşım açmadan var olan paylaşımlara site satırı.
+# Biyografideki bağlantı her yerde "link bio'da" diye anılır (Rıdvan, 19 Ekim 2026: "daha sık kullanılan bir terim olmalı").
+LINK_BIO = "link bio'da"
 SITE = "gunlukgumus.com"
-SITE_REHBER = f"Rehberin tamamı ve hesap makinesi sitemizde: {SITE}/rehber (bağlantı biyografide)"
+SITE_REHBER = f"Rehberin tamamı ve hesap makinesi sitemizde: {SITE}/rehber ({LINK_BIO})"
 GUNLER = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"]
 
 # Takvim dışında elle paylaşılan bölümler: {bölüm no: TR tarihi}. 13 Ekim 2026 akşamı profil boş

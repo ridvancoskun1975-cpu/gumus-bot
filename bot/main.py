@@ -1065,7 +1065,7 @@ def site_satiri():
     """Haftalık ve aylık özetin açıklamasındaki site satırı (Rıdvan, 19 Ekim 2026: web sayfası tanıtımı, 1. madde;
     günlük fiyat paylaşımlarına ve pazar analizine eklenmez)."""
     import bilgi
-    return f"Son 30 günün grafiği ve hesap makinesi: {bilgi.SITE} (bağlantı biyografide)"
+    return f"Son 30 günün grafiği ve hesap makinesi: {bilgi.SITE} ({bilgi.LINK_BIO})"
 
 
 def aciklama_yaz(v, tur):
@@ -2567,6 +2567,7 @@ def kart_hazirla(cikti, konu, ornek):
 # Fiyat yok: eskimez, Rıdvan profilde sabitler, ileride reklam olarak da kullanılabilir. Takvimde yok; yalnızca elle
 # (Run workflow → tür: tanitim) ya da tek seferlik zamanlanmış görevle gider. Hikâyeye gitmez (sayımda 1).
 # Özellikler sitenin gerçekten sunduklarıdır (ana sayfa, hesap/, gecmis/, rehber/); site değişirse burası da değişir.
+# "Kaç gram, kaç lira?" satırı Rıdvan'ın isteğiyle yok (19 Ekim 2026: "kaç gram kaç lira sil").
 TANITIM_SURE = 12
 TANITIM_OZELLIKLER = [
     {"baslik": "Hesap makinesi", "alt": "gram ↔ TL",
@@ -2574,8 +2575,6 @@ TANITIM_OZELLIKLER = [
               '<path d="M18 26h2M26 26h2M34 26h2M18 34h2M26 34h2M34 34h2M18 41h2M26 41h10"/>'},
     {"baslik": "Son 30 günün grafiği", "alt": None,
      "simge": '<path d="M6 44h40"/><path d="M8 36l10-11 8 6 9-13 9 7"/>'},
-    {"baslik": "Kaç gram, kaç lira?", "alt": "1 g'dan 1 kg'a",
-     "simge": '<path d="M26 8v34M15 44h22M9 15h34"/><path d="M9 15 3 29h12zM43 15l-6 14h12z"/>'},
     {"baslik": "Geçmiş fiyatlar", "alt": "ay ay",
      "simge": '<rect x="7" y="10" width="38" height="34" rx="5"/><path d="M7 21h38M17 5v9M35 5v9"/>'},
     {"baslik": "Gümüş rehberi", "alt": "bütün bölümler",
@@ -2588,12 +2587,11 @@ def tanitim_aciklamasi(muzik=None):
     """Tanıtım Reels'inin açıklaması (fiyatsız; model ya da şirket adı yok)."""
     import bilgi
     satirlar = [
-        f"Gram gümüş için tek adres: {bilgi.SITE} (bağlantı biyografide)",
+        f"Gram gümüş için tek adres: {bilgi.SITE} ({bilgi.LINK_BIO})",
         "",
         "Sitemizde neler var?",
         "· Hesap makinesi: gram ↔ TL, Türkçe sayı yazımıyla (1.250,5)",
         "· Son 30 günün grafiği ve son günlerin fiyatları",
-        "· Kaç gram eder, kaç lira eder? 1 gramdan 1 kilograma; hurda ve milyem hesabı",
         "· Ay ay geçmiş fiyatlar",
         "· Gümüş rehberinin bütün bölümleri",
         "",
