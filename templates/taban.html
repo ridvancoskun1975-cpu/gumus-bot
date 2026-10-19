@@ -136,6 +136,11 @@ footer p { margin: 6px 0; }
 .davet-satir { margin: 0 0 14px; color: var(--soluk); font-size: 15px; line-height: 1.5; }
 .davet-satir span { display: inline-block; }   /* madde ortadan bölünmesin; sığmazsa kendi içinde kırılır */
 .davet .dugmeler { margin-top: 0; }
+/* İstifçi goril (templates/tanitim.html, 404): küçük, sağ üstte; yazıyı itmez, üstüne binmez */
+.davet-ust { display: flex; gap: 10px; align-items: flex-start; }
+.davet-ust > div:first-child { flex: 1; min-width: 0; }
+.site-goril svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.davet-goril { flex: 0 0 auto; width: 84px; height: 92px; margin: -6px -4px 0 0; }
 {% block stil %}{% endblock %}
 </style>
 </head>

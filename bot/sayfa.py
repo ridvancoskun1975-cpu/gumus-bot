@@ -36,6 +36,9 @@ REHBER_SAATI = (13, 45)  # rehber bölümü o gün bu saatten sonra sayfaya gire
 # Google Search Console sahiplik doğrulaması (URL ön eki mülkü, HTML dosyası yöntemi; 15 Ekim 2026).
 # Site her yayında baştan kurulduğu için dosya her çalıştırmada yazılır; kaldırılırsa doğrulama düşer.
 GOOGLE_DOGRULAMA = "googleade97aa5989bb9eb.html"
+# Sitede istifçi goril: tanıtım kartında ve 404 sayfasında, fiyattan bağımsız tek hâl
+# (Rıdvan, 19 Ekim 2026 "2 ama istifçi goril"). False yapılırsa site eskisi gibi gorilsiz üretilir.
+SITE_GORIL = True
 # Son pazar analizi düğmesi (Rıdvan, 18 Ekim 2026 "2 uygun"): pazar yorumunun açıklaması bununla başlar
 # (bot/yorum.py → aciklama()); Instagram'daki son kaydırmalı yorum bu başlıkla bulunur.
 PAZAR_BASLIK = "Haftalık gümüş görünümü | Üst düzey yapay zekâ yorumu"
@@ -268,6 +271,7 @@ def veri_hazirla(gecmis, simdi=None, pazar=None):
         "ayrintili": _ayrintili(simdi),
         "program": program,
         "tanitim": _tanitim(program, pazar),
+        "site_goril": SITE_GORIL,
         "kaynak": _kaynaklar(),
         "yil": simdi.year,
     }

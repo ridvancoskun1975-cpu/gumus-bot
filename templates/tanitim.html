@@ -3,12 +3,22 @@
     olmaz (üst bardaki küçük "Takip et" hariç).
     Saat ve günler v.tanitim'den (bot/sayfa.py → _tanitim(), botun takviminden); elle yazılmaz.
     "Son pazar analizi" düğmesi (Rıdvan, 18 Ekim 2026 "2 uygun"): Instagram'daki son pazar yorumunun
-    kaydırmalı gönderisine gider (bot/sayfa.py → son_pazar_analizi()); bulunamazsa düğme çıkmaz. -#}
+    kaydırmalı gönderisine gider (bot/sayfa.py → son_pazar_analizi()); bulunamazsa düğme çıkmaz.
+    İstifçi goril (Rıdvan, 19 Ekim 2026 "2 ama istifçi goril"): kartın sağ üstünde küçük, fiyattan bağımsız tek hâl
+    (yön göstermez, al/sat işareti gibi okunmasın). Kart görününce bir kez külçe istifler, sonra durur; hareket
+    azaltmayı seçenlerde hiç oynamaz. Kapatma: bot/sayfa.py → SITE_GORIL = False. -#}
 {% macro kart() -%}
 {%- if tanitim %}
 <aside class="davet" aria-labelledby="davet-baslik">
-  <h2 id="davet-baslik">{{ tanitim.baslik }}</h2>
-  <p class="davet-satir">{% for h in tanitim.satir %}<span>{{ h }}</span>{% if not loop.last %} · {% endif %}{% endfor %}</p>
+  <div class="davet-ust">
+    <div>
+      <h2 id="davet-baslik">{{ tanitim.baslik }}</h2>
+      <p class="davet-satir">{% for h in tanitim.satir %}<span>{{ h }}</span>{% if not loop.last %} · {% endif %}{% endfor %}</p>
+    </div>
+    {%- if site_goril %}
+    <div class="site-goril davet-goril" aria-hidden="true">{% include "goril/istif.svg" %}</div>
+    {%- endif %}
+  </div>
   <div class="dugmeler">
     <a class="dugme" href="{{ instagram }}">Instagram'da takip et</a>
     {%- if tanitim.pazar %}
@@ -16,5 +26,31 @@
     {%- endif %}
   </div>
 </aside>
+{%- if site_goril %}{{ goril_betik() }}{% endif %}
 {%- endif %}
+{%- endmacro %}
+
+{#- Gorili oynatır: kutu ekranda görününce bir kez (giriş atlanır, 3 külçeden istifler), ~14 sn sonra durur. -#}
+{% macro goril_betik() -%}
+<script>
+{% include "goril/istif.js" %}
+(function () {
+  var kutu = document.querySelector('.site-goril');
+  if (!kutu || typeof window.kare !== 'function') return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var BAS = 1.8, SON = 14, t0 = null;
+  function adim(z) {
+    if (t0 === null) t0 = z;
+    var t = BAS + (z - t0) / 1000;
+    window.kare(Math.min(t, SON));
+    if (t < SON) requestAnimationFrame(adim);
+  }
+  function basla() { requestAnimationFrame(adim); }
+  if (!('IntersectionObserver' in window)) return basla();
+  var g = new IntersectionObserver(function (e) {
+    if (e[0].isIntersecting) { g.disconnect(); basla(); }
+  }, { threshold: 0.5 });
+  g.observe(kutu);
+})();
+</script>
 {%- endmacro %}

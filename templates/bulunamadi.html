@@ -9,6 +9,9 @@
 {% endblock %}
 {% block icerik %}
   <section aria-labelledby="baslik">
+    {%- if site_goril %}
+    <div class="site-goril" aria-hidden="true" style="width: 150px; height: 164px; margin: 8px 0 4px">{% include "goril/istif.svg" %}</div>
+    {%- endif %}
     <p class="etiket">Sayfa bulunamadı</p>
     <h1 id="baslik" style="font-size: 30px; margin-top: 6px">Aradığınız sayfa burada yok</h1>
     <p class="soluk">Adres değişmiş ya da yanlış yazılmış olabilir. 5 saniye içinde ana sayfaya gidiyorsunuz.</p>
@@ -19,3 +22,4 @@
     </div>
   </section>
 {% endblock %}
+{% block betik %}{% from "tanitim.html" import goril_betik %}{% if site_goril %}{{ goril_betik() }}{% endif %}{% endblock %}
