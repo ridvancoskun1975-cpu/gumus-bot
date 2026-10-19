@@ -8,7 +8,7 @@ yöntemi, paylaşım takvimi ve kaynaklarla yeniden yazar. Gümüş rehberi ayr�
 yalnızca başlıklar görünür, başlığa dokununca açılır; Instagram'da yayımlanmış bölümler ve ayrıntılı
 bilgi (bot/ayrintili.py). Ana sayfa şişmesin diye rehberden orada yalnızca bir bağlantı kartı var
 (Rıdvan, 14 Ekim 2026). Ayrıca WhatsApp/Instagram bağlantı önizlemesi için og.png (1200×630),
-fontlar, sitemap.xml ve Google Search Console doğrulama dosyasını üretir. GitHub Pages her yayında siteyi baştan kurduğu için sayfa her
+fontlar, sitemap.xml, robots.txt ve Google Search Console doğrulama dosyasını üretir. GitHub Pages her yayında siteyi baştan kurduğu için sayfa her
 çalıştırmada yeniden üretilir.
 
 Fiyatlar veri/gecmis.json kayıtlarından gelir (hafta içi her paylaşımın değeri); MetalCharts
@@ -312,6 +312,8 @@ def uret(cikti, gecmis, simdi=None, euro=None, pazar=None, kati=False):
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
         + "".join(f"<url><loc>{a}</loc><lastmod>{s}</lastmod><changefreq>{c}</changefreq></url>" for a, s, c in satirlar)
         + '</urlset>\n', encoding="utf-8")
+    # Site 19 Ekim 2026'dan beri alan adının kökünde (gunlukgumus.com): arama motorları site haritasını robots.txt'ten de bulur.
+    (cikti / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {v['url']}sitemap.xml\n", encoding="utf-8")
     (cikti / GOOGLE_DOGRULAMA).write_text(f"google-site-verification: {GOOGLE_DOGRULAMA}", encoding="utf-8")
     # Olmayan adreste Türkçe sayfa (Rıdvan, 18 Ekim 2026 "4 uygun"); her derinlikte açıldığı için kok tam adres
     (cikti / "404.html").write_text(env.get_template("bulunamadi.html").render(**v, kok=v["url"]), encoding="utf-8")

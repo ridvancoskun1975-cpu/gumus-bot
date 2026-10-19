@@ -75,6 +75,10 @@ url = sayfa.site_adresi()
 kontrol("404: noindex, yönlendirme, tam adresler",
         'name="robots" content="noindex"' in bulunamadi and f'content="5; url={url}"' in bulunamadi
         and f"url('{url}fonts/" in bulunamadi and f'href="{url}hesap/"' in bulunamadi and "Sayfa bulunamadı" in bulunamadi)
+kontrol("robots.txt site haritasını gösterir",
+        (cikti / "robots.txt").read_text(encoding="utf-8") == f"User-agent: *\nAllow: /\n\nSitemap: {url}sitemap.xml\n")
+kontrol("adres alan adı", url == "https://gunlukgumus.com/" and "github.io" not in ana
+        and "github.io" not in (cikti / "sitemap.xml").read_text(encoding="utf-8"))
 cikti2 = Path(tempfile.mkdtemp())
 sayfa.uret(cikti2, gecmis, pazar=None, kati=True)
 kontrol("pazar yoksa düğme yok", "Son pazar analizi" not in (cikti2 / "index.html").read_text(encoding="utf-8"))
