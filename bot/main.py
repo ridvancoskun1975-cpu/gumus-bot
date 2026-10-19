@@ -2598,7 +2598,8 @@ def tanitim_aciklamasi(muzik=None):
         "· Gümüş rehberinin bütün bölümleri",
         "",
         "Sayfa her paylaşımla kendiliğinden güncellenir; çerez kullanmaz.",
-        "Hafta içi ~10:00 ve ~20:00 gram gümüş fiyatı, cumartesi haftalık özet, pazar derin analiz burada, Instagram'da.",
+        "Hafta içi ~10:00 ve ~20:00 gram gümüş fiyatı, cumartesi haftalık özet, pazar üst düzey yapay zekâ analizi: "
+        "hepsi burada, Instagram'da.",
         "",
         "Bilgi amaçlıdır, yatırım tavsiyesi değildir.",
     ]

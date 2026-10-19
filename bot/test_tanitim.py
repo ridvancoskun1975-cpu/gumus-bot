@@ -33,6 +33,7 @@ kontrol(a.startswith(f"Gram gümüş için tek adres: {bilgi.SITE} (bağlantı b
 kontrol(len(a) <= 2200, f"açıklama {len(a)} ≤ 2200")
 kontrol("Bilgi amaçlıdır, yatırım tavsiyesi değildir." in a and "Müzik: Örnek müzik" in a, "uyarı ve müzik künyesi")
 kontrol(not re.search(r"claude|anthropic|opus|sonnet|gemini", a, re.I), "model ya da şirket adı yok")
+kontrol("pazar üst düzey yapay zekâ analizi" in a, "pazar analizi 'üst düzey yapay zekâ' diye anılır (Rıdvan, 19 Ekim 2026)")
 kontrol(not re.search(r"\d+,\d{2}\s*₺", a), "fiyat yok (video ve açıklama eskimesin)")
 kontrol(a.rstrip().endswith(main.HASHTAG_TANITIM) and len(main.HASHTAG_TANITIM.split()) == 5, "5 etiket sonda")
 
