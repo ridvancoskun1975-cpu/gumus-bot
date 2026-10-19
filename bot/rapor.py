@@ -228,7 +228,8 @@ def aciklamadan_ad(m):
         return "Pazar yorumu Reels"
     for anahtar, ad in (("haftalık gümüş özeti", "Haftalık özet"), ("aylık gümüş özeti", "Aylık özet"),
                         ("günün gümüş özeti", "Günlük özet"), ("güncel gümüş fiyatları", "Fiyat Reels'i"),
-                        ("yasal bilgilendirme", "Yasal bilgilendirme")):
+                        ("yasal bilgilendirme", "Yasal bilgilendirme"),
+                        ("gram gümüş için tek adres", "Site tanıtımı")):
         if anahtar in a:
             return ad
     return TUR_ADI.get(m.get("media_product_type"), "Gönderi")

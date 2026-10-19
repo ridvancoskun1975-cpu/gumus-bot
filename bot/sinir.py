@@ -50,7 +50,7 @@ GUN_SINIRI = {
 # Reels + hikâyesi; bilgi rehber Reels'i + müzikli rehber hikâye videosu (60 sn'yi aşan bölümde 2 video olabilir);
 # kisa rehber arşivi Reels'i; kart; yasal kaydırmalı; hikaye elle rehber hikâyesi.
 TAHMIN = {"reels": 1, "post": 2, "hafta": 2, "ay": 2, "yorum": 3, "bilgi": 2, "kisa": 1, "kart": 1, "yasal": 1,
-          "hikaye": 1}
+          "hikaye": 1, "tanitim": 1}   # tanitim: bilgi sayfasının bir kezlik tanıtım Reels'i (hikâyesiz)
 # Hikâye kopyası düşerse kalan sayı (yalnız bu türlerde hikâye bir kopyadır ve bırakılabilir)
 HIKAYESIZ = {"post": 1, "hafta": 1, "ay": 1, "yorum": 2, "bilgi": 1}
 TR = ZoneInfo("Europe/Istanbul")

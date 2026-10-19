@@ -1150,7 +1150,7 @@ def gorsel_uret(tur, veri, png_yolu):
     boyut = {"reels": (1080, 1920), "kapak": (1080, 1920), "post": (1080, 1350), "hafta": (1080, 1350), "yasal": (1080, 1350),
              "bilgi": (1080, 1350), "yorum": (1080, 1350), "ay": (1080, 1350), "kisa": (1080, 1920), "ozel": (1080, 1920),
              "kart-gram": (1080, 1920), "kart-parite": (1080, 1920), "sayfa-og": (1200, 630),
-             "yorum-reels": (1080, 1920)}[tur]
+             "yorum-reels": (1080, 1920), "site-reels": (1080, 1920)}[tur]
     # Instagram görsel gönderilerde yalnızca JPEG kabul ediyor; uzantı .jpg ise JPEG kaydedilir.
     jpeg = {"quality": 92} if Path(png_yolu).suffix.lower() in (".jpg", ".jpeg") else {}
     try:
@@ -1294,7 +1294,8 @@ def hareketli_video_uret(tur, veri, mp4_yolu, sure=7, seslendirme=None):
              "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-r", str(VIDEO_FPS),
              "-c:a", "aac", "-b:a", "128k", "-shortest", "-movflags", "+faststart", str(mp4_yolu)]
     boyut = {"reels": (1080, 1920), "kisa": (1080, 1920), "ozel": (1080, 1920),
-             "kart-gram": (1080, 1920), "kart-parite": (1080, 1920), "yorum-reels": (1080, 1920)}.get(tur, (1080, 1350))
+             "kart-gram": (1080, 1920), "kart-parite": (1080, 1920), "yorum-reels": (1080, 1920),
+             "site-reels": (1080, 1920)}.get(tur, (1080, 1350))
     try:
         with sync_playwright() as p:
             kwargs = {"executable_path": os.environ["CHROME_YOLU"]} if os.environ.get("CHROME_YOLU") else {}
@@ -2562,6 +2563,76 @@ def kart_hazirla(cikti, konu, ornek):
     print(f"Üretilen dosya: {mp4}")
 
 
+# Bilgi sayfasının bir kezlik tanıtım Reels'i (Rıdvan, 19 Ekim 2026: web sayfası tanıtımı, 2. madde "2 uygula").
+# Fiyat yok: eskimez, Rıdvan profilde sabitler, ileride reklam olarak da kullanılabilir. Takvimde yok; yalnızca elle
+# (Run workflow → tür: tanitim) ya da tek seferlik zamanlanmış görevle gider. Hikâyeye gitmez (sayımda 1).
+# Özellikler sitenin gerçekten sunduklarıdır (ana sayfa, hesap/, gecmis/, rehber/); site değişirse burası da değişir.
+TANITIM_SURE = 12
+TANITIM_OZELLIKLER = [
+    {"baslik": "Hesap makinesi", "alt": "gram ↔ TL",
+     "simge": '<rect x="10" y="5" width="32" height="42" rx="5"/><path d="M17 15h18"/>'
+              '<path d="M18 26h2M26 26h2M34 26h2M18 34h2M26 34h2M34 34h2M18 41h2M26 41h10"/>'},
+    {"baslik": "Son 30 günün grafiği", "alt": None,
+     "simge": '<path d="M6 44h40"/><path d="M8 36l10-11 8 6 9-13 9 7"/>'},
+    {"baslik": "Kaç gram, kaç lira?", "alt": "1 g'dan 1 kg'a",
+     "simge": '<path d="M26 8v34M15 44h22M9 15h34"/><path d="M9 15 3 29h12zM43 15l-6 14h12z"/>'},
+    {"baslik": "Geçmiş fiyatlar", "alt": "ay ay",
+     "simge": '<rect x="7" y="10" width="38" height="34" rx="5"/><path d="M7 21h38M17 5v9M35 5v9"/>'},
+    {"baslik": "Gümüş rehberi", "alt": "bütün bölümler",
+     "simge": '<path d="M26 14c-5-4-12-5-19-4v30c7-1 14 0 19 4 5-4 12-5 19-4V10c-7-1-14 0-19 4z"/><path d="M26 14v30"/>'},
+]
+HASHTAG_TANITIM = "#gümüş #gramgümüş #gümüşfiyatları #gümüşyatırımı #külçegümüş"
+
+
+def tanitim_aciklamasi(muzik=None):
+    """Tanıtım Reels'inin açıklaması (fiyatsız; model ya da şirket adı yok)."""
+    import bilgi
+    satirlar = [
+        f"Gram gümüş için tek adres: {bilgi.SITE} (bağlantı biyografide)",
+        "",
+        "Sitemizde neler var?",
+        "· Hesap makinesi: gram ↔ TL, Türkçe sayı yazımıyla (1.250,5)",
+        "· Son 30 günün grafiği ve son günlerin fiyatları",
+        "· Kaç gram eder, kaç lira eder? 1 gramdan 1 kilograma; hurda ve milyem hesabı",
+        "· Ay ay geçmiş fiyatlar",
+        "· Gümüş rehberinin bütün bölümleri",
+        "",
+        "Sayfa her paylaşımla kendiliğinden güncellenir; çerez kullanmaz.",
+        "Hafta içi ~10:00 ve ~20:00 gram gümüş fiyatı, cumartesi haftalık özet, pazar derin analiz burada, Instagram'da.",
+        "",
+        "Bilgi amaçlıdır, yatırım tavsiyesi değildir.",
+    ]
+    if muzik:
+        satirlar += ["", f"Müzik: {muzik}"]
+    satirlar += ["", HASHTAG_TANITIM]
+    return "\n".join(satirlar)
+
+
+def tanitim_hazirla(cikti):
+    """Bilgi sayfasının tanıtım Reels'i: 12 sn müzikli hareketli video + kapak (videonun son hâli)."""
+    import bilgi
+    cikti = Path(cikti)
+    damga = datetime.now(TR_SAAT).strftime("%Y%m%d-%H%M")
+    veri = {"site": bilgi.SITE, "hesap": hesap_adi(), "ozellikler": TANITIM_OZELLIKLER,
+            "maskot": "goril/istif.svg", "maskot_js": "goril/istif.js"}
+    kapak = cikti / f"tanitim-{damga}-kapak.jpg"
+    gorsel_uret("site-reels", veri, kapak)                       # kare çağrılmadan: son hâl
+    mp4 = cikti / f"tanitim-{damga}.mp4"
+    if not hareketli_video_uret("site-reels", veri, mp4, sure=TANITIM_SURE):
+        raise RuntimeError("tanıtım Reels'i hareketli üretilemedi")
+    aciklama = tanitim_aciklamasi(muzik_kunyesi())
+    if len(aciklama) > 2200:
+        raise RuntimeError(f"Açıklama Instagram sınırını aşıyor ({len(aciklama)} > 2200 karakter)")
+    (cikti / "meta.json").write_text(json.dumps({"tur": "tanitim", "dosya": mp4.name, "aciklama": aciklama,
+                                                 "kapak": kapak.name, "kapak_ms": int((TANITIM_SURE - 0.5) * 1000)},
+                                                ensure_ascii=False, indent=2), encoding="utf-8")
+    (cikti / "index.html").write_text("<!doctype html><meta charset='utf-8'><title>Gümüş bot</title>"
+                                      f"<p><a href='{mp4.name}'>{mp4.name}</a></p><p><a href='{kapak.name}'>{kapak.name}</a></p>",
+                                      encoding="utf-8")
+    print(aciklama)
+    print(f"\nÜretilen dosyalar ({len(aciklama)} karakter açıklama): {mp4.name}, {kapak.name}")
+
+
 def _baslik_ozeti(veri):
     """meta.json ve iş akışı günlüğü için: o gün hangi başlık kuralı tuttu."""
     if veri.get("ozel"):
@@ -2610,6 +2681,9 @@ def hazirla(tur, cikti, ornek, konu=None):
         return
     if tur == "kart":
         kart_hazirla(cikti, konu, ornek)
+        return
+    if tur == "tanitim":
+        tanitim_hazirla(cikti)
         return
     if tur == "yorum":
         try:
@@ -2695,7 +2769,8 @@ def main():
     ap = argparse.ArgumentParser()
     alt = ap.add_subparsers(dest="komut", required=True)
     h = alt.add_parser("hazirla")
-    h.add_argument("--tur", choices=["reels", "post", "hafta", "ay", "yasal", "bilgi", "kisa", "yorum", "hikaye", "kart"],
+    h.add_argument("--tur", choices=["reels", "post", "hafta", "ay", "yasal", "bilgi", "kisa", "yorum", "hikaye", "kart",
+                                     "tanitim"],
                    required=True)
     h.add_argument("--cikti", default="site")
     h.add_argument("--ornek", action="store_true", help="Gerçek fiyat yerine örnek veri kullan")

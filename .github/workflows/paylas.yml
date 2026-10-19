@@ -22,7 +22,7 @@ on:
       tur:
         description: "Ne üretilsin?"
         type: choice
-        options: [reels, post, hafta, ay, yasal, bilgi, kisa, yorum, hikaye, kart]
+        options: [reels, post, hafta, ay, yasal, bilgi, kisa, yorum, hikaye, kart, tanitim]
         default: reels
       konu:
         description: "bilgi, kisa, hikaye: rehber bölüm no (boşsa bilgi için bugünün rehberi, kisa için bugünün arşiv Reels'i; hikaye için zorunlu). kart: gram ya da parite (boşsa günün kartı). yorum + ornek: örneğin pazarı (YYYY-AA-GG)."

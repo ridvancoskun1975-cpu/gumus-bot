@@ -1,4 +1,5 @@
 """bot/kart.py sınamaları (ağ yok, tarayıcı yok). Çalıştır: python bot/test_kart.py"""
+import re
 import sys
 from datetime import date, timedelta
 from pathlib import Path
@@ -31,7 +32,8 @@ kart_cron = [c for c, t in zamanlar if t == "kart"]
 # Rıdvan, 19 Ekim 2026: kartlar takvimden kaldırıldı (takipçiyi bıktırmamak için paylaşım sayısı azaltıldı);
 # kod duruyor, yalnızca elle (Run workflow → tür: kart).
 esit(kart_cron, [], "kartın zamanlı çalışması yok (19 Ekim 2026'da kaldırıldı)")
-esit("kart]" in program.IS_AKISI.read_text(encoding="utf-8"), True, "elle çalıştırma seçeneklerinde kart duruyor")
+esit(re.search(r"options: \[[^\]]*\bkart\b", program.IS_AKISI.read_text(encoding="utf-8")) is not None, True,
+     "elle çalıştırma seçeneklerinde kart duruyor")
 esit(program.KAYIT_TURLERI, ("reels", "post"), "günlük fiyat kaydını yalnızca Reels ve özet yazar")
 
 # ---------------------------------------------------------------- hangi gün kart

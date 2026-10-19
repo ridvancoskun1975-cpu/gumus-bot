@@ -1,0 +1,100 @@
+{% from "makrolar.html" import ag_etiketi %}<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Gümüş · site tanıtımı</title>
+<style>{% include "ortak.css" %}
+/* Bilgi sayfasının (gunlukgumus.com) bir kezlik tanıtım Reels'i (Rıdvan, 19 Ekim 2026: web sayfası tanıtımı,
+   2. madde "2 uygula"). Fiyat yok: video eskimez, profilde sabitlenir, ileride reklam olarak da kullanılabilir.
+   Güvenli alan Reels'teki gibi: üst 220 px, alt 420 px (açıklama, hesap adı), sağ 170 px (düğmeler).
+   Profil ızgarası ortadaki 3:4 alanı (y 240–1680) gösterir: kapak için içerik ortada. Kare çağrılmazsa sayfa
+   son hâlinde durur (kapak bu hâlden çizilir). */
+.sahne { position: relative; width: 1080px; height: 1920px; padding: 220px 170px 420px 96px; }
+.baslik { margin-top: 0; font-size: 96px; line-height: 0.98; font-weight: 800; letter-spacing: -3px; }
+.adres { margin-top: 46px; display: inline-flex; align-items: center; gap: 22px; padding: 26px 34px 30px;
+  border: 4px solid var(--vurgu); border-radius: 14px; font-size: 80px; font-weight: 800; letter-spacing: -2px;
+  line-height: 1; white-space: nowrap; transform-origin: left center; }
+.adres .ok { font-size: 64px; color: var(--vurgu); }
+.liste { margin-top: 52px; border-top: 2px solid var(--cizgi); }
+.ozellik { display: grid; grid-template-columns: 60px 1fr; align-items: center; gap: 22px; padding: 20px 0;
+  border-bottom: 2px solid var(--cizgi); }
+.ozellik .simge { width: 52px; height: 52px; }
+.ozellik .simge * { fill: none; stroke: var(--vurgu); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+.ozellik b { font-size: 46px; line-height: 1.15; font-weight: 700; }
+.ozellik span { font-size: 46px; line-height: 1.15; font-weight: 500; color: var(--soluk); }
+.cagri { position: absolute; left: 96px; top: 1388px; display: inline-flex; align-items: center; gap: 16px;
+  font-size: 46px; font-weight: 800; color: var(--zemin); background: var(--vurgu); border-radius: 999px;
+  padding: 18px 34px 20px; }
+.maskot { position: absolute; right: 168px; top: 1236px; width: 236px; height: 258px; }
+.alt-satir { position: absolute; left: 96px; right: 170px; top: 1512px; display: flex; justify-content: space-between;
+  align-items: baseline; }
+</style>
+</head>
+<body>
+<div class="sahne">
+  <div class="isik" aria-hidden="true"></div>
+  <div class="ust">
+    <div class="etiket" id="etiket" style="gap: 14px; font-size: 32px"><span class="nokta" style="width: 14px; height: 14px"></span><span>BİLGİ SAYFAMIZ</span></div>
+    {{ ag_etiketi(130, 146, '12px 14px', 22, 50, 18) }}
+  </div>
+
+  <div style="position: absolute; left: 96px; right: 170px; top: 400px">
+    <div class="baslik" id="baslik">Gram gümüş için<br>tek adres</div>
+    <div class="adres" id="adres"><span>{{ site }}</span></div>
+    <div class="liste">
+      {% for o in ozellikler %}
+      <div class="ozellik" id="oz{{ loop.index0 }}">
+        <svg class="simge" viewBox="0 0 52 52" aria-hidden="true">{{ o.simge | safe }}</svg>
+        <div><b>{{ o.baslik }}</b>{% if o.alt %}<span> · {{ o.alt }}</span>{% endif %}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="cagri" id="cagri">Bağlantı biyografide <span aria-hidden="true">↗</span></div>
+  {% if maskot %}<div class="maskot" aria-hidden="true">{% include maskot %}</div>{% endif %}
+
+  <div class="alt-satir">
+    <b style="font-size: 34px">{{ hesap }}</b>
+    <span class="soluk" style="font-size: 24px">Bilgi amaçlıdır, yatırım tavsiyesi değildir.</span>
+  </div>
+</div>
+<script>
+// Hareket: bot her kare için window.kare(t) çağırır (bot/main.py → hareketli_video_uret); çağrılmazsa son hâl.
+(function () {
+  const $ = id => document.getElementById(id);
+  const kenet = x => Math.min(Math.max(x, 0), 1);
+  const yum = x => { x = kenet(x); return x * x * (3 - 2 * x); };
+  const ara = (t, a, b) => yum((t - a) / (b - a));
+  const n = {{ ozellikler | length }};
+  const isik = document.querySelector('.isik');
+  function gir(el, g, dx, dy) {
+    el.style.opacity = g.toFixed(3);
+    el.style.transform = `translate(${((1 - g) * (dx || 0)).toFixed(1)}px, ${((1 - g) * (dy || 0)).toFixed(1)}px)`;
+  }
+  window.kare = function (t) {
+    gir($('etiket'), ara(t, 0.0, 0.5), 0, -20);
+    gir($('baslik'), ara(t, 0.1, 0.8), 0, 40);
+    const a = ara(t, 0.7, 1.4);
+    const adres = $('adres');
+    adres.style.opacity = a.toFixed(3);
+    // 2,2 sn'de hafif bir nabız; adres gözde kalsın
+    const nabiz = t > 2.0 && t < 2.8 ? 0.04 * Math.sin(Math.PI * (t - 2.0) / 0.8) : 0;
+    adres.style.transform = `scale(${(0.86 + 0.14 * a + nabiz).toFixed(4)})`;
+    for (let i = 0; i < n; i++) gir($('oz' + i), ara(t, 1.6 + 0.55 * i, 2.1 + 0.55 * i), -60, 0);
+    const c = ara(t, 1.6 + 0.55 * n + 0.2, 1.6 + 0.55 * n + 0.7);
+    const cagri = $('cagri');
+    cagri.style.opacity = c.toFixed(3);
+    const zip = t > 5.0 ? 1 + 0.035 * (0.5 - 0.5 * Math.cos(2 * Math.PI * (t - 5.0) / 1.2)) : 1;
+    cagri.style.transform = `translateY(${((1 - c) * 30).toFixed(1)}px) scale(${zip.toFixed(4)})`;
+    // gümüş parıltısı iki kez geçer
+    if (isik) {
+      const p = t >= 1.2 && t < 2.5 ? (t - 1.2) / 1.3 : (t >= 7.0 && t < 8.3 ? (t - 7.0) / 1.3 : null);
+      isik.style.transform = p === null ? 'translateX(-140%)' : `translateX(${(-140 + 280 * p).toFixed(1)}%)`;
+    }
+  };
+})();
+</script>
+{% if maskot_js %}<script>{% include maskot_js %}</script>{% endif %}
+</body>
+</html>
