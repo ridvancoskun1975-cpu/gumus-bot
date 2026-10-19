@@ -60,6 +60,7 @@ with tempfile.TemporaryDirectory() as d:
             a = (cikti / "index.html").read_text(encoding="utf-8")
             kontrol("rehber sayfasında indirme düğmesi", 'href="../rehber.pdf" download' in r and "Yakında" not in r)
             kontrol("ana sayfada indirme kartı", 'href="rehber.pdf" download' in a)
+            kontrol("site haritasında rehber.pdf", "/rehber.pdf</loc>" in (cikti / "sitemap.xml").read_text(encoding="utf-8"))
     finally:
         rp.YAYIN, rp.BASKILAR[:] = yayin_eski, baskilar_eski
 
@@ -72,6 +73,12 @@ with tempfile.TemporaryDirectory() as s:
     kontrol("rehber sayfasında yakında kartı", "PDF olarak geliyor" in r and 'data-hedef="2027-01-01"' in r and ">74<" in r)
     kontrol("ana sayfada yakında kartı", "Yakında: rehberin PDF hâli" in a and 'href="rehber/#pdf"' in a)
     kontrol("henüz PDF yok", not (cikti / "rehber.pdf").exists())
+    kontrol("site haritasında henüz PDF yok", "rehber.pdf" not in (cikti / "sitemap.xml").read_text(encoding="utf-8"))
+
+# Baskı günleri sitede kendiliğinden güncellensin (sayfa.yml zamanlaması, TR 00:07)
+akis = (rp.KOK / ".github/workflows/sayfa.yml").read_text(encoding="utf-8")
+for cron in ("7 21 31 12 *", "7 21 31 3 *", "7 21 30 6 *", "7 21 30 9 *"):
+    kontrol(f"sayfa.yml baskı günü zamanı {cron}", f"cron: '{cron}'" in akis)
 
 # Bölüm metinleri: hepsi denetimden geçmeli; onaylanmış örnek #2 var
 kontrol("#2 uzun metni var", rp.bolum_dosyasi(2).exists())

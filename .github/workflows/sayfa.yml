@@ -12,6 +12,14 @@ name: Bilgi sayfasını yayınla
 # canlı site önceki hâliyle kalır ve günlüğe "BİLGİ SAYFASI YEDEK YOL" yazılır (gece kontrolü bildirir).
 on:
   workflow_dispatch:
+  # PDF Gümüş Rehberi baskı günleri (bot/rehber_pdf.py → BASKI_AYLARI; Rıdvan, 19 Ekim 2026): 1 Ocak, 1 Nisan, 1 Temmuz,
+  # 1 Ekim 00:07 TR. Sitedeki PDF kartı o gün "Yakında"dan indirmeye (ya da yeni baskıya) döner; bayram gibi
+  # paylaşım olmayan günlerde de site o gün güncellensin. Paylaşım saatlerine denk gelmez.
+  schedule:
+    - cron: '7 21 31 12 *'
+    - cron: '7 21 31 3 *'
+    - cron: '7 21 30 6 *'
+    - cron: '7 21 30 9 *'
 
 permissions:
   contents: read

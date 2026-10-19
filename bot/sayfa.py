@@ -328,6 +328,8 @@ def uret(cikti, gecmis, simdi=None, euro=None, pazar=None, kati=False):
 
     gun = (simdi or datetime.now(bot.TR_SAAT)).date().isoformat()
     satirlar = [(v["url"], gun, "daily"), (v["url"] + "rehber/", gun, "weekly")]
+    if v["rehber_pdf"] and v["rehber_pdf"]["durum"] == "hazir":   # "gümüş rehberi pdf" aramaları da bulsun
+        satirlar.append((v["url"] + rehber_pdf.SITE_ADRES, gun, "monthly"))
     satirlar += [(adres, son, "daily" if "/hesap/" in adres or adres.endswith("/gecmis/") else "weekly")
                  for adres, son in harita]
     (cikti / "sitemap.xml").write_text(

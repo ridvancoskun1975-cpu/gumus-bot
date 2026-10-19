@@ -69,6 +69,16 @@
   yalnızca müzikle paylaşmaya düşmeli; bu yedek yol kaldırılmaz. Gemini 17 Ekim 2026'dan beri ücretli katmanda (Rıdvan, ön
   ödemeli kredi + otomatik yenileme; günlük 10 okuma sınırı yok). Denemeler yine yalnızca yedek modelle (Rıdvan,
   16 Ekim 2026). Kredi biterse ses 402 verir, Reels müzikle gider; gece kontrolü bildirir. Yeni rehber bölümü eklenince `ses.OKUMA`'ya satır ekle.
+- **PDF Gümüş Rehberi** (Rıdvan, 19 Ekim 2026: "3 ayda bir güncellesek"; "kısa olan bilgiler pdf te eksiksiz doyurucu
+  olmalı"; "uygundur başlayalım. bunu site tanıtımına da ekleyelim. beklenti olsun."): `bot/rehber_pdf.py`, şablon
+  `templates/rehber-pdf.html`, bölüm metinleri `rehber_pdf/bolum-NN.html` (kurallar `rehber_pdf/YAZIM.md`; her rakam iki
+  kaynaktan, fiyat ve yatırım tavsiyesi yok). Baskı 3 ayda bir: 1 Ocak / 1 Nisan / 1 Temmuz / 1 Ekim; baskıya yalnız o
+  güne kadar Instagram'da yayımlanmış bölümler girer. Yeni bölümün uzun hâli aylık rehber paketiyle birlikte yazılır ve
+  aynı iki kontrolden geçer; baskı ayın 25'inde (Aralık, Mart, Haziran, Eylül) pakete ek önizleme olarak gider, aynı 7 gün
+  kuralı. Onaylanan PDF `rehber_pdf/yayin/` altına konur ve `BASKILAR`'a eklenir; site baskı günü kendiliğinden
+  yayınlar (gunlukgumus.com/rehber.pdf; `sayfa.yml` o gece çalışır). Baskı yokken sitede "Yakında · 1 Ocak 2027" kartı
+  (`ILK_BASKI`). Tanıtım Reels'inde "Ücretsiz PDF rehber · 1 Ocak 2027'den itibaren" maddesi. PDF değiştirmeden ve
+  ücretsiz paylaşılabilir; sayfalarda model ya da şirket adı yok.
 - Rehber arşivi Reels'i (Rıdvan, 17 Ekim 2026 "öneriyi uygula"): sesli rehber Reels'inden önce yayımlanan #3–#5 birer
   kez, aynı tam okumalı sesli Reels olarak gider; 19 Ekim 2026'dan beri haftalık rehber sırasında, çarşamba (Rıdvan:
   "rehber sırasına girsinler"; `bot/bilgi.py` → `ARSIV_SIRASI`: 11, 18 ve 25 Kasım, #7–#8'den sonra; tür `kisa`). Yalnız Reels: kaydırmalı ve hikâye tekrar gitmez; Reels üretilemezse o gün paylaşım
