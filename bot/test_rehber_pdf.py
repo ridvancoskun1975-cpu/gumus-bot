@@ -106,6 +106,8 @@ with tempfile.TemporaryDirectory() as d:
     durum_eski = rp.DURUM
     rp.DURUM = Path(d) / "DURUM.md"
     try:
+        yok = re.search(r"^\| (\d+) \| ([^|]+) \| ([^|]+) \| yok \| kaynak — · denetle — \|", gercek_durum, re.M)
+
         def bozuk(eski, yeni):
             assert eski in gercek_durum, eski
             rp.DURUM.write_text(gercek_durum.replace(eski, yeni, 1), encoding="utf-8")
@@ -113,21 +115,23 @@ with tempfile.TemporaryDirectory() as d:
         kontrol("var olan metne 'yok' denirse hata", any("'yok' diyor" in h for h in bozuk(
             "| 2 | Gram gümüş nasıl hesaplanır? | 13 Ekim 2026 | onaylandı |",
             "| 2 | Gram gümüş nasıl hesaplanır? | 13 Ekim 2026 | yok |")))
-        kontrol("olmayan metne 'onaylandı' denirse hata", any("'onaylandı' diyor" in h for h in bozuk(
-            "| 14 | Gerçek gümüş nasıl anlaşılır? | 6 Ocak 2027 | yok | kaynak — · denetle — |",
-            "| 14 | Gerçek gümüş nasıl anlaşılır? | 6 Ocak 2027 | onaylandı | kaynak ✓ · denetle ✓ |")))
+        if yok and not rp.bolum_dosyasi(int(yok.group(1))).exists():
+            on = f"| {yok.group(1)} | {yok.group(2)} | {yok.group(3)} | "
+            kontrol("olmayan metne 'onaylandı' denirse hata", any("'onaylandı' diyor" in h for h in bozuk(
+                on + "yok | kaynak — · denetle — |", on + "onaylandı | kaynak ✓ · denetle ✓ |")))
         kontrol("yanlış Instagram tarihi hata", any("Instagram tarihi" in h for h in bozuk(
             "| 13 | Akçeden kuruşa: gümüş para | 30 Aralık 2026 |", "| 13 | Akçeden kuruşa: gümüş para | 6 Ocak 2027 |")))
-        kontrol("yanlış baskı yılı hata", any("baskı" in h for h in bozuk(
-            "| kaynak — · denetle — | 2028 |", "| kaynak — · denetle — | 2027 |")))
+        satir14 = re.search(r"^\| 14 \|.*\| 2028 \|$", gercek_durum, re.M).group(0)
+        kontrol("yanlış baskı yılı hata", any("baskı" in h for h in bozuk(satir14, satir14[:-8] + "| 2027 |")))
         kontrol("eksik satır hata", any("#14: DURUM.md'de satırı yok" in h for h in bozuk(
             "| 14 | Gerçek gümüş nasıl anlaşılır? |", "| 99 | Gerçek gümüş nasıl anlaşılır? |")))
-        kontrol("dalsız 'yazılıyor' hata", any("dal adı" in h for h in bozuk(
-            "| 5 | Gümüş fiyatını ne hareket ettirir? | 16 Ekim 2026 | yok |",
-            "| 5 | Gümüş fiyatını ne hareket ettirir? | 16 Ekim 2026 | yazılıyor |")))
-        kontrol("olmayan metne 'denetle ✓' hata", any("kontrol ✓ olamaz" in h for h in bozuk(
-            "| 5 | Gümüş fiyatını ne hareket ettirir? | 16 Ekim 2026 | yok | kaynak — · denetle — |",
-            "| 5 | Gümüş fiyatını ne hareket ettirir? | 16 Ekim 2026 | yazılıyor · x | kaynak — · denetle ✓ |")))
+        # "yok" durumundaki bir satır (DURUM.md değiştikçe kayar; varsa sına)
+        yok = re.search(r"^\| (\d+) \| ([^|]+) \| ([^|]+) \| yok \| kaynak — · denetle — \|", gercek_durum, re.M)
+        if yok:
+            on = f"| {yok.group(1)} | {yok.group(2)} | {yok.group(3)} | "
+            kontrol("dalsız 'yazılıyor' hata", any("dal adı" in h for h in bozuk(on + "yok |", on + "yazılıyor |")))
+            kontrol("olmayan metne 'denetle ✓' hata", any("kontrol ✓ olamaz" in h for h in bozuk(
+                on + "yok | kaynak — · denetle — |", on + "yazılıyor · x | kaynak — · denetle ✓ |")))
         kontrol("denetle() uyuşmazlıkta False", (bozuk("| 2 | Gram gümüş nasıl hesaplanır? | 13 Ekim 2026 | onaylandı |",
                 "| 2 | Gram gümüş nasıl hesaplanır? | 13 Ekim 2026 | yok |") and not rp.denetle(yazdir=False)))
     finally:

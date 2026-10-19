@@ -421,7 +421,7 @@ BOLUMLER = [
             {
                 "baslik": "Hafta sonu",
                 "maddeler": [
-                    "Cumartesi ve pazar küresel piyasa kapalıdır, ons fiyatı oluşmaz.",
+                    "Cumartesi ve pazar ana piyasalar kapalıdır; ekranlarda cuma kapanışı görünür.",
                     "Pazartesi açılışında fiyat, hafta sonu gelişmelerine göre cuma kapanışından "
                     "farklı başlayabilir.",
                     "Bu yüzden hafta sonu günlük fiyat paylaşımı yapmıyoruz.",
