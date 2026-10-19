@@ -79,10 +79,10 @@
   (`ILK_BASKI`). Dil (Rıdvan, 22:21; "Ücretsiz PDF rehber" fazla basitti): sitede "Gümüşte uzmanlaşmanın kısa yolu ·
   ücretsiz PDF kitap", Reels'te "Gümüş uzmanlık kitabı · ücretsiz PDF, 1 Ocak 2027'den itibaren", kapakta "Gümüş uzmanlık
   kitabı" ve "Gümüşü bir uzman gibi okuyun"; "uzman olursunuz" gibi söz verilmez. PDF değiştirmeden ve
-  ücretsiz paylaşılabilir; sayfalarda model ya da şirket adı yok. Kitap şimdilik yalnız sitede (rehber sayfası,
-  ana sayfa) ve site tanıtım Reels'inde tanıtılır (Rıdvan, 19 Ekim 2026 22:39: "her yere kitap yazmak bana biraz garip
-  geldi"). Öneri (onay bekliyor): Aralık'ta son rehber Reels'lerinin site kartında geri sayım, 1 Ocak'tan sonra kartta
-  kalıcı madde; sitenin tanıtım kartına ve özet/rehber açıklamalarına kitap satırı eklenmez.
+  ücretsiz paylaşılabilir; sayfalarda model ya da şirket adı yok. Kitap yalnız sitede (rehber sayfası, ana sayfa)
+  ve site tanıtım Reels'inde tanıtılır: rehber Reels'inin site kartı ve okuması, sitenin tanıtım kartı ve özet/rehber
+  açıklamalarındaki site satırı için Rıdvan 19 Ekim 2026'da "gerek yok" dedi ("her yere kitap yazmak bana biraz garip
+  geldi"; 22:44 "karar değiştirdim"); ekleme, Aralık geri sayımı da önerme.
 - Rehber arşivi Reels'i (Rıdvan, 17 Ekim 2026 "öneriyi uygula"): sesli rehber Reels'inden önce yayımlanan #3–#5 birer
   kez, aynı tam okumalı sesli Reels olarak gider; 19 Ekim 2026'dan beri haftalık rehber sırasında, çarşamba (Rıdvan:
   "rehber sırasına girsinler"; `bot/bilgi.py` → `ARSIV_SIRASI`: 11, 18 ve 25 Kasım, #7–#8'den sonra; tür `kisa`). Yalnız Reels: kaydırmalı ve hikâye tekrar gitmez; Reels üretilemezse o gün paylaşım
