@@ -2,8 +2,9 @@
 
 Her bölüm kapak + 3 sayfa olarak paylaşılır, hafta içi ~14:00'te otomatik gider.
 Takvim: 1-2. bölümler 13 Ekim 2026 akşamı elle paylaşıldı (ONCEDEN_YAYIMLANAN); 3-8. bölümler
-14-21 Ekim'de her iş günü (BASLANGIC); sonrası DUZENLI_GUNLER'de (salı, perşembe) sıradaki bölüm. Yeni bölüm eklemek için BOLUMLER'in sonuna ekle; takvime
-kendiliğinden girer. Bölümler bitince zamanlı çalışma bir şey paylaşmaz.
+14-21 Ekim'de her iş günü (BASLANGIC); sonrası haftada 1, DUZENLI_GUNLER'de (çarşamba; Rıdvan 19 Ekim 2026) sırayla:
+önce rehber arşivi Reels'i (ARSIV_SIRASI: #3–#5), sonra sıradaki yeni bölüm. Yeni bölüm eklemek için BOLUMLER'in
+sonuna ekle; takvime kendiliğinden girer. Bölümler bitince zamanlı çalışma bir şey paylaşmaz.
 Elle göndermek için Actions → Run workflow → tür: bilgi, konu: <no>.
 Rakamlar örnek ya da sabit değerlerdir (güncel fiyat içermez), bu yüzden MetalCharts hakkı harcanmaz.
 
@@ -34,9 +35,10 @@ BASLANGIC = {
     "2026-10-20": 7,
     "2026-10-21": 8,
 }
-# Sonrasında haftada 2 bölüm: salı ve perşembe (Pazartesi = 0). Haftada 1 için {1} yeter.
+# Sonrasında haftada 1: çarşamba (Pazartesi = 0). Rıdvan, 19 Ekim 2026: takipçiyi bıktırmamak için paylaşım
+# sayısı azaltıldı; salı ve perşembe (haftada 2) yerine haftada 1. Ayda 4 yeni bölüm gelen aylık paketle aynı hız.
 DUZENLI_BASLANGIC = date(2026, 10, 26)
-DUZENLI_GUNLER = {1, 3}
+DUZENLI_GUNLER = {2}
 
 # Her sayfada isteğe bağlı alanlar: buyuk + buyuk_alt (büyük rakam), formul, tablo [(etiket, değer)],
 # maddeler (görselde ayrı satırlar; kısa tut), kaynak (küçük not).
@@ -614,16 +616,26 @@ def _sayfa_metni(s):
     return "\n".join(satirlar)
 
 
-def takvim():
-    """{"YYYY-AA-GG": bölüm no} — ilk hafta BASLANGIC, sonrası DUZENLI_GUNLER'de sıradaki bölüm."""
-    t = dict(BASLANGIC)
-    no = max(BASLANGIC.values()) + 1
+def _duzenli_gunler():
     gun = DUZENLI_BASLANGIC
-    while no <= len(BOLUMLER):
+    while True:
         if gun.weekday() in DUZENLI_GUNLER:
-            t[gun.isoformat()] = no
-            no += 1
+            yield gun
         gun += timedelta(days=1)
+
+
+def _haftalik_sira():
+    """{"YYYY-AA-GG": ("arsiv" | "yeni", bölüm no)} — DUZENLI_GUNLER'deki haftalık rehber sırası: önce rehber arşivi
+    Reels'i (ARSIV_SIRASI), sonra sıradaki yeni bölümler."""
+    kuyruk = [("arsiv", n) for n in ARSIV_SIRASI]
+    kuyruk += [("yeni", n) for n in range(max(BASLANGIC.values()) + 1, len(BOLUMLER) + 1)]
+    return {g.isoformat(): k for g, k in zip(_duzenli_gunler(), kuyruk)}
+
+
+def takvim():
+    """{"YYYY-AA-GG": bölüm no} — yeni bölümlerin günleri: ilk hafta BASLANGIC, sonrası haftalık sırada."""
+    t = dict(BASLANGIC)
+    t.update({g: no for g, (tur, no) in _haftalik_sira().items() if tur == "yeni"})
     return t
 
 
@@ -636,20 +648,16 @@ def yayim_listesi():
 
 # Rehber arşivi Reels'i (Rıdvan, 17 Ekim 2026 00:44 "öneriyi uygula"): rehber günü sesli Reels'i #6 ile (19 Ekim)
 # başladı; ondan önce yayımlanan #3–#5'in hiç Reels'i yoktu (onları taşıyacak cumartesi kısa Reels'i 16 Ekim'de
-# kaldırıldı). Her biri bir kez, rehber olmayan bir hafta içi günü ~14:00'te (13:50 rehber çalışması) bölümün
-# tamamını okuyan sesli Reels olarak gider: yalnız Reels, kaydırmalı ve hikâye videosu zaten paylaşıldı
-# (main.kisa_hazirla). Günler rehber, aylık özet ve hafta sonu dışında; kart günü (çarşamba) 4 paylaşım eder.
+# kaldırıldı). Her biri bir kez, bölümün tamamını okuyan sesli Reels olarak gider: yalnız Reels, kaydırmalı ve
+# hikâye videosu zaten paylaşıldı (main.kisa_hazirla). 19 Ekim 2026'da Rıdvan ayrı günleri (22, 26, 28 Ekim)
+# kaldırdı: "rehber sırasına girsinler" — haftalık rehber gününde (çarşamba ~14:00) yeni bölümlerden önce giderler.
 # #1–#2'nin 13 Ekim'de sessiz kısa Reels'i var, listede yok. Elle: Run workflow → tür: kisa, konu: <no>.
-ARSIV_REELS = {
-    "2026-10-22": 3,
-    "2026-10-26": 4,
-    "2026-10-28": 5,
-}
+ARSIV_SIRASI = [3, 4, 5]
 
 
 def arsiv_takvim():
-    """{"YYYY-AA-GG": bölüm no} — rehber arşivi Reels'i günleri."""
-    return dict(sorted(ARSIV_REELS.items()))
+    """{"YYYY-AA-GG": bölüm no} — rehber arşivi Reels'i günleri (haftalık rehber sırasından)."""
+    return {g: no for g, (tur, no) in sorted(_haftalik_sira().items()) if tur == "arsiv"}
 
 
 def bugunun_arsiv_bolumu(gun=None):

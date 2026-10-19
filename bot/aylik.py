@@ -19,8 +19,8 @@ ILK_AY = date(2026, 11, 1)   # ilk aylık özet Kasım başında (Ekim, kayıtla
 
 
 def ozet_gunu(yil, ay):
-    """O ayın aylık özet günü: rehber gönderisi olmayan ilk iş günü."""
-    takvim = bilgi.takvim()
+    """O ayın aylık özet günü: rehber gönderisi (ve rehber arşivi Reels'i) olmayan ilk iş günü."""
+    takvim = {**bilgi.takvim(), **bilgi.arsiv_takvim()}
     gun = date(yil, ay, 1)
     while gun.weekday() >= 5 or gun.isoformat() in takvim:
         gun += timedelta(days=1)

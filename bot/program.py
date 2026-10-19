@@ -271,7 +271,9 @@ def program(simdi=None, kayit_gunleri=(), hikaye_turleri=None, rehber_saati=(13,
         sira = (min(gunler), s * 60 + d)
         if tur == "bilgi":
             # Bu çalışma rehber gününde rehberi, rehbersiz ayın ilk iş gününde aylık özeti paylaşır.
-            gelecek = [date.fromisoformat(g) for g in sorted(bilgi.takvim())
+            # Rehber arşivi Reels'i de (19 Ekim 2026'dan beri haftalık rehber sırasında) bir rehber Reels'idir:
+            # ziyaretçiye ayrı satır olarak değil, rehber günü olarak görünür.
+            gelecek = [date.fromisoformat(g) for g in sorted({**bilgi.takvim(), **bilgi.arsiv_takvim()})
                        if date.fromisoformat(g) > bugun
                        or (date.fromisoformat(g) == bugun and (simdi.hour, simdi.minute) < rehber_saati)]
             if gelecek:
@@ -294,7 +296,7 @@ def program(simdi=None, kayit_gunleri=(), hikaye_turleri=None, rehber_saati=(13,
             else:
                 zaman, ekler = f"{gun_metni(gunler)} {saat}", ["şimdilik sıradaki bölüm yok"]
             # Rıdvan, 18 Ekim 2026 ("5 çıkar"): "Öne çıkanlar › Rehber" notu ve rehber arşivi Reels'i günleri
-            # ziyaretçiyi ilgilendirmeyen iç ayrıntı; takvimde yazılmaz (arşiv Reels'i yine bilgi.ARSIV_REELS'e göre gider).
+            # ziyaretçiyi ilgilendirmeyen iç ayrıntı; ayrı yazılmaz (arşiv Reels'i rehber günlerinin içinde görünür).
             satirlar.append({"sira": sira, "zaman": zaman, "ne": ad("bilgi"), "ek": ekler})
             g_ay = siradaki_aylik(bugun, kayitlar)
             if g_ay:

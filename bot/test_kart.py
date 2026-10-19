@@ -28,10 +28,10 @@ esit(turler.get("50 6 * * 1-5"), "reels", "taahhüt: hafta içi her gün ~10:00 
 esit(turler.get("50 16 * * 1-5"), "post", "taahhüt: hafta içi her gün ~20:00 özet")
 esit(sum(1 for _, t in zamanlar if t in ("reels", "post")), 2, "fiyat paylaşımları yalnızca bu ikisi")
 kart_cron = [c for c, t in zamanlar if t == "kart"]
-esit(len(kart_cron), 1, "kartın kendi zamanlı çalışması var")
-esit(kart_cron[0] in ("50 6 * * 1-5", "50 16 * * 1-5"), False, "kart Reels ya da özetle aynı çalışma değil")
-(saat, dk), gunler = program.cron_coz(kart_cron[0])
-esit((saat, dk, gunler), (11, 50, {2, 4}), "kart çarşamba ve cuma 11:50 TR")
+# Rıdvan, 19 Ekim 2026: kartlar takvimden kaldırıldı (takipçiyi bıktırmamak için paylaşım sayısı azaltıldı);
+# kod duruyor, yalnızca elle (Run workflow → tür: kart).
+esit(kart_cron, [], "kartın zamanlı çalışması yok (19 Ekim 2026'da kaldırıldı)")
+esit("kart]" in program.IS_AKISI.read_text(encoding="utf-8"), True, "elle çalıştırma seçeneklerinde kart duruyor")
 esit(program.KAYIT_TURLERI, ("reels", "post"), "günlük fiyat kaydını yalnızca Reels ve özet yazar")
 
 # ---------------------------------------------------------------- hangi gün kart

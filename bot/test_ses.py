@@ -222,22 +222,25 @@ _hizli = ses.hizlandir(_ham)
 dogrula(abs(ses.sure(_hizli) - 2 / 1.5) < 0.08, f"1,5 kat hızlı: {ses.sure(_hizli):.2f} sn")
 dogrula(ses.hizlandir(_ham, 1.0) is _ham and ses.hizlandir(array.array("h")) == array.array("h"), "1.0 ve boş dokunulmaz")
 
-# Rehber arşivi Reels'i günleri (bilgi.ARSIV_REELS, Rıdvan 17 Ekim 2026): hafta içi; rehber ya da aylık özet günü
-# değil; bölüm o günden önce yayımlanmış ve rehber günü sesli Reels'inden (#6) önce; günlük sınır (4) aşılmaz
+# Rehber arşivi Reels'i günleri (Rıdvan 17 Ekim 2026; 19 Ekim 2026'dan beri haftalık rehber sırasında, çarşamba):
+# hafta içi; rehber ya da aylık özet günü değil; bölüm o günden önce yayımlanmış ve rehber günü sesli Reels'inden (#6)
+# önce; yeni bölümlerden önce gider; günlük sınır (4, hikâyeler dahil) aşılmaz
 from datetime import date  # noqa: E402
 import aylik  # noqa: E402
-import kart  # noqa: E402
 yayim = {no: g for g, no in bilgi.yayim_listesi()}
 for g, no in bilgi.arsiv_takvim().items():
     gun = date.fromisoformat(g)
-    dogrula(gun.weekday() < 5, f"arşiv günü hafta içi: {g}")
-    dogrula(g not in bilgi.takvim(), f"arşiv günü rehber günü olmamalı: {g}")
+    dogrula(gun.weekday() in bilgi.DUZENLI_GUNLER, f"arşiv günü haftalık rehber günü: {g}")
+    dogrula(g not in bilgi.takvim(), f"arşiv günü yeni bölüm günü olmamalı: {g}")
     dogrula(gun != aylik.ozet_gunu(gun.year, gun.month), f"arşiv günü aylık özet günü olmamalı: {g}")
     dogrula(yayim[no] < gun and no < 6, f"bölüm #{no} önceden yayımlanmış, sesli rehber Reels'i yok: {g}")
-    dogrula(2 + (1 if kart.bugunun_karti(gun) else 0) + 1 <= 4, f"günlük sınır: {g}")
-dogrula(sorted(bilgi.arsiv_takvim().values()) == [3, 4, 5], f"arşiv bölümleri: {bilgi.arsiv_takvim()}")
-dogrula(bilgi.bugunun_arsiv_bolumu(date(2026, 10, 22)) == 3 and bilgi.bugunun_arsiv_bolumu(date(2026, 10, 24)) is None,
-        "bugünün arşiv bölümü")
+    dogrula(1 + 1 + 2 <= 4, f"günlük sınır: {g}")   # sabah Reels'i + arşiv Reels'i + akşam özeti ve hikâyesi
+dogrula(list(bilgi.arsiv_takvim().values()) == [3, 4, 5], f"arşiv bölümleri sırayla: {bilgi.arsiv_takvim()}")
+dogrula(min(bilgi.arsiv_takvim()) == "2026-10-28", f"ilk arşiv Reels'i 28 Ekim: {bilgi.arsiv_takvim()}")
+dogrula(max(bilgi.arsiv_takvim()) < min(g for g in bilgi.takvim() if g > "2026-10-21"),
+        "arşiv Reels'leri yeni bölümlerden önce")
+dogrula(bilgi.bugunun_arsiv_bolumu(date(2026, 10, 28)) == 3 and bilgi.bugunun_arsiv_bolumu(date(2026, 10, 22)) is None,
+        "bugünün arşiv bölümü (22 Ekim ayrı günü kaldırıldı)")
 dogrula("'yorum'" in adim["if"], "pazar yorumunda da seslendirme anahtarı alınır")
 uret_adimi = next(a_ for a_ in akis["jobs"]["uret"]["steps"] if a_.get("id") == "uret")
 dogrula("inputs.deneme && inputs.ornek" in uret_adimi["env"]["ORNEK"] and "--ornek" in uret_adimi["run"],

@@ -54,13 +54,14 @@ kontrol("gece yarısını geçen cron günü kayar", prg.cron_coz("30 22 * * 1")
 a = p(2026, 10, 14)
 r = satir(a, "Gümüş rehberi")
 kontrol("14 Ekim: rehber satırı ilk hafta + düzen",
-        "14–21 Ekim hafta içi her gün, 26 Ekim haftasından itibaren salı ve perşembe" in r["ek"], r)
+        "14–21 Ekim hafta içi her gün, 26 Ekim haftasından itibaren çarşamba" in r["ek"], r)
 # 18 Ekim (Rıdvan "1 uygun"): kalan ilk hafta günleri ve düzenli günlerin başladığı hafta açık yazılır
 r18 = satir(p(2026, 10, 18), "Gümüş rehberi")
-kontrol("18 Ekim: 19–21 Ekim her gün, 26 Ekim haftasından salı/perşembe",
-        r18["ek"][:2] == ["19–21 Ekim her gün, 26 Ekim haftasından itibaren salı ve perşembe",
-                          "sıradaki: 19, 20, 21 ve 27 Ekim"], r18)
-kontrol("21 Ekim sabahı: tek gün", "21 Ekim Çarşamba, 26 Ekim haftasından itibaren salı ve perşembe"
+# 19 Ekim 2026 (Rıdvan): rehber 26 Ekim haftasından itibaren haftada 1, çarşamba; arşiv Reels'i de rehber günü
+kontrol("18 Ekim: 19–21 Ekim her gün, 26 Ekim haftasından çarşamba",
+        r18["ek"][:2] == ["19–21 Ekim her gün, 26 Ekim haftasından itibaren çarşamba",
+                          "sıradaki: 19, 20, 21 ve 28 Ekim"], r18)
+kontrol("21 Ekim sabahı: tek gün", "21 Ekim Çarşamba, 26 Ekim haftasından itibaren çarşamba"
         in satir(p(2026, 10, 21), "Gümüş rehberi")["ek"])
 kontrol("aralık ay geçişi", prg.aralik_metni([date(2026, 10, 30), date(2026, 11, 2)]) == "30 Ekim–2 Kasım hafta içi her gün")
 kontrol("14 Ekim: sıradaki bugünle başlar", "sıradaki: 14, 15, 16 ve 19 Ekim" in r["ek"], r)
@@ -76,8 +77,9 @@ kontrol("rehber satırı sesli Reels ve hikâye",
         satir(p(2026, 10, 14, rehber_hikaye=True), "Gümüş rehberi")["ne"] == "Gümüş rehberi (sesli Reels ve hikâye)")
 kontrol("rehber Reels kapalıyken kaydırmalı", prg.program(datetime(2026, 10, 14, 9, tzinfo=TR), rehber_reels=False,
         rehber_hikaye=True)["satirlar"][1]["ne"] == "Gümüş rehberi (kaydırmalı gönderi ve hikâye)")
-# Rehber arşivi Reels'i günleri sayfada yazılmaz (Rıdvan, 18 Ekim 2026 "5 çıkar"; Reels'ler yine gider)
-kontrol("arşiv Reels'i günleri takvimde yok",
+# Rehber arşivi Reels'i ayrı satır/not olarak yazılmaz (Rıdvan, 18 Ekim 2026 "5 çıkar"); 19 Ekim 2026'dan beri
+# haftalık rehber sırasında olduğu için rehber günleri arasında görünür (28 Ekim)
+kontrol("arşiv Reels'i ayrı not olarak yazılmaz",
         not any("önceki bölümlerin" in e or "#3" in e for e in satir(p(2026, 10, 17), "Gümüş rehberi")["ek"]))
 kontrol("aylık satırında 'rehber varsa' notu yok", satir(p(2026, 10, 17), "Aylık")["ek"] == ["sıradaki: 2 Kasım Pazartesi"],
         satir(p(2026, 10, 17), "Aylık"))
@@ -91,11 +93,11 @@ b = p(2026, 10, 14, 15)
 kontrol("14 Ekim öğleden sonra: sıradaki 15 Ekim'le başlar", "sıradaki: 15, 16, 19 ve 20 Ekim" in satir(b, "Gümüş rehberi")["ek"],
         satir(b, "Gümüş rehberi"))
 
-# 22 Ekim: yalnızca salı/perşembe
+# 22 Ekim: yalnızca çarşamba (haftada 1; Rıdvan, 19 Ekim 2026), arşiv Reels'i günleri dahil
 d = p(2026, 10, 22)
 r = satir(d, "Gümüş rehberi")
-kontrol("22 Ekim: zaman 'Salı ve perşembe ~14:00'", r["zaman"] == "Salı ve perşembe ~14:00", r)
-kontrol("22 Ekim: sıradaki 27, 29 Ekim; 3, 5 Kasım", "sıradaki: 27 ve 29 Ekim; 3 ve 5 Kasım" in r["ek"], r)
+kontrol("22 Ekim: zaman 'Çarşamba ~14:00'", r["zaman"] == "Çarşamba ~14:00", r)
+kontrol("22 Ekim: sıradaki 28 Ekim; 4, 11, 18 Kasım", "sıradaki: 28 Ekim; 4, 11 ve 18 Kasım" in r["ek"], r)
 kontrol("22 Ekim: haftalık notu yok (24 Ekim gelecek cumartesi)", satir(d, "Haftalık")["ek"] == [], satir(d, "Haftalık"))
 
 # 26 Ekim: kış saati, ECB ~18:00 (20:00 yine o günün kurunu kullanır)
@@ -107,10 +109,14 @@ kontrol("26 Ekim: kullanım aynı", e["ecb"]["kullanim"].startswith("~10:00 değ
 f = p(2026, 10, 24)
 kontrol("cumartesi: ECB saati pazartesiye göre (26 Ekim → ~18:00)", f["ecb"]["saat"] == "~18:00", f["ecb"])
 
-# 13 Kasım: hazır bölüm kalmadı
+# 13 Kasım: haftada 1 hızla bölümler sürüyor
 g = p(2026, 11, 13)
 r = satir(g, "Gümüş rehberi")
-kontrol("13 Kasım: 'şimdilik sıradaki bölüm yok'", "şimdilik sıradaki bölüm yok" in r["ek"], r)
+kontrol("13 Kasım: sıradaki 18, 25 Kasım; 2, 9 Aralık", "sıradaki: 18 ve 25 Kasım; 2 ve 9 Aralık" in r["ek"], r)
+# 24 Aralık: hazır bölüm kalmadı (aylık paket eklemediyse)
+g = p(2026, 12, 24)
+r = satir(g, "Gümüş rehberi")
+kontrol("24 Aralık: 'şimdilik sıradaki bölüm yok'", "şimdilik sıradaki bölüm yok" in r["ek"], r)
 
 
 # Rehber hikâyesi otomatik kapalıyken (14 Ekim'den beri) sayfa hikâye/öne çıkan yazmaz; açıksa yazar

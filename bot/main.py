@@ -1616,6 +1616,19 @@ def _reels_konteyneri(kullanici_id, medya_url, meta, taban_url):
 
 YENIDEN_DENEME_SN = int(os.environ.get("YENIDEN_DENEME_SN", "600"))   # geçici engelde iki deneme arası
 
+# Günlük sınır (bot/sinir.py; Rıdvan, 19 Ekim 2026): takipçinin bizden gördüğü her şey sayılır — akış gönderisi,
+# Reels, hikâye. yayinla bu çalıştırmada paylaşılan her şeyi sayar; iş akışı sayıyı "gorunen-…" eseri olarak saklar.
+_GORUNEN = [0]
+
+
+def _hikaye_izinli(ne):
+    """kontrol işi günü 4'ün üstüne çıkmasın diye hikâye kopyasını düşürdüyse (HIKAYE=yok) False."""
+    if os.environ.get("HIKAYE", "").strip().lower() == "yok":
+        print(f"Hikâye BİLEREK paylaşılmadı ({ne}): günlük sınır — takipçinin gördüğü içerik bugün 4'ü "
+              "aşacaktı, önce hikâye kopyası düşer (bot/sinir.py; Rıdvan, 19 Ekim 2026). Bu bir hata değil.")
+        return False
+    return True
+
 
 def yayinla(cikti, taban_url, bekle_dk=0):
     """Paylaşır. Instagram geçici olarak reddederse (ErisimEngeli: "API access blocked", istek sınırı,
@@ -1665,6 +1678,7 @@ def _yayinla(cikti, taban_url):
         k = _kaydirmali_konteyner(kullanici_id, urller, meta["aciklama"])
         _hazir_olmasini_bekle(k["id"])
         sonuc = _istek("POST", f"{kullanici_id}/media_publish", creation_id=k["id"])
+        _GORUNEN[0] += 1   # günlük sınır: takipçinin gördüğü her şey sayılır (bot/sinir.py)
         print(f"Paylaşıldı: {meta['tur']} (medya id {sonuc.get('id')})")
         try:
             print("Bağlantı:", _istek("GET", sonuc["id"], fields="permalink").get("permalink"))
@@ -1683,14 +1697,19 @@ def _yayinla(cikti, taban_url):
         k = _istek("POST", f"{kullanici_id}/media", image_url=medya_url, caption=meta["aciklama"])
         _hazir_olmasini_bekle(k["id"])
     sonuc = _istek("POST", f"{kullanici_id}/media_publish", creation_id=k["id"])
+    _GORUNEN[0] += 1   # günlük sınır: takipçinin gördüğü her şey sayılır (bot/sinir.py)
     print(f"Paylaşıldı: {meta['tur']} (medya id {sonuc.get('id')})")
-    if meta["tur"] in HIKAYE_TURLERI and meta["dosya"].endswith(".mp4"):
+    if meta["tur"] in HIKAYE_TURLERI and meta["dosya"].endswith(".mp4") and _hikaye_izinli(meta["tur"]):
         hikaye_paylas(kullanici_id, medya_url)
     _rehber_hikayesi_sonra(kullanici_id, meta, taban_url)   # rehber Reels'inden sonra müzikli rehber hikâyesi
 
 
 def _rehber_hikayesi_sonra(kullanici_id, meta, taban_url):
     if not meta.get("hikayeler"):
+        return
+    if not _hikaye_izinli(f"rehber #{meta['konu']}"):
+        print(f"Rehber #{meta['konu']} hikâye videosu sonradan gönderilebilir (öne çıkan için): Run workflow → "
+              f"tür: hikaye, konu: {meta['konu']}, deneme kapalı.")
         return
     if REHBER_HIKAYE_OTOMATIK:
         rehber_hikayeleri(kullanici_id, meta, taban_url)
@@ -1721,6 +1740,7 @@ def gorsel_hikayeler(kullanici_id, urller, paylasilan):
         k = _istek("POST", f"{kullanici_id}/media", media_type="STORIES", **medya)
         _hazir_olmasini_bekle(k["id"])
         sonuc = _istek("POST", f"{kullanici_id}/media_publish", creation_id=k["id"])
+        _GORUNEN[0] += 1   # günlük sınır: takipçinin gördüğü her şey sayılır (bot/sinir.py)
         paylasilan.add(url)
         print(f"Hikâye {i}/{len(urller)} paylaşıldı (medya id {sonuc.get('id')})")
 
@@ -1754,12 +1774,15 @@ def yorum_reelsi(kullanici_id, reels, taban_url):
         _url_hazir_mi(video_url)
         k = _reels_konteyneri(kullanici_id, video_url, reels, taban_url)
         sonuc = _istek("POST", f"{kullanici_id}/media_publish", creation_id=k["id"])
+        _GORUNEN[0] += 1   # günlük sınır: takipçinin gördüğü her şey sayılır (bot/sinir.py)
         print(f"Pazar Reels'i paylaşıldı (medya id {sonuc.get('id')})")
     except Exception as e:
         print(f"::warning::Pazar Reels'i paylaşılamadı ({type(e).__name__}: {e}); kaydırmalı gönderi paylaşıldı. "
               "Reels'i sonradan göndermek için Claude'a yaz.")
         return
     # Sesli Reels ~1,5 dk: hikâyeye 24 sn'lik müzikli sürüm gider (hikâye en çok 60 sn)
+    if not _hikaye_izinli("pazar yorumu"):
+        return
     hikaye = reels.get("hikaye_dosya")
     hikaye_paylas(kullanici_id, taban_url.rstrip("/") + "/" + hikaye if hikaye else video_url)
 
@@ -1770,6 +1793,7 @@ def hikaye_paylas(kullanici_id, video_url):
         k = _istek("POST", f"{kullanici_id}/media", media_type="STORIES", video_url=video_url)
         _hazir_olmasini_bekle(k["id"])
         sonuc = _istek("POST", f"{kullanici_id}/media_publish", creation_id=k["id"])
+        _GORUNEN[0] += 1   # günlük sınır: takipçinin gördüğü her şey sayılır (bot/sinir.py)
         print(f"Hikâyeye de paylaşıldı (medya id {sonuc.get('id')})")
     except Exception as e:
         print(f"::warning::Hikâye paylaşılamadı: {e}")
@@ -2154,8 +2178,8 @@ def _reels_ek_satirlari(seslendirme):
 def kisa_hazirla(cikti, konu):
     """Yalnız Reels: rehber bölümünün tamamını kare kare okuyan sesli Reels'i, kaydırmalı gönderi ve hikâye olmadan.
 
-    Zamanlı: rehber arşivi günleri (bilgi.ARSIV_REELS; Rıdvan 17 Ekim 2026: sesli rehber Reels'inden önce yayımlanan
-    #3–#5 birer kez). Elle: Run workflow → tür: kisa, konu: <no>. Reels rehber günündekiyle aynıdır
+    Zamanlı: rehber arşivi günleri (bilgi.arsiv_takvim(); Rıdvan 17 Ekim 2026: sesli rehber Reels'inden önce yayımlanan
+    #3–#5 birer kez; 19 Ekim 2026'dan beri haftalık rehber sırasında, çarşamba). Elle: Run workflow → tür: kisa, konu: <no>. Reels rehber günündekiyle aynıdır
     (rehber_reels_tam_uret; okuma kısaltılmaz); ses alınamazsa yalnızca müzikle gider. Reels hiç üretilemezse paylaşım
     atlanır: bölümün kaydırmalısı ve hikâye videosu zaten paylaşıldığı için yedek gönderi yok. (16 Ekim'e kadarki
     ~15–20 sn'lik kısa Reels biçimi kaldırıldı: Rıdvan, 17 Ekim 2026 "Tabii ki tamamının okunması gerekiyor".)"""
@@ -2679,7 +2703,13 @@ def main():
             a.konu = int(a.konu)
         hazirla(a.tur, KOK / a.cikti if not os.path.isabs(a.cikti) else Path(a.cikti), a.ornek, a.konu)
     elif a.komut == "yayinla":
-        yayinla(KOK / a.cikti if not os.path.isabs(a.cikti) else Path(a.cikti), a.url, a.bekle_dk)
+        try:
+            yayinla(KOK / a.cikti if not os.path.isabs(a.cikti) else Path(a.cikti), a.url, a.bekle_dk)
+        finally:
+            # Günlük sınır için gerçek sayı (bot/sinir.py): iş akışı bunu "gorunen-…" eseri olarak saklar
+            print(f"Bu çalıştırmada takipçiye gösterilen içerik (akış + Reels + hikâye): {_GORUNEN[0]}")
+            if os.environ.get("GORUNEN_DOSYA"):
+                Path(os.environ["GORUNEN_DOSYA"]).write_text(str(_GORUNEN[0]), encoding="utf-8")
     elif a.komut == "goril-ciz":
         goril_ciz(a.girdi, a.sonuc)
     elif a.komut == "gecmis-kontrol":

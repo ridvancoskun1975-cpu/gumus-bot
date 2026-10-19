@@ -8,15 +8,15 @@ on:
     - cron: '50 6 * * 6'      # Cumartesi 09:50 TR -> Haftalık özet
     - cron: '50 7 * * 0'      # Pazar 10:50 TR -> Yapay zekâ yorumu (kısa/orta vade, kaydırmalı 3 görsel)
     # Hafta içi 13:50 TR -> Gümüş rehberi (bilgi). Hangi gün hangi bölüm: bot/bilgi.py → takvim()
-    # (ilk hafta her gün, sonra salı ve perşembe). Rehber olmayan günlerden ayın ilk iş günü aylık özet
+    # (19–21 Ekim 2026 her gün, 28 Ekim'den itibaren haftada 1, çarşamba; Rıdvan 19 Ekim 2026). Rehber olmayan günlerden ayın ilk iş günü aylık özet
     # gider (bot/aylik.py; ilki 2 Kasım 2026). İkisi de yoksa "kontrol" işi birkaç saniyede biter.
     # Rehber günü akışa sesli Reels gider (kaydırmalının yerine; main.REHBER_REELS), hikâyeye müzikli rehber videosu.
-    # Rehber ve aylık özet yoksa rehber arşivi günü olabilir (bot/bilgi.py → ARSIV_REELS; #3–#5 birer kez):
-    # tür kisa, yalnız sesli Reels. Cumartesi kısa Reels'i 16 Ekim 2026'da kaldırıldı (Rıdvan).
+    # Rehber ve aylık özet yoksa rehber arşivi günü olabilir (bot/bilgi.py → arsiv_takvim(); #3–#5 birer kez,
+    # haftalık rehber sırasında, çarşamba): tür kisa, yalnız sesli Reels. Cumartesi kısa Reels'i 16 Ekim 2026'da kaldırıldı (Rıdvan).
     - cron: '50 10 * * 1-5'
-    # Çarşamba ve cuma 11:50 TR -> haftalık kart (bot/kart.py): çarşamba "Kaç gram eder?", cuma altın–gümüş.
-    # 10:00 Reels ve 20:00 özetin YERİNE DEĞİL, onlara ek (taahhüt: hafta içi her gün 2 kez gram fiyatı).
-    - cron: '50 8 * * 3,5'
+    # Çarşamba ve cuma 11:50 TR haftalık kartlar (bot/kart.py) 19 Ekim 2026'da kaldırıldı (Rıdvan: takipçiyi
+    # bıktırmamak için paylaşım sayısı azaltıldı; kartlar sabah ve akşam verilen fiyatın tekrarıydı). Kod duruyor:
+    # elle Run workflow → tür: kart; geri açmak için cron '50 8 * * 3,5' ve aşağıdaki eşleme yeter.
   workflow_dispatch:
     inputs:
       tur:
@@ -69,6 +69,7 @@ jobs:
     outputs:
       tur: ${{ steps.tur.outputs.tur }}
       calis: ${{ steps.tur.outputs.calis }}
+      hikaye: ${{ steps.sinir.outputs.hikaye }}   # tam ya da yok (günlük sınır; bot/sinir.py)
     steps:
       - uses: actions/checkout@v4
         with:
@@ -89,8 +90,6 @@ jobs:
             tur=yorum
           elif [ "${{ github.event.schedule }}" = "50 10 * * 1-5" ]; then
             tur=bilgi
-          elif [ "${{ github.event.schedule }}" = "50 8 * * 3,5" ]; then
-            tur=kart
           else
             tur=reels
           fi
@@ -149,11 +148,14 @@ jobs:
           echo "tur=$tur" >> "$GITHUB_OUTPUT"
           echo "calis=$calis" >> "$GITHUB_OUTPUT"
 
-      # Günde en fazla 4 paylaşım (Rıdvan, 14 Ekim 2026; önce 3). Bugün 4 paylaşım yapılmışsa ve onay yoksa iş hata
-      # verip durur: hiçbir şey üretilmez, paylaşılmaz; GitHub "Run failed" e-postası gönderir. Onay Claude
-      # sohbetinden verilir: Rıdvan "onayla" derse Claude aynı türü onay işaretiyle yeniden başlatır.
+      # Günde en fazla 4 (Rıdvan, 14 Ekim 2026; önce 3). 19 Ekim 2026'dan beri takipçinin gördüğü her şey sayılır:
+      # akış gönderisi, Reels ve hikâye ayrı ayrı. Çalıştırma günü 4'ün üstüne çıkaracaksa önce hikâye kopyası düşer
+      # (çıktı hikaye=yok → yayinla hikâyesiz paylaşır); hikâyesiz de sığmıyorsa ve onay yoksa iş hata verip durur:
+      # hiçbir şey üretilmez, paylaşılmaz; GitHub "Run failed" e-postası gönderir. Onay Claude sohbetinden verilir:
+      # Rıdvan "onayla" derse Claude aynı türü onay işaretiyle yeniden başlatır.
       # Deneme çalıştırmasında yalnızca sayıyı yazar. Sayım GitHub geçmişinden; Instagram'a istek atılmaz.
-      - name: Günlük sınır (en fazla 4 paylaşım)
+      - name: Günlük sınır (en fazla 4 içerik, hikâyeler dahil)
+        id: sinir
         if: steps.tur.outputs.calis == 'true'
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -172,6 +174,7 @@ jobs:
     outputs:
       devam: ${{ steps.uret.outputs.devam }}
       tur: ${{ needs.kontrol.outputs.tur }}
+      hikaye: ${{ needs.kontrol.outputs.hikaye }}
     steps:
       - uses: actions/checkout@v4
 
@@ -434,7 +437,25 @@ jobs:
         timeout-minutes: 165
         env:
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
+          HIKAYE: ${{ needs.uret.outputs.hikaye }}             # yok: günlük sınır için hikâye kopyası gitmez
+          GORUNEN_DOSYA: ${{ runner.temp }}/gorunen.txt        # paylaşılan içerik sayısı (günlük sınır)
         run: python bot/main.py yayinla --cikti site --url "${{ steps.yayin.outputs.page_url }}" --bekle-dk 150
+
+      # Günlük sınır (bot/sinir.py): bu çalıştırmanın takipçiye gösterdiği gerçek içerik sayısı (akış + Reels +
+      # hikâye) "gorunen-<deneme>-<sayı>" adlı küçük eser olarak saklanır; sonraki çalıştırmaların kontrol işi okur.
+      - name: Görünen içerik sayısı
+        id: gorunen
+        if: always()
+        run: echo "n=$(tr -dc '0-9' < "$RUNNER_TEMP/gorunen.txt" 2>/dev/null || true)" >> "$GITHUB_OUTPUT"
+
+      - name: Görünen içerik sayısını sakla
+        if: always() && steps.gorunen.outputs.n != '' && steps.gorunen.outputs.n != '0'
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: gorunen-${{ github.run_attempt }}-${{ steps.gorunen.outputs.n }}
+          path: ${{ runner.temp }}/gorunen.txt
+          retention-days: 3
 
       # Pazar yorumu paylaşılınca bilgi sayfası yeniden kurulur: "Son pazar analizi" düğmesi aynı gün yeni yoruma
       # gitsin (Rıdvan, 18 Ekim 2026 "2 uygun"). Paylaşım bitmiş olduğu için Instagram dosyaları almıştır.
