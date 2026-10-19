@@ -6,4 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
-| 19 Ekim 22:05 | PDF Gümüş Rehberi / Gümüş uzmanlık kitabı: altyapı, site kartı ve tanıtım Reels'i maddesi main'de (Rıdvan 22:53 "uygun onaylıyorum"; site yayınlandı). Sürüyor: kalan 12 bölümün uzun metinleri | rehber_pdf/bolum-*.html, rehber_pdf/ek-*.html | rehber-pdf (taslak hazırlanıyor) |
+| 20 Ekim 00:35 | PDF kitap uzun bölüm metinleri, partiler hâlinde (1. parti #1, #3, #4; sonra #5–#13). Altyapı main'de. | rehber_pdf/bolum-*.html, rehber_pdf/ek-*.html | rehber-pdf-parti-1 (yazılıyor) |

@@ -466,7 +466,7 @@ try:
             setattr(main, k, v)
 
     # Pazar Reels'i sesli (Rıdvan 17 Ekim 2026): erkek sesi, analizin TAMAMI; hikâyeye müzikli sürüm (sahne başına 8 sn).
-    # 13 Ekim 2027'ye kadar yalnız kısa ve orta vade (Rıdvan 17 Ekim 2026): kapak + 2 vade + kapanış = 4 okuma, 24 sn müzik
+    # Yalnız kısa ve orta vade, kalıcı (Rıdvan 17 Ekim 2026): kapak + 2 vade + kapanış = 4 okuma, 24 sn müzik
     import yorum  # noqa: E402
     AKTIF = ("kisa", "orta")
     MUZIKLI_SN = 8 * (len(AKTIF) + 1)

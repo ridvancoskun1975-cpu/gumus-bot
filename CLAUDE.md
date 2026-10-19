@@ -88,7 +88,7 @@
   "rehber sırasına girsinler"; `bot/bilgi.py` → `ARSIV_SIRASI`: 11, 18 ve 25 Kasım, #7–#8'den sonra; tür `kisa`). Yalnız Reels: kaydırmalı ve hikâye tekrar gitmez; Reels üretilemezse o gün paylaşım
   yok. Tarih ya da bölüm değişecekse önce Rıdvan'a sor.
 - "Rehber" öne çıkanının standardı (Rıdvan, 14 Ekim 2026): her bölüm tek video; öne çıkandaki sıra önemli değil,
-  eksik olmaması önemli. Ekleme hatırlatması çarşamba ~14:15'te gelir (zamanlanmış görev "Çarşamba hatırlatması:
+  eksik olmaması önemli. Ekleme hatırlatması çarşamba ~14:45'te gelir (20 Ekim 2026 kota tasarrufuyla 14:15'ten) (zamanlanmış görev "Çarşamba hatırlatması:
   rehber hikâyesini öne çıkana ekle"); pazar hatırlatmasında yalnızca sabitleme var (Rıdvan, 19 Ekim 2026 "uygun"). Tek tek kare olarak giden eski #1–#2 yerine videoları 18 Ekim'de paylaşılır, eski
   kareleri Rıdvan siler. Rehber hikâyesini elle kareler hâlinde paylaşma.
 - Claude API kredisi (pazar yorumu): bakiye Anthropic'ten okunamıyor, özel gumus-kayit deposundaki `api-bakiye.md`
@@ -104,6 +104,5 @@
 - Pazar yorumu **yalnız kısa ve orta vade, kalıcı** (Rıdvan, 17 Ekim 2026: "Kısa, orta, uzun yerine sadece kısa ve
   orta kalacak", "geleceği de etkilemeli"). Uzun vade hiçbir tarihte, veri birikse de geri gelmez; sesli okuma,
   müzikli video, Reels, kaydırmalı gönderi, cumartesi hatırlatması, bilgi sayfası hep kısa ve orta. Uzun vadeyi geri
-  getiren tarih ya da koşul ekleme; yalnızca Rıdvan açıkça isterse. Kendi kayıtlarımız 1 yılı doldurunca 13 Ekim
-  2027'de TEK hatırlatma gelir (zamanlanmış görev; Rıdvan 17 Ekim 2026 13:01: "1 yıllık veri dolunca uzun vadeye
-  geçelim. bunun için 1 hatırlatma yeterli"); "evet" derse önizleme + onayla eklenir, ilk pazar 17 Ekim 2027.
+  getiren tarih ya da koşul ekleme; yalnızca Rıdvan açıkça isterse. (Uzun vade için kurulan tek hatırlatma
+  20 Ekim 2026 kota tasarrufuyla kapatıldı; yerine başka hatırlatma kurma.)
