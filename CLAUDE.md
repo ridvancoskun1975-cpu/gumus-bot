@@ -36,7 +36,10 @@
   hatırlatması), sonra kendi kayıtlarımız. Pazar yorumu önizlemesini Rıdvan'a gerçek veriyle üret (deneme, ornek
   işaretsiz): örnek veride orta vade boş görünür. (Yalnız kısa ve orta vade kuralı aşağıda.)
 - Bütün seslendirmeler 1,5 kat hızlı (`ses.HIZ`) ve sesli Reels'te hareketli "Sesi açın" rozeti var (Rıdvan,
-  17 Ekim 2026); hız ya da rozet değişecekse önce önizleme ve onay.
+  17 Ekim 2026); hız ya da rozet değişecekse önce önizleme ve onay. Sesli rehber Reels'inde ayrıca ilk 2,5 sn ekran
+  kararır ve rozet ortada büyük çıkar (Rıdvan, 19 Ekim 2026 "onaylıyorum uygula": üstteki rozet masaüstü akışında
+  kırpılıyor, telefon akışında "Orijinal ses" satırının altında kalıyor; `bot/main.py` → `SES_ROZETI_ORTA_*`).
+  Pazar Reels'inin rozeti yerinde kalır (Rıdvan: "pazarda sorun yok").
 - Instagram'a tarayıcıyla bakılmaz.
 - Sitede ve açıklamalarda model ya da şirket adı yazılmaz.
   (Bu dört kural: Rıdvan, 16 Ekim 2026 "CLAUDE.md'ye ekle".)

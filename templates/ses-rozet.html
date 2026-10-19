@@ -8,10 +8,11 @@
    tek başına çizilir, her kare ayrı PNG olur ve videonun üst ortasına (kare içeriğinin üstündeki boşluğa) konur. */
 html, body { background: transparent !important; margin: 0; }
 .kutu { display: inline-block; padding: 6px; }
+.kutu.opak .ses-rozet { background: rgb(18, 20, 24); }
 </style>
 </head>
 <body>
-<div class="kutu" id="kutu">{{ ses_rozeti(yazi) }}</div>
+<div class="kutu{% if opak %} opak{% endif %}" id="kutu">{{ ses_rozeti(yazi) }}</div>
 <script>window.kare = function (t) { window.sesRozeti(t); };</script>
 </body>
 </html>

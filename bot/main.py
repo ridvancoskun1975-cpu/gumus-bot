@@ -1958,15 +1958,22 @@ def _rehber_reels_sesi(sure, wav):
 # boşlukta (hikâye karelerinde üst 260 px yazısız) hareket eden hoparlör simgesi ve "Sesi açın". Yalnız sesliyse.
 SES_ROZETI_Y = 140          # px, rozetin üst kenarı (1080×1920 karede)
 SES_ROZETI_KARE = 36        # 1,2 sn'lik döngü, 30 fps
+# Ortada büyük rozet (Rıdvan, 19 Ekim 2026 "onaylıyorum uygula"): üstteki rozet akışta görünmüyor (masaüstünde 4:5
+# kırpmada kalıyor, telefon akışında "Orijinal ses" satırının altına biniyor). Videonun ilk saniyelerinde ekran
+# kararır, rozet ortada büyük çıkar; sonra yalnız üstteki küçük rozet kalır. Video başa sarınca yine çıkar.
+SES_ROZETI_ORTA_SN = 2.5    # sn, ortadaki büyük rozetin ekranda kaldığı süre
+SES_ROZETI_ORTA_YAZI = 72   # px (üstteki 42)
+SES_ROZETI_KARARTMA = 0.55  # ortadaki rozet varken zeminin kararması (0 = yok, 1 = siyah)
 
 
-def _ses_rozeti_kareleri(klasor, yazi=42):
-    """Rozetin döngü karelerini saydam PNG olarak klasöre yazar; ffmpeg girdi deseni (rozet_%02d.png) döner."""
+def _ses_rozeti_kareleri(klasor, yazi=42, opak=False):
+    """Rozetin döngü karelerini saydam PNG olarak klasöre yazar; ffmpeg girdi deseni (rozet_%02d.png) döner.
+    opak=True: rozetin zemini tam dolu (ortadaki büyük rozet; arkadaki yazı içinden görünmesin)."""
     from jinja2 import Environment, FileSystemLoader
     from playwright.sync_api import sync_playwright
     env = Environment(loader=FileSystemLoader(str(SABLONLAR)), autoescape=True)
     gecici = SABLONLAR / "_ses_rozet.html"
-    gecici.write_text(env.get_template("ses-rozet.html").render(yazi=yazi), encoding="utf-8")
+    gecici.write_text(env.get_template("ses-rozet.html").render(yazi=yazi, opak=opak), encoding="utf-8")
     klasor = Path(klasor)
     klasor.mkdir(parents=True, exist_ok=True)
     try:
@@ -2021,14 +2028,27 @@ def rehber_reels_tam_uret(cikti, konu, damga, hikayeler, plan):
         ses_girdi, ses_filtre = _rehber_reels_sesi(sure, sl_["wav"]) if sl_ else _hikaye_sesi(sure)
         goruntu = f"[0:v]scale=1080:1920,fps={VIDEO_FPS},format=yuv420p[v]"
         rozet_girdi = []
-        if sl_:   # sesliyse üst ortada "Sesi açın" rozeti (hareketli)
+        if sl_:   # sesliyse üst ortada "Sesi açın" rozeti (hareketli) + ilk saniyelerde ortada büyük rozet
             try:
-                desen = _ses_rozeti_kareleri(rozet_klasoru)
+                desen = _ses_rozeti_kareleri(rozet_klasoru / "ust")
                 rozet_girdi = ["-stream_loop", "-1", "-framerate", str(VIDEO_FPS), "-i", desen]
                 r = 1 + ses_girdi.count("-i")
                 goruntu = (f"[0:v]scale=1080:1920,fps={VIDEO_FPS}[zemin];[{r}:v]format=rgba[rozet];"
-                           f"[zemin][rozet]overlay=x=(W-w)/2:y={SES_ROZETI_Y}:shortest=1,format=yuv420p[v]")
+                           f"[zemin][rozet]overlay=x=(W-w)/2:y={SES_ROZETI_Y}:shortest=1")
+                try:
+                    orta = _ses_rozeti_kareleri(rozet_klasoru / "orta", yazi=SES_ROZETI_ORTA_YAZI, opak=True)
+                    rozet_girdi += ["-stream_loop", "-1", "-framerate", str(VIDEO_FPS), "-i", orta]
+                    acik = f"enable='lt(t,{SES_ROZETI_ORTA_SN})'"
+                    goruntu += (f"[ust];[ust]drawbox=x=0:y=0:w=iw:h=ih:color=black@{SES_ROZETI_KARARTMA}:t=fill:{acik}"
+                                f"[kara];[{r + 1}:v]format=rgba[orta];"
+                                f"[kara][orta]overlay=x=(W-w)/2:y=(H-h)/2-40:{acik}:shortest=1")
+                except Exception as e:
+                    print(f"::warning::Ortadaki ses rozeti çizilemedi ({type(e).__name__}: {str(e)[:120]}); "
+                          "yalnız üstteki rozet.")
+                goruntu += ",format=yuv420p[v]"
             except Exception as e:
+                rozet_girdi = []
+                goruntu = f"[0:v]scale=1080:1920,fps={VIDEO_FPS},format=yuv420p[v]"
                 print(f"::warning::Ses rozeti çizilemedi ({type(e).__name__}: {str(e)[:120]}); rozetsiz.")
         komut = [ffmpeg_yolu(), "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", str(liste), *ses_girdi,
                  *rozet_girdi, "-filter_complex", f"{goruntu};{ses_filtre}",
