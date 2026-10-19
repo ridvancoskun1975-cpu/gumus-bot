@@ -4,8 +4,11 @@
   Rıdvan'a gönderilen her görsel ve video (önizleme, önce/sonra, deneme çıktısı dahil) aynı turda proje galerisine
   de eklenir: https://claude.ai/artifact/CFKCZroCrWfYDG8b1BgDzm (proje-galerisi becerisi; veri `ogeler`
   koleksiyonunda). Oturumun dosyaları başka sohbetten erişilemez; eklenmeyen dosya kaybolur.
-- **Günlük sınır: günde en fazla 4 paylaşım** (14 Ekim 2026 21:23'ten beri; önce 3). 5. ve sonrası yalnızca Rıdvan
-  sohbette açıkça onay verirse gider.
+- **Günlük sınır: günde en fazla 4** (14 Ekim 2026 21:23'ten beri; önce 3). **19 Ekim 2026'dan beri takipçinin gördüğü
+  her şey sayılır: akış gönderisi, Reels ve hikâye ayrı ayrı** (Rıdvan: "takipçiler bizden gelecek, bizle ilgili
+  görecekleri post, bildirim, reels, hikâye sayısından bahsediyorum"). Gün aşılacaksa önce hikâye kopyası düşer
+  (akşam özeti hikâyesiz gider); hikâyesiz de aşacaksa yalnızca Rıdvan sohbette açıkça onay verirse gider.
+  Paylaşım sayısını konuşurken ve yeni paylaşım/hikâye önerirken hep bu ölçüyle say.
   Ayrıntı: README → "Günlük sınır", kod `bot/sinir.py`.
   - Onay işaretini (`Run workflow → onay: true`) ya da `bot/sinir.py` → `GUN_SINIRI` istisnasını Rıdvan
     sohbette açıkça "onayla" / "gitsin" demeden **kullanma**. Bir paylaşımın onayı yalnızca o paylaşım içindir.
@@ -28,7 +31,7 @@
   bir arayüz gerektiren çözüm önerme.
 - Taahhüt: hafta içi her gün 2 kez gram fiyatı (~10:00 Reels, ~20:00 özet); bu ikisi kaldırılmaz, başka içerikle
   değiştirilmez.
-- Pazar yorumu 2 paylaşım sayılır (kaydırmalı + Reels). Pazar Reels'i sesli (Rıdvan, 17 Ekim 2026: Gemini erkek
+- Pazar yorumu 3 sayılır (kaydırmalı + Reels + hikâye). Pazar Reels'i sesli (Rıdvan, 17 Ekim 2026: Gemini erkek
   sesi, analizin tamamı okunur; okumayı ona sormadan kısaltma). Ses **Orus** (`ses.YORUM_SES`; Rıdvan, 3 örnekten "Ses 2"); hikâyeye 24 sn müzikli sürüm
   gider; ses alınamazsa Reels 24 sn müzikli gider (yedek yol kaldırılmaz). Ses, üslup ya da okunan metin
   değişecekse önce önizleme ve onay.
@@ -51,7 +54,12 @@
   paylaşım durmaz, goril kalır ve Rıdvan'a bildirilir (gece kontrolü; Rıdvan, 16 Ekim 2026 22:43).
 - Rehber hikâyesi kareler tek tek değil, tek müzikli video olarak gider (kapak 3 sn, kare 6 sn), rehber gönderisiyle
   aynı çalıştırmada (`bot/main.py` → `REHBER_HIKAYE_OTOMATIK = True`); hikâye kalabalık olmamalı.
-- Rehber günü (salı ve perşembe ~14:00) akışa kaydırmalı gönderinin yerine bölümün tamamını kare kare okuyan (Rıdvan, 17 Ekim 2026: "Tabii ki tamamının okunması gerekiyor"; okumayı ona sormadan kısaltma) kadın sesli Reels gider,
+- Takvimi azaltma kararı (Rıdvan, 19 Ekim 2026: "takipçileri bıktırmamak ve kaçırmamak için … paylaşım sayısını
+  biraz azaltmamız gerekiyor"; pazar dışındaki önerileri onayladı): çarşamba/cuma kartları kaldırıldı (kod duruyor),
+  rehber haftada 1 çarşamba, arşiv Reels'i haftalık sıraya girdi, pazar kaydırmalı + Reels olduğu gibi kaldı.
+  Yeni bir rutin paylaşım ya da hikâye eklemeyi önermeden önce olağan haftanın gün gün sayısını (README → "Günlük
+  sınır") göster; hiçbir gün 4'ü aşmamalı.
+- Rehber günü (19–21 Ekim 2026 her gün; sonra haftada 1, çarşamba ~14:00) akışa kaydırmalı gönderinin yerine bölümün tamamını kare kare okuyan (Rıdvan, 17 Ekim 2026: "Tabii ki tamamının okunması gerekiyor"; okumayı ona sormadan kısaltma) kadın sesli Reels gider,
   hikâyeye müzikli rehber videosu; cumartesi kısa Reels'i kaldırıldı (Rıdvan, 16 Ekim 2026 23:4x: "Kaydırmalı rehber
   kimse bakmaz"; `bot/main.py` → `REHBER_REELS`). Ses **Sulafat** (Rıdvan, 16 Ekim 2026, 3 önizlemeden seçti; README →
   "Rehber Reels seslendirmesi", `bot/ses.py`). Rehber hikâye videoları sesli değil, müzikli kalır. Reels üretilemezse
@@ -60,11 +68,12 @@
   ödemeli kredi + otomatik yenileme; günlük 10 okuma sınırı yok). Denemeler yine yalnızca yedek modelle (Rıdvan,
   16 Ekim 2026). Kredi biterse ses 402 verir, Reels müzikle gider; gece kontrolü bildirir. Yeni rehber bölümü eklenince `ses.OKUMA`'ya satır ekle.
 - Rehber arşivi Reels'i (Rıdvan, 17 Ekim 2026 "öneriyi uygula"): sesli rehber Reels'inden önce yayımlanan #3–#5 birer
-  kez, rehbersiz hafta içi günü ~14:00'te aynı tam okumalı sesli Reels olarak gider (`bot/bilgi.py` → `ARSIV_REELS`:
-  22, 26, 28 Ekim; tür `kisa`). Yalnız Reels: kaydırmalı ve hikâye tekrar gitmez; Reels üretilemezse o gün paylaşım
+  kez, aynı tam okumalı sesli Reels olarak gider; 19 Ekim 2026'dan beri haftalık rehber sırasında, çarşamba (Rıdvan:
+  "rehber sırasına girsinler"; `bot/bilgi.py` → `ARSIV_SIRASI`: 28 Ekim, 4 ve 11 Kasım; tür `kisa`). Yalnız Reels: kaydırmalı ve hikâye tekrar gitmez; Reels üretilemezse o gün paylaşım
   yok. Tarih ya da bölüm değişecekse önce Rıdvan'a sor.
 - "Rehber" öne çıkanının standardı (Rıdvan, 14 Ekim 2026): her bölüm tek video; öne çıkandaki sıra önemli değil,
-  eksik olmaması önemli. Tek tek kare olarak giden eski #1–#2 yerine videoları 18 Ekim'de paylaşılır, eski
+  eksik olmaması önemli. Ekleme hatırlatması çarşamba ~14:15'te gelir (zamanlanmış görev "Çarşamba hatırlatması:
+  rehber hikâyesini öne çıkana ekle"); pazar hatırlatmasında yalnızca sabitleme var (Rıdvan, 19 Ekim 2026 "uygun"). Tek tek kare olarak giden eski #1–#2 yerine videoları 18 Ekim'de paylaşılır, eski
   kareleri Rıdvan siler. Rehber hikâyesini elle kareler hâlinde paylaşma.
 - Claude API kredisi (pazar yorumu): bakiye Anthropic'ten okunamıyor, özel gumus-kayit deposundaki `api-bakiye.md`
   tahmin eder (bot/bakiye.py): yüklenen (Anthropic makbuz maillerinden, "credit purchase" satırı, KDV hariç) −

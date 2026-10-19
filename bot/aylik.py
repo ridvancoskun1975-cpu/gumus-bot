@@ -2,7 +2,8 @@
 
 Aylık özet hafta içi 13:50 TR çalışmasını (bilgi cron'u) kullanır: o gün takvimde rehber
 bölümü varsa rehber gider, yoksa ve bugün ayın rehbersiz ilk iş günüyse aylık özet gider.
-Böylece aylık özet olan gün de en fazla 3 paylaşım olur (10:00, ~14:00, 20:00).
+Böylece aylık özet olan gün 4 içerik olur (10:00 Reels; ~14:00 aylık özet ve hikâyesi; 20:00 özet, günlük sınır
+yüzünden hikâyesiz — bot/sinir.py). Rehber arşivi Reels'i günü de rehber günü gibi atlanır.
 Yalnızca standart kütüphane kullanır ("kontrol" işi paket kurmadan çağırır).
 
 Komut satırı: python bot/aylik.py bugun → bugün aylık özet günüyse "ay" yazar, değilse boş

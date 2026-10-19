@@ -1,5 +1,9 @@
 """Haftalık kartlar (büyüme planı, Faz 2): hafta içi iki gün ~12:00'de AYRI bir Reels.
 
+19 Ekim 2026'DA TAKVİMDEN KALDIRILDI (Rıdvan: takipçiyi bıktırmamak için paylaşım sayısı azaltıldı; kartlar o gün
+sabah ve akşam verilen fiyatın tekrarıydı; hiç yayımlanmadı). paylas.yml'de cron yok; yalnızca elle
+(Run workflow → tür: kart). Geri açmak için cron '50 8 * * 3,5' ve "Türü belirle" eşlemesi yeter.
+
 - Çarşamba ~12:00: "Kaç gram eder?" — 1.000 / 5.000 / 10.000 ₺ kaç gram gümüş; 100 gram ve 1 kilogram kaç ₺.
 - Cuma ~12:00: "Altın–gümüş" — 1 gram altın kaç gram gümüş eder (altın/gümüş paritesi), gram altın ve gram
   gümüş TL değeri, önceki haftaların kapanış paritesiyle.
