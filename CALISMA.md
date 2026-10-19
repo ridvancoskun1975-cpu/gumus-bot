@@ -6,4 +6,3 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
-| 19 Ekim 17:40 | Cumartesi haftalık özet açıklamasından "Sizce gümüş gelecek hafta ne yöne gider?" sorusu kalkıyor | bot/main.py, bot/test_gun_ici.py | haftalik-soru-kalkar |
