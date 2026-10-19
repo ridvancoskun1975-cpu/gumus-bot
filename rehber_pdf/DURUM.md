@@ -21,7 +21,7 @@ durumla karşılaştırır; uyuşmazlık hatadır. Yazım kuralları: `YAZIM.md`
 | 3 | Külçede 999 ne demek? | 14 Ekim 2026 | onaylandı | kaynak ✓ · denetle ✓ | 2027 |
 | 4 | Altın/gümüş paritesi ne anlatır? | 15 Ekim 2026 | onaylandı | kaynak ✓ · denetle ✓ | 2027 |
 | 5 | Gümüş fiyatını ne hareket ettirir? | 16 Ekim 2026 | yazılıyor · rehber-pdf-parti-2 | kaynak ✓ · denetle ✓ | 2027 |
-| 6 | Kuyumcudaki fiyat neden farklı? | 19 Ekim 2026 | yazılıyor · rehber-pdf-parti-2 | kaynak — · denetle — | 2027 |
+| 6 | Kuyumcudaki fiyat neden farklı? | 19 Ekim 2026 | yazılıyor · rehber-pdf-parti-2 | kaynak ✓ · denetle ✓ | 2027 |
 | 7 | Gümüş nerede kullanılır? | 28 Ekim 2026 | yazılıyor · rehber-pdf-parti-2 | kaynak ✓ · denetle ✓ | 2027 |
 | 8 | Gümüş nereden gelir? | 4 Kasım 2026 | yazılıyor · rehber-pdf-parti-2 | kaynak ✓ · denetle ✓ | 2027 |
 | 9 | Gümüş fiyatı nerede belirlenir? | 2 Aralık 2026 | yazılıyor · rehber-pdf-parti-2 | kaynak ✓ · denetle ✓ | 2027 |
