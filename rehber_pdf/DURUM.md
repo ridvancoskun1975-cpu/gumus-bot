@@ -26,9 +26,9 @@ durumla karşılaştırır; uyuşmazlık hatadır. Yazım kuralları: `YAZIM.md`
 | 8 | Gümüş nereden gelir? | 4 Kasım 2026 | yazılıyor · rehber-pdf-parti-2 | kaynak — · denetle — | 2027 |
 | 9 | Gümüş fiyatı nerede belirlenir? | 2 Aralık 2026 | yazılıyor · rehber-pdf-parti-2 | kaynak — · denetle — | 2027 |
 | 10 | Gümüş neden kararır? | 9 Aralık 2026 | yazılıyor · rehber-pdf-parti-3 | kaynak ✓ · denetle ✓ | 2027 |
-| 11 | Külçe gümüş hangi boylarda olur? | 16 Aralık 2026 | yazılıyor · rehber-pdf-parti-3 | kaynak — · denetle — | 2027 |
+| 11 | Külçe gümüş hangi boylarda olur? | 16 Aralık 2026 | yazılıyor · rehber-pdf-parti-3 | kaynak ✓ · denetle ✓ | 2027 |
 | 12 | Aynı değerde altın ve gümüş | 23 Aralık 2026 | yazılıyor · rehber-pdf-parti-3 | kaynak ✓ · denetle ✓ | 2027 |
-| 13 | Akçeden kuruşa: gümüş para | 30 Aralık 2026 | yazılıyor · rehber-pdf-parti-3 | kaynak — · denetle — | 2027 |
+| 13 | Akçeden kuruşa: gümüş para | 30 Aralık 2026 | yazılıyor · rehber-pdf-parti-3 | kaynak ✓ · denetle ✓ | 2027 |
 | 14 | Gerçek gümüş nasıl anlaşılır? | 6 Ocak 2027 | yok | kaynak — · denetle — | 2028 |
 
 ## Ekler
