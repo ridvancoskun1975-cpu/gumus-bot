@@ -4,7 +4,7 @@
 {% extends "taban.html" %}
 {% block bas %}
 <title>Gram Gümüş Fiyatı Bugün: {{ gram }} ₺ · Hesap Makinesi · {{ hesap }}</title>
-<meta name="description" content="Gram gümüş fiyatı {{ gram }} ₺ ({{ guncelleme }}). Gram ↔ TL hesap makinesi, son günlerin fiyatları, altın/gümüş paritesi ve gümüş rehberi. Bilgi amaçlıdır, yatırım tavsiyesi değildir.">
+<meta name="description" content="Gram gümüş fiyatı {{ gram }} ₺ ({{ guncelleme }}).{% if site_guncelleme %} Gün içinde güncellenen fiyat.{% endif %} Gram ↔ TL hesap makinesi, son günlerin fiyatları, altın/gümüş paritesi ve gümüş rehberi. Bilgi amaçlıdır, yatırım tavsiyesi değildir.">
 <link rel="canonical" href="{{ url }}">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="tr_TR">
