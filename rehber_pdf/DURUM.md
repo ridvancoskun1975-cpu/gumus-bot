@@ -38,6 +38,10 @@ durumla karşılaştırır; uyuşmazlık hatadır. Yazım kuralları: `YAZIM.md`
 | 16 | Gümüş neden değerli metal sayılır? | 20 Ocak 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
 | 17 | Gümüş neden en parlak metaldir? | 27 Ocak 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
 | 18 | Gümüş hangi birimlerle tartılır? | 3 Şubat 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
+| 19 | Cevherden külçeye: gümüş nasıl üretilir? | 10 Şubat 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
+| 20 | Gümüş nasıl saflaştırılır? | 17 Şubat 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
+| 21 | Külçe sikke nedir? | 24 Şubat 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
+| 22 | Koleksiyon değeri ile metal değeri farkı nedir? | 3 Mart 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
 
 ## Ekler
 

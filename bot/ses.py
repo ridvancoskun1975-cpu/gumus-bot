@@ -115,6 +115,18 @@ OKUMA = {
     18: ("Gümüş hangi birimlerle tartılır?",
          "Kısa cevap: gram ve kilogram. Türkiye'de gümüş gramla tartılır; Şanghay ve Hindistan borsalarında kilogram başına fiyatlanır.",
          "Türkiye'de metre sistemi, bin dokuz yüz otuz bir tarihli Ölçüler Kanunu ile zorunlu oldu."),
+    19: ("Cevherden külçeye, gümüş nasıl üretilir?",
+         "Kısa cevap: kabaca dört adımda. Çıkarma, zenginleştirme, ayrıştırma ve döküm.",
+         "İki bin yirmi beşte madenden çıkan gümüşün yaklaşık dörtte üçü, kurşun çinko, bakır ve altın madenlerinden yan ürün olarak geldi."),
+    20: ("Gümüş nasıl saflaştırılır?",
+         "Kısa cevap: genelde elektrolizle. Bu yolla binde dokuz yüz doksan dokuz virgül dokuz ve üstü saflığa ulaşılabilir.",
+         "Ham gümüş, gümüş nitrat çözeltisinde akımla çözülür; saf gümüş karşı levhada kristal hâlinde birikir."),
+    21: ("Külçe sikke nedir?",
+         "Kısa cevap: değeri büyük ölçüde içindeki değerli metalden gelen, resmî darphanelerin bastığı sikke.",
+         "Üzerinde bir nominal değer yazar, ama değerini içindeki gümüşün ağırlığı ve saflığı belirler."),
+    22: ("Koleksiyon değeri ile metal değeri farkı nedir?",
+         "Kısa cevap: metal değeri sikkenin içindeki saf gümüşten gelir; koleksiyon değerini ise nadirlik, kondisyon, talep ve tarihî önem belirler.",
+         "Kondisyon, Sheldon ölçeğiyle birden yetmişe kadar puanlanabilir."),
 }
 
 
