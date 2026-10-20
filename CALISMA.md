@@ -6,3 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
+| 20 Ekim 14:40 | Site gün içi 2 ek güncelleme (12:35, 16:35; gün içi kayıttan, MetalCharts'a ek istek yok) | bot/sayfa.py, templates/sayfa.html, .github/workflows/kaydet.yml, .github/workflows/sayfa.yml, bot/test_sayfa.py, README.md | site-gun-ici · yazılıyor |
