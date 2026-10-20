@@ -124,6 +124,9 @@ OKUMA = {
     21: ("Külçe sikke nedir?",
          "Kısa cevap: değeri büyük ölçüde içindeki değerli metalden gelen, resmî darphanelerin bastığı sikke.",
          "Üzerinde bir nominal değer yazar, ama değerini içindeki gümüşün ağırlığı ve saflığı belirler."),
+    22: ("Koleksiyon değeri ile metal değeri farkı nedir?",
+         "Kısa cevap: metal değeri sikkenin içindeki saf gümüşten gelir; koleksiyon değerini ise nadirlik, kondisyon, talep ve tarihî önem belirler.",
+         "Kondisyon, Sheldon ölçeğiyle birden yetmişe kadar puanlanabilir."),
 }
 
 

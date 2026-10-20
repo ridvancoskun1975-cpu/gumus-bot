@@ -978,6 +978,56 @@ BOLUMLER = [
             }
         ]
     },
+    # #22 — rehber ön paketi parti 2 (Rıdvan, 20 Ekim 2026; iki kontrol Claude'da)
+    {
+        "baslik": "Koleksiyon değeri ile metal değeri farkı nedir?",
+        "alt": "Sikkedeki gümüşün değeri ve koleksiyoncunun biçtiği değer.",
+        "buyuk": "1–70",
+        "buyuk_alt": "sikkenin kondisyon puanı (Sheldon ölçeği)",
+        "hashtag": "#gümüş #değerlimetaller #gramgümüş #gumus #silver",
+        "soru": "Elinizdeki eski gümüş paranın yılına hiç baktınız mı?",
+        "sayfalar": [
+            {
+                "baslik": "İki ayrı değer",
+                "maddeler": [
+                    "Metal değeri, sikkenin içindeki saf gümüşün değeridir; ağırlık, ayar ve gram fiyatıyla hesaplanır.",
+                    "Koleksiyon (nümismatik) değeri, koleksiyoncuların gözündeki değerdir; metal değerinin kat kat üstüne çıkabilir.",
+                    "Yaygın sikkelerde iki değer birbirine yakın olabilir; gümüşün pahalı olduğu dönemlerde bu sikkelerin birçoğu eritildi."
+                ]
+            },
+            {
+                "baslik": "Aynı gümüş, farklı yıl",
+                "tablo": [
+                    [
+                        "1 lira 1937",
+                        "1.624.000 adet"
+                    ],
+                    [
+                        "1 lira 1938",
+                        "8.282.000 adet"
+                    ],
+                    [
+                        "1 lira 1939",
+                        "376.000 adet"
+                    ]
+                ],
+                "maddeler": [
+                    "Üçünde de ~10 g saf gümüş var; metal değerleri aynı. Az basılan yıl ise genelde daha nadirdir.",
+                    "Koleksiyon değerini nadirlik, kondisyon, talep ve tarihî önem birlikte belirler; eski olmak tek başına yetmez."
+                ],
+                "kaynak": "Kaynak: koleksiyon katalogları (basım adedi) · Amerikan Nümismatik Derneği · Perth Darphanesi"
+            },
+            {
+                "baslik": "Kondisyon ve bakım",
+                "maddeler": [
+                    "Kondisyon, Sheldon ölçeğiyle 1'den 70'e puanlanabilir; 60 ve üstü aşınmamış sikke demektir.",
+                    "PCGS ve NGC gibi derecelendirme kurumları sikkeyi ücret karşılığı inceler, puanlar ve mühürlü bir kutuya koyar.",
+                    "Temizleme ve parlatma ince çizikler bırakır, koleksiyon değerini düşürür; eski sikke olduğu gibi saklanır."
+                ],
+                "kaynak": "Kaynak: ABD Darphanesi · Avustralya Kraliyet Darphanesi · PCGS · NGC"
+            }
+        ]
+    },
 ]
 
 
