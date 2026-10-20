@@ -85,4 +85,34 @@ cikti2 = Path(tempfile.mkdtemp())
 sayfa.uret(cikti2, gecmis, pazar=None, kati=True)
 kontrol("pazar yoksa düğme yok", "Son pazar analizi" not in (cikti2 / "index.html").read_text(encoding="utf-8"))
 
+# Gün içi güncelleme (Rıdvan, 20 Ekim 2026): bugünün değeri daha yeni gün içi noktadan, gecmis.json'a yazılmaz
+from datetime import datetime as _dt  # noqa: E402
+import re as _re  # noqa: E402
+_s = _dt(2026, 10, 20, 12, 40, tzinfo=bot.TR_SAAT)
+_g = {"2026-10-19": {"saat": "20:10", "gumus": 57.0, "altin": 4150.0, "dolar": 49.5, "kur_tarihi": "2026-10-19", "gram": 90.7},
+      "2026-10-20": {"saat": "10:25", "gumus": 57.7, "altin": 4180.0, "dolar": 49.5, "kur_tarihi": "2026-10-19", "gram": 91.8}}
+_n = {"gumus": 58.1, "altin": 4190.0, "dolar": 49.5, "kur_tarihi": "2026-10-19", "gram": 92.47}
+_gi = {"gunler": {"2026-10-20": [{"saat": "10:25", **_n}, {"saat": "12:35", "kaynak": "kayit", **_n}]}}
+_m = sayfa.gun_ici_ile(_g, _s, _gi)
+kontrol("gün içi: bugünün değeri 12:35 noktası", _m["2026-10-20"]["saat"] == "12:35" and _m["2026-10-20"]["gram"] == 92.47
+        and "kaynak" not in _m["2026-10-20"])
+kontrol("gün içi: gecmis değişmedi", _g["2026-10-20"]["saat"] == "10:25" and _m["2026-10-19"] == _g["2026-10-19"])
+kontrol("gün içi: akşam kaydı daha yeniyse dokunmaz",
+        sayfa.gun_ici_ile({**_g, "2026-10-20": {**_g["2026-10-20"], "saat": "20:05"}}, _s.replace(hour=20, minute=30), _gi)["2026-10-20"]["saat"] == "20:05")
+kontrol("gün içi: eksik nokta atlanır",
+        sayfa.gun_ici_ile(_g, _s, {"gunler": {"2026-10-20": [{"saat": "12:35", "gram": 92.0}]}}) is _g)
+kontrol("gün içi: hafta sonu dokunmaz", sayfa.gun_ici_ile(_g, _s.replace(day=24), _gi) is _g)
+kontrol("gün içi: dosya yoksa günlük kayıtlar", sayfa.gun_ici_ile(_g, _s, {}) is _g)
+_c3 = Path(tempfile.mkdtemp())
+_v = sayfa.uret(_c3, _m, simdi=_s, pazar=None, kati=True)
+_ana = (_c3 / "index.html").read_text(encoding="utf-8")
+kontrol("gün içi: sayfada 12:35 fiyatı", "92,47" in _ana and "12:35" in _v["guncelleme"])
+kontrol("güncelleme saatleri metni", sayfa._site_guncelleme({"guncelleme": "Hafta içi ~10:00 ve ~20:00"})
+        == "Hafta içi ~10:00, ~12:35, ~16:35 ve ~20:00" and "~10:00, ~12:35, ~16:35 ve ~20:00" in _ana)
+_y = (bot.KOK / ".github" / "workflows" / "kaydet.yml").read_text(encoding="utf-8")
+_cron = _re.search(r"cron: '(\d+) ([\d,]+) ", _y)
+_tr = {f"{int(h) + 3:02d}:{int(_cron.group(1)):02d}" for h in _cron.group(2).split(",")}
+kontrol("site saatleri gün içi kayıt saatlerinde", set(sayfa.SITE_ARA_SAATLER) <= _tr and "14:35" not in sayfa.SITE_ARA_SAATLER
+        and "sayfa.yml/dispatches" in _y)
+
 print(f"\ntest_sayfa: {gecen} sınama geçti")

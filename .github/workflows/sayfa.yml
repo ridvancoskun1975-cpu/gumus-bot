@@ -7,6 +7,7 @@ name: Bilgi sayfasını yayınla
 # Not: Pages sitesini baştan kurar; o anki paylaşımın video/görsel dosyaları siteden kalkar
 # (Instagram onları paylaşım sırasında zaten almış olur). Paylaşım saatlerine (~10:00, ~14:00,
 # ~20:00) denk getirme: paylaşım işi dosyalarını yayınlarken bu iş araya girerse paylaşım bozulabilir.
+# Hafta içi 12:35 ve 16:35 gün içi kaydından sonra kaydet.yml başlatır (Rıdvan, 20 Ekim 2026).
 # Pazar yorumu paylaşılınca paylas.yml bu işi kendisi başlatır ("Son pazar analizi" düğmesi aynı gün güncellensin).
 # Rıdvan, 18 Ekim 2026: sayfa üretilemezse 2 kez yeniden denenir (bot/sayfa_uret.sh); yine olmazsa HİÇ yayınlanmaz,
 # canlı site önceki hâliyle kalır ve günlüğe "BİLGİ SAYFASI YEDEK YOL" yazılır (gece kontrolü bildirir).
@@ -52,6 +53,15 @@ jobs:
           path: veri/gecmis.json
           key: gecmis-sayfa-${{ github.run_id }}
           restore-keys: gecmis-
+
+      # Gün içi kayıtlar (kaydet.yml): 12:35 ve 16:35 yenilemesinde bugünün fiyatı en yeni gün içi noktadan gelir
+      # (bot/sayfa.py → gun_ici_ile). Yalnızca okunur; bulunamazsa sayfa günlük kayıtlarla üretilir.
+      - name: Gün içi kayıtları getir
+        uses: actions/cache/restore@v4
+        with:
+          path: veri/gun_ici.json
+          key: gunici-sayfa-${{ github.run_id }}
+          restore-keys: gunici-
 
       # Önbellek boş ya da eksikse özel gumus-kayit'teki yedekten tamamlanır (bot/yedek.py); yalnızca okur.
       - name: Günlük kayıtları yedekle tamamla

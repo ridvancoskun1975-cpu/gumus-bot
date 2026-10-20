@@ -7,6 +7,11 @@ name: Gün içi fiyat kaydı
 # MetalCharts ücretsiz plan ayda 200 istek hakkı verir: saatte bir kayıt sığmaz, 2 saatte bir sığar.
 # Kalan hak 40'ın altına inerse kayıt kendiliğinden durur (bot/main.py → KOTA_YEDEK), hak paylaşımlara kalır.
 # Bir hata paylaşımları etkilemez; iş kırmızı bitmez, yalnızca uyarı yazar.
+#
+# 12:35 ve 16:35 kaydından sonra bilgi sayfası da yenilenir (sayfa.yml; Rıdvan, 20 Ekim 2026: "Biraz daha seyrek
+# olsun. Risk almaya gerek yok."): sayfa bu kaydın fiyatını kullanır, MetalCharts'a ek istek gitmez. 14:35 ve 18:35
+# yenilemez (çarşamba rehber paylaşımı ve akşam özetiyle çakışmasın); iş gecikirse pencere dışında yenileme atlanır.
+# Saatler bot/sayfa.py → SITE_ARA_SAATLER ile aynı.
 
 on:
   schedule:
@@ -17,6 +22,7 @@ on:
 
 permissions:
   contents: read
+  actions: write   # 12:35 ve 16:35'te bilgi sayfasını yenilemek için (sayfa.yml)
 
 concurrency:
   group: gumus-gunici
@@ -55,3 +61,19 @@ jobs:
         with:
           path: veri/gun_ici.json
           key: gunici-${{ github.run_id }}-${{ github.run_attempt }}
+
+      # Bilgi sayfası yalnızca 12:35 ve 16:35 kaydından sonra ve yeni nokta yazıldıysa yenilenir. Gecikmeye karşı
+      # pencere: 12:00–13:20 (çarşamba ~13:50 rehber paylaşımından önce biter) ve 16:00–18:30 (akşam özetinden uzak).
+      - name: Bilgi sayfasını yenile (12:35 ve 16:35)
+        if: hashFiles('veri/gun_ici_degisti.txt') != ''
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          saat=$(TZ=Europe/Istanbul date +%H%M)
+          if { [ "$saat" -ge 1200 ] && [ "$saat" -le 1320 ]; } || { [ "$saat" -ge 1600 ] && [ "$saat" -le 1830 ]; }; then
+            gh api -X POST "repos/${{ github.repository }}/actions/workflows/sayfa.yml/dispatches" -f ref=main
+            echo "Bilgi sayfası yenilemesi başlatıldı (saat $saat)."
+          else
+            echo "Saat $saat: bu kayıttan sonra bilgi sayfası yenilenmez."
+          fi
