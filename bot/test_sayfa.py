@@ -115,4 +115,10 @@ _tr = {f"{int(h) + 3:02d}:{int(_cron.group(1)):02d}" for h in _cron.group(2).spl
 kontrol("site saatleri gün içi kayıt saatlerinde", set(sayfa.SITE_ARA_SAATLER) <= _tr and "14:35" not in sayfa.SITE_ARA_SAATLER
         and "sayfa.yml/dispatches" in _y)
 
+kontrol("tanıtım kartı: gün içinde güncellenen fiyat",
+        _v["tanitim"]["satir"][0] == "Gün içinde güncellenen fiyat" and "<span>Gün içinde güncellenen fiyat</span>" in _ana
+        and "sık" not in " ".join(_v["tanitim"]["satir"]))
+kontrol("Google açıklaması: gün içinde güncellenen fiyat",
+        _re.search(r'<meta name="description" content="Gram gümüş fiyatı [^"]*\. Gün içinde güncellenen fiyat\. Gram', _ana) is not None)
+
 print(f"\ntest_sayfa: {gecen} sınama geçti")

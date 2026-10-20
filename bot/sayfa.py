@@ -173,7 +173,10 @@ def _tanitim(program, pazar=None):
 
     # Az ve öz (Rıdvan, 15 Ekim 08:46): tek satır. Pazar yapay zekâ yorumu adıyla yer alır (15 Ekim 08:17:
     # "tanıtım kartında şimdi yer almalı"); yorum kapalıysa satırda görünmez.
-    satir = [f"{program['guncelleme']} fiyat"]
+    # Sitenin gün içi güncellemesi (Rıdvan, 20 Ekim 2026: "gün içinde güncellenen fiyat" "Uygun"; "sık güncellenen"
+    # yerine, canlı fiyat beklentisi doğurmasın). Kart 160 harfi aşmasın diye saatler yazılmaz; saatler sayfanın
+    # "Güncelleme saatleri" satırında ve takvim tablosunda. SITE_ARA_SAATLER boşsa satır eski hâline döner.
+    satir = ["Gün içinde güncellenen fiyat"] if SITE_ARA_SAATLER else [f"{program['guncelleme']} fiyat"]
     haftalik = bul("Haftalık özet")
     if haftalik:
         satir.append(f"{gun(haftalik)} haftalık özet")
