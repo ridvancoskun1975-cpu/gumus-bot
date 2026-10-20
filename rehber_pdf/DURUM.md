@@ -29,7 +29,11 @@ durumla karşılaştırır; uyuşmazlık hatadır. Yazım kuralları: `YAZIM.md`
 | 11 | Külçe gümüş hangi boylarda olur? | 16 Aralık 2026 | onaylandı | kaynak ✓ · denetle ✓ | 2027 |
 | 12 | Aynı değerde altın ve gümüş | 23 Aralık 2026 | onaylandı | kaynak ✓ · denetle ✓ | 2027 |
 | 13 | Akçeden kuruşa: gümüş para | 30 Aralık 2026 | onaylandı | kaynak ✓ · denetle ✓ | 2027 |
-| 14 | Gerçek gümüş nasıl anlaşılır? | 6 Ocak 2027 | yazılıyor · rehber-on-paket-1 | kaynak — · denetle — | 2028 |
+| 14 | Gerçek gümüş nasıl anlaşılır? | 6 Ocak 2027 | yazılıyor · rehber-on-paket-1 | kaynak — · denetle ✓ | 2028 |
+| 15 | Gümüşün simgesi neden Ag? | 13 Ocak 2027 | yazılıyor · rehber-on-paket-1 | kaynak — · denetle ✓ | 2028 |
+| 16 | Gümüş neden değerli metal sayılır? | 20 Ocak 2027 | yazılıyor · rehber-on-paket-1 | kaynak — · denetle ✓ | 2028 |
+| 17 | Gümüş neden en parlak metaldir? | 27 Ocak 2027 | yazılıyor · rehber-on-paket-1 | kaynak — · denetle ✓ | 2028 |
+| 18 | Gümüş hangi birimlerle tartılır? | 3 Şubat 2027 | yazılıyor · rehber-on-paket-1 | kaynak — · denetle ✓ | 2028 |
 
 ## Ekler
 

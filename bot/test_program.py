@@ -116,10 +116,13 @@ kontrol("cumartesi: ECB saati pazartesiye göre (26 Ekim → ~18:00)", f["ecb"][
 g = p(2026, 11, 13)
 r = satir(g, "Gümüş rehberi")
 kontrol("13 Kasım: sıradaki 18, 25 Kasım; 2, 9 Aralık", "sıradaki: 18 ve 25 Kasım; 2 ve 9 Aralık" in r["ek"], r)
-# 7 Ocak 2027: hazır bölüm kalmadı (aylık paket eklemediyse)
-g = p(2027, 1, 7)
+# Son hazır bölümün ertesi günü: hazır bölüm kalmadı (aylık paket eklemediyse). Tarih sabit yazılmaz; yeni bölümler
+# (aylık paket, 20 Ekim 2026 ön paketi) eklendikçe son gün ileri kayar.
+_son = max(g for g, _ in bilgi.yayim_listesi()) + timedelta(days=1)
+g = p(_son.year, _son.month, _son.day)
 r = satir(g, "Gümüş rehberi")
-kontrol("7 Ocak: 'şimdilik sıradaki bölüm yok'", "şimdilik sıradaki bölüm yok" in r["ek"], r)
+kontrol(f"{_son:%d.%m.%Y} (son bölümün ertesi günü): 'şimdilik sıradaki bölüm yok'",
+        "şimdilik sıradaki bölüm yok" in r["ek"], r)
 
 
 # Rehber hikâyesi otomatik kapalıyken (14 Ekim'den beri) sayfa hikâye/öne çıkan yazmaz; açıksa yazar

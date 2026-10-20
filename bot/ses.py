@@ -103,6 +103,18 @@ OKUMA = {
     14: ("Gerçek gümüş nasıl anlaşılır?",
          "Kısa cevap: damga ilk ipucudur, ama kesin kanıt değildir.",
          "Gerçek gümüş ürünlerde genelde dokuz yüz yirmi beş ya da dokuz yüz doksan dokuz gibi bir saflık damgası bulunur."),
+    15: ("Gümüşün simgesi neden A ve G harfleri?",
+         "Kısa cevap: çünkü gümüşün Latince adı argentum.",
+         "Bu ad, parlamak ve beyaz anlamına gelen çok eski bir köke dayanır."),
+    16: ("Gümüş neden değerli metal sayılır?",
+         "Kısa cevap: nadirdir. Bir ton yer kabuğunda ortalama yalnızca yaklaşık sıfır virgül sıfır yetmiş beş gram gümüş vardır.",
+         "Doğada bulunan, nadir ve ekonomik değeri yüksek metallere değerli metal denir."),
+    17: ("Gümüş neden en parlak metaldir?",
+         "Kısa cevap: taze ve temiz bir gümüş yüzey, görünür ışığın yüzde doksan beş ile yüzde doksan dokuzunu yansıtır.",
+         "Bunun nedeni, metalin içinde serbestçe dolaşan elektronlardır; ışık gelince titreşir ve ışığı geri yollarlar."),
+    18: ("Gümüş hangi birimlerle tartılır?",
+         "Kısa cevap: gram ve kilogram. Türkiye'de ve Asya borsalarında gümüş bu birimlerle tartılır.",
+         "Türkiye'de metre sistemi, bin dokuz yüz otuz bir tarihli Ölçüler Kanunu ile kabul edildi."),
 }
 
 

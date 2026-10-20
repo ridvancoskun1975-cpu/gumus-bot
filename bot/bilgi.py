@@ -605,6 +605,221 @@ BOLUMLER = [
             },
         ],
     },
+    # #15 — rehber ön paketi parti 1 (Rıdvan, 20 Ekim 2026; iki kontrol Claude'da)
+    {
+        "baslik": "Gümüşün simgesi neden Ag?",
+        "alt": "Latince adından Arjantin'e: gümüşün adları.",
+        "buyuk": "Ag",
+        "buyuk_alt": "Latince argentum'dan",
+        "hashtag": "#gümüş #değerlimetaller #külçegümüş #gumus #silver",
+        "soru": "Gümüşün başka dillerdeki adlarından hangisini biliyordunuz?",
+        "sayfalar": [
+            {
+                "baslik": "Latince argentum",
+                "maddeler": [
+                    "Gümüşün kimyasal simgesi Ag, Latince adı argentum'dan gelir.",
+                    "Argentum, “parlamak, beyaz” anlamında çok eski bir Hint-Avrupa köküne dayanır: gümüş, “parlayan, beyaz metal”dir.",
+                    "Gümüş periyodik tablonun 47. elementidir; bakır ve altınla aynı sütunda, 11. gruptadır."
+                ]
+            },
+            {
+                "baslik": "Simgeler Latince adlardan",
+                "tablo": [
+                    [
+                        "Ag",
+                        "argentum · gümüş"
+                    ],
+                    [
+                        "Au",
+                        "aurum · altın"
+                    ],
+                    [
+                        "Pb",
+                        "plumbum · kurşun"
+                    ],
+                    [
+                        "Fe",
+                        "ferrum · demir"
+                    ]
+                ],
+                "maddeler": [
+                    "İsveçli kimyacı Berzelius 1813'te element simgelerini Latince adların baş harflerinden yapmayı önerdi.",
+                    "Baş harfi aynı olan elementlerde ikinci bir harf eklenir; bugünkü simgeler büyük ölçüde bu sistemden gelir."
+                ],
+                "kaynak": "Kaynak: Britannica; Berzelius, Annals of Philosophy (1813)"
+            },
+            {
+                "baslik": "Başka dillerde gümüş",
+                "maddeler": [
+                    "Arjantin'in adı Latince argentum'dan gelir; Río de la Plata da “gümüş nehri” demektir.",
+                    "Fransızcada argent hem gümüş hem para demektir.",
+                    "Türkçe gümüş ise Eski Türkçe kümüş kelimesinden gelir; Orhun yazıtlarında “altun kümüş” diye geçer."
+                ],
+                "kaynak": "Kaynak: Nişanyan Sözlük; TDK; Larousse"
+            }
+        ]
+    },
+    # #16 — rehber ön paketi parti 1 (Rıdvan, 20 Ekim 2026; iki kontrol Claude'da)
+    {
+        "baslik": "Gümüş neden değerli metal sayılır?",
+        "alt": "Nadirlik, dayanıklılık ve altınla farkı.",
+        "buyuk": "~0,075 g",
+        "buyuk_alt": "bir ton yer kabuğundaki ortalama gümüş",
+        "hashtag": "#gümüş #değerlimetaller #külçegümüş #emtia #silver",
+        "soru": "Sizce gümüşü değerli yapan en önemli özellik hangisi?",
+        "sayfalar": [
+            {
+                "baslik": "Değerli metal ne demek?",
+                "maddeler": [
+                    "Doğada bulunan, nadir ve ekonomik değeri yüksek metallere değerli (kıymetli) metal denir.",
+                    "Genelde altın, gümüş ve platin grubu metaller sayılır; liste kaynağa göre biraz değişir.",
+                    "Türk kambiyo mevzuatı altın, gümüş, platin ve paladyumu kıymetli maden sayar; dördünün de uluslararası para kodu var."
+                ]
+            },
+            {
+                "baslik": "Bir ton kayada ne kadar?",
+                "tablo": [
+                    [
+                        "Gümüş",
+                        "~0,075 g"
+                    ],
+                    [
+                        "Altın",
+                        "~0,004 g"
+                    ],
+                    [
+                        "Platin",
+                        "~0,005 g"
+                    ]
+                ],
+                "maddeler": [
+                    "Yer kabuğunun ortalaması. Gümüş altından kaynağa göre yaklaşık 19–35 kat bol; yine de nadir bir metaldir.",
+                    "2025'te madenlerden yaklaşık 26.000 ton gümüş, 3.300 ton altın ve 170 ton platin çıkarıldı."
+                ],
+                "kaynak": "Kaynak: CRC el kitabı (yer kabuğu ortalaması; tahminler kaynağa göre değişir) · USGS 2026 (2025 tahmini)"
+            },
+            {
+                "baslik": "Altından farkı: soy metal",
+                "maddeler": [
+                    "Altın ve platin havada kararmaz; nitrik asitte bile çözünmez, yalnızca kral suyunda çözünür. Bunlara soy metal denir.",
+                    "Gümüş havadaki kükürtle kararır ve nitrik asitte çözünür; ders kitaplarında “yarı soy” metal sayılır.",
+                    "Yine de paslanmaz; kararma yalnızca yüzeydedir. Dayanıklı, bölünebilir ve taşınabilir olduğu için yüzyıllarca para oldu."
+                ]
+            }
+        ]
+    },
+    # #17 — rehber ön paketi parti 1 (Rıdvan, 20 Ekim 2026; iki kontrol Claude'da)
+    {
+        "baslik": "Gümüş neden en parlak metaldir?",
+        "alt": "Işığı en iyi yansıtan metal ve aynanın hikâyesi.",
+        "buyuk": "%95–99",
+        "buyuk_alt": "taze, temiz gümüşün yansıttığı görünür ışık",
+        "hashtag": "#gümüş #değerlimetaller #külçegümüş #emtia #silver",
+        "soru": "Evinizdeki aynanın arkasında hangi metal var, hiç merak ettiniz mi?",
+        "sayfalar": [
+            {
+                "baslik": "Işığın neredeyse tamamı",
+                "tablo": [
+                    [
+                        "Gümüş",
+                        "%95–99"
+                    ],
+                    [
+                        "Alüminyum",
+                        "%90–92"
+                    ],
+                    [
+                        "Altın",
+                        "mavide ~%40, kırmızıda ~%97"
+                    ]
+                ],
+                "maddeler": [
+                    "Görünür ışıkta en yüksek yansıtma gümüştedir; tablo taze ve temiz yüzeyler içindir.",
+                    "Nedeni serbest elektronlar: ışık gelince metalin içinde serbestçe dolaşan elektronlar titreşir ve ışığı geri yollar."
+                ],
+                "kaynak": "Kaynak: ölçülmüş optik sabitler (Johnson ve Christy 1972; McPeak vd. 2015); Los Alamos Ulusal Laboratuvarı"
+            },
+            {
+                "baslik": "Morötesi ve altının rengi",
+                "maddeler": [
+                    "Morötesinde, 320 nanometre civarında gümüşün yansıtması %10'un altına düşer; orada alüminyum öndedir.",
+                    "Gümüş bütün renkleri hemen hemen eşit yansıttığı için beyaz görünür.",
+                    "Altın mavi ışığın çoğunu soğurur, sarı ve kırmızıyı yansıtır; bu yüzden sarıdır."
+                ]
+            },
+            {
+                "baslik": "Aynadan teleskoba",
+                "maddeler": [
+                    "Camı gümüşle kaplama yöntemini Alman kimyacı Justus von Liebig 1835'te buldu; önceki aynalarda cıva-kalay karışımı vardı.",
+                    "Gümüş kararır; teleskop aynalarında ve ısı yansıtan pencere camlarında gümüş, koruyucu katmanların arasında durur."
+                ],
+                "kaynak": "Kaynak: Britannica; Cerro Pachón gözlemevi duyurusu (2004); Efficient Windows Collaborative"
+            }
+        ]
+    },
+    # #18 — rehber ön paketi parti 1 (Rıdvan, 20 Ekim 2026; iki kontrol Claude'da)
+    {
+        "baslik": "Gümüş hangi birimlerle tartılır?",
+        "alt": "Gram ve kilodan tola, tael, dirhem ve okkaya.",
+        "buyuk": "gram · kg",
+        "buyuk_alt": "Türkiye'de ve Asya borsalarında gümüşün birimi",
+        "hashtag": "#gümüş #gramgümüş #külçegümüş #değerlimetaller #gumus",
+        "soru": "Büyüklerinizden okka ya da dirhem lafını hiç duydunuz mu?",
+        "sayfalar": [
+            {
+                "baslik": "Gram ve kilogram",
+                "maddeler": [
+                    "Türkiye'de metre sistemi 1931 tarihli Ölçüler Kanunu ile kabul edildi; kanun 1 Ocak 1933'te uygulamaya girdi.",
+                    "Şanghay ve Hindistan borsalarında gümüş kilogram başına fiyatlanır.",
+                    "Londra'daki büyük külçenin ağırlığı ise troy onsla yazılır (Bölüm 1)."
+                ],
+                "kaynak": "Kaynak: 1782 sayılı Ölçüler Kanunu (1931); 3516 sayılı Ölçüler ve Ayar Kanunu"
+            },
+            {
+                "baslik": "Tola, tael, troy pound",
+                "tablo": [
+                    [
+                        "1 tola (Güney Asya)",
+                        "11,66 g"
+                    ],
+                    [
+                        "1 tael (Hong Kong)",
+                        "37,43 g"
+                    ],
+                    [
+                        "1 troy pound (12 ons)",
+                        "373,24 g"
+                    ]
+                ],
+                "maddeler": [
+                    "Tola tam olarak 3/8 troy onstur. Pakistan'da gümüş fiyatı bugün de tola başına açıklanır.",
+                    "Tablodaki tael, Hong Kong'da değerli metal için tanımlı taeldir; Çin'de günlük tael bugün 50 gramdır."
+                ]
+            },
+            {
+                "baslik": "Osmanlı'dan kalanlar",
+                "tablo": [
+                    [
+                        "1 dirhem",
+                        "≈ 3,207 g"
+                    ],
+                    [
+                        "1 miskal = 1,5 dirhem",
+                        "≈ 4,81 g"
+                    ],
+                    [
+                        "1 okka = 400 dirhem",
+                        "≈ 1,282 kg"
+                    ]
+                ],
+                "maddeler": [
+                    "Miskal, altın ve gümüş gibi değerli maddeleri tartmak için kullanılırdı.",
+                    "Değerler döneme ve yere göre değişir; tablodakiler en yaygın kabul gören değerlerdir."
+                ],
+                "kaynak": "Kaynak: TDK Güncel Türkçe Sözlük; TDV İslâm Ansiklopedisi"
+            }
+        ]
+    },
 ]
 
 
