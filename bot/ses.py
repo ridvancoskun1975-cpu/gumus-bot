@@ -111,7 +111,7 @@ OKUMA = {
          "Doğada bulunan, nadir ve ekonomik değeri yüksek metallere değerli metal denir."),
     17: ("Gümüş neden en parlak metaldir?",
          "Kısa cevap: taze ve temiz bir gümüş yüzey, görünür ışığın yüzde doksan beş ile yüzde doksan dokuzunu yansıtır.",
-         "Serbest elektronlar ışığı geri yollar; gümüşte ışığı soğuran geçişler morötesinde kaldığı için görünür ışık neredeyse tamamen geri döner."),
+         "Serbest elektronlar ışığı geri yollar; gümüşün ışığı soğurduğu bölge ise morötesinde kalır."),
     18: ("Gümüş hangi birimlerle tartılır?",
          "Kısa cevap: gram ve kilogram. Türkiye'de gümüş gramla tartılır; Şanghay ve Hindistan borsalarında kilogram başına fiyatlanır.",
          "Türkiye'de metre sistemi, bin dokuz yüz otuz bir tarihli Ölçüler Kanunu ile zorunlu oldu."),
