@@ -6,3 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
+| 2026-10-20 22:30 | Rehber ön paketi parti 2 (#19–#22 yeni bölümler, Rıdvan 20 Ekim yetkisi) | bot/bilgi.py, bot/ses.py, rehber_pdf/ (bolum-19..22, DURUM.md) | rehber-on-paket-2 · yazılıyor |
