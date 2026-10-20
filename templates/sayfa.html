@@ -28,7 +28,7 @@
     <div class="fiyat"><span class="sayi">{{ gram }}</span><span class="birim">₺</span></div>
     {% if gram_deg %}<div>{{ deg(gram_deg) }} <span class="soluk">önceki iş gününe göre ({{ once_gram }} ₺)</span></div>{% endif %}
     {# Saat ve günler bot/program.py'den: paylas.yml cron satırlarından üretilir, elle yazılmaz #}
-    <p class="zaman">Son güncelleme: {{ guncelleme }} (Türkiye saati).{% if program %} Güncelleme saatleri: {{ program.guncelleme | lower }}.{% endif %} Anlık (canlı) fiyat değildir.</p>
+    <p class="zaman">Son güncelleme: {{ guncelleme }} (Türkiye saati).{% if site_guncelleme %} Güncelleme saatleri: {{ site_guncelleme | lower }}.{% endif %} Anlık (canlı) fiyat değildir.</p>
     <div class="kutular">
       <div class="kutu"><span>Ons gümüş</span><b class="sayi">{{ ons }} $</b><small>1 troy ons = 31,1035 g</small></div>
       <div class="kutu"><span>Dolar / TL</span><b class="sayi">{{ dolar }} ₺</b><small>ECB referans kuru · {{ kur_tarihi }}{% if dolar_deg %}{{ deg(dolar_deg) }}{% endif %}</small></div>

@@ -11,12 +11,13 @@ bilgi (bot/ayrintili.py). Ana sayfa şişmesin diye rehberden orada yalnızca bi
 fontlar, sitemap.xml, robots.txt ve Google Search Console doğrulama dosyasını üretir. GitHub Pages her yayında siteyi baştan kurduğu için sayfa her
 çalıştırmada yeniden üretilir.
 
-Fiyatlar veri/gecmis.json kayıtlarından gelir (hafta içi her paylaşımın değeri); MetalCharts
-isteği harcanmaz. Sayfa çerez ve dış istek kullanmaz (yazı tipleri de sitenin içinde).
+Fiyatlar veri/gecmis.json kayıtlarından gelir (hafta içi her paylaşımın değeri), bugünün değeri gün içi
+kayıt daha yeniyse ondan (veri/gun_ici.json; 12:35 ve 16:35 güncellemeleri); MetalCharts isteği harcanmaz. Sayfa çerez ve dış istek kullanmaz (yazı tipleri de sitenin içinde).
 Başarısız olursa yalnızca uyarı verir; paylaşım etkilenmez.
 """
 import argparse
 import os
+import re
 import shutil
 import sys
 from datetime import date, datetime, timedelta
@@ -45,6 +46,12 @@ SITE_GORIL = True
 PAZAR_BASLIK = "Haftalık gümüş görünümü | Üst düzey yapay zekâ yorumu"
 # 19 Ekim 2026 (Rıdvan: "ikisini de değiştir") öncesi yorumların başlığı; düğme eski yorumu da bulsun.
 ESKI_PAZAR_BASLIK = "Haftalık gümüş görünümü | Yapay zekâ yorumu"
+# Site gün içinde 2 kez daha güncellenir (Rıdvan, 20 Ekim 2026: "Biraz daha seyrek olsun. Risk almaya gerek yok."):
+# hafta içi 12:35 ve 16:35 gün içi kaydından sonra kaydet.yml sayfa.yml'yi başlatır. Fiyat, gün içi kaydın zaten
+# aldığı değerdir: MetalCharts'a ek istek gitmez, ücretsiz plana dönülse de çalışır. 14:35 bilerek yok (çarşamba
+# ~14:00 rehber paylaşımı dosyalarını siteden alırken site baştan kurulmasın). Saatler kaydet.yml'deki zamanla aynı
+# olmalı (bot/test_sayfa.py denetler).
+SITE_ARA_SAATLER = ("12:35", "16:35")
 
 
 # Sitenin kendi alan adı (Rıdvan, 19 Ekim 2026: GoDaddy'den alındı, "tam bağlama başla"). GitHub Pages'te özel
@@ -233,6 +240,44 @@ def _rehber_pdf(bugun):
         return None
 
 
+def gun_ici_ile(gecmis, simdi=None, gun_ici=None):
+    """Günlük kayıtlara (gecmis.json) bugünün en yeni gün içi noktasını ekler: bugünkü kayıttan daha yeniyse
+    bugünün değeri o olur (site 12:35 / 16:35'te gün içi kayıttan yenilenince). Kopya döndürür, dosyaya yazmaz;
+    paylaşımlar, haftalık özet ve pazar yorumu gecmis.json'u değiştirmeden okumaya devam eder. Eksik ya da bozuk
+    noktalar atlanır."""
+    simdi = simdi or datetime.now(bot.TR_SAAT)
+    if simdi.weekday() >= 5:
+        return gecmis
+    gun = simdi.date().isoformat()
+    noktalar = (gun_ici if gun_ici is not None else bot.gun_ici_oku()).get("gunler", {}).get(gun, [])
+    gerekli = ("saat", "gumus", "altin", "dolar", "kur_tarihi", "gram")
+    gecerli = [n for n in noktalar if isinstance(n, dict) and all(n.get(k) for k in gerekli)
+               and n["saat"] <= simdi.strftime("%H:%M")]
+    if not gecerli:
+        return gecmis
+    son = max(gecerli, key=lambda n: n["saat"])
+    bugunku = gecmis.get(gun)
+    if bugunku and bugunku.get("saat", "") >= son["saat"]:
+        return gecmis
+    yeni = dict(gecmis)
+    yeni[gun] = {k: son[k] for k in gerekli}
+    return yeni
+
+
+def _site_guncelleme(program):
+    """Sayfadaki "Güncelleme saatleri": paylaşım saatleri (~10:00, ~20:00) + SITE_ARA_SAATLER, sıralı."""
+    if not program or not program.get("guncelleme"):
+        return None
+    metin = program["guncelleme"]
+    saatler = re.findall(r"~(\d{1,2}:\d{2})", metin)
+    if not saatler:
+        return metin
+    bas = metin[:metin.index("~")]
+    hepsi = sorted(set(saatler) | set(SITE_ARA_SAATLER), key=lambda s: tuple(int(x) for x in s.split(":")))
+    hepsi = ["~" + s for s in hepsi]
+    return bas + (", ".join(hepsi[:-1]) + " ve " + hepsi[-1] if len(hepsi) > 1 else hepsi[0])
+
+
 def veri_hazirla(gecmis, simdi=None, pazar=None):
     simdi = simdi or datetime.now(bot.TR_SAAT)
     kayitlar = sorted((date.fromisoformat(g), k) for g, k in gecmis.items())
@@ -282,6 +327,7 @@ def veri_hazirla(gecmis, simdi=None, pazar=None):
         "ayrintili": _ayrintili(simdi),
         "rehber_pdf": _rehber_pdf(simdi.date()),
         "program": program,
+        "site_guncelleme": _site_guncelleme(program),
         "tanitim": _tanitim(program, pazar),
         "site_goril": SITE_GORIL,
         "kaynak": _kaynaklar(),
@@ -367,7 +413,7 @@ def main():
             v = uret(cikti, gecmis, euro={k["kur_tarihi"]: k["dolar"] * 1.16 for k in gecmis.values()},
                      pazar=pazar, kati=a.kati)
         else:
-            v = uret(cikti, bot.gecmis_oku(), pazar=son_pazar_analizi(), kati=a.kati)
+            v = uret(cikti, gun_ici_ile(bot.gecmis_oku()), pazar=son_pazar_analizi(), kati=a.kati)
     except bot.VeriYok as e:
         print(f"::warning::{e}")
         if a.kati:
