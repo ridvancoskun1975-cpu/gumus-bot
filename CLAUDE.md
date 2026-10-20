@@ -4,6 +4,10 @@
   Rıdvan'a gönderilen her görsel ve video (önizleme, önce/sonra, deneme çıktısı dahil) aynı turda proje galerisine
   de eklenir: https://claude.ai/artifact/CFKCZroCrWfYDG8b1BgDzm (proje-galerisi becerisi; veri `ogeler`
   koleksiyonunda). Oturumun dosyaları başka sohbetten erişilemez; eklenmeyen dosya kaybolur.
+- **Web araştırması (Rıdvan, 20 Ekim 2026: "Bunu kural olarak kabul et. Bütün sohbetler böyle başlasın … bütün
+  projeler"):** WebFetch yalnızca WebSearch sonuçlarında çıkan adreslerle; hafızadan ya da adresi elle değiştirerek URL
+  üretilmez (her yeni site onay sorusu açıp işi yavaşlatıyor). Mümkünse arama sonuçlarının kendisinden doğrula; kaynak
+  yeterince toplanınca yazmaya geç. Alt görevlere (yazar, denetçi) verilen her tarife bu kural yazılır.
 - **Günlük sınır: günde en fazla 4** (14 Ekim 2026 21:23'ten beri; önce 3). **19 Ekim 2026'dan beri takipçinin gördüğü
   her şey sayılır: akış gönderisi, Reels ve hikâye ayrı ayrı** (Rıdvan: "takipçiler bizden gelecek, bizle ilgili
   görecekleri post, bildirim, reels, hikâye sayısından bahsediyorum"). Gün aşılacaksa önce hikâye kopyası düşer
