@@ -61,6 +61,24 @@ for no_, b_ in enumerate(bilgi.BOLUMLER, 1):
     dogrula(400 < len(" ".join(m_)) < 1600, f"#{no_}: okuma uzunluğu {len(' '.join(m_))}")
     s_ = ses.rehber_metinleri(no_, b_, kareler_, "Sonraki", site_karti=True)
     dogrula(s_[:-1] == m_ and s_[-1] == ses.SITE_OKUMA, f"#{no_}: site kartının okuması en sona eklenir")
+# #15 kimyasal simgeyi anlatır: simgeler harf harf okunur ("simgesi gümüş" olmaz); #4'teki "Au ÷ Ag" yine altın bölü
+# gümüş; #14'ün kapanışında #15'in başlığı da harfle okunur
+for no_ in sorted(ses.HARF_OKUNAN):
+    b_ = bilgi.BOLUMLER[no_ - 1]
+    kareler_ = [rh_._ogeler(s_, False, s_["birimler"]) for s_ in rh_.sayfalari_cikar(b_)]
+    tum_ = " ".join(ses.rehber_metinleri(no_, b_, kareler_, "Sonraki"))
+    dogrula(not re.search(r"\b(Ag|Au|Pb|Fe)\b", tum_), f"#{no_}: simge harfle okunur: {tum_[:200]}")
+    dogrula("simgesi gümüş" not in tum_, f"#{no_}: 'simgesi gümüş' okunmaz")
+    onceki_ = bilgi.BOLUMLER[no_ - 2]
+    k_ = [rh_._ogeler(s_, False, s_["birimler"]) for s_ in rh_.sayfalari_cikar(onceki_)]
+    son_ = ses.rehber_metinleri(no_ - 1, onceki_, k_, b_["baslik"])[-1]
+    dogrula(son_.endswith(f"Sıradaki bölüm: {ses.okunur(ses._harfle(b_['baslik']))}") and "harfleri" in son_,
+            f"#{no_ - 1}: kapanışta #{no_} başlığı harfle: {son_[-80:]}")
+dogrula(15 in ses.HARF_OKUNAN and "A ve G harfleri" in " ".join(ses.rehber_metinleri(
+    15, bilgi.BOLUMLER[14], [rh_._ogeler(s_, False, s_["birimler"]) for s_ in rh_.sayfalari_cikar(bilgi.BOLUMLER[14])])),
+    "#15: Ag 'A ve G harfleri' diye okunur")
+dogrula(ses.okunur("Au ÷ Ag") == "altın bölü gümüş", "#4 formülü değişmedi")
+
 # Site kartı (Rıdvan, 19 Ekim 2026: web sayfası tanıtımı): alan adı Türkçe okunuşuyla, simgesiz
 dogrula("günlük gümüş nokta com" in ses.SITE_OKUMA and not re.search(r"[%÷×=→~#₺$±/·•]", ses.SITE_OKUMA),
         "site okuması")

@@ -107,14 +107,14 @@ OKUMA = {
          "Kısa cevap: çünkü gümüşün Latince adı argentum.",
          "Bu ad, parlamak ve beyaz anlamına gelen çok eski bir köke dayanır."),
     16: ("Gümüş neden değerli metal sayılır?",
-         "Kısa cevap: nadirdir. Bir ton yer kabuğunda ortalama yalnızca yaklaşık sıfır virgül sıfır yetmiş beş gram gümüş vardır.",
+         "Kısa cevap: nadirdir. Bir ton yer kabuğunda ortalama yalnızca sıfır virgül sıfır yetmiş beş gram kadar gümüş vardır.",
          "Doğada bulunan, nadir ve ekonomik değeri yüksek metallere değerli metal denir."),
     17: ("Gümüş neden en parlak metaldir?",
          "Kısa cevap: taze ve temiz bir gümüş yüzey, görünür ışığın yüzde doksan beş ile yüzde doksan dokuzunu yansıtır.",
-         "Bunun nedeni, metalin içinde serbestçe dolaşan elektronlardır; ışık gelince titreşir ve ışığı geri yollarlar."),
+         "Serbest elektronlar ışığı geri yollar; gümüşte ışığı soğuran geçişler morötesinde kaldığı için görünür ışık neredeyse tamamen geri döner."),
     18: ("Gümüş hangi birimlerle tartılır?",
-         "Kısa cevap: gram ve kilogram. Türkiye'de ve Asya borsalarında gümüş bu birimlerle tartılır.",
-         "Türkiye'de metre sistemi, bin dokuz yüz otuz bir tarihli Ölçüler Kanunu ile kabul edildi."),
+         "Kısa cevap: gram ve kilogram. Türkiye'de gümüş gramla tartılır; Şanghay ve Hindistan borsalarında kilogram başına fiyatlanır.",
+         "Türkiye'de metre sistemi, bin dokuz yüz otuz bir tarihli Ölçüler Kanunu ile zorunlu oldu."),
 }
 
 
@@ -402,6 +402,19 @@ def okunur(metin):
     return re.sub(r"\s+", " ", m).strip()
 
 
+# Kimyasal simgeyi konu edinen bölümde simgeler harf harf okunur (#15 "Gümüşün simgesi neden Ag?": "simgesi gümüş"
+# diye okunmasın). Başka her yerde (#4'teki "Au ÷ Ag", pazar yorumu) okunur() Au'yu altın, Ag'yi gümüş okumaya devam eder.
+HARF_OKUNAN = {15}
+SIMGE_HARF = {"Ag": "A ve G harfleri", "Au": "A ve U harfleri", "Pb": "P ve B harfleri", "Fe": "F ve E harfleri"}
+
+
+def _harfle(metin):
+    import re
+    for simge, harf in SIMGE_HARF.items():
+        metin = re.sub(rf"\b{simge}\b", harf, metin)
+    return metin
+
+
 def _cumle(metin):
     metin = metin.strip()
     return metin if not metin or metin[-1] in ".!?…:" else metin + "."
@@ -417,31 +430,33 @@ def rehber_metinleri(no, bolum, kareler, sonraki=None, site_karti=False):
     """Rehber Reels'inin kare kare okunacak metinleri: [kapak, kare 1, …]. kareler: rehber_hikaye.kareleri_planla
     çıktısı (kapak hariç öğe listeleri). Kapakta soru ve elle yazılmış kısa cevap (OKUMA), sonra her karenin yazısı
     (sayfa başlığı, büyük rakam, formül, tablo, maddeler; kaynak notu okunmaz). Son kareye kapanış eklenir."""
+    oku = (lambda m: okunur(_harfle(m))) if no in HARF_OKUNAN else okunur
     soru, cevap, _ = (OKUMA[no] if no in OKUMA else
-                      (okunur(bolum["baslik"]), f"Kısa cevap: {okunur(bolum['buyuk'])}, {okunur(bolum['buyuk_alt'])}.", ""))
+                      (oku(bolum["baslik"]), f"Kısa cevap: {oku(bolum['buyuk'])}, {oku(bolum['buyuk_alt'])}.", ""))
     metinler = [f"{_cumle(soru)} {_cumle(cevap)}"]
     for kare in kareler:
         parcalar = []
         for o in kare:
             t = o["tip"]
             if t == "bas":
-                parcalar.append(_cumle(okunur(o["baslik"])))
+                parcalar.append(_cumle(oku(o["baslik"])))
             elif t == "buyuk":
                 alt = (o.get("buyuk_alt") or "").strip()
                 bag = " eşittir " if alt.startswith("=") else ", "
                 alt = alt.lstrip("= ").strip()
-                parcalar.append(_cumle(okunur(o["buyuk"] + (bag + alt if alt else ""))))
+                parcalar.append(_cumle(oku(o["buyuk"] + (bag + alt if alt else ""))))
             elif t == "formul":
-                parcalar.append(_cumle(okunur(o["metin"])))
+                parcalar.append(_cumle(oku(o["metin"])))
             elif t == "satir":
-                parcalar.append(_cumle(f"{okunur(o['etiket'])}: {okunur(o['deger'])}"))
+                parcalar.append(_cumle(f"{oku(o['etiket'])}: {oku(o['deger'])}"))
             elif t == "madde":
-                parcalar.append(_cumle(okunur(o["metin"])))
+                parcalar.append(_cumle(oku(o["metin"])))
             # "devam" (sayfa başlığı zaten okundu) ve "not" (kaynak) okunmaz
         metinler.append(" ".join(p_ for p_ in parcalar if p_))
     kapanis = "Kaydedin, lazım olunca bakarsınız."
     if sonraki:
-        kapanis += f" Sıradaki bölüm: {_cumle(okunur(sonraki))}"
+        # sonraki: bir sonraki bölümün başlığı (main.py); o bölüm harf okunuyorsa başlığı da öyle okunur
+        kapanis += f" Sıradaki bölüm: {_cumle(okunur(_harfle(sonraki) if no + 1 in HARF_OKUNAN else sonraki))}"
     metinler[-1] = f"{metinler[-1]} {kapanis}".strip()
     if site_karti:
         metinler.append(SITE_OKUMA)

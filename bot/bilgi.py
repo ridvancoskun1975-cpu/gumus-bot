@@ -617,9 +617,9 @@ BOLUMLER = [
             {
                 "baslik": "Latince argentum",
                 "maddeler": [
-                    "Gümüşün kimyasal simgesi Ag, Latince adı argentum'dan gelir.",
+                    "Gümüşün kimyasal simgesi Ag. Bu simge, Latince adı argentum'dan gelir.",
                     "Argentum, “parlamak, beyaz” anlamında çok eski bir Hint-Avrupa köküne dayanır: gümüş, “parlayan, beyaz metal”dir.",
-                    "Gümüş periyodik tablonun 47. elementidir; bakır ve altınla aynı sütunda, 11. gruptadır."
+                    "Gümüşün atom numarası 47'dir; periyodik tabloda bakır ve altınla aynı sütundadır."
                 ]
             },
             {
@@ -643,10 +643,10 @@ BOLUMLER = [
                     ]
                 ],
                 "maddeler": [
-                    "İsveçli kimyacı Berzelius 1813'te element simgelerini Latince adların baş harflerinden yapmayı önerdi.",
-                    "Baş harfi aynı olan elementlerde ikinci bir harf eklenir; bugünkü simgeler büyük ölçüde bu sistemden gelir."
+                    "İsveçli kimyacı Berzelius, 1813'te başlayan bir makalesinde simgeleri Latince adların baş harflerinden yapmayı önerdi.",
+                    "Baş harfi aynı olan elementlerden birine ikinci bir harf eklenir; bugünkü simgeler büyük ölçüde bu sistemden gelir."
                 ],
-                "kaynak": "Kaynak: Britannica; Berzelius, Annals of Philosophy (1813)"
+                "kaynak": "Kaynak: Britannica; Berzelius, Annals of Philosophy (1813–1814)"
             },
             {
                 "baslik": "Başka dillerde gümüş",
@@ -693,7 +693,7 @@ BOLUMLER = [
                     ]
                 ],
                 "maddeler": [
-                    "Yer kabuğunun ortalaması. Gümüş altından kaynağa göre yaklaşık 19–35 kat bol; yine de nadir bir metaldir.",
+                    "Yer kabuğunun ortalaması. Gümüş altından kaynağa göre yaklaşık 20–40 kat bol; yine de nadir bir metaldir.",
                     "2025'te madenlerden yaklaşık 26.000 ton gümüş, 3.300 ton altın ve 170 ton platin çıkarıldı."
                 ],
                 "kaynak": "Kaynak: CRC el kitabı (yer kabuğu ortalaması; tahminler kaynağa göre değişir) · USGS 2026 (2025 tahmini)"
@@ -701,7 +701,7 @@ BOLUMLER = [
             {
                 "baslik": "Altından farkı: soy metal",
                 "maddeler": [
-                    "Altın ve platin havada kararmaz; nitrik asitte bile çözünmez, yalnızca kral suyunda çözünür. Bunlara soy metal denir.",
+                    "Altın ve platin havada kararmaz; nitrik asitte bile çözünmez, ama kral suyunda çözünür. Bunlara soy metal denir.",
                     "Gümüş havadaki kükürtle kararır ve nitrik asitte çözünür; ders kitaplarında “yarı soy” metal sayılır.",
                     "Yine de paslanmaz; kararma yalnızca yüzeydedir. Dayanıklı, bölünebilir ve taşınabilir olduğu için yüzyıllarca para oldu."
                 ]
@@ -735,7 +735,7 @@ BOLUMLER = [
                 ],
                 "maddeler": [
                     "Görünür ışıkta en yüksek yansıtma gümüştedir; tablo taze ve temiz yüzeyler içindir.",
-                    "Nedeni serbest elektronlar: ışık gelince metalin içinde serbestçe dolaşan elektronlar titreşir ve ışığı geri yollar."
+                    "Nedeni serbest elektronlar; gümüşte ışığı soğuran geçişler morötesinde kaldığı için görünür ışık neredeyse tamamen geri döner."
                 ],
                 "kaynak": "Kaynak: ölçülmüş optik sabitler (Johnson ve Christy 1972; McPeak vd. 2015); Los Alamos Ulusal Laboratuvarı"
             },
@@ -762,16 +762,16 @@ BOLUMLER = [
         "baslik": "Gümüş hangi birimlerle tartılır?",
         "alt": "Gram ve kilodan tola, tael, dirhem ve okkaya.",
         "buyuk": "gram · kg",
-        "buyuk_alt": "Türkiye'de ve Asya borsalarında gümüşün birimi",
+        "buyuk_alt": "Türkiye'de gram, Şanghay ve Hindistan'da kilogram",
         "hashtag": "#gümüş #gramgümüş #külçegümüş #değerlimetaller #gumus",
         "soru": "Büyüklerinizden okka ya da dirhem lafını hiç duydunuz mu?",
         "sayfalar": [
             {
                 "baslik": "Gram ve kilogram",
                 "maddeler": [
-                    "Türkiye'de metre sistemi 1931 tarihli Ölçüler Kanunu ile kabul edildi; kanun 1 Ocak 1933'te uygulamaya girdi.",
+                    "Türkiye'de metre sistemi 1931 tarihli Ölçüler Kanunu ile zorunlu oldu; kanun 1 Ocak 1933'te uygulamaya girdi.",
                     "Şanghay ve Hindistan borsalarında gümüş kilogram başına fiyatlanır.",
-                    "Londra'daki büyük külçenin ağırlığı ise troy onsla yazılır (Bölüm 1)."
+                    "Londra'daki büyük külçenin ağırlığı ise troy onsla yazılır."
                 ],
                 "kaynak": "Kaynak: 1782 sayılı Ölçüler Kanunu (1931); 3516 sayılı Ölçüler ve Ayar Kanunu"
             },
@@ -792,7 +792,7 @@ BOLUMLER = [
                     ]
                 ],
                 "maddeler": [
-                    "Tola tam olarak 3/8 troy onstur. Pakistan'da gümüş fiyatı bugün de tola başına açıklanır.",
+                    "Tola tam olarak sekizde üç troy onstur. Pakistan'da gümüş fiyatı bugün de tola başına açıklanır.",
                     "Tablodaki tael, Hong Kong'da değerli metal için tanımlı taeldir; Çin'de günlük tael bugün 50 gramdır."
                 ]
             },
@@ -801,15 +801,15 @@ BOLUMLER = [
                 "tablo": [
                     [
                         "1 dirhem",
-                        "≈ 3,207 g"
+                        "~3,207 g"
                     ],
                     [
                         "1 miskal = 1,5 dirhem",
-                        "≈ 4,81 g"
+                        "~4,81 g"
                     ],
                     [
                         "1 okka = 400 dirhem",
-                        "≈ 1,282 kg"
+                        "~1,282 kg"
                     ]
                 ],
                 "maddeler": [
