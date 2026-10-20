@@ -6,4 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
-| 20 Ekim 14:47 | Site tanıtımı: "gün içinde güncellenen fiyat" (tanıtım kartı + Google açıklaması) | bot/sayfa.py, templates/sayfa.html, bot/test_sayfa.py, README.md | site-gun-ici-tanitim · yazılıyor |
+| 20 Ekim 14:47 | Site tanıtımı: "gün içinde güncellenen fiyat" (tanıtım kartı + Google açıklaması) | bot/sayfa.py, templates/sayfa.html, bot/test_sayfa.py, README.md | site-gun-ici-tanitim · önizlemede |
