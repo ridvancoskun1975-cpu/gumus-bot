@@ -6,3 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
+| 20 Ekim 2026 | Yasal gönderi yenileme (zamanlanmış kontrol) | bot/yasal.py, templates/sayfa.html | yasal-2026-10-20 · önizleme onayı bekliyor |
