@@ -7,6 +7,10 @@ durumla karşılaştırır; uyuşmazlık hatadır. Yazım kuralları: `YAZIM.md`
 - **Uzun metin:** `yok` · `yazılıyor · <dal>` · `önizlemede · <dal>` (Rıdvan'a gösterildi, onay bekliyor) · `onaylandı`
   (Rıdvan onayladı, main'de). İş başlarken main'de `yazılıyor · <dal>` yapılır; önizleme gidince `önizlemede`,
   onayla main'e alınırken `onaylandı`.
+  **Ön paket istisnası** (Rıdvan, 20 Ekim 2026: "benim kontrol etmem gerek yok … sen kontrol edersin"): 2026 Ekim–Kasım
+  ön paketinin 6 partisinde (#14 uzun metni ve #15'ten itibaren 24 yeni bölüm) önizleme ve 7 gün beklenmez;
+  `onaylandı` = iki kontrol (yazar + bağımsız denetçi) yapıldı, bulgular düzeltildi, main'e alındı. 25 Aralık baskı
+  önizlemesinin kuralı değişmez.
 - **Kontrol:** `kaynak ✓` = her rakam iki bağımsız kaynaktan doğrulandı, adresler dosyanın sonunda `<!-- KAYNAK: -->`
   yorumlarında. `denetle ✓` = `rehber_pdf.py denetle` hatasız. Dosya o dalda yoksa ikisi de `—`.
 - **Instagram / baskı:** `bot/bilgi.py` takviminden; bölüm, Instagram tarihinden sonraki ilk 1 Ocak baskısına girer.
@@ -29,7 +33,11 @@ durumla karşılaştırır; uyuşmazlık hatadır. Yazım kuralları: `YAZIM.md`
 | 11 | Külçe gümüş hangi boylarda olur? | 16 Aralık 2026 | onaylandı | kaynak ✓ · denetle ✓ | 2027 |
 | 12 | Aynı değerde altın ve gümüş | 23 Aralık 2026 | onaylandı | kaynak ✓ · denetle ✓ | 2027 |
 | 13 | Akçeden kuruşa: gümüş para | 30 Aralık 2026 | onaylandı | kaynak ✓ · denetle ✓ | 2027 |
-| 14 | Gerçek gümüş nasıl anlaşılır? | 6 Ocak 2027 | yazılıyor · rehber-on-paket-1 | kaynak — · denetle — | 2028 |
+| 14 | Gerçek gümüş nasıl anlaşılır? | 6 Ocak 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
+| 15 | Gümüşün simgesi neden Ag? | 13 Ocak 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
+| 16 | Gümüş neden değerli metal sayılır? | 20 Ocak 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
+| 17 | Gümüş neden en parlak metaldir? | 27 Ocak 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
+| 18 | Gümüş hangi birimlerle tartılır? | 3 Şubat 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
 
 ## Ekler
 

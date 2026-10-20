@@ -1,0 +1,153 @@
+<!-- Gümüş rehberi #16 · PDF'teki uzun hâli (rehber_pdf/YAZIM.md kurallarıyla).
+     Bölüm açılışını (numara + başlık) ve bölüm sonu notunu kitap şablonu yazar; bu dosya giriş paragrafıyla başlar.
+     Instagram'daki kısa hâl: değerli metal = doğada bulunan, nadir, ekonomik değeri yüksek metal; altın, gümüş, platin
+     grubu (liste kaynağa göre değişir; Türk mevzuatında altın, gümüş, platin, paladyum); bir ton yer kabuğunda ortalama
+     ~0,075 g gümüş, ~0,004 g altın, ~0,005 g platin (CRC); 2025 maden üretimi 26.000 t gümüş, 3.300 t altın, 170 t platin
+     (USGS MCS 2026, bot/ayrintili.py ile aynı); altın ve platin soy metal, gümüş kükürtle kararır ve nitrik asitte çözünür
+     (yarı soy); dayanıklı, bölünebilir, taşınabilir olduğu için yüzyıllarca para oldu. -->
+<p class="giris">Altın, gümüş ve platin için hep aynı ifade kullanılır: değerli metal. Peki bir metali “değerli” yapan nedir? Bu bölüm değerli metalin tanımını, hangi metallerin bu gruba girdiğini, gümüşün yer kabuğunda ne kadar nadir olduğunu, altından hangi yönüyle ayrıldığını ve yüzyıllarca neden para olarak kullanıldığını anlatır.</p>
+
+<div class="formul-kutu">
+  <div class="etiket">KISA CEVAP</div>
+  <div class="formul">Nadir + dayanıklı + ekonomik değeri yüksek</div>
+  <div class="not">Bir ton yer kabuğunda ortalama yalnızca yaklaşık 0,075 gram gümüş vardır. Gümüş havada paslanmaz; kararma yalnızca yüzeydedir.</div>
+</div>
+
+<h3><span class="num">1</span>Değerli metal ne demek?</h3>
+<p>Ansiklopediler ve sözlükler değerli (kıymetli) metali benzer biçimde tanımlar: <b>doğada bulunan, nadir ve ekonomik değeri yüksek metaller.</b> Bu metaller çoğunlukla kimyasal olarak az tepkimeye girer; bu yüzden kolay bozulmaz, çoğu parlaklığını uzun süre korur (gümüş yüzeyde kararabilir, Bölüm 10).</p>
+<p>Tanım bir ölçüm değil, bir sınıflandırmadır: nadirliğin yanında <b>talep ve piyasa değeri</b> de rol oynar. Bu yüzden listeler kaynağa göre biraz değişir.</p>
+
+<h3><span class="num">2</span>Hangi metaller sayılır?</h3>
+<div class="parca">
+  <div class="rozet koyu">Altın, gümüş</div>
+  <p><b>Her listede yer alan iki metal.</b> İkisi de binlerce yıldır sikke metali olarak kullanılmıştır.</p>
+</div>
+<div class="parca">
+  <div class="rozet">Platin grubu</div>
+  <p><b>Altı metal:</b> platin, paladyum, rodyum, rutenyum, iridyum ve osmiyum.</p>
+</div>
+<p>Türkiye'de kambiyo mevzuatı (Türk Parasının Kıymetini Koruma Hakkında 32 sayılı Karar) kıymetli madenleri <b>altın, gümüş, platin ve paladyum</b> olarak sayar. Bu dört metalin uluslararası para kodu standardında (ISO 4217) kendi kodları da vardır:</p>
+<table class="tablo">
+  <tr><th>METAL</th><th>KOD</th><th class="r">NUMARA</th></tr>
+  <tr><td>Altın</td><td>XAU</td><td class="r">959</td></tr>
+  <tr><td>Gümüş</td><td>XAG</td><td class="r">961</td></tr>
+  <tr><td>Platin</td><td>XPT</td><td class="r">962</td></tr>
+  <tr class="son"><td>Paladyum</td><td>XPD</td><td class="r">964</td></tr>
+</table>
+<p class="aciklama">Ekranlarda görülen “XAG/USD”, 1 ons gümüşün dolar fiyatıdır (Bölüm 1).</p>
+
+<div class="birlikte">
+<h3><span class="num">3</span>Yer kabuğunda ne kadar gümüş var?</h3>
+<p>Elementlerin yer kabuğundaki bolluğu çoğu zaman <b>ppm</b> (milyonda bir) ile verilir. Kütlece 1 ppm, bir ton kayada 1 gram demektir. Gümüşün ortalaması 0,075 ppm'dir: bir ton kayada yaklaşık 0,075 gram, yani 75 miligram.</p>
+<table class="tablo">
+  <tr><th>BİR TON YER KABUĞUNDA</th><th class="r">CRC EL KİTABI</th><th class="r">ÜST KITA KABUĞU</th></tr>
+  <tr><td>Gümüş</td><td class="r">0,075 g</td><td class="r">0,053 g</td></tr>
+  <tr><td>Altın</td><td class="r">0,004 g</td><td class="r">0,0015 g</td></tr>
+  <tr class="son"><td>Platin</td><td class="r">0,005 g</td><td class="r">0,0005 g</td></tr>
+</table>
+<p class="aciklama">Birinci sütun: CRC Handbook of Chemistry and Physics (yer kabuğu ortalaması; el kitabının farklı baskılarında aynı değerler). İkinci sütun: Rudnick ve Gao, Treatise on Geochemistry (2003), kıtaların üst kabuğu için önerilen değerler; platin değerinin belirsizliği değerin kendisi kadardır.</p>
+</div>
+<p>Bu rakamlar kayaç analizlerinden çıkarılmış tahminlerdir. Bu iki kaynağa göre gümüş, yer kabuğunda altından <b>yaklaşık 19 ila 35 kat</b> daha boldur. Başka derlemelerle birlikte bakıldığında oran kabaca 20 ile 40 kat arasındadır. Hepsinde sonuç aynıdır: gümüş altından onlarca kat boldur, ama yine de çok nadir bir metaldir. Karşılaştırma için bakır, aynı el kitabına göre bir tonda yaklaşık 60 gram bulunur; gümüşün 800 katı.</p>
+
+<div class="birlikte">
+<h3><span class="num">4</span>Her yıl ne kadar çıkarılıyor?</h3>
+<table class="tablo">
+  <tr><th>DÜNYA MADEN ÜRETİMİ</th><th class="r">2024</th><th class="r">2025 (TAHMİN)</th></tr>
+  <tr><td>Gümüş</td><td class="r">25.300 ton</td><td class="r">26.000 ton</td></tr>
+  <tr><td>Altın</td><td class="r">3.280 ton</td><td class="r">3.300 ton</td></tr>
+  <tr class="son"><td>Platin</td><td class="r">179 ton</td><td class="r">170 ton</td></tr>
+</table>
+<p class="aciklama">Kaynak: USGS Mineral Commodity Summaries 2026 (platin kilogram olarak verilir: 2025'te 170.000 kg). Gümüş üretiminin ülkelere dağılımı Bölüm 8'de.</p>
+</div>
+<p>Bir yılda çıkarılan bütün altın, 3.300 ton ile yaklaşık 171 metreküplük bir küp eder; kenarı 6 metreden kısa. Gümüş üretimi ağırlıkça bunun yaklaşık 8 katıdır (hacimce yaklaşık 14 katı); çoğu da kurşun-çinko, bakır ve altın madenlerinden yan ürün olarak çıkar (Bölüm 8).</p>
+
+<h3><span class="num">5</span>Soy metal: gümüşün altından farkı</h3>
+<p>Kimyada havaya, neme ve asitlere çok dayanıklı metallere <b>soy metal</b> (İngilizce “noble metal”) denir. Altın ve platin bu grubun tipik örnekleridir: havada kararmaz, nitrik ya da hidroklorik asit gibi yaygın asitlerde tek başına çözünmez; nitrik asit ile hidroklorik asidin karışımı olan <b>kral suyunda</b> ise çözünür.</p>
+<p>Gümüş bu açıdan daha zayıftır. Havadaki kükürtlü gazlarla tepkimeye girer ve yüzeyinde siyah gümüş sülfür oluşur (Bölüm 10). Nitrik asitte de çözünür. Bu yüzden Türkiye'deki kimya derslerinde bakır ve cıvayla birlikte <b>yarı soy metal</b> diye sınıflandırılır. Uluslararası kaynaklarda ise gümüş kimi zaman soy metaller arasında sayılır, kimi zaman sayılmaz; tanım alandan alana değişir.</p>
+<table class="tablo">
+  <tr><th>DAVRANIŞ</th><th>ALTIN, PLATİN</th><th>GÜMÜŞ</th></tr>
+  <tr><td>Temiz hava ve su</td><td>etkilenmez</td><td>etkilenmez</td></tr>
+  <tr><td>Havada zamanla</td><td>kararmaz</td><td>kükürtlü gazlarla yüzeyi kararır</td></tr>
+  <tr><td>Nitrik asit</td><td>çözünmez</td><td>çözünür</td></tr>
+  <tr class="son"><td>Kral suyu</td><td>çözünür</td><td>gümüş klorür oluşur, çözünme sınırlı kalır</td></tr>
+</table>
+<div class="not-kutu"><b>Kararma paslanma değildir.</b> Gümüş, demir gibi derinlere işleyen bir pasla çürümez. Kararma, nanometrelerle ölçülen ince bir yüzey tabakasıdır ve külçenin saflığını değiştirmez. Değerli metal sayılmasının bir nedeni de bu dayanıklılıktır.</div>
+
+<h3><span class="num">6</span>Nadirlik tek başına yetmez: alüminyum örneği</h3>
+<p>Bir metalin “değerli” sayılması kalıcı değildir. Alüminyum, yer kabuğunda en bol bulunan metal olduğu hâlde 19. yüzyılda saf hâlde elde etmek çok zordu ve değerli bir metal gibi görülüyordu. 1884'te ABD'deki Washington Anıtı'nın tepesine konan alüminyum uç bu dönemdendir; alüminyum o yıllarda hâlâ pahalı bir metaldi. 1886'da Charles Martin Hall ve Paul Héroult'nun birbirinden ayrı geliştirdiği elektrolizle üretim yöntemi alüminyumu ucuz ve sıradan bir metale dönüştürdü.</p>
+<p>Örnek şunu gösterir: değerli metal olmak, bolluk kadar <b>çıkarma ve arıtma zorluğuna</b> da bağlıdır.</p>
+
+<h3><span class="num">7</span>Para olarak gümüş: dayanıklı, bölünebilir, taşınabilir</h3>
+<p>Ekonomi eğitiminde paranın taşıması gereken özellikler genelde altı başlıkta toplanır. Dallas Federal Rezerv Bankası'nın eğitim yayınına göre tarihte en sık paraya dönüşen mal değerli metallerdir:</p>
+<ul class="duz">
+  <li><b>Dayanıklı:</b> metaller dolaşımda çok uzun süre dayanır.</li>
+  <li><b>Taşınabilir:</b> sikke hâline getirilince elde ve kesede taşınabilir.</li>
+  <li><b>Bölünebilir:</b> ağırlığa ya da değere göre küçük parçalara bölünebilir.</li>
+  <li><b>Nadir:</b> bulunması ve çıkarılması zaman ve emek ister.</li>
+  <li><b>Tek tip:</b> saflığı kurallarla doğrulanabildiği için bir gramı ötekine denktir (Bölüm 3).</li>
+  <li><b>Kabul gören:</b> kolay tanındığı için çoğu insan ödeme olarak kabul eder.</li>
+</ul>
+<p>Gümüş bu özellikleri taşıdığı için tarih boyunca para ve değer saklama aracı oldu. Anadolu'da Kültepe'de (Kaniş) MÖ 20.–19. yüzyıllardan kalan tabletler gümüşle verilen borçları kaydeder. Lidya'da MÖ 6. yüzyılın ortasında altın ve gümüşü ayırmanın yolu bulununca ayrı altın ve gümüş sikkeler basıldı. Osmanlı'nın akçesinden Cumhuriyet'in gümüş liralarına uzanan hikâye Bölüm 13'te.</p>
+<p>Gümüşün gram değeri altından çok düşük olduğu için küçük alışverişlere uygundu; aynı nedenle aynı değerdeki gümüş çok daha fazla yer kaplar (Bölüm 12). Bugün dolaşımdaki paralarda gümüş neredeyse hiç yoktur.</p>
+
+<h3><span class="num">8</span>Sık yapılan üç hata</h3>
+<ol class="hatalar">
+  <li><b>“Değerli metal” ile “soy metal”i aynı sanmak</b>İlki ekonomik bir sınıflandırmadır, ikincisi kimyasal. Gümüş değerli metaldir, ama kimyada her zaman soy metal sayılmaz (Türkiye'deki derslerde yarı soy metaldir).</li>
+  <li><b>Kararmayı değer kaybı sanmak</b>Kararma yüzeydedir; külçedeki saf gümüş miktarını fiilen değiştirmez (Bölüm 10).</li>
+  <li><b>Yer kabuğu rakamlarını kesin sanmak</b>Bolluk değerleri tahmindir ve kaynağa göre değişir; karşılaştırırken aynı kaynağın rakamlarını kullanın.</li>
+</ol>
+
+<div class="akilda">
+  <div class="etiket">AKILDA KALSIN</div>
+  <ul>
+    <li>Değerli metal: doğada bulunan, nadir ve ekonomik değeri yüksek metal. Altın, gümüş ve platin grubu; liste kaynağa göre değişir.</li>
+    <li>Bir ton yer kabuğunda ortalama yaklaşık 0,075 g gümüş vardır; 2025'te dünyada yaklaşık 26.000 ton gümüş çıkarıldı.</li>
+    <li>Altın ve platin soy metaldir; gümüş kükürtle kararır ama paslanmaz. Dayanıklı ve bölünebilir olduğu için yüzyıllarca para oldu.</li>
+  </ul>
+</div>
+
+<p class="kaynaklar">Kaynak: Britannica; Merriam-Webster; 32 sayılı Karar (Hazine ve Maliye Bakanlığı, 2025); ISO 4217 (SIX, 2026); CRC Handbook of Chemistry and Physics; Rudnick ve Gao, Treatise on Geochemistry (2003); USGS Mineral Commodity Summaries 2026; Los Alamos Ulusal Laboratuvarı ve Royal Society of Chemistry periyodik tabloları; MEB 10. sınıf kimya materyali; ABD Ulusal Arşivleri (2014); NPR (2019); Dallas Fed, Everyday Economics: Money (2015); Metropolitan Museum of Art; LBMA.</p>
+
+<!-- KAYNAK: https://www.britannica.com/science/precious-metal — değerli metal: nadir ve çok değerli elementler; altın, gümüş, platin grubu; platin grubu altı metal -->
+<!-- KAYNAK: https://en.wikipedia.org/wiki/Precious_metal — "rare, naturally occurring metallic minerals of high economic value"; değerli sayılmada talep ve piyasa değeri; platin en çok işlem gören PGM; alüminyum 1800'lerin sonuna kadar değerli metal; ISO 4217 kodları -->
+<!-- KAYNAK: https://www.merriam-webster.com/dictionary/precious%20metal — "less common and highly valuable metals (as gold, silver, and the platinum metals)" -->
+<!-- KAYNAK: https://www.britannica.com/science/noble-metal — soy metal: yüksek sıcaklıkta bile oksidasyona dayanıklı; PGM, altın ve gümüş; cıva ve bakır bazen dahil -->
+<!-- KAYNAK: https://en.wikipedia.org/wiki/Noble_metal — tanım alana göre değişir; gümüş bazen dahil; H2S ile kararır; nitrik asitte çözünür, kral suyunda gümüş klorür çökeleği -->
+<!-- KAYNAK: https://ms.hmb.gov.tr/uploads/2025/07/Turk-Parasi-Kiymetini-Koruma-Hakkinda-32-Sayili-Karar-dd7747872eb324d4.pdf — 32 sayılı Karar md. 2/j: kıymetli madenler altın, gümüş, platin ve paladyum -->
+<!-- KAYNAK: https://www.bloomberght.com/kiymetli-madenin-kapsami-genisletildi-3745087 — 28 Mart 2025: 32 sayılı Karar tebliğinde kapsam altın, gümüş, platin ve paladyum (paladyum eklendi) -->
+<!-- KAYNAK: https://www.six-group.com/dam/download/financial-information/data-center/iso-currrency/lists/list-one.xml — ISO 4217 (yayın 17 Eylül 2026): XAU 959, XAG 961, XPT 962, XPD 964 -->
+<!-- KAYNAK: https://en.wikipedia.org/wiki/ISO_4217 — XAU/XAG/XPT/XPD birimi bir troy ons -->
+<!-- KAYNAK: https://en.wikipedia.org/wiki/Abundance_of_elements_in_Earth%27s_crust — CRC 97. baskı (2016–17): Ag 0,075, Au 0,004, Pt 0,005 ppm -->
+<!-- KAYNAK: https://en.wikipedia.org/wiki/Abundances_of_the_elements_(data_page) — CRC 85. baskı (2005): Ag 7,5×10⁻⁸, Au 4×10⁻⁹, Pt 5×10⁻⁹, Cu 6,0×10⁻⁵ kg/kg; Greenwood (1997) Ag 8×10⁻⁸, Au 4×10⁻⁹; Kaye ve Laby Ag 8×10⁻⁸, Au 2×10⁻⁹ (≈40 kat); Ahrens/Wänke Ag 6,95×10⁻⁸, Au 4,07×10⁻⁹ (≈17 kat) -->
+<!-- KAYNAK: https://corpora.tika.apache.org/base/docs/govdocs1/576/576298.pdf — Table of Isotopes ek A (CRC 78. baskı, 1997): Ag 0,075, Au 0,004, Pt 0,005 mg/kg -->
+<!-- KAYNAK: https://www.knowledgedoor.com/2/elements_handbook/element_abundances_in_the_earth_s_crust.html — Ag 7,5×10⁻² ppm, Au 4×10⁻³, Pt 5×10⁻³ (Greenwood & Earnshaw 1997; Lide 2008) -->
+<!-- KAYNAK: https://www.geol.umd.edu/~rudnick/PDF/Rudnick_Gao_Treatise.pdf — üst kıta kabuğu (Tablo 3): Ag 53 ± 3, Au 1,5 ± 0,4, Pt 0,5 ± 0,5 ng/g -->
+<!-- KAYNAK: https://scispace.com/pdf/composition-of-the-continental-crust-2hxz49vsod.pdf — aynı tablo, ikinci kopya: Ag 53, Au 1,5, Pt 0,5 -->
+<!-- KAYNAK: https://www.scirp.org/reference/referencespapers?referenceid=1624715 — Rudnick ve Gao (2003), Treatise on Geochemistry Vol. 3, 1–64 -->
+<!-- KAYNAK: https://pubs.usgs.gov/periodicals/mcs2026/mcs2026-silver.pdf — gümüş 2024 25.300 t, 2025 26.000 t; çoğunlukla kurşun-çinko, bakır, altın madenlerinin yan ürünü -->
+<!-- KAYNAK: https://pubs.usgs.gov/periodicals/mcs2026/mcs2026-gold.pdf — altın 2024 3.280 t, 2025 3.300 t -->
+<!-- KAYNAK: https://pubs.usgs.gov/periodicals/mcs2026/mcs2026-platinum-group.pdf — platin 2024 179.000 kg, 2025 170.000 kg -->
+<!-- KAYNAK: https://thevaultreport.com/mine-supply — USGS 2025 tahminleri: altın 3.300 t, gümüş 26.000 t, platin 170 t -->
+<!-- KAYNAK: https://statranker.org/economy/resources-mining/gold-production-by-country-2026-2025-usgs-mine-production-estimates/ — USGS MCS 2026: 2025 altın ~3.300 t -->
+<!-- KAYNAK: https://periodic.lanl.gov/47.shtml — gümüş doğada saf ve cevher hâlinde; saf hava ve suda kararlı; ozon, H2S ya da kükürtlü havada kararır; yüzyıllardır sikke metali -->
+<!-- KAYNAK: https://periodic-table.rsc.org/element/47/silver — gümüş havada kükürt bileşikleriyle yavaşça kararır (siyah gümüş sülfür); saf hâlde de bulunur -->
+<!-- KAYNAK: https://periodic.lanl.gov/79.shtml — altın hava ve çoğu reaktiften etkilenmez; kral suyu; doğada serbest metal -->
+<!-- KAYNAK: https://periodic-table.rsc.org/element/79/gold — kimyasal olarak tepkimesiz, kral suyunda çözünür; doğada saf hâlde -->
+<!-- KAYNAK: https://periodic.lanl.gov/78.shtml — platin havada hiçbir sıcaklıkta oksitlenmez; HCl ve HNO3'te çözünmez, kral suyunda çözünür; doğada saf -->
+<!-- KAYNAK: https://periodic-table.rsc.org/element/78/platinum — platin oksitlenmez, altın kadar korozyona dayanıklı; kral suyunda çözünür -->
+<!-- KAYNAK: https://acikders.ankara.edu.tr/mod/resource/view.php?id=120808 — "Tek başına hiçbir asit, Au ile etkileşmemektedir"; kral suyu 1 hacim HNO3 + 3 hacim HCl -->
+<!-- KAYNAK: https://www.britannica.com/science/silver-nitrate — gümüş nitrik asitte çözülerek gümüş nitrat yapılır -->
+<!-- KAYNAK: https://www.britannica.com/science/aqua-regia — kral suyu altın ve platini çözmekte kullanılır -->
+<!-- KAYNAK: https://mufredat.meb.gov.tr/Dosyalar/TTKB/Lise/10/Kimya/c2-kimya-10.pdf — MEB 10. sınıf: aktif, yarı soy, soy metal kavramları; soy metaller yalnızca kral suyuyla tepkime verir -->
+<!-- KAYNAK: https://egitimsistem.com/10-sinif-anadol-kimya-sayfa-109-cevaplari-90286h.htm — 10. sınıf kitabı: bakır, gümüş ve cıva yarı soy, altın ve platin soy metal -->
+<!-- KAYNAK: https://www.tahtaapp.com/blog/dersler/soy-ve-yari-soy-metaller-nedir-asit-ve-bazlarla-tepkimeleri — Cu, Hg, Ag yarı soy; nitrik asitle tepkime; Au, Pt yalnız kral suyu -->
+<!-- KAYNAK: https://bilimgenc.tubitak.gov.tr/bunu-biliyor-muydunuz/kral-suyu — kral suyu HCl + HNO3; altın aşınmaya dayanıklı olduğu için soy metal -->
+<!-- KAYNAK: https://www.archives.gov/publications/prologue/2014/summer/aluminum-tip-monument — 6 Aralık 1884 alüminyum uç; alüminyum onsu 1,10 $, gümüşün iki katı; Hall 23 Şubat 1886, Héroult yaklaşık iki ay sonra -->
+<!-- KAYNAK: https://www.npr.org/2019/12/05/785099705/aluminums-strange-journey-from-precious-metal-to-beer-can — 19. yüzyılda değerli metal; 1886 Hall ve Héroult elektroliz yöntemi; fiyat 1889'da düştü -->
+<!-- KAYNAK: https://www.dallasfed.org/~/media/documents/educate/everyday/money.pdf — Dallas Fed, Everyday Economics: Money (Kasım 2015): tarihte en sık para olan mal değerli metal; dayanıklı, taşınabilir, bölünebilir, nadir, tek tip, kabul gören; değer saklama -->
+<!-- KAYNAK: https://www.federalreserveeducation.org/teaching-resources/economics/money/what-makes-something-useful-as-money — para özellikleri: nadir, dayanıklı, bölünebilir, taşınabilir, kabul gören, tek tip -->
+<!-- KAYNAK: https://www.kansascityfed.org/Education/documents/9414/Early_Forms_of_Money_-_Revised_Mar._2023.pdf — aynı altı özellik (Kansas City Fed, Mart 2023) -->
+<!-- KAYNAK: https://www.britannica.com/topic/coin — Avrupa'da 8.–13. yüzyıllarda başlıca sikke metali gümüş; ilk sikkeler Lidya'da elektrumdan; sikke metalleri bozulmaya dayanıklı -->
+<!-- KAYNAK: https://www.metmuseum.org/art/collection/search/325857 — Kültepe (Kaniş), MÖ 20.–19. yüzyıl, gümüş borcun ödendiğini kaydeden tablet -->
+<!-- KAYNAK: https://www.lbma.org.uk/wonders-of-gold/items/croesus-stater — Lidya, MÖ 6. yüzyıl ortası; elektrumu saf altın ve gümüşe ayırma yöntemi -->
+<!-- KAYNAK: https://pubs.usgs.gov/periodicals/mcs2026/mcs2026-copper.pdf — bağlam: bakır üretimi 2025 23 milyon t (metinde kullanılmadı) -->
