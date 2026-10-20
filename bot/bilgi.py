@@ -820,6 +820,164 @@ BOLUMLER = [
             }
         ]
     },
+    # #19 — rehber ön paketi parti 2 (Rıdvan, 20 Ekim 2026; iki kontrol Claude'da)
+    {
+        "baslik": "Cevherden külçeye: gümüş nasıl üretilir?",
+        "alt": "Madenden rafineriye gümüşün yolculuğu.",
+        "buyuk": "4 adım",
+        "buyuk_alt": "kayadan külçeye: çıkarma, zenginleştirme, ayrıştırma, döküm",
+        "hashtag": "#gümüş #külçegümüş #değerlimetaller #emtia #silver",
+        "soru": "Bir külçenin yolculuğunda en çok hangi adım ilginizi çekti?",
+        "sayfalar": [
+            {
+                "baslik": "Madenden tesise",
+                "maddeler": [
+                    "Yüzeye yakın, büyük ama gümüşü az yataklar açık ocakta; derindeki zengin damarlar yer altında işletilir.",
+                    "Kaya kırılır, çoğu zaman ince toz hâline gelene kadar öğütülür.",
+                    "Flotasyonda toz suyla karıştırılıp hava verilir; istenen mineraller kabarcıklara tutunup köpükle yüzer. Bu ürüne konsantre denir."
+                ]
+            },
+            {
+                "baslik": "Gümüş nasıl ayrılır?",
+                "tablo": [
+                    [
+                        "Kurşun cevheri",
+                        "çinkoyla ayırma, kupelasyon"
+                    ],
+                    [
+                        "Bakır cevheri",
+                        "elektrolizde anot çamuru"
+                    ],
+                    [
+                        "Altın-gümüş cevheri",
+                        "siyanür liçi"
+                    ]
+                ],
+                "maddeler": [
+                    "Kurşun eritilince gümüş erimiş kurşunda kalır; katılan çinko gümüşü toplar ve yüzeyde kabuk olur.",
+                    "Siyanürlü çözelti gümüşü öğütülmüş cevherden çözer; gümüş çinko tozuyla çöktürülür ya da aktif karbona tutturulur."
+                ],
+                "kaynak": "Kaynak: Britannica (Parkes ve siyanür yöntemleri, kupelasyon)"
+            },
+            {
+                "baslik": "Çoğu yan ürün, sonu külçe",
+                "tablo": [
+                    [
+                        "Kurşun-çinko madenleri",
+                        "~%29"
+                    ],
+                    [
+                        "Bakır madenleri",
+                        "~%28"
+                    ],
+                    [
+                        "Altın madenleri",
+                        "~%16"
+                    ],
+                    [
+                        "Gümüş madenleri",
+                        "~%26"
+                    ]
+                ],
+                "maddeler": [
+                    "2025'te madenden çıkan gümüşün yaklaşık dörtte üçü başka metallerin madenlerinden yan ürün olarak geldi.",
+                    "Ham gümüş rafineride genelde binde 999 ya da daha yüksek saflığa getirilir, sonra kalıba dökülüp külçe olur."
+                ],
+                "kaynak": "Kaynak: World Silver Survey 2026 (2025 maden üretimi)"
+            }
+        ]
+    },
+    # #20 — rehber ön paketi parti 2 (Rıdvan, 20 Ekim 2026; iki kontrol Claude'da)
+    {
+        "baslik": "Gümüş nasıl saflaştırılır?",
+        "alt": "Ham gümüşten 999,9'a: rafinerinin işi.",
+        "buyuk": "999,9",
+        "buyuk_alt": "elektrolizle ulaşılan saflık (binde)",
+        "hashtag": "#gümüş #külçegümüş #değerlimetaller #emtia #silver",
+        "soru": "Eski gümüş eşyaların eritilip yeniden külçe olabildiğini biliyor muydunuz?",
+        "sayfalar": [
+            {
+                "baslik": "Ham gümüş",
+                "maddeler": [
+                    "Rafineriye gelen gümüş saf değildir: madende dökülen doré külçeleri, bakır ve kurşun üretiminin yan ürünleri, hurda.",
+                    "Doré yarı saf bir külçedir; çoğunlukla altın ve gümüşten oluşur.",
+                    "Eski bir yöntem kupelasyondur: gümüşlü kurşun hava verilerek eritilir, kurşun oksitlenip ayrılır, gümüş kalır. Beş bin yılı aşkın süredir bilinir."
+                ],
+                "kaynak": "Kaynak: Britannica; LBMA; PLoS ONE (2015)"
+            },
+            {
+                "baslik": "Elektrolizle saflaştırma",
+                "maddeler": [
+                    "Ham gümüş levhalar gümüş nitrat çözeltisine daldırılıp akım verilir; gümüş çözülür, karşı levhada saf kristaller hâlinde birikir.",
+                    "Altın çözünmez, çamur olarak toplanır; bakır çözeltide kalır.",
+                    "Bu yolla binde 999, hatta binde 999,9 ve üstü saflık elde edilir."
+                ],
+                "kaynak": "Kaynak: Metso; BullionStar; ABD patentleri (1992, 1997)"
+            },
+            {
+                "baslik": "Geri kazanım ve onay",
+                "maddeler": [
+                    "Eski eşya, fotoğraf banyosu atıkları, elektronik hurda ve kullanılmış katalizörlerdeki gümüş de rafineride yeniden saflaştırılır.",
+                    "2025'te eski takı ve gümüş eşya satışları geri dönüşümü artırdı; ama rafinerilerdeki darboğaz hacmi sınırladı.",
+                    "Londra Külçe Piyasası Birliği'nin onaylı listesinde 2026'da 80'den fazla gümüş rafinerisi vardı."
+                ],
+                "kaynak": "Kaynak: The Silver Institute (15 Nisan 2026); LBMA Good Delivery listesi (Mayıs ve Ekim 2026)"
+            }
+        ]
+    },
+    # #21 — rehber ön paketi parti 2 (Rıdvan, 20 Ekim 2026; iki kontrol Claude'da)
+    {
+        "baslik": "Külçe sikke nedir?",
+        "alt": "Nominal değer, metal değeri ve külçeden farkı.",
+        "buyuk": "1 ons",
+        "buyuk_alt": "Silver Eagle, Maple Leaf ve Philharmoniker'deki gümüş",
+        "hashtag": "#gümüş #külçegümüş #değerlimetaller #gumus #silver",
+        "soru": "Bu sikkelerden hangisini daha önce gördünüz?",
+        "sayfalar": [
+            {
+                "baslik": "Tanım",
+                "maddeler": [
+                    "Külçe sikke, değeri büyük ölçüde içindeki değerli metalden gelen, resmî darphanelerin bastığı sikkedir.",
+                    "Üzerinde nominal değer yazar ve çıkaran ülkede yasal ödeme aracıdır; ama günlük alışverişte kullanılmaz.",
+                    "Değerini içindeki gümüşün ağırlığı ve saflığı belirler. Basım adedi genelde önceden sınırlanmaz."
+                ]
+            },
+            {
+                "baslik": "Tanınmış örnekler",
+                "tablo": [
+                    [
+                        "Silver Eagle (ABD)",
+                        "1986"
+                    ],
+                    [
+                        "Maple Leaf (Kanada)",
+                        "1988"
+                    ],
+                    [
+                        "Britannia (İngiltere)",
+                        "1997"
+                    ],
+                    [
+                        "Philharmoniker (Avusturya)",
+                        "2008"
+                    ]
+                ],
+                "maddeler": [
+                    "Hepsi 1 ons gümüş içerir; yıl, ilk basım yılıdır. Saflık binde 999 (Maple Leaf'te 999,9; Britannia'da 2013'ten önce 958).",
+                    "Nominal değerleri: 1 ABD doları, 5 Kanada doları, 2 sterlin, 1,50 avro. Avustralya'nın Kangaroo'su da tanınmış bir örnektir."
+                ],
+                "kaynak": "Kaynak: ABD Darphanesi, Kanada Kraliyet Darphanesi ve The Royal Mint ürün sayfaları; Wikipedia"
+            },
+            {
+                "baslik": "Nominal değer ve farklar",
+                "maddeler": [
+                    "Nominal değer büyük ölçüde semboliktir. Örnek (güncel fiyat değil): ons 50 dolar iken Silver Eagle'daki gümüş ~50 dolar eder, üzerinde 1 dolar yazar.",
+                    "Külçe (bar) ve özel üretim yuvarlak külçelerin genelde nominal değeri yoktur; yasal ödeme aracı da sayılmazlar.",
+                    "Koleksiyon sikkesinin değerini ise metalin yanında nadirlik, kondisyon ve talep belirler."
+                ]
+            }
+        ]
+    },
 ]
 
 
