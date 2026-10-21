@@ -148,6 +148,10 @@ icinde("| Fiyat Reels'i | 4 |", metin, "hâl eki sabah türünü bölmez")
 
 # ---- reklam (bot/reklam.py): Reklam 1, 16–19 Ekim 2026, tanıdık 4–5
 import reklam  # noqa: E402
+# Aşağıdaki beklenenler yalnız Reklam 1'e göre yazıldı; sonraki reklamlar (Reklam 2: 18–24 Ekim) sınamayı bozmasın
+# diye liste sınama süresince Reklam 1'e indirilir.
+esit(reklam.o_gun(date(2026, 10, 21)), ["Reklam 2"], "gerçek listede Reklam 2 var")
+reklam.REKLAMLAR = [r_ for r_ in reklam.REKLAMLAR if r_["ad"] == "Reklam 1"]
 esit(reklam.o_gun(date(2026, 10, 17)), ["Reklam 1"], "reklam günü")
 esit(reklam.o_gun(date(2026, 10, 20)), [], "reklamsız gün")
 esit(len(reklam.kesisen(date(2026, 10, 5), date(2026, 10, 11))), 0, "reklamsız hafta")
