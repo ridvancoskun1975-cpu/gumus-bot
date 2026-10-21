@@ -50,6 +50,10 @@ durumla karşılaştırır; uyuşmazlık hatadır. Yazım kuralları: `YAZIM.md`
 | 28 | Tarihin ünlü gümüş madenleri hangileri? | 14 Nisan 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
 | 29 | Para neden artık gümüş değil? | 21 Nisan 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
 | 30 | Merkez bankaları neden gümüş tutmaz? | 28 Nisan 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
+| 31 | Ons fiyatı neden dolarla verilir? | 5 Mayıs 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
+| 32 | Spot fiyat ve vadeli fiyat ne demek? | 12 Mayıs 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
+| 33 | Fiziki ve fiziki olmayan gümüş farkı nedir? | 19 Mayıs 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
+| 34 | Dünyadaki gümüş nerede duruyor? | 26 Mayıs 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
 
 ## Ekler
 

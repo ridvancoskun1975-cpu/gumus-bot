@@ -1466,6 +1466,216 @@ BOLUMLER = [
             }
         ]
     },
+    # #31 — rehber ön paketi parti 5 (Rıdvan, 20 Ekim 2026; iki kontrol Claude'da)
+    {
+        "baslik": "Ons fiyatı neden dolarla verilir?",
+        "alt": "Sterlinden dolara: gümüş fiyatının ortak dili.",
+        "buyuk": "dolar",
+        "buyuk_alt": "uluslararası gümüş fiyatının para birimi",
+        "hashtag": "#gümüş #gümüşfiyatları #emtia #değerlimetaller #silver",
+        "soru": "Gümüşü siz hangi parayla takip ediyorsunuz: dolarla mı, lirayla mı?",
+        "sayfalar": [
+            {
+                "baslik": "Önce sterlin vardı",
+                "maddeler": [
+                    "Londra'nın gümüş referans fiyatı 1897'de başladı. İlk yıllarında fiyat İngiliz parasıyla, ons başına peni olarak veriliyordu.",
+                    "Londra altın fiyatı da 1919'da sterlinle başladı; 1 Nisan 1968'den beri dolarla belirleniyor.",
+                    "Bugünkü LBMA gümüş fiyatı da ons başına dolarla belirlenir."
+                ],
+                "kaynak": "Kaynak: LBMA (Alchemist 75 ve 95); The Perth Mint; ICE Benchmark Administration"
+            },
+            {
+                "baslik": "Bretton Woods'tan bugüne",
+                "tablo": [
+                    [
+                        "Bretton Woods anlaşması",
+                        "1944"
+                    ],
+                    [
+                        "Doların altına çevrilmesi durdu",
+                        "1971"
+                    ],
+                    [
+                        "Sabit kurlar fiilen bitti",
+                        "1973"
+                    ]
+                ],
+                "maddeler": [
+                    "1944'te kurulan düzende öteki paralar dolara, dolar da ons başına 35 dolardan altına bağlıydı.",
+                    "Altınla bağı kopunca da dolar, dünya ticaretinin ve finansının başlıca parası olarak kaldı."
+                ],
+                "kaynak": "Kaynak: Federal Reserve History; ABD Dışişleri Bakanlığı Tarih Ofisi; ABD Kongre Bütçe Ofisi (2023)"
+            },
+            {
+                "baslik": "Bugün ve kur",
+                "tablo": [
+                    [
+                        "Döviz işlemlerinde dolar",
+                        "%89 (2025)"
+                    ],
+                    [
+                        "Döviz rezervlerinde dolar",
+                        "~%57 (2026)"
+                    ]
+                ],
+                "maddeler": [
+                    "Petrol ve metaller gibi emtialar da uluslararası piyasada genelde dolarla fiyatlanır.",
+                    "Dünya fiyatı dolarla verildiği için başka parayla alan, kendi parasının dolar karşısındaki hareketini de yaşar.",
+                    "Aynı gün gümüş, bir parayla alan için pahalanırken başka bir parayla alan için ucuzlayabilir."
+                ],
+                "kaynak": "Kaynak: BIS (Nisan 2025); IMF (Haziran 2026 sonu); New York Fed (2010); ABD Kongre Bütçe Ofisi (2023)"
+            }
+        ]
+    },
+    # #32 — rehber ön paketi parti 5 (Rıdvan, 20 Ekim 2026; iki kontrol Claude'da)
+    {
+        "baslik": "Spot fiyat ve vadeli fiyat ne demek?",
+        "alt": "Hemen teslim, ileri tarihte teslim ve aradaki fark.",
+        "buyuk": "2 iş günü",
+        "buyuk_alt": "Londra'da spot işlemin teslim süresi",
+        "hashtag": "#gümüş #gümüşfiyatları #emtia #değerlimetaller #silver",
+        "soru": "Ekrandaki ons fiyatının spot mu vadeli mi olduğuna hiç dikkat ettiniz mi? Yorumlara yazın.",
+        "sayfalar": [
+            {
+                "baslik": "Spot: hemen teslim",
+                "maddeler": [
+                    "Spot fiyat, gümüşün hemen teslimi için geçerli fiyattır.",
+                    "Londra'da “hemen”, işlemden iki iş günü sonra demektir; para ve gümüş o gün el değiştirir.",
+                    "Ekranlarda görülen ons gümüş çoğu zaman spot fiyattır. Paylaşımlarımızdaki ons fiyatı da spottur."
+                ]
+            },
+            {
+                "baslik": "Vadeli ve ileri tarihli",
+                "tablo": [
+                    [
+                        "Vadeli",
+                        "borsada"
+                    ],
+                    [
+                        "İleri tarihli",
+                        "taraflar arası"
+                    ]
+                ],
+                "maddeler": [
+                    "Vadeli sözleşmede miktar, kalite ve vade standarttır; ileri tarihli işlemde koşulları iki taraf belirler.",
+                    "Vadeli sözleşmelerin çoğu teslimden önce kapatılır. Borsa İstanbul'daki ons gümüş vadelisinde gümüş teslim edilmez, fark nakit ödenir."
+                ],
+                "kaynak": "Kaynak: CME Group; ABD Emtia Vadeli İşlemler Komisyonu (CFTC); Borsa İstanbul (VİOP)"
+            },
+            {
+                "baslik": "Fark neden olur?",
+                "maddeler": [
+                    "Gümüşü vadeye kadar tutmanın bir maliyeti var: paranın faizi, depolama ve sigorta. Buna taşıma maliyeti denir.",
+                    "Bu yüzden vadeli fiyat genelde spotun üstündedir. Bazen tersi olur ve spot fiyat üste çıkar.",
+                    "Vade yaklaştıkça vadeli fiyat spot fiyata yaklaşır."
+                ],
+                "kaynak": "Kaynak: LBMA; CME Group; Borsa İstanbul VİOP Terimler Sözlüğü"
+            }
+        ]
+    },
+    # #33 — rehber ön paketi parti 5 (Rıdvan, 20 Ekim 2026; iki kontrol Claude'da)
+    {
+        "baslik": "Fiziki ve fiziki olmayan gümüş farkı nedir?",
+        "alt": "Külçe, kasa hesabı, banka hesabı, fon ve sertifikada neye sahip olduğunuz.",
+        "buyuk": "4 soru",
+        "buyuk_alt": "sahiplik, yer, karşı taraf ve elinize alıp alamamak",
+        "hashtag": "#gümüş #külçegümüş #değerlimetaller #emtia #silver",
+        "soru": "Bu dört sorudan hangisini daha önce hiç düşünmemiştiniz?",
+        "sayfalar": [
+            {
+                "baslik": "Elde ve kasada",
+                "maddeler": [
+                    "Külçe ya da sikke elinizdeyse gümüşün kendisine sahipsiniz; arada bir kurum yoktur, saklamak ve korumak size kalır.",
+                    "Ayrılmış (tahsisli) kasa hesabında belirli külçeler sizin adınıza ayrılır; her külçenin numarası bir listede yazar.",
+                    "Ayrılmamış hesapta belirli bir külçe yoktur; hesabın açıldığı kuruma karşı bir miktar gümüş alacağınız vardır."
+                ],
+                "kaynak": "Kaynak: LBMA, kıymetli maden hesapları rehberi"
+            },
+            {
+                "baslik": "Banka hesabı ve fon",
+                "maddeler": [
+                    "Türkiye'de bankalar gümüş depo hesabı açabilir. Hesap, bakiyesi gümüş cinsinden izlenen bir mevduattır; karşı taraf bankadır.",
+                    "Gümüş fonunda gümüşe değil, fonun bir payına sahipsiniz. Bazı fonlar kasada külçe, bazıları vadeli sözleşme ya da başka fon tutar.",
+                    "Fonun ne tuttuğu ve gümüşü kimin sakladığı izahnamesinde yazar. Payı gümüşe çevirmek genelde yalnız yetkili kurumlara açıktır."
+                ],
+                "kaynak": "Kaynak: Hazine tebliği (Resmî Gazete, 29 Mayıs 2008); mevduat sigortası yönetmeliği; Borsa İstanbul; ABD CFTC"
+            },
+            {
+                "baslik": "Karşı taraf kim?",
+                "tablo": [
+                    [
+                        "Ayrılmamış hesap",
+                        "kurum"
+                    ],
+                    [
+                        "Banka hesabı",
+                        "banka"
+                    ],
+                    [
+                        "Vadeli sözleşme",
+                        "takas kurumu"
+                    ],
+                    [
+                        "Sertifika",
+                        "ihraççı"
+                    ]
+                ],
+                "maddeler": [
+                    "Vadeli işlemde elinizde gümüş değil, bir sözleşme vardır; borsanın takas kurumu her iki tarafın karşısında durur, teminat yatırılır.",
+                    "Sertifika çoğu zaman ihraççıya karşı bir alacak hakkıdır ve ödeme genelde nakittir. Ne verdiğini ihraç belgesi söyler."
+                ],
+                "kaynak": "Kaynak: CME Group; İngiltere FCA; Borsa İstanbul varant ve sertifika rehberi"
+            }
+        ]
+    },
+    # #34 — rehber ön paketi parti 5 (Rıdvan, 20 Ekim 2026; iki kontrol Claude'da)
+    {
+        "baslik": "Dünyadaki gümüş nerede duruyor?",
+        "alt": "Londra kasaları, New York ve Şanghay depoları, fonlar ve evler.",
+        "buyuk": "29 bin ton",
+        "buyuk_alt": "Eylül 2026 sonunda Londra kasalarındaki gümüş (yaklaşık)",
+        "hashtag": "#gümüş #külçegümüş #değerlimetaller #emtia #silver",
+        "soru": "Bu üç merkezden hangisinin gümüş depolarını daha önce duymuştunuz: Londra mı, New York mu, Şanghay mı?",
+        "sayfalar": [
+            {
+                "baslik": "Londra kasaları",
+                "maddeler": [
+                    "LBMA, Londra'daki kasalarda duran gümüşü her ay yayımlar. Rakam bir önceki ayın son gününe aittir ve tonla verilir.",
+                    "Eylül 2026 sonunda ~29 bin ton, yani ~930 milyon ons gümüş vardı. Rakam her ay değişir.",
+                    "Fonların Londra'da tuttuğu gümüş de bu rakamın içindedir. Son yıllarda Londra'daki gümüşün çoğu fonlara aitti."
+                ],
+                "kaynak": "Kaynak: LBMA kasa verisi (Eylül 2026); LBMA Alchemist; piyasa analizleri (2021–2026)"
+            },
+            {
+                "baslik": "New York: iki tür stok",
+                "tablo": [
+                    [
+                        "Teslime hazır",
+                        "belgeli"
+                    ],
+                    [
+                        "Şartlara uygun",
+                        "belge yok"
+                    ]
+                ],
+                "maddeler": [
+                    "CME, COMEX depolarındaki gümüşü her iş günü onsla yayımlar.",
+                    "Teslime hazır gümüşün teslim belgesi vardır; vadeli sözleşmede yalnız o teslim edilir. Öteki tür şartlara uyar ama belgesi yoktur.",
+                    "Ekim 2026 ortasında toplam ~335 milyon ons vardı, ~100 milyonu teslime hazır. Ekim 2025'te toplam ~530 milyon onsla rekordaydı."
+                ],
+                "kaynak": "Kaynak: CME Group günlük depo raporu (Ekim 2026); COMEX teslim arzı analizi (2021); Reuters (Ekim 2025)"
+            },
+            {
+                "baslik": "Şanghay, fonlar ve evler",
+                "maddeler": [
+                    "Şanghay Vadeli İşlem Borsası'nın depolarında Şubat 2026'da ~350 ton, Eylül ve Ekim 2026'da ~1.400 ton gümüş vardı.",
+                    "Gümüş fonlarının dünyadaki külçeleri 2026 başında ~1,3 milyar ons, yani ~40 bin tondu. Londra'dakiler o şehrin rakamında zaten sayılır.",
+                    "Evdeki, takıdaki ve eşyadaki gümüş tahminle bilinir. Yer üstü toplam tahminleri, neyin sayıldığına göre ~600 bin ile 1,7 milyon ton arası."
+                ],
+                "kaynak": "Kaynak: Şanghay Vadeli İşlem Borsası verisi; The Silver Institute (2025, 2026); CPM Group (2019)"
+            }
+        ]
+    },
 ]
 
 
