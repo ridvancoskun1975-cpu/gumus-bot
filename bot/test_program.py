@@ -86,8 +86,13 @@ kontrol("aylık satırında 'rehber varsa' notu yok", satir(p(2026, 10, 17), "Ay
         satir(p(2026, 10, 17), "Aylık"))
 kontrol("14 Ekim: aylık 2 Kasım", "2 Kasım Pazartesi" in " ".join(satir(a, "Aylık")["ek"]))
 kontrol("14 Ekim: ECB ~17:00 (yaz saati)", a["ecb"]["saat"] == "~17:00", a["ecb"])
-kontrol("akşam özeti: bazı günler hikâyesiz (günlük sınır, 19 Ekim 2026)",
-        satir(a, "Günün özeti")["ek"] == ["bazı günler hikâyesiz"], satir(a, "Günün özeti"))
+# Rıdvan, 21 Ekim 2026 ("1"): "bazı günler" yerine günler yazılır
+# (günler ayarlardan: rehber hikâyesi otomatik değilse rehber günü 4'ü aşmaz, yazılmaz)
+_oz = satir(p(2026, 10, 21, rehber_hikaye=True), "Günün özeti")
+kontrol("akşam özeti: rehber günü ve ayın ilk iş günü hikâyesiz (günlük sınır, 19 Ekim 2026)",
+        _oz["ek"] == ["rehber günü (çarşamba) ve ayın ilk iş günü hikâyesiz"], _oz)
+kontrol("akşam özeti: rehber hikâyesi kapalıyken yalnız ayın ilk iş günü",
+        satir(a, "Günün özeti")["ek"] == ["ayın ilk iş günü hikâyesiz"], satir(a, "Günün özeti"))
 kontrol("güncelleme saatleri", a["guncelleme"] == "Hafta içi ~10:00 ve ~20:00" and a["son_deger_saati"] == "~20:00")
 kontrol("ECB kullanım cümlesi", a["ecb"]["kullanim"] == "~10:00 değeri önceki iş gününün, ~20:00 değeri o günün kurunu kullanır")
 

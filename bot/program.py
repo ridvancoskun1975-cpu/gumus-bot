@@ -314,9 +314,18 @@ def program(simdi=None, kayit_gunleri=(), hikaye_turleri=None, rehber_saati=(13,
             if bugun < kart.KART_BASLANGIC:
                 ek = [f"ilki {tek_tarih(kart.KART_BASLANGIC)}"]
         elif tur == "post" and tur in hikaye_turleri:
-            # Günlük sınır (bot/sinir.py; Rıdvan, 19 Ekim 2026): gün 4'ü aşacaksa akşam özetinin hikâye kopyası düşer
-            # (rehber günü, ayın ilk iş günü). Sayfa her gün hikâye gidiyormuş gibi yazmasın.
-            ek = ["bazı günler hikâyesiz"]
+            # Günlük sınır (bot/sinir.py; Rıdvan, 19 Ekim 2026): gün 4'ü aşacaksa akşam özetinin hikâye kopyası düşer.
+            # Sayfa her gün hikâye gidiyormuş gibi yazmasın; Rıdvan, 21 Ekim 2026 ("1"): "bazı günler" yerine günleri
+            # yaz. Günler ayarlardan gelir: rehber hikâyesi otomatik gidiyorsa rehber günü (Reels + hikâye video),
+            # aylık özet hikâyeye de gidiyorsa ayın ilk iş günü (aylık + hikâyesi) günü 4'e getirir.
+            hikayesiz = []
+            if rehber_hikaye:
+                rg = bilgi.DUZENLI_GUNLER
+                hikayesiz.append(f"{'rehber günü' if len(rg) == 1 else 'rehber günleri'} ({gun_metni(rg).lower()})")
+            if "ay" in hikaye_turleri:
+                hikayesiz.append("ayın ilk iş günü")
+            if hikayesiz:
+                ek = [" ve ".join(hikayesiz) + " hikâyesiz"]
         elif tur == "yorum":
             ilk = ilk_yorum(bugun, kayitlar)
             sonraki_pz = bugun + timedelta(days=(6 - bugun.weekday()) % 7)
