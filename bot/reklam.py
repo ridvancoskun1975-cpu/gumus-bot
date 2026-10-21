@@ -19,6 +19,13 @@ REKLAMLAR = [
      # Rıdvan, 17 Ekim 2026 20:52: "Buradaki 4, 5 kişi tanıdık, geri kalanları reklam." (reklam günlerinde gelen
      # takipçilerden 4–5'i tanıdık; rapor reklamla gelen takipçiyi bunu düşerek aralık olarak verir)
      "tanidik": (4, 5)},
+    # Rıdvan, 21 Ekim 2026: "Ekle." İlk gün 18 Ekim (reklam Reels'inin tarihi), 6 gün; 21 Ekim 21:15'te "3 gün sonra
+    # sona eriyor". Reklam 1 ile 18–19 Ekim'de üst üste biner. Profilde görünmeyen reklam, kısa kod yok.
+    {"ad": "Reklam 2", "bas": date(2026, 10, 18), "bit": date(2026, 10, 24), "hedef": "optimize edilmiş karma",
+     "not": "Profilde görünmeyen reklam, 13 sn hareketli video (fiyat saatleri, cumartesi haftalık rapor, pazar üst "
+            "düzey yapay zekâ analizi, sesli rehber; istifçi goril; müzik Motivate); 6 gün; hedef kitle \"gümüş\". "
+            "21 Ekim ~21:35'ten sonra profil değişti (biyografi, sabitlenen tanıtım Reels'i); oran kıyası bu andan önce "
+            "ve sonra ayrı yapılır"},
 ]
 
 
