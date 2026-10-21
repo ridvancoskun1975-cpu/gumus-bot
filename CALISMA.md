@@ -6,3 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
+| 2026-10-21 20:10 | Rehber #7 kısa hâli: "mikrop öldürücü olduğu için" → "mikroplara etki ettiği için" (Rıdvan, 21 Ekim: "evet yap") | bot/bilgi.py | rehber-7-saglik · yazılıyor |
