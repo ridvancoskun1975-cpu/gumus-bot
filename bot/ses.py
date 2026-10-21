@@ -163,6 +163,18 @@ OKUMA = {
     34: ("Dünyadaki gümüş nerede duruyor?",
          "Kısa cevap: bir kısmı Londra, New York ve Şanghay'daki kasa ve depolarda; çok daha fazlası evlerde, takıda ve eşyada.",
          "Londra kasalarında iki bin yirmi altı Eylül sonunda yaklaşık yirmi dokuz bin ton gümüş vardı; bu rakam her ay değişir."),
+    35: ("Gümüş verileri nereden gelir?",
+         "Kısa cevap: arz ve talep rakamlarını Silver Institute, ülke üretimini ABD Jeoloji Araştırmaları Kurumu, Londra fiyatını ve kasa verisini LBMA yayımlar.",
+         "Okurken dört şeye bakın: kim yayımladı, hangi tarihe ait, ölçüm mü tahmin mi, birimi ne."),
+    36: ("Bin dokuz yüz seksende gümüş piyasasında ne oldu?",
+         "Kısa cevap: Hunt kardeşler gümüş biriktirirken ons elli dolara yaklaştı; kurallar sıkılaşınca sert düştü.",
+         "Yirmi yedi Mart bin dokuz yüz seksende ons, New York'ta on dolar seksen sente indi; bu güne Gümüş Perşembe denir."),
+    37: ("Gümüş haberlerini okurken nelere dikkat etmeli?",
+         "Kısa cevap: beş soru sorun. Kim söyledi, hangi birim, hangi fiyat, neye göre, ölçüm mü tahmin mi?",
+         "Birimi yazmayan bir gümüş fiyatı eksiktir: önce ons mu gram mı, dolar mı lira mı, ona bakın."),
+    38: ("Gümüş sözlüğü: hangi terim ne demek?",
+         "Kısa cevap: troy ons, milyem, parite, makas, prim ve spot gibi terimlerin kısa tanımları; her birinin yanında ayrıntılı anlatıldığı bölümün numarası var.",
+         "Örneğin makas, alış ile satış fiyatı arasındaki farktır."),
 }
 
 

@@ -42,6 +42,18 @@ for no, b in enumerate(bilgi.BOLUMLER, 1):
     toplam = sum(len(x) for x in m.values())
     dogrula(toplam <= 330, f"{no}: okuma metni uzun ({toplam} harf; video ~25 sn'yi aşar)")
 
+# Instagram açıklaması: her bölümün kaydırmalı ve sesli Reels açıklaması 2.200 karakteri aşmamalı; aşarsa o gün
+# bilgi_hazirla hata verir ve paylaşım hiç yapılmaz. En uzun hâl (seslendirme notu + müzik künyesi) ölçülür; son bölümde
+# henüz "Sıradaki bölüm" satırı yok, sonra eklenecek o satıra pay bırakılır.
+_kunye = main.muzik_kunyesi() or "x" * 60
+for no in range(1, len(bilgi.BOLUMLER) + 1):
+    _pay = 90 if no == len(bilgi.BOLUMLER) else 0
+    for _reels in (False, True):
+        _a = bilgi.aciklama(no, reels=_reels, ek=[ses.ACIKLAMA_SATIRI] if _reels else (),
+                            muzik=_kunye if _reels else None)
+        dogrula(len(_a) + _pay <= 2200,
+                f"#{no}: {'Reels' if _reels else 'kaydırmalı'} açıklaması uzun ({len(_a)} + {_pay} > 2200 karakter)")
+
 # Tam okuma: ekrandaki simge ve birimler okunur
 for ham, beklenen in (("Dolar/TL 50,00 ₺", "dolar kuru 50,00 lira"), ("19,3 g/cm³", "santimetreküpte 19,3 gram"),
                       ("%50+", "yüzde 50'den fazla"), ("±%10", "artı eksi yüzde 10"), ("#1", "1 numara"),
