@@ -12,6 +12,7 @@
   const manset = document.getElementById('manset');
   const isik = document.querySelector('.isik');
   const satirlar = Array.from(document.querySelectorAll('.satir'));
+  const gunIci = document.getElementById('gun-ici');   // akşam özeti: gün içi en düşük / en yüksek
   const cizgi = document.getElementById('grafik-cizgi');
   const uzunluk = cizgi ? cizgi.getTotalLength() : 0;
   const grafikNoktalar = Array.from(document.querySelectorAll('.grafik-nokta'));
@@ -31,6 +32,12 @@
       const d = ara(t, 1.25, 1.6);
       deg.style.opacity = d;
       deg.style.transform = `scale(${0.6 + 0.4 * d})`;
+    }
+    // 2b) Gün içi en düşük / en yüksek, fiyat sayımı bitince belirir
+    if (gunIci) {
+      const g = ara(t, 1.4, 1.9);
+      gunIci.style.opacity = g;
+      gunIci.style.transform = `translateY(${(1 - g) * 16}px)`;
     }
     // 3) Parite ve dolar sırayla kayarak gelir
     satirlar.forEach((s, i) => {

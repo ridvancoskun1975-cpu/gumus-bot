@@ -36,6 +36,19 @@ kontrol(s == "Gün içi: 91,80 ₺, gün boyunca değişmedi", f"görselde aynı
 s = main.gun_ici_satiri([("10:22", 92.0), ("12:35", 91.0), ("14:35", 92.0), ("20:04", 91.0)])
 kontrol(s == "Gün içi: en düşük 91,00 ₺ (12:35) · en yüksek 92,00 ₺ (10:22)", f"eşitlikte ilk saat: {s}")
 
+# --- 1b) Görseldeki gün içi en düşük / en yüksek (Rıdvan, 21 Ekim 2026): açıklamayla aynı değerler -----
+kontrol(main.gun_ici_gorsel([("10:22", 91.8), ("20:04", 92.0)]) is None, "2 noktayla görselde satır yok")
+g = main.gun_ici_gorsel([("10:22", 91.80), ("12:35", 90.921), ("16:35", 92.104), ("20:04", 91.5)])
+kontrol(g == {"dusuk": "90,92", "yuksek": "92,10", "esit": False}, f"görsel değerler: {g}")
+g = main.gun_ici_gorsel([("10:22", 91.801), ("12:35", 91.799), ("20:04", 91.80)])
+kontrol(g == {"dusuk": "91,80", "yuksek": "91,80", "esit": True}, f"görselde değişmedi: {g}")
+f_ = {"gun_ici": [("10:28", 91.335), ("13:04", 91.317), ("15:01", 91.859), ("20:16", 91.845)]}
+e = main.ozet_ek_satirlari(f_, date(2026, 10, 21))
+kontrol(e["gun_ici_gorsel"] == {"dusuk": "91,32", "yuksek": "91,86", "esit": False}
+        and e["gun_ici_satiri"].startswith("Gün içi: en düşük 91,32 ₺ (13:04) · en yüksek 91,86 ₺ (15:01)"),
+        f"görsel ve açıklama aynı: {e}")
+kontrol(main.ozet_ek_satirlari({}, date(2026, 10, 21))["gun_ici_gorsel"] is None, "veri yoksa görselde yok")
+
 # --- 2) Noktaların birleşmesi: dosya + sabahki kayıt + şimdiki, aynı saat bir kez ------------------
 gun = date(2026, 10, 19)
 main.GUN_ICI_DOSYASI.write_text('{"gunler": {"2026-10-19": [{"saat": "10:22", "gram": 91.0}, '

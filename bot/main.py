@@ -361,14 +361,35 @@ def gun_ici_noktalari(gun, gecmis_kaydi=None, simdiki=None):
     return sorted(noktalar.items())
 
 
-def gun_ici_satiri(noktalar):
-    """Akşam özeti açıklaması: 'Gün içi: en düşük 90,92 ₺ (12:35) · en yüksek 92,10 ₺ (16:35)'.
-    Görselde yazan 2 ondalıklı değerlerle; en az GUN_ICI_EN_AZ nokta yoksa None."""
+def gun_ici_uclari(noktalar):
+    """((saat, en düşük), (saat, en yüksek)), 2 ondalığa yuvarlanmış; en az GUN_ICI_EN_AZ nokta yoksa None.
+    Eşit değerlerde ilk saat."""
     if len(noktalar) < GUN_ICI_EN_AZ:
         return None
     yuvarli = [(s, round(g, 2)) for s, g in noktalar]
     en_az = min(yuvarli, key=lambda x: (x[1], x[0]))
     en_cok = max(yuvarli, key=lambda x: (x[1], [-int(p) for p in x[0].split(":")]))   # eşitse ilk saat
+    return en_az, en_cok
+
+
+def gun_ici_gorsel(noktalar):
+    """Akşam özeti görseli (Rıdvan, 21 Ekim 2026: reklam kartı "~20:00 gün içi en düşük ve en yüksek" diyor,
+    "açıklamayı okumayan için problem var"): fiyatın altında "Gün içi en düşük / en yüksek" iki değer.
+    Açıklamadaki satırla aynı noktalar ve aynı yuvarlama; en az GUN_ICI_EN_AZ nokta yoksa None (görsel eskisi gibi)."""
+    uclar = gun_ici_uclari(noktalar)
+    if not uclar:
+        return None
+    en_az, en_cok = uclar
+    return {"dusuk": tr_sayi(en_az[1], 2), "yuksek": tr_sayi(en_cok[1], 2), "esit": en_az[1] == en_cok[1]}
+
+
+def gun_ici_satiri(noktalar):
+    """Akşam özeti açıklaması: 'Gün içi: en düşük 90,92 ₺ (12:35) · en yüksek 92,10 ₺ (16:35)'.
+    Görselde yazan 2 ondalıklı değerlerle; en az GUN_ICI_EN_AZ nokta yoksa None."""
+    uclar = gun_ici_uclari(noktalar)
+    if not uclar:
+        return None
+    en_az, en_cok = uclar
     if en_az[1] == en_cok[1]:
         return f"Gün içi: {tr_sayi(en_az[1], 2)} ₺, gün boyunca değişmedi"
     return (f"Gün içi: en düşük {tr_sayi(en_az[1], 2)} ₺ ({en_az[0]}) · "
@@ -801,11 +822,12 @@ def ozet_ek_satirlari(f, gun):
     Veri yoksa satır yok; bir hata paylaşımı durdurmaz."""
     try:
         gun_ici = gun_ici_satiri(f["gun_ici"]) if f.get("gun_ici") else None
+        gorsel = gun_ici_gorsel(f["gun_ici"]) if f.get("gun_ici") else None
         donem = donem_satirlari(f["gecmis_gram"], gun, f["gram"]) if "gecmis_gram" in f else []
-        return {"gun_ici_satiri": gun_ici, "donem_satirlari": donem}
+        return {"gun_ici_satiri": gun_ici, "gun_ici_gorsel": gorsel, "donem_satirlari": donem}
     except Exception as e:
         print(f"::warning::Gün içi / dönem satırları hesaplanamadı, satırsız devam ediliyor: {type(e).__name__}: {e}")
-        return {"gun_ici_satiri": None, "donem_satirlari": []}
+        return {"gun_ici_satiri": None, "gun_ici_gorsel": None, "donem_satirlari": []}
 
 
 def gun_durumu(f, gun, sabah=False):
@@ -1359,14 +1381,15 @@ def video_uret(png_yolu, mp4_yolu, sure=7):
 GORIL_YOK = {"goril": None, "maskot": None, "maskot_js": None, "goril_satiri": ""}
 # Gorilin üstüne binmemesi gereken öğeler. Metin öğelerinde kutunun değil yazının kendisi ölçülür.
 GORIL_KORUNAN_METIN = ["#fiyat", ".kahraman-birim", ".kahraman-baslik", ".kahraman > .soluk", ".alt", ".etiket",
-                       ".tarih", ".ozel-manset", "h1", ".satir"]
+                       ".tarih", ".ozel-manset", "h1", ".satir", ".gun-ici-oge"]
 GORIL_KORUNAN_KUTU = ["#fiyat-deg", "#manset", "#gun-baslik", ".ag", ".grafik-deger"]
 GORIL_DENETIM_ANLARI = tuple(i / 10 for i in range(131))   # en uzun videonun (13 sn) her 0,1 sn'si
 GORIL_OGE_ADI = {"#fiyat": "fiyat", ".kahraman-birim": "₺ işareti", ".kahraman-baslik": "GRAM GÜMÜŞ başlığı",
                  ".kahraman > .soluk": "fiyatın altındaki satır", ".alt": "en alttaki satır", ".etiket": "üst etiket",
                  ".tarih": "tarih", ".ozel-manset": "özel gün manşeti", "h1": "Gümüş başlığı",
                  ".satir": "parite / dolar satırı", "#fiyat-deg": "yüzde rozeti", "#manset": "manşet",
-                 "#gun-baslik": "günün başlığı", ".ag": "Ag rozeti", ".grafik-deger": "grafik değeri"}
+                 "#gun-baslik": "günün başlığı", ".ag": "Ag rozeti", ".grafik-deger": "grafik değeri",
+                 ".gun-ici-oge": "gün içi en düşük / en yüksek"}
 
 
 def goril_alanlari(veri, tur, ornek=False):
