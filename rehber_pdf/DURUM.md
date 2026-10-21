@@ -54,6 +54,10 @@ durumla karşılaştırır; uyuşmazlık hatadır. Yazım kuralları: `YAZIM.md`
 | 32 | Spot fiyat ve vadeli fiyat ne demek? | 12 Mayıs 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
 | 33 | Fiziki ve fiziki olmayan gümüş farkı nedir? | 19 Mayıs 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
 | 34 | Dünyadaki gümüş nerede duruyor? | 26 Mayıs 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
+| 35 | Gümüş verileri nereden gelir? | 2 Haziran 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
+| 36 | 1980'de gümüş piyasasında ne oldu? | 9 Haziran 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
+| 37 | Gümüş haberlerini okurken nelere dikkat etmeli? | 16 Haziran 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
+| 38 | Gümüş sözlüğü: hangi terim ne demek? | 23 Haziran 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
 
 ## Ekler
 

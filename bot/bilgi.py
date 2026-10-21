@@ -1676,6 +1676,270 @@ BOLUMLER = [
             }
         ]
     },
+    # #35 — rehber ön paketi parti 6 (Rıdvan, 20 Ekim 2026; iki kontrol Claude'da)
+    {
+        "baslik": "Gümüş verileri nereden gelir?",
+        "alt": "Rakamın kaynağı, tarihi ve birimi.",
+        "buyuk": "Nisan",
+        "buyuk_alt": "Dünya Gümüş Araştırması'nın son yıllarda çıktığı ay",
+        "hashtag": "#gümüş #gümüşfiyatları #değerlimetaller #emtia #silver",
+        "soru": "Bir gümüş rakamı gördüğünüzde kaynağına ve tarihine bakar mısınız?",
+        "sayfalar": [
+            {
+                "baslik": "Kim yayımlar?",
+                "maddeler": [
+                    "Rehberdeki dünya arz ve talep rakamları, Silver Institute'un yıllık Dünya Gümüş Araştırması'ndan gelir. Rapor son yıllarda nisan ortasında çıktı.",
+                    "Ülke ülke maden üretimi ve rezerv için ABD Jeoloji Araştırmaları Kurumu'nun (USGS) yıllık özeti var; her yıl başında çıkar.",
+                    "Türkiye'de maden ruhsatı sahipleri yıllık üretimlerini Maden ve Petrol İşleri Genel Müdürlüğü'ne bildirir; dış ticaret rakamlarını TÜİK yayımlar."
+                ],
+                "kaynak": "Kaynak: The Silver Institute, World Silver Survey; USGS Mineral Commodity Summaries; Maden Yönetmeliği (2022); TÜİK"
+            },
+            {
+                "baslik": "Londra ve borsalar",
+                "tablo": [
+                    [
+                        "LBMA fiyatı",
+                        "her iş günü"
+                    ],
+                    [
+                        "Londra kasaları",
+                        "her ay"
+                    ],
+                    [
+                        "COMEX depoları",
+                        "her iş günü"
+                    ],
+                    [
+                        "CFTC raporu",
+                        "her hafta"
+                    ]
+                ],
+                "maddeler": [
+                    "LBMA fiyatı her iş günü öğlen belirlenir; Londra kasa rakamı ayın beşinci iş günü çıkar. CME'nin günlük depo raporu bir önceki günü gösterir.",
+                    "ABD Emtia Vadeli İşlemler Komisyonu (CFTC), vadeli piyasadaki büyük işlemcilerin salı günkü pozisyonlarını cuma yayımlar."
+                ],
+                "kaynak": "Kaynak: LBMA; CME Group; ABD Emtia Vadeli İşlemler Komisyonu (CFTC)"
+            },
+            {
+                "baslik": "Bir rakamı okurken",
+                "maddeler": [
+                    "Hangi tarihe ait? Dünya Gümüş Araştırması'nın 2026 baskısı 2025'in rakamlarını verir. Aylık kasa rakamı bir önceki ayın sonuna aittir.",
+                    "Ölçüm mü, tahmin mi? Kasa ve depo rakamları bildirilen miktarlardır. Yılın arz ve talep rakamı önce tahmin edilir, sonraki raporlarda değişebilir.",
+                    "Birimi ne? Bir milyon ons ~31,1 ton eder. Karşılaştırmadan önce aynı birime çevirin; iki kurumun rakamını aynı tabloda karıştırmayın."
+                ],
+                "kaynak": "Kaynak: The Silver Institute (Kasım 2025, Nisan 2026); LBMA kasa verisi; USGS"
+            }
+        ]
+    },
+    # #36 — rehber ön paketi parti 6 (Rıdvan, 20 Ekim 2026; iki kontrol Claude'da)
+    {
+        "baslik": "1980'de gümüş piyasasında ne oldu?",
+        "alt": "Hunt kardeşler, borsanın önlemleri ve “Gümüş Perşembe”.",
+        "buyuk": "27 Mart",
+        "buyuk_alt": "Gümüş Perşembe: ons New York'ta 10,80 dolara indi",
+        "hashtag": "#gümüş #gümüşfiyatları #emtia #değerlimetaller #silver",
+        "soru": "“Gümüş Perşembe”yi daha önce duymuş muydunuz? Yorumlara yazın.",
+        "sayfalar": [
+            {
+                "baslik": "Fiyat nasıl yükselip düştü?",
+                "tablo": [
+                    [
+                        "1979 başı",
+                        "~6 $"
+                    ],
+                    [
+                        "18 Ocak 1980",
+                        "49,45 $"
+                    ],
+                    [
+                        "27 Mart 1980",
+                        "10,80 $"
+                    ]
+                ],
+                "maddeler": [
+                    "Hunt kardeşler 1979'da hem fiziki gümüş hem vadeli sözleşme biriktirdi; sözleşmelerin bir kısmında gümüşü teslim aldılar.",
+                    "Resmî bir rapora göre 1979 sonunda kardeşler ve ortakları ~195 milyon ons gümüşü kontrol ediyordu; kabaca yarısı vadeliydi.",
+                    "Rakamlar nominaldir. Ocak zirvesi Londra referans fiyatı, 27 Mart rakamı New York fiyatıdır."
+                ],
+                "kaynak": "Kaynak: ABD SEC (1982); Britannica; Londra fiyat kayıtları"
+            },
+            {
+                "baslik": "Borsa ve düzenleyiciler ne yaptı?",
+                "tablo": [
+                    [
+                        "7 Ocak 1980",
+                        "pozisyon sınırı"
+                    ],
+                    [
+                        "21 Ocak 1980",
+                        "yalnız kapatma"
+                    ],
+                    [
+                        "4 Şubat 1980",
+                        "teminat artışı"
+                    ]
+                ],
+                "maddeler": [
+                    "New York'taki COMEX, 1979 sonbaharından itibaren teminatları defalarca artırdı ve pozisyon sınırı koydu.",
+                    "21 Ocak'tan sonra yalnız var olan pozisyonlar kapatılabildi. Fiyat ertesi gün ~34 dolara indi.",
+                    "Teminat, karşı tarafın ödememe riskine karşı yatırılan paradır; fiyat aleyhe dönünce ek teminat istenir."
+                ],
+                "kaynak": "Kaynak: ABD SEC (1982); CFTC; New York federal mahkemesi (1988)"
+            },
+            {
+                "baslik": "Gümüş Perşembe ve sonrası",
+                "maddeler": [
+                    "Hunt'lar 26 Mart 1980'de teminat ödemelerini durdurduklarını bildirdi. Ertesi gün ons New York'ta 10,80 dolara indi: Gümüş Perşembe.",
+                    "Bankalar Hunt ailesinin petrol şirketine 1,1 milyar dolar kredi açtı. 1981'de borsalara pozisyon sınırı zorunlu oldu.",
+                    "1988'de bir hukuk davasında jüri, üç Hunt kardeşi piyasayı köşeye sıkıştırmak için anlaşmaktan sorumlu buldu. Hunt'lar iddiayı reddetmişti."
+                ],
+                "kaynak": "Kaynak: ABD SEC (1982); CFTC; Temsilciler Meclisi (1980); haber arşivleri (1988)"
+            }
+        ]
+    },
+    # #37 — rehber ön paketi parti 6 (Rıdvan, 20 Ekim 2026; iki kontrol Claude'da)
+    {
+        "baslik": "Gümüş haberlerini okurken nelere dikkat etmeli?",
+        "alt": "Kaynak, birim, fiyat türü, yüzde ve rekor sözü.",
+        "buyuk": "5 soru",
+        "buyuk_alt": "her gümüş haberine sorulacak",
+        "hashtag": "#gümüş #gümüşfiyatları #değerlimetaller #emtia #silver",
+        "soru": "Bir gümüş haberinde en çok neye takılıyorsunuz: birime mi, yüzdeye mi, rekor sözüne mi?",
+        "sayfalar": [
+            {
+                "baslik": "Hangi birim? Örnek rakamlarla",
+                "tablo": [
+                    [
+                        "1 ons, dolar",
+                        "60,00 $"
+                    ],
+                    [
+                        "1 gram, lira",
+                        "77,16 ₺"
+                    ],
+                    [
+                        "1 kilo, lira",
+                        "77.162 ₺"
+                    ]
+                ],
+                "maddeler": [
+                    "Örnek rakamlar, güncel fiyat değil: ons 60 dolar, kur 40 lira kabul edildi. Üçü aynı anda aynı gümüşün fiyatıdır. Birimi yazmayan fiyat eksiktir.",
+                    "Rakamı kim yayımladı: ölçen kurum mu, onu aktaran bir haber mi? Aktarmada rakam yuvarlanabilir, eskiyebilir ya da yanlış çevrilebilir."
+                ],
+                "kaynak": "Örnek rakamlar; güncel fiyat değildir."
+            },
+            {
+                "baslik": "Hangi fiyat, neye göre?",
+                "maddeler": [
+                    "Spot, vadeli ve Londra referans fiyatı aynı anda farklı olabilir; gün içi en yüksek fiyat ile kapanış da öyle. Haberde hangisi var, bakın.",
+                    "TÜİK'e göre tüketici fiyatları Nisan 2022'de bir ayda %7,25, bir yılda %69,97 arttı. Aynı endeks, iki ayrı yüzde: hangi tarihe göre, sorun.",
+                    "Faiz %40'tan %45'e çıkarsa artış 5 yüzde puandır; yüzde olarak ise %12,5'tir. Örnek rakamlar."
+                ],
+                "kaynak": "Kaynak: TÜİK Tüketici Fiyat Endeksi bülteni (Nisan 2022); Birleşik Krallık Ulusal İstatistik Ofisi (ONS)"
+            },
+            {
+                "baslik": "Rekor ve tahmin",
+                "maddeler": [
+                    "Lirada rekor, dolarda rekor demek değildir: lira değer kaybederken gram gümüş rekor kırabilir, ons ise zirvesinin altında kalabilir.",
+                    "Enflasyonu da sorun: Ocak 2026'daki yaklaşık 121,6 dolarlık rekor, 1980 zirvesinin enflasyona göre düzeltilmiş hâlinin altında kaldı.",
+                    "“Beklenti” ve analist tahmini ölçüm değil, görüştür. Ocak 2026'da analistlerin o yıl için öngördüğü fiyatlar 42 ile 165 dolar arasındaydı."
+                ],
+                "kaynak": "Kaynak: LBMA tahmin anketi (Ocak 2026); ABD tüketici fiyat endeksiyle düzeltilmiş fiyat hesapları (2026)"
+            }
+        ]
+    },
+    # #38 — rehber ön paketi parti 6 (Rıdvan, 20 Ekim 2026; iki kontrol Claude'da)
+    {
+        "baslik": "Gümüş sözlüğü: hangi terim ne demek?",
+        "alt": "Rehberden 12 terim ve her birinin anlatıldığı bölüm.",
+        "buyuk": "12 terim",
+        "buyuk_alt": "ve her birinin anlatıldığı rehber bölümü",
+        "hashtag": "#gümüş #gramgümüş #külçegümüş #değerlimetaller #gumus",
+        "soru": "Bu terimlerden hangisini ilk kez duydunuz? Yorumlara yazın.",
+        "sayfalar": [
+            {
+                "baslik": "Ölçü ve oran",
+                "tablo": [
+                    [
+                        "Troy ons",
+                        "Bölüm 1"
+                    ],
+                    [
+                        "Gram gümüş",
+                        "Bölüm 2"
+                    ],
+                    [
+                        "Milyem",
+                        "Bölüm 3"
+                    ],
+                    [
+                        "Parite",
+                        "Bölüm 4"
+                    ]
+                ],
+                "maddeler": [
+                    "Troy ons, değerli metallerin ağırlık birimidir: 31,1035 gram. Gram gümüş fiyatı için ons fiyatı kurla liraya çevrilir ve bu sayıya bölünür.",
+                    "Milyem, saflığın binde yazılışıdır: külçedeki 999, binde 999 saf gümüş demektir.",
+                    "Parite, bir ons altının kaç ons gümüş ettiğini gösterir; gümüşün fiyatını değil, altına göre durumunu anlatır."
+                ],
+                "kaynak": "Kaynak: Gümüş rehberi 1–4 ve kaynakları"
+            },
+            {
+                "baslik": "Alım satımda",
+                "tablo": [
+                    [
+                        "Gösterge fiyat",
+                        "Bölüm 6"
+                    ],
+                    [
+                        "Makas",
+                        "Bölüm 6"
+                    ],
+                    [
+                        "Prim",
+                        "Bölüm 11"
+                    ],
+                    [
+                        "Külçe sikke",
+                        "Bölüm 21"
+                    ]
+                ],
+                "maddeler": [
+                    "Gösterge fiyat tek bir orta değerdir, alış ya da satış fiyatı değildir. Alış ile satış fiyatı arasındaki farka makas denir.",
+                    "Prim, bir külçenin ya da sikkenin satış fiyatıyla içindeki saf gümüşün gösterge değeri arasındaki farktır.",
+                    "Külçe sikkeyi resmî darphaneler basar ve değeri çoğunlukla içindeki gümüşten gelir; üzerindeki nominal değer büyük ölçüde semboliktir."
+                ],
+                "kaynak": "Kaynak: Gümüş rehberi 6, 11, 21 ve kaynakları"
+            },
+            {
+                "baslik": "Maden, tarih ve piyasa",
+                "tablo": [
+                    [
+                        "Yan ürün",
+                        "Bölüm 8"
+                    ],
+                    [
+                        "Tağşiş",
+                        "Bölüm 13"
+                    ],
+                    [
+                        "Spot fiyat",
+                        "Bölüm 32"
+                    ],
+                    [
+                        "Vadeli fiyat",
+                        "Bölüm 32"
+                    ]
+                ],
+                "maddeler": [
+                    "Yan ürün gümüş, asıl amacı kurşun-çinko, bakır ya da altın olan madenlerden çıkar.",
+                    "Tağşiş, sikkenin üzerindeki değer aynı kalırken içindeki gümüşün azaltılmasıdır. Osmanlı akçesinde de yapıldı.",
+                    "Spot fiyat hemen teslimin fiyatıdır; Londra'da “hemen”, iki iş günü sonra demektir. Vadeli fiyat ileri bir tarihteki teslimin fiyatıdır."
+                ],
+                "kaynak": "Kaynak: Gümüş rehberi 8, 13, 32; Borsa İstanbul VİOP Terimler Sözlüğü; TDV İslâm Ansiklopedisi"
+            }
+        ]
+    },
 ]
 
 
