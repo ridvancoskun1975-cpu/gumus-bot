@@ -87,6 +87,12 @@
   ve site tanıtım Reels'inde tanıtılır: rehber Reels'inin site kartı ve okuması, sitenin tanıtım kartı ve özet/rehber
   açıklamalarındaki site satırı için Rıdvan 19 Ekim 2026'da "gerek yok" dedi ("her yere kitap yazmak bana biraz garip
   geldi"; 22:44 "karar değiştirdim"); ekleme, Aralık geri sayımı da önerme.
+  - **Kitabın tanıtım dili kapsamla birlikte büyür** (Rıdvan, 21 Ekim 2026: "Şimdilik en kapsamlı demeyelim. Ama kapsam
+    genişlettikçe kitabın kalitesine uygun bir şeyler seçmeliyiz."): "en kapsamlı", "tek", "en iyi" gibi kanıtlanamayan
+    üstünlük iddiası yazılmaz. Tanıtım doğrulanabilir özelliklere dayanır: bölüm sayısı, her rakamın iki bağımsız
+    kaynaktan doğrulanması, kaynakların kitapta yazılı olması, ücretsiz ve her yıl büyümesi. Her yeni baskının
+    önizlemesiyle (25 Aralık) birlikte o baskıya uygun 2–3 tanıtım metni önerisi sunulur; site ve tanıtım Reels'i
+    metni yalnız önizleme ve Rıdvan'ın onayıyla değişir.
   - **Kitabın tek takip yeri `rehber_pdf/DURUM.md`** (Rıdvan, 20 Ekim 2026): her bölüm ve ek için Instagram tarihi,
     uzun metin durumu (yok / yazılıyor · dal / önizlemede · dal / onaylandı), kontrol (kaynak · denetle) ve baskı yılı.
     Kitaba dokunan her iş (sohbetler, aylık rehber paketi, 25 Aralık baskı önizlemesi) işe başlamadan DURUM.md'yi okur
