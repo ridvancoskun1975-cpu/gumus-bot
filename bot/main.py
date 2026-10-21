@@ -747,7 +747,8 @@ def parite_cumlesi(d, zaman):
 def gorsel_parite_cumlesi(veri, tur):
     """Parite cümlesi bütün fiyat görsellerinde. 16 Ekim 2026'dan 21 Ekim 2026'ya kadar sabah Reels'inde cümle yoktu
     ("bugün" bütün günü kapsar, sabah erken), tanım satırı ("1 ons altın kaç ons gümüş eder") vardı; sabah artık
-    "Gümüş güne altına karşı …" der (veri_hazirla). Cümle yoksa şablon tanım satırına düşer."""
+    "Gümüş güne altına karşı …" der (veri_hazirla; Rıdvan, 21 Ekim 2026: "1nci öneriyi uygula", "Tamam").
+    Cümle yoksa şablon tanım satırına düşer."""
     return veri.get("parite_cumle")
 
 
