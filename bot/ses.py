@@ -132,7 +132,7 @@ OKUMA = {
          "Bu yüzden bazı yara örtülerinde ve kateter kaplamalarında bulunur; ağızdan alınan gümüş ise deride genellikle kalıcı bir renk değişikliği yapabilir."),
     24: ("Fotoğraf filmi gümüşle nasıl çalışır?",
          "Kısa cevap: ışığa duyarlı gümüş tuzlarıyla. Işık bu tuzlarda gizli bir görüntü bırakır; banyo onu siyah metal gümüşe çevirir.",
-         "Bin sekiz yüz otuz dokuzda duyurulan dagerotip de gümüş kaplı bir bakır levhaydı."),
+         "Bin sekiz yüz otuz dokuzda duyurulan dagerotipte görüntü, gümüş kaplı bir bakır levhada oluşurdu."),
     25: ("Güneş paneli ve elektrikli araç neden gümüş ister?",
          "Kısa cevap: iletkenlik. Bir otomobilde yüz elli ile iki yüz elli elektrik kontağı olabilir, çoğu gümüşlüdür.",
          "Güneş hücresinde de elektriği toplayan ince çizgiler, gümüşlü macunla basılır."),

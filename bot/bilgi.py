@@ -1041,8 +1041,8 @@ BOLUMLER = [
                 "baslik": "Gümüş iyonu",
                 "maddeler": [
                     "Gümüş iyonu, bir elektronunu vermiş, artı yüklü gümüş atomudur. Görece düşük miktarlarda bile mikroplara etki eder.",
-                    "Mikropların proteinlerindeki kükürtlü kısımlara sıkıca bağlanıp onları bozar; hücre zarına ve DNA'ya da zarar verebilir.",
-                    "Bu özelliği için bugün bazı yara örtülerinde, idrar sondası gibi kateterlerin kaplamasında ve su filtrelerinde gümüş bulunur."
+                    "Mikropların proteinlerindeki kükürtlü kısımlara sıkıca bağlanıp proteinleri bozar; hücre zarını bozar, DNA'ya da bağlanabilir.",
+                    "Bugün bazı yara örtülerinde, kateter kaplamalarında ve su filtrelerinde gümüş bulunur. Dünya Sağlık Örgütü ise içme suyu için gümüşü önermez."
                 ],
                 "kaynak": "Kaynak: Antibiotics dergisi (2018); ABD CDC (2008); Dünya Sağlık Örgütü (2022)"
             },
@@ -1063,7 +1063,7 @@ BOLUMLER = [
                     ]
                 ],
                 "maddeler": [
-                    "Herodotos, Pers kralının içtiği kaynatılmış suyun seferlerde gümüş kaplarda taşındığını yazar.",
+                    "Herodotos, Pers kralının kaynatılmış suyunun seferlerde gümüş kaplarda taşındığını yazar; gümüşün neden seçildiğini yazmaz.",
                     "Alman hekim Credé'nin yönteminde yenidoğanın gözüne gümüş nitrat damlatılırdı. Antibiyotikler yaygınlaşınca gümüşün yeri daraldı."
                 ],
                 "kaynak": "Kaynak: Herodotos, Tarih; Dünya Sağlık Örgütü Bülteni (2001); Wounds UK (2018)"
@@ -1093,16 +1093,16 @@ BOLUMLER = [
                 "maddeler": [
                     "Filmin ışığa duyarlı katmanında, jelatin içine dağılmış çok küçük gümüş halojenür kristalleri vardır.",
                     "Filmde çoğunlukla gümüş bromür, biraz da gümüş iyodür kullanılır; fotoğraf kâğıtlarında gümüş klorür de bulunur.",
-                    "Işık çarpan kristalde birkaç gümüş atomundan oluşan, gözle görülmeyen bir gizli görüntü oluşur."
+                    "Işık çarpan kristalde birkaç gümüş atomluk, gözle görülmeyen bir iz kalır: gizli görüntü."
                 ],
                 "kaynak": "Kaynak: Britannica; George Eastman Müzesi; MFA CAMEO"
             },
             {
                 "baslik": "Banyo ve sabitleme",
                 "maddeler": [
-                    "Banyo, gizli görüntüyü siyah metal gümüşe çevirir. Işığın çok düştüğü yer koyu çıkar; film bu yüzden negatiftir.",
+                    "Banyo, gizli görüntüyü siyah metal gümüşe çevirir. Işığın çok düştüğü yer koyu çıkar; bu yüzden filmde ilk çıkan görüntü negatiftir.",
                     "Sabitleme, ışık almamış gümüş tuzlarını çözüp temizler; görüntü artık ışıkta bozulmaz.",
-                    "Siyah beyaz filmde görüntünün kendisi gümüştür. Renkli filmde gümüş ağartılıp çıkarılır; geriye boyalar kalır."
+                    "Klasik siyah beyaz filmde görüntünün kendisi gümüştür. Renkli filmde gümüş ağartılıp çıkarılır; geriye boyalar kalır."
                 ],
                 "kaynak": "Kaynak: Britannica; Image Permanence Institute"
             },
@@ -1126,7 +1126,7 @@ BOLUMLER = [
                     "Dagerotip, gümüş kaplı bakır bir levhaydı; negatifi olmadığı için her görüntü tek kopyaydı.",
                     "Röntgen filmleri de gümüş halojenürlüdür. Sabitleme çözeltisinde biriken gümüş toplanıp geri kazanılır."
                 ],
-                "kaynak": "Kaynak: Oxford Bilim Tarihi Müzesi; Image Permanence Institute; Science and Media Museum"
+                "kaynak": "Kaynak: Oxford Bilim Tarihi Müzesi; Image Permanence Institute; Science and Media Museum; Radiopaedia"
             }
         ]
     },
@@ -1167,16 +1167,16 @@ BOLUMLER = [
                 "maddeler": [
                     "Bunlar 2025'te watt başına ortalama gümüştür. TOPCon ve heterojonksiyonda iki yüze de gümüş basılır.",
                     "Hücre başına gümüş 2007'de ~400 miligramdan 2016'da ~130 miligrama indi: daha ince çizgiler, daha az macun.",
-                    "Gümüş kaplı bakır macun heterojonksiyonda yayılıyor; bazı büyük üreticiler 2026'da bakır içeren macunla seri üretim planlıyor."
+                    "Gümüş kaplı bakır macun heterojonksiyonda yayılıyor; büyük üreticiler 2025 sonu ve 2026 başında bakırlı seri üretim planı açıkladı."
                 ],
                 "kaynak": "Kaynak: ITRPV 2026 (17. baskı); CRU / The Silver Institute (2018); pv magazine (Ocak 2026)"
             },
             {
                 "baslik": "Elektrikli araçta gümüş",
                 "maddeler": [
-                    "Bir otomobilde 150–250 elektrik kontağı olabilir; çoğu gümüşlüdür: anahtar, röle, sigorta ve bağlantılar.",
-                    "Elektrikli araçta batarya yönetim sistemi ile şarj istasyonlarındaki röle ve bağlantılar da gümüş kullanır.",
-                    "Aralık 2025 tahminine göre elektrikli araçların, 2027'de araçlardaki gümüş talebinde içten yanmalı araçları geçmesi bekleniyor."
+                    "2021 tahminine göre bir otomobilde 150–250 elektrik kontağı olabilir; çoğu gümüşlüdür: anahtar, röle, sigorta ve bağlantılar.",
+                    "Elektrikli araçlarda batarya yönetim sistemi, şarj istasyonlarında da röle ve bağlantılar gümüş kullanır.",
+                    "Aralık 2025 tahminine göre elektrikli araçların 2027'de araçlardaki gümüş talebinde içten yanmalı araçları geçmesi bekleniyor."
                 ],
                 "kaynak": "Kaynak: The Silver Institute (Ocak 2021; Aralık 2025, Oxford Economics)"
             }
@@ -1192,7 +1192,7 @@ BOLUMLER = [
         "soru": "Adında gümüş geçen başka bir yer biliyor musunuz? Yorumlara yazın.",
         "sayfalar": [
             {
-                "baslik": "Gümüş + hâne",
+                "baslik": "Gümüş ve hâne",
                 "maddeler": [
                     "Ad, gümüş ile Farsçadan gelen hâne kelimesinden oluşur. Hâne birleşik kelimelerde “bina, yer” anlamı taşır; ad kabaca “gümüş yeri” demektir.",
                     "Şehir adını yakınındaki gümüş madenlerinden alır. Buradaki cevher gümüşlü kurşundu.",
@@ -1213,7 +1213,7 @@ BOLUMLER = [
                 "baslik": "Madenler neden kapandı?",
                 "tablo": [
                     [
-                        "1757–1774",
+                        "Üçüncü Mustafa dönemi",
                         "su baskını"
                     ],
                     [
@@ -1230,7 +1230,7 @@ BOLUMLER = [
                     ]
                 ],
                 "maddeler": [
-                    "Su dolan ocaklar çalıştırılamadı; ormanlar tükenince yakıt da azaldı. Son deneme, gelir masrafı karşılamayınca bitti.",
+                    "Üçüncü Mustafa döneminde su dolan ocaklar çalıştırılamadı; ormanlar tükenince yakıt da azaldı. Son deneme, gelir masrafı karşılamayınca bitti.",
                     "Türkiye'de bugün gümüşün nereden çıktığı ise ayrı bir bölümün konusu."
                 ],
                 "kaynak": "Kaynak: TDV İslâm Ansiklopedisi; Britannica; MTA Dergisi"
