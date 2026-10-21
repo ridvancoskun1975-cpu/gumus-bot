@@ -6,4 +6,3 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
-| 2026-10-21 20:25 | Site takvimi: akşam özetindeki "bazı günler hikâyesiz" notu günleri yazsın (Rıdvan, 21 Ekim: "1") | bot/program.py, bot/test_program.py | site-hikayesiz-gunler · önizlemede |
