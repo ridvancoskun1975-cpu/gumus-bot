@@ -342,7 +342,7 @@ BOLUMLER = [
             {
                 "baslik": "Sağlık, takı ve külçe",
                 "maddeler": [
-                    "Gümüş iyonları mikrop öldürücü olduğu için bazı yara örtülerinde ve tıbbi "
+                    "Gümüş iyonları mikroplara etki ettiği için bazı yara örtülerinde ve tıbbi "
                     "malzemelerde kullanılır.",
                     "Takı, gümüş eşya, madeni para ve külçe talebin diğer büyük kısmını oluşturur.",
                     "Bir zamanlar en büyük kullanım alanlarından biri film fotoğrafçılığıydı.",
