@@ -42,6 +42,10 @@ durumla karşılaştırır; uyuşmazlık hatadır. Yazım kuralları: `YAZIM.md`
 | 20 | Gümüş nasıl saflaştırılır? | 17 Şubat 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
 | 21 | Külçe sikke nedir? | 24 Şubat 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
 | 22 | Koleksiyon değeri ile metal değeri farkı nedir? | 3 Mart 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
+| 23 | Gümüş tıpta neden kullanılır? | 10 Mart 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
+| 24 | Fotoğraf filmi gümüşle nasıl çalışır? | 17 Mart 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
+| 25 | Güneş paneli ve elektrikli araç neden gümüş ister? | 24 Mart 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
+| 26 | Gümüşhane adını nereden alır? | 31 Mart 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
 
 ## Ekler
 

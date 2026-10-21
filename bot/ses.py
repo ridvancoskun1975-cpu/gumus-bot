@@ -127,6 +127,18 @@ OKUMA = {
     22: ("Koleksiyon değeri ile metal değeri farkı nedir?",
          "Kısa cevap: metal değeri sikkenin içindeki saf gümüşten gelir; koleksiyon değerini ise nadirlik, kondisyon, talep ve tarihî önem belirler.",
          "Kondisyon, Sheldon ölçeğiyle birden yetmişe kadar puanlanabilir."),
+    23: ("Gümüş tıpta neden kullanılır?",
+         "Kısa cevap: gümüş iyonu, mikropların proteinlerine bağlanıp onları bozar.",
+         "Bu yüzden bazı yara örtülerinde ve kateter kaplamalarında bulunur; ağızdan alınan gümüş ise deride genellikle kalıcı bir renk değişikliği yapabilir."),
+    24: ("Fotoğraf filmi gümüşle nasıl çalışır?",
+         "Kısa cevap: ışığa duyarlı gümüş tuzlarıyla. Işık bu tuzlarda gizli bir görüntü bırakır; banyo onu siyah metal gümüşe çevirir.",
+         "Bin sekiz yüz otuz dokuzda duyurulan dagerotipte görüntü, gümüş kaplı bir bakır levhada oluşurdu."),
+    25: ("Güneş paneli ve elektrikli araç neden gümüş ister?",
+         "Kısa cevap: iletkenlik. Bir otomobilde yüz elli ile iki yüz elli elektrik kontağı olabilir, çoğu gümüşlüdür.",
+         "Güneş hücresinde de elektriği toplayan ince çizgiler, gümüşlü macunla basılır."),
+    26: ("Gümüşhane adını nereden alır?",
+         "Kısa cevap: yakınındaki gümüş madenlerinden. Gümüşhane, kabaca gümüş yeri demektir.",
+         "Türk kaynaklarındaki eski adı Canca; Yunanca kökenli Argyropolis adı da gümüş şehri anlamına gelir."),
 }
 
 
