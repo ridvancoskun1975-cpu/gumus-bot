@@ -1028,6 +1028,215 @@ BOLUMLER = [
             }
         ]
     },
+    # #23 — rehber ön paketi parti 3 (Rıdvan, 20 Ekim 2026; iki kontrol Claude'da)
+    {
+        "baslik": "Gümüş tıpta neden kullanılır?",
+        "alt": "Gümüş iyonu, tarihteki izleri ve resmî uyarılar.",
+        "buyuk": "iyon",
+        "buyuk_alt": "gümüşün mikroplara etki eden hâli",
+        "hashtag": "#gümüş #değerlimetaller #emtia #gumus #silver",
+        "soru": "Gümüşlü bir yara örtüsü ya da su filtresi hiç gördünüz mü?",
+        "sayfalar": [
+            {
+                "baslik": "Gümüş iyonu",
+                "maddeler": [
+                    "Gümüş iyonu, bir elektronunu vermiş, artı yüklü gümüş atomudur. Görece düşük miktarlarda bile mikroplara etki eder.",
+                    "Mikropların proteinlerindeki kükürtlü kısımlara sıkıca bağlanıp onları bozar; hücre zarına ve DNA'ya da zarar verebilir.",
+                    "Bu özelliği için bugün bazı yara örtülerinde, idrar sondası gibi kateterlerin kaplamasında ve su filtrelerinde gümüş bulunur."
+                ],
+                "kaynak": "Kaynak: Antibiotics dergisi (2018); ABD CDC (2008); Dünya Sağlık Örgütü (2022)"
+            },
+            {
+                "baslik": "Tarihte gümüş",
+                "tablo": [
+                    [
+                        "Gümüş kaplarda su",
+                        "Antik Çağ"
+                    ],
+                    [
+                        "Yenidoğana göz damlası",
+                        "1881"
+                    ],
+                    [
+                        "Gümüşlü yanık kremi",
+                        "1968"
+                    ]
+                ],
+                "maddeler": [
+                    "Herodotos, Pers kralının içtiği kaynatılmış suyun seferlerde gümüş kaplarda taşındığını yazar.",
+                    "Alman hekim Credé'nin yönteminde yenidoğanın gözüne gümüş nitrat damlatılırdı. Antibiyotikler yaygınlaşınca gümüşün yeri daraldı."
+                ],
+                "kaynak": "Kaynak: Herodotos, Tarih; Dünya Sağlık Örgütü Bülteni (2001); Wounds UK (2018)"
+            },
+            {
+                "baslik": "Sınırlar ve uyarılar",
+                "maddeler": [
+                    "Ağızdan alınan gümüş dokularda birikip deriyi gri-maviye boyayabilir. Arjiri denen bu renk değişikliği genellikle kalıcıdır.",
+                    "ABD'de FDA, 1999'da reçetesiz kolloidal gümüş ürünlerinin güvenli ve etkili sayılmadığına karar verdi.",
+                    "Bu bölüm tıbbi öneri değildir; sağlık ürünlerinin kullanımı için hekiminize danışın."
+                ],
+                "kaynak": "Kaynak: ABD FDA (1999); ABD NCCIH (2023); StatPearls"
+            }
+        ]
+    },
+    # #24 — rehber ön paketi parti 3 (Rıdvan, 20 Ekim 2026; iki kontrol Claude'da)
+    {
+        "baslik": "Fotoğraf filmi gümüşle nasıl çalışır?",
+        "alt": "Işığa duyarlı gümüş tuzlarından dagerotipe ve röntgene.",
+        "buyuk": "1839",
+        "buyuk_alt": "Daguerre'in gümüş kaplı levhasının duyurulduğu yıl",
+        "hashtag": "#gümüş #değerlimetaller #emtia #gumus #silver",
+        "soru": "Siz en son ne zaman filmli bir makineyle fotoğraf çektiniz?",
+        "sayfalar": [
+            {
+                "baslik": "Işığa duyarlı gümüş tuzları",
+                "maddeler": [
+                    "Filmin ışığa duyarlı katmanında, jelatin içine dağılmış çok küçük gümüş halojenür kristalleri vardır.",
+                    "Filmde çoğunlukla gümüş bromür, biraz da gümüş iyodür kullanılır; fotoğraf kâğıtlarında gümüş klorür de bulunur.",
+                    "Işık çarpan kristalde birkaç gümüş atomundan oluşan, gözle görülmeyen bir gizli görüntü oluşur."
+                ],
+                "kaynak": "Kaynak: Britannica; George Eastman Müzesi; MFA CAMEO"
+            },
+            {
+                "baslik": "Banyo ve sabitleme",
+                "maddeler": [
+                    "Banyo, gizli görüntüyü siyah metal gümüşe çevirir. Işığın çok düştüğü yer koyu çıkar; film bu yüzden negatiftir.",
+                    "Sabitleme, ışık almamış gümüş tuzlarını çözüp temizler; görüntü artık ışıkta bozulmaz.",
+                    "Siyah beyaz filmde görüntünün kendisi gümüştür. Renkli filmde gümüş ağartılıp çıkarılır; geriye boyalar kalır."
+                ],
+                "kaynak": "Kaynak: Britannica; Image Permanence Institute"
+            },
+            {
+                "baslik": "Dagerotipten röntgene",
+                "tablo": [
+                    [
+                        "Dagerotip",
+                        "1839"
+                    ],
+                    [
+                        "Jelatinli kuru plak",
+                        "1870'ler"
+                    ],
+                    [
+                        "Saydam rulo film",
+                        "1889"
+                    ]
+                ],
+                "maddeler": [
+                    "Dagerotip, gümüş kaplı bakır bir levhaydı; negatifi olmadığı için her görüntü tek kopyaydı.",
+                    "Röntgen filmleri de gümüş halojenürlüdür. Sabitleme çözeltisinde biriken gümüş toplanıp geri kazanılır."
+                ],
+                "kaynak": "Kaynak: Oxford Bilim Tarihi Müzesi; Image Permanence Institute; Science and Media Museum"
+            }
+        ]
+    },
+    # #25 — rehber ön paketi parti 3 (Rıdvan, 20 Ekim 2026; iki kontrol Claude'da)
+    {
+        "baslik": "Güneş paneli ve elektrikli araç neden gümüş ister?",
+        "alt": "Hücredeki ince çizgiler, araçtaki kontaklar ve bakıra geçiş.",
+        "buyuk": "150–250",
+        "buyuk_alt": "bir otomobildeki elektrik kontağı (tahmin); çoğu gümüşlü",
+        "hashtag": "#gümüş #değerlimetaller #emtia #gumus #silver",
+        "soru": "Güneş panelinin üstündeki ince çizgileri hiç fark ettiniz mi?",
+        "sayfalar": [
+            {
+                "baslik": "Güneş hücresinde neden gümüş?",
+                "maddeler": [
+                    "Hücredeki ince gümüş çizgiler, ışıkla oluşan elektriği toplar. Gümüşlü macun hücreye basılır ve fırında pişirilir.",
+                    "Gümüş elektriği en iyi ileten metaldir; bakırın direnci ~%6 fazladır. Hücreleri bağlayan şeritler de gümüşe lehimlenir.",
+                    "Bakır ucuzdur, ama fırında oksitlenir ve silisyuma sızarak hücreye zarar verebilir. Bu yüzden gümüşün yerine kolayca geçemez."
+                ],
+                "kaynak": "Kaynak: NREL ve DuraMAT (2024); ISFH (2025); özdirenç tabloları (HyperPhysics)"
+            },
+            {
+                "baslik": "Hücre türü ve bakıra geçiş",
+                "tablo": [
+                    [
+                        "PERC",
+                        "TOPCon'dan az"
+                    ],
+                    [
+                        "TOPCon",
+                        "~10 miligram"
+                    ],
+                    [
+                        "Heterojonksiyon",
+                        "~12 miligram"
+                    ]
+                ],
+                "maddeler": [
+                    "Bunlar 2025'te watt başına ortalama gümüştür. TOPCon ve heterojonksiyonda iki yüze de gümüş basılır.",
+                    "Hücre başına gümüş 2007'de ~400 miligramdan 2016'da ~130 miligrama indi: daha ince çizgiler, daha az macun.",
+                    "Gümüş kaplı bakır macun heterojonksiyonda yayılıyor; bazı büyük üreticiler 2026'da bakır içeren macunla seri üretim planlıyor."
+                ],
+                "kaynak": "Kaynak: ITRPV 2026 (17. baskı); CRU / The Silver Institute (2018); pv magazine (Ocak 2026)"
+            },
+            {
+                "baslik": "Elektrikli araçta gümüş",
+                "maddeler": [
+                    "Bir otomobilde 150–250 elektrik kontağı olabilir; çoğu gümüşlüdür: anahtar, röle, sigorta ve bağlantılar.",
+                    "Elektrikli araçta batarya yönetim sistemi ile şarj istasyonlarındaki röle ve bağlantılar da gümüş kullanır.",
+                    "Aralık 2025 tahminine göre elektrikli araçların, 2027'de araçlardaki gümüş talebinde içten yanmalı araçları geçmesi bekleniyor."
+                ],
+                "kaynak": "Kaynak: The Silver Institute (Ocak 2021; Aralık 2025, Oxford Economics)"
+            }
+        ]
+    },
+    # #26 — rehber ön paketi parti 3 (Rıdvan, 20 Ekim 2026; iki kontrol Claude'da)
+    {
+        "baslik": "Gümüşhane adını nereden alır?",
+        "alt": "Bir şehrin adındaki gümüş: madenler, darphane ve gerileme.",
+        "buyuk": "gümüş yeri",
+        "buyuk_alt": "adı, yakınındaki gümüş madenlerinden gelir",
+        "hashtag": "#gümüş #değerlimetaller #külçegümüş #gumus #silver",
+        "soru": "Adında gümüş geçen başka bir yer biliyor musunuz? Yorumlara yazın.",
+        "sayfalar": [
+            {
+                "baslik": "Gümüş + hâne",
+                "maddeler": [
+                    "Ad, gümüş ile Farsçadan gelen hâne kelimesinden oluşur. Hâne birleşik kelimelerde “bina, yer” anlamı taşır; ad kabaca “gümüş yeri” demektir.",
+                    "Şehir adını yakınındaki gümüş madenlerinden alır. Buradaki cevher gümüşlü kurşundu.",
+                    "Türk kaynaklarındaki eski adı Canca'dır. Yunanca kökenli Argyropolis adı da “gümüş şehri” anlamına gelir."
+                ],
+                "kaynak": "Kaynak: TDV İslâm Ansiklopedisi; TDK; Britannica"
+            },
+            {
+                "baslik": "Osmanlı'da ocaklar ve darphane",
+                "maddeler": [
+                    "Osmanlı döneminde burada gümüş sikke basıldı. Evliya Çelebi, üzerinde “Canca” yazan akçeler gördüğünü yazar.",
+                    "Evliya Çelebi 1647'de yörede bir kısmı kapalı, bir kısmı işleyen yetmiş kadar gümüş ocağı saydı.",
+                    "1700'lerin ikinci yarısında Keban, Ergani ve Gümüşhane, Osmanlı darphanesine maden gümüşü veren başlıca ocaklardı."
+                ],
+                "kaynak": "Kaynak: TDV İslâm Ansiklopedisi; İstanbul Üniversitesi Tarih Dergisi (2022)"
+            },
+            {
+                "baslik": "Madenler neden kapandı?",
+                "tablo": [
+                    [
+                        "1757–1774",
+                        "su baskını"
+                    ],
+                    [
+                        "1829",
+                        "savaş ve göç"
+                    ],
+                    [
+                        "1800'lerin ortası",
+                        "işletme durdu"
+                    ],
+                    [
+                        "1883–1888",
+                        "son deneme"
+                    ]
+                ],
+                "maddeler": [
+                    "Su dolan ocaklar çalıştırılamadı; ormanlar tükenince yakıt da azaldı. Son deneme, gelir masrafı karşılamayınca bitti.",
+                    "Türkiye'de bugün gümüşün nereden çıktığı ise ayrı bir bölümün konusu."
+                ],
+                "kaynak": "Kaynak: TDV İslâm Ansiklopedisi; Britannica; MTA Dergisi"
+            }
+        ]
+    },
 ]
 
 

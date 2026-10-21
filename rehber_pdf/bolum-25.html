@@ -1,0 +1,150 @@
+<!-- Gümüş rehberi #25 · PDF'teki uzun hâli (rehber_pdf/YAZIM.md kurallarıyla).
+     Bölüm açılışını (numara + başlık) ve bölüm sonu notunu kitap şablonu yazar; bu dosya giriş paragrafıyla başlar.
+     Instagram'daki kısa hâl (bot/bilgi.py): güneş hücresinde gümüş akımı toplayan çizgilerde; neden gümüş (iletkenlik,
+     lehim, bakırın fırında oksitlenip silisyuma sızması); 2025 watt başına gümüş PERC < TOPCon ~10 mg < heterojonksiyon
+     ~12 mg (ITRPV 2026); hücre başına 2007 ~400 mg → 2016 ~130 mg; gümüş kaplı bakır ve 2026 bakırlı macun; otomobilde
+     150–250 kontak, çoğu gümüşlü; elektrikli araçlar 2027'de araç gümüş talebinin en büyük kaynağı (Aralık 2025 tahmini).
+     Bölüm 7'deki araç başına gümüş tablosu ve 2024–2026 güneş rakamları tekrar edilmez, gönderme yapılır. -->
+<p class="giris">Bölüm 7'de sanayideki gümüşün en büyük kısmının elektroniğe ve güneş panellerine gittiğini gördük. Bu bölüm daha yakından bakar: Güneş hücresinde gümüş tam olarak ne iş yapar, neden yerine kolayca bakır konamaz, üreticiler onu nasıl azaltıyor ve elektrikli bir araçta gümüş nerede durur?</p>
+
+<div class="formul-kutu">
+  <div class="etiket">KISA CEVAP</div>
+  <div class="formul">İletkenlik ve güvenilir bağlantı</div>
+  <div class="not">Güneş hücresinde akımı toplayan ince çizgiler gümüşlüdür; araçta da anahtar, röle ve bağlantı kontaklarının çoğu. Gümüş pahalı olduğu için üreticiler onu azaltıyor ve bakırla değiştirmeye çalışıyor.</div>
+</div>
+
+<h3><span class="num">1</span>Güneş hücresinde gümüş ne iş yapar?</h3>
+<p>Silisyum hücre ışığı elektriğe çevirir; bu elektriği yüzeyden toplamak gerekir. İşi hücrenin üstündeki çok ince çizgiler (parmaklar) ve onları kesen daha kalın şeritler (baralar) görür. Parmaklar akımı toplayıp baralara taşır; baralara lehimlenen bakır şeritler de hücreleri birbirine bağlar.</p>
+<p>Çizgiler gümüşlü bir macunla basılır. Macun; gümüş tozu, cam tozu ve bunları bir arada tutan organik bir sıvıdan oluşur. Elek baskısıyla hücreye basılır, sonra fırında 700&nbsp;°C'nin üstünde pişirilir. Pişerken eriyen cam, hücrenin yansıma önleyici kaplamasını aşar ve gümüşün silisyuma değmesini sağlar.</p>
+
+<h3><span class="num">2</span>Neden gümüş, neden bakır değil?</h3>
+<div class="parca">
+  <div class="rozet koyu">İletkenlik</div>
+  <p><b>Gümüş elektriği en iyi ileten metaldir.</b> 20&nbsp;°C'de özdirenci 1,59, bakırınki 1,68 mikroohm·santimetredir; yani bakırın direnci yaklaşık %6 fazladır. Fark küçüktür; asıl sorun başka yerdedir.</p>
+</div>
+<div class="parca">
+  <div class="rozet">Fırın</div>
+  <p><b>Gümüş kimyasal olarak durgundur.</b> Bakır ise yüksek sıcaklıkta oksitlenir ve direnci artar; silisyumun içine de sızarak hücrenin verimini düşüren kusurlar oluşturabilir.</p>
+</div>
+<div class="parca">
+  <div class="rozet">Lehim</div>
+  <p><b>Hücreleri bağlayan şeritler gümüşe lehimlenir.</b> Alüminyumun yüzeyindeki doğal oksit tabakası normal lehimi tutmaz; bu yüzden arka yüzü alüminyum olan hücrelere de lehim için küçük gümüş pedler basılır.</p>
+</div>
+
+<div class="birlikte">
+<h3><span class="num">3</span>Hücre türüne göre fark</h3>
+<p>Bugün yaygın üç silisyum hücre türünün gümüş ihtiyacı farklıdır:</p>
+<table class="tablo">
+  <tr><th>HÜCRE TÜRÜ</th><th>GÜMÜŞ NEREDE?</th><th class="r">WATT BAŞINA (2025)</th></tr>
+  <tr><td>PERC</td><td>ön yüz; arka yüz çoğunlukla alüminyum, lehim için gümüş ped</td><td class="r">TOPCon'dan az</td></tr>
+  <tr><td>TOPCon</td><td>iki yüz</td><td class="r">~10 mg</td></tr>
+  <tr><td>Heterojonksiyon</td><td>iki yüz; düşük sıcaklık macunu</td><td class="r">~12 mg</td></tr>
+</table>
+<p class="aciklama">Kaynak: ITRPV 2026 (17. baskı), 2025 ortalamaları. Bölüm 7'deki “watt başına 10–12 mg” bilgisinin hücre türüne göre dökümüdür.</p>
+</div>
+<p>Heterojonksiyon hücredeki ince silisyum katmanlar ısıya dayanmaz; macun 200&nbsp;°C civarında kurutulur. Bu düşük sıcaklık macunu daha az iletken olduğu için daha çok gümüş gerekir. TOPCon 2024'te pazar payında PERC'i geçti. Yani sektör, daha çok gümüş isteyen hücrelere geçerken bir yandan da gümüşü azaltmaya çalıştı.</p>
+
+<h3><span class="num">4</span>Azaltma: aynı işi daha az gümüşle</h3>
+<p>Daha ince çizgiler, daha az macun ve daha çok sayıda ince bara ile gümüş yıllardır azaltılıyor. CRU'nun The Silver Institute için hazırladığı 2018 raporuna göre hücre başına gümüş 2007'de yaklaşık 400&nbsp;mg iken 2016'da ortalama 130&nbsp;mg'a indi.</p>
+<p>ITRPV'nin Haziran 2026 raporu, watt başına gümüşün 2030'ların ortasına kadar TOPCon'da yaklaşık 6,3&nbsp;mg'a, heterojonksiyonda 4,3&nbsp;mg'a inmesini bekliyor. Laboratuvarda daha aşağısı görüldü: Fraunhofer ISE Nisan 2025'te watt başına yalnızca 1,4&nbsp;mg gümüşle heterojonksiyon hücre yaptığını duyurdu. Uzun vadede sürdürülebilir üretim için konuşulan hedef watt başına 2&nbsp;mg'dır.</p>
+
+<h3><span class="num">5</span>Bakıra geçiş: üç yol</h3>
+<ul class="duz">
+  <li><b>Gümüş kaplı bakır macun:</b> bakır tozunun üstü gümüşle kaplanır. Düşük sıcaklıkta işlendiği için özellikle heterojonksiyon hücrelerde yayılıyor. ITRPV'nin 2026 tahminine göre bu hücrelerde saf gümüş macunun payının 2036'ya kadar onda bir civarına inmesi bekleniyor.</li>
+  <li><b>Bakır içeren macun:</b> yüksek sıcaklıkta pişen TOPCon ve arka kontaklı hücreler için. 2025 sonu ve 2026 başında bazı büyük üreticiler gümüşün yerine bakır gibi metallerle seri üretime geçme planlarını açıkladı.</li>
+  <li><b>Bakır kaplama:</b> bakır hücreye elektrikle kaplanır; gümüşü büyük ölçüde ya da tamamen çıkarabilir ve fırında pişirme istemez. Ama süreç karmaşıktır ve bugün pazarın küçük bir kısmıdır.</li>
+</ul>
+<p>Üreticiyi bakıra iten, kısa vadede gümüşün maliyeti, uzun vadede gümüş arzının yetip yetmeyeceği kaygısıdır. Bakırın zorluğu ise verimi ve uzun ömürlülüğü korumaktır.</p>
+
+<div class="birlikte">
+<h3><span class="num">6</span>Güneşte talep: rakamlar ve tahminler</h3>
+<table class="tablo">
+  <tr><th>YIL</th><th class="r">GÜNEŞ PANELİ İÇİN GÜMÜŞ</th><th class="r">RAPOR</th></tr>
+  <tr><td>2016</td><td class="r">79,3 milyon ons</td><td class="r">WSS 2018</td></tr>
+  <tr><td>2017</td><td class="r">94,1 milyon ons</td><td class="r">WSS 2018</td></tr>
+  <tr><td>2022</td><td class="r">118,1 milyon ons</td><td class="r">WSS 2024</td></tr>
+  <tr><td>2023</td><td class="r">193,5 milyon ons</td><td class="r">WSS 2024</td></tr>
+</table>
+<p class="aciklama">WSS: World Silver Survey (The Silver Institute / Metals Focus). 2024–2026 rakamları Bölüm 7'de. Sonraki raporlar geçmiş rakamları güncelleyebilir.</p>
+</div>
+<p>Güneşin sanayi gümüş talebindeki payı 2014'te %11 iken 2024'te %29'a çıktı (The Silver Institute, Aralık 2025).</p>
+<div class="not-kutu"><b>Tahminler şaşabilir.</b> CRU 2018'de güneş panellerindeki gümüş talebinin 2020'lerin ortasında 50–55 milyon onsa inmesini bekliyordu; aynı rapor hücre başına gümüşün 2028'e kadar yaklaşık 65&nbsp;mg'a, yani yarıya inmesini öngörüyordu. Oysa 2023'te talep 193,5 milyon onsa çıktı: kurulumlar beklenenin çok üstünde gerçekleşti, daha çok gümüş isteyen yeni nesil hücrelere geçiş de hızlandı.</div>
+<p>Aynı yıl için farklı rakamlar da görülür. ITRPV'ye göre 2025'te üretilen modüllere yaklaşık 7.244 ton gümüş (dünya arzının ~%21'i) girdi; Bölüm 7'deki World Silver Survey rakamı ise tona çevrilince yaklaşık 5.800 ton eder. Kurumların yöntemi farklıdır; karşılaştırırken aynı kaynağa bakın.</p>
+
+<h3><span class="num">7</span>Elektrikli araçta gümüş nerede?</h3>
+<p>Araçtaki gümüşün çoğu gözle görülmez, elektrik kontaklarındadır. The Silver Institute'un 2021 raporuna göre seri üretim bir otomobilde 150–250 elektrik kontağı olabilir; çoğu gümüş esaslıdır.</p>
+<ul class="duz">
+  <li><b>Anahtar, röle, sigorta ve bağlantılar:</b> farlardan cam düğmesine kadar devreleri açıp kapayan ve birbirine bağlayan parçalar. Gümüş iyi iletir; korozyona ve oksitlenmeye de dayanıklıdır.</li>
+  <li><b>Cam:</b> camlardaki buğu ve buz çözücü ince çizgiler gümüşlü iletken macundan yapılır.</li>
+  <li><b>Batarya:</b> batarya paketi ve batarya yönetim sistemi; hibrit ve elektrikli araçların daha çok gümüş içermesinin bir nedeni budur (araç başına miktarlar Bölüm 7'deki tabloda).</li>
+  <li><b>Şarj:</b> şarj istasyonlarındaki anahtar, röle ve bağlantılarda genelde gümüş kontaklar bulunur. Yüksek gerilimli şarj bağlantılarında da gümüş kaplama, düşük temas direnci için tercih edilir.</li>
+</ul>
+
+<div class="birlikte">
+<h3><span class="num">8</span>Araçlarda talep: tahminler</h3>
+<table class="tablo">
+  <tr><th>RAPOR (TARİH)</th><th class="r">YIL</th><th class="r">ARAÇLARDA GÜMÜŞ</th></tr>
+  <tr><td>Metals Focus (Ocak 2021)</td><td class="r">2021</td><td class="r">~61 milyon ons</td></tr>
+  <tr><td>Metals Focus (Ocak 2021)</td><td class="r">2025</td><td class="r">~90 milyon ons</td></tr>
+  <tr><td>Oxford Economics (Aralık 2025)</td><td class="r">2031</td><td class="r">~94 milyon ons</td></tr>
+</table>
+<p class="aciklama">İki rapor da The Silver Institute için hazırlandı; rakamların hepsi tahmindir.</p>
+</div>
+<p>Aralık 2025 raporu, 2025–2031 arasında yıllık ortalama %3,4 büyüme ve elektrikli araçların 2027'de içten yanmalı araçları geçerek araçlardaki gümüş talebinin en büyük kaynağı olmasını bekliyor (2031'de ~%59). Dikkat: 2021'de 2025 için beklenen miktar, 2025'te 2031 için beklenen miktara yakındır. Tahminler yeni veriyle güncellenir.</p>
+
+<div class="akilda">
+  <div class="etiket">AKILDA KALSIN</div>
+  <ul>
+    <li>Güneş hücresinde gümüş akımı toplayan ince çizgilerdedir; iletkenliği, fırına dayanıklılığı ve lehim tutması yüzünden tercih edilir.</li>
+    <li>TOPCon ve heterojonksiyon hücreler PERC'ten fazla gümüş ister; üreticiler çizgileri inceltip bakıra yönelerek bunu azaltıyor.</li>
+    <li>Araçta gümüş çoğunlukla kontaklarda, batarya yönetiminde ve şarj ekipmanındadır; talep rakamlarını raporun tarihiyle birlikte okuyun.</li>
+  </ul>
+</div>
+
+<p class="kaynaklar">Kaynak: ITRPV 17. ve 16. baskı (VDMA, 2026 ve 2025; pv magazine, PV Tech, TaiyangNews haberleri); The Silver Institute: World Silver Survey 2018 ve 2024, Metals Focus araç raporu (Ocak 2021), Oxford Economics raporu (Aralık 2025); CRU raporu üzerine pv magazine ve BullionVault (2018); Fraunhofer ISE (2025); NREL ve DuraMAT (2024); ISFH (2025); SLAC; IntechOpen (2018); HyperPhysics; Kanada Kraliyet Darphanesi (2024); SAE (2022).</p>
+
+<!-- KAYNAK: https://taiyangnews.info/technology/itrpv-expects-topcon-to-lead-as-bc-and-tandem-technologies-expand — ITRPV 17. baskı (7 Eylül 2026 haberi): M10 hücre başına 2025'te PERC ~70 mg, TOPCon ~88 mg, HJT ~100 mg (PERC en az); TOPCon ~10 mg/W; HJT'de gümüş metalizasyon payı 2025 ~%75 → 2036 ~%10, yerine gümüş kaplı bakır ve saf bakır; çizgi inceltme, çok baralı tasarım -->
+<!-- KAYNAK: https://www.pv-tech.org/itrpv-2026-solar-industry-maintains-historic-learning-curve-despite-market-turbulence/ — ITRPV 17. baskı (25 Haziran 2026): 2025 TOPCon ~10 mg/W, SHJ 12,0 mg/W, PERC ~8,9 mg/W; TOPCon 2024'te PERC'i geçti; 7.244 ton, %21,4; 2036 HJT metalizasyonu %8 gümüş -->
+<!-- KAYNAK: https://www.pv-magazine.com/2026/06/25/itrpv-global-solar-module-shipments-reached-approximately-706-gw-in-2025/ — 2025 TOPCon ~10 mg/W, HJT ~12 mg/W; 2030'ların ortasında 6,3 ve 4,3 mg/W; 7.244 ton, dünya arzının ~%21'i; ince parmak -->
+<!-- KAYNAK: https://taiyangnews.info/technology/itrpv-sees-pv-shipments-stabilize-at-706-gw-in-2025 — 10 → 6,3 mg/W (TOPCon), 12,0 → 4,3 mg/W (SHJ) 2036'ya; 7.244 ton, %21,4; gümüş kaplı bakır ve bakır alternatifleri -->
+<!-- KAYNAK: https://www.solarserver.de/2026/06/24/itrpv-roadmap-topcon-marktfuehrende-photovoltaik-technologie/ — TOPCon 10 mg/W, SHJ 12,0 mg/W (2025); 6,3 / 4,3 mg/W; 7.244 ton, %21,4 -->
+<!-- KAYNAK: https://taiyangnews.info/technology/vdma-releases-itrpv-16-edition — ITRPV 16. baskı: TOPCon 2024'te PERC'i geçti; bakır içeren metalizasyon özellikle SHJ'de pay kazanacak -->
+<!-- KAYNAK: https://hyperphysics.gsu.edu/hbase/Tables/rstiv.html — 20 °C özdirenç: gümüş 1,59, bakır 1,68 (× 10⁻⁸ ohm·m) -->
+<!-- KAYNAK: https://datahub.duramat.org/dataset/7e937f35-a4f1-4b08-8710-335e44eca4cc/resource/e755656b-4fb4-43d3-a811-a0a4d99e28da/download/duramat-a-review-on-metallization-of-silicon-solar-cells-using-copper.pdf — NREL/DuraMAT 2024: özdirenç 1,6 / 1,7 µΩ·cm; bakır 600 °C üstü pişirmede oksitlenir, silisyuma sızıp kusur oluşturur; elektrokaplama karmaşık süreç, güvenilirlik sorunu -->
+<!-- KAYNAK: https://ecs.confex.com/ecs/242/webprogram/Paper164841.html — pişirmede bakırın oksitlenmesi ve silisyuma sızması bakırın benimsenmesini engelledi; ön yüz neredeyse tamamen gümüş -->
+<!-- KAYNAK: https://www-ssrl.slac.stanford.edu/ssrl/web/node/378 — macunda cam frit ve gümüş; elek baskısı; 800 °C üstü pişirme; eriyen karışım SiNx yansıma önleyici kaplamayı aşındırır -->
+<!-- KAYNAK: https://intechopen.com/chapters/61900 — Lee ve Lee 2018: macun = metal + cam frit + organik taşıyıcı; SiNx 600 °C üstünde delinerek gümüş temas eder; parmaklar silisyuma temas eder, baralar parmaklardan akım toplayıp şerite bağlanır; gümüş yüksek iletkenlik ve kimyasal durgunluk için seçilir -->
+<!-- KAYNAK: https://sinovoltaics.com/technology/solar-cell-busbar-3bb-5bb-or-0bb — parmaklar akımı toplayıp baralara verir; şeritler baralara lehimlenir; çok baralı tasarım gümüş macunu azaltır -->
+<!-- KAYNAK: https://isfh.de/publikationen/ultrasonic-tinning-of-al-busbars-for-a-silver-free-rear-side-on-bifacial-silicon-solar-cells — alüminyumun doğal oksidi standart lehimi engeller; arka yüzde gümüş pedler kullanılır (IEEE JPV 2025) -->
+<!-- KAYNAK: https://www.tib-op.org/ojs/index.php/siliconpv/article/download/2678/3272/59540 — alüminyum standart lehimle bağlanamaz, gümüş pedler gerekir (SiliconPV 2025) -->
+<!-- KAYNAK: https://www.pv-tech.org/industry-updates/prospects-for-metallization-paste-technology-in-the-passivated-contact-era/ — PERC arka yüz alüminyum macun; TOPCon iki yüz gümüş; HJT 200 °C altı düşük sıcaklık macunu; HJT'de gümüş kaplı bakır, oksitlenme kaygısı (Eylül 2024) -->
+<!-- KAYNAK: https://taiyangnews.info/technology/putting-contacts-on-topcon-cells/ — TOPCon iki yüzde gümüş macun ister (Nisan 2022) -->
+<!-- KAYNAK: https://taiyangnews.info/technology/looking-into-hjt-metallization/ — HJT macunu ~200 °C, diğer hücreler 700 °C üstünde pişer; düşük sıcaklık macununun direnci yüksek, daha çok macun gerekir (Ekim 2022) -->
+<!-- KAYNAK: https://pubs.rsc.org/en/content/getauthorversionpdf/D4EE00020J — Energy & Environmental Science 2024: SHJ macunu 200 °C altında kurutulur, iki yüzde gümüş, daha çok gümüş; PERC/TOPCon 800 °C ve üstü -->
+<!-- KAYNAK: https://pv-magazine-usa.com/2018/07/06/amount-of-silver-needed-in-solar-cells-to-be-more-than-halved-by-2028/ — CRU/Silver Institute 2018: hücre başına 400 mg (2007) → 130 mg (2016), 2028'e ~65 mg tahmini; PV talebi 2016 79,3, 2017 94,1 milyon ons; 2020'lerin ortasında 50–55 milyon ons tahmini -->
+<!-- KAYNAK: https://resourceworld.com/how-much-silver-is-needed-for-the-solar-panel-industry/ — 2007–2016 arasında 400 mg'dan 130 mg'a -->
+<!-- KAYNAK: https://www.bullionvault.com/gold-news/market-fundamentals/silvers-solar-demand-down-40-2024-07172018 — CRU: 2016'da ortalama 130 mg; 2028'e ~65 mg; 2020'lerin ortasına %40'a varan düşüş tahmini (17 Temmuz 2018) -->
+<!-- KAYNAK: https://www.bullionvault.com/gold-news/silver-solar-071720182 — 2017 PV talebi 94,1 milyon ons, +%19; CRU düşüş tahmini -->
+<!-- KAYNAK: http://www.pv-magazine.com/2024/04/19/pv-industry-demand-for-silver-could-rise-by-20-this-year/ — World Silver Survey 2024: 2022 118,1, 2023 193,5 milyon ons; kurulumlar beklentinin çok üstünde, yeni nesil hücrelere hızlı geçiş -->
+<!-- KAYNAK: https://taiyangnews.info/business/solar-pv-industrys-silver-demand-exceeding-expectations — 2023 193,5 milyon ons (+%64); beklenenden yüksek kurulum ve yeni nesil hücreler -->
+<!-- KAYNAK: https://www.ise.fraunhofer.de/en/press-media/news/2025/silicon-heterojunction-solar-cells-realized-with-record-savings-in-silver.html — 28 Nisan 2025: SHJ hücrede 1,4 mg/Wp; 2 mg/W sürdürülebilirlik hedefi; ön yüz gümüş-bakır, arka yüz bakır macun -->
+<!-- KAYNAK: https://www.pveurope.eu/solar-modules/silicon-heterojunction-cells-cut-silver-use-record-low — Fraunhofer ISE 1,4 mg/Wp; 2 mg/Wp hedefi -->
+<!-- KAYNAK: https://taiyangnews.info/technology/silver-coated-copper-drives-hjt-metallization-roadmap — gümüş kaplı bakır HJT'de giderek yaygınlaşıyor (Haziran 2026) -->
+<!-- KAYNAK: https://www.pv-magazine.com/2026/01/21/more-pv-manufacturers-expected-to-adopt-copper-metallization-in-2026/ — 2026 yüksek bakırlı macunla ilk büyük ölçekli seri üretim yılı beklentisi; büyük üreticiler TOPCon ve BC için bakır içeren macun duyurdu; kısa vadede gümüş fiyatı, uzun vadede gümüş arzı kaygısı -->
+<!-- KAYNAK: https://www.nasdaq.com/articles/solar-panel-makers-look-sub-copper-silver-price-hits-record-levels — Ocak 2026: üreticiler 2026'da gümüş yerine baz metallerle seri üretim planlıyor; bakırın oksitlenme ve güvenilirlik sorunu -->
+<!-- KAYNAK: https://www.pv-tech.org/industry-updates/how-aikos-proprietary-copper-interconnection-sets-new-standard-for-modules/ — bakır elektrokaplama yüksek sıcaklıkta pişirme istemez (Temmuz 2025) -->
+<!-- KAYNAK: https://silverinstitute.org/wp-content/uploads/2025/12/Silver_The-Next-Generation-Metal_DECEMBER-Release.pdf — Aralık 2025: araç gümüşü 2025–2031 yıllık %3,4, 2031'de ~94 milyon ons; EV 2027'de içten yanmalıyı geçer, 2031'de %59; PV'nin sanayi payı 2014 %11 → 2024 %29; TOPCon 2024'te PERC'i geçti, PERC'ten fazla gümüş; araçta 150–250 kontak; batarya yönetim sistemi; bakır kaplama bugün çok küçük pay -->
+<!-- KAYNAK: https://silverinstitute.org/?p=19596 — 9 Aralık 2025 basın bülteni: %3,4; 2027; %59; PV payı %11 → %29; şarj altyapısı -->
+<!-- KAYNAK: https://longbridge.com/en/news/269192018 — ~94 milyon ons (2031), %3,4, 2027, %59, %11 → %29 -->
+<!-- KAYNAK: https://www.kitco.com/news/article/2025-12-15/silver-institute-sees-strong-industrial-demand-supporting-long-term-bull — %3,4 (2025–2031); güneş payı %11 → %29 -->
+<!-- KAYNAK: https://www.moneymetals.com/news/2025/12/15/silver-industrial-demand-expected-to-grow-despite-higher-prices-004551 — %3,4; EV 2027'de içten yanmalıyı geçer; 2031'de %59 -->
+<!-- KAYNAK: https://silverinstitute.org/?p=6860 — 12 Ocak 2021 (Metals Focus): 2021 araç talebi 61 milyon ons, 2025'e yaklaşık 90 milyon ons; şarj istasyonları -->
+<!-- KAYNAK: https://www.e-mj.com/departments/markets/future-auto-sector-silver-sales-could-rival-solar-sales/ — 61 milyon ons; 2025'e yaklaşık 90 milyon ons -->
+<!-- KAYNAK: https://sprott.com/media/3546/silverautomotive_mmkttr2021.pdf — 2021 raporu: 150–250 kontak, çoğu gümüş esaslı; anahtar, röle, bağlantı, sigorta; camda buğu/buz çözücü çizgiler; batarya paketi ve batarya yönetim sistemi; şarj modülleri; 2025 ~88 milyon ons -->
+<!-- KAYNAK: https://www.silverinstitute.org/silver-and-your-automobile/ — araçtaki elektrik bağlantıları gümüş kaplı kontaklarla; anahtarlar -->
+<!-- KAYNAK: https://www.mint.ca/en/lets-talk-bullion/silver-and-automotive-industry — Eylül 2024: anahtar, röle, sigorta; camlarda buğu/buz çözücü iletken macun; şarj istasyonlarında anahtar, röle, bağlantılar genelde gümüşlü; korozyon ve oksitlenme direnci -->
+<!-- KAYNAK: https://www.lbma.org.uk/alchemist/issue-90/the-impact-on-the-silver-market-of-the-auto-sector-electrification — araçtaki elektrik bağlantılarının çoğu gümüş kaplı kontak; cam buğu çözme -->
+<!-- KAYNAK: https://saemobilus-test.cld.sae.org/papers/novel-nanocrystalline-silver-alloy-coatings-boost-performance-ev-high-voltage-interconnects-charging-interfaces-2022-01-0874 — SAE 2022 (29 Mart 2022): elektrikli araç yüksek gerilim bağlantıları ve şarj arayüzlerinde gümüş kaplama tercih edilir, düşük temas direnci -->
+<!-- KAYNAK: https://www.nasdaq.com/articles/solar-panel-makers-look-sub-copper-silver-price-hits-record-levels — (ek) bir üreticinin 6,5 GW gümüşsüz hücre ürettiği; bakır kaplamanın gümüşü tamamen çıkarabileceğine destek -->
+<!-- KAYNAK: https://taiyangnews.info/technology/putting-contacts-on-topcon-cells/ — (ek) bakır kaplama gümüşü malzeme listesinden çıkarır -->
+<!-- KAYNAK: https://ein.org.pl/Performance-degradation-comparisons-and-failure-mechanism-of-silver-metal-oxide-contact,158977,0,2.html — rölelerde gümüş-metal oksit kontak malzemeleri (2020) -->
