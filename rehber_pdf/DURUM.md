@@ -46,6 +46,10 @@ durumla karşılaştırır; uyuşmazlık hatadır. Yazım kuralları: `YAZIM.md`
 | 24 | Fotoğraf filmi gümüşle nasıl çalışır? | 17 Mart 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
 | 25 | Güneş paneli ve elektrikli araç neden gümüş ister? | 24 Mart 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
 | 26 | Gümüşhane adını nereden alır? | 31 Mart 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
+| 27 | Türkiye'de gümüş nereden çıkar? | 7 Nisan 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
+| 28 | Tarihin ünlü gümüş madenleri hangileri? | 14 Nisan 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
+| 29 | Para neden artık gümüş değil? | 21 Nisan 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
+| 30 | Merkez bankaları neden gümüş tutmaz? | 28 Nisan 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
 
 ## Ekler
 

@@ -1237,6 +1237,235 @@ BOLUMLER = [
             }
         ]
     },
+    # #27 — rehber ön paketi parti 4 (Rıdvan, 20 Ekim 2026; iki kontrol Claude'da)
+    {
+        "baslik": "Türkiye'de gümüş nereden çıkar?",
+        "alt": "Gümüşköy, yan ürün gümüş ve resmî rakamlar.",
+        "buyuk": "Gümüşköy",
+        "buyuk_alt": "Kütahya'da; MTA'ya göre işletilen tek gümüş yatağı",
+        "hashtag": "#gümüş #değerlimetaller #emtia #gumus #silver",
+        "soru": "Yaşadığınız yörede bilinen bir maden var mı?",
+        "sayfalar": [
+            {
+                "baslik": "Gümüşköy (Kütahya)",
+                "maddeler": [
+                    "Kütahya'nın ~20 kilometre kuzeybatısındaki yatak, MTA'nın 2021 raporuna göre Türkiye'de işletilen tek gümüş yatağıdır.",
+                    "Cevher açık ocakta çıkarılır. Eski hesaplara göre ton başına ortalama ~170–180 gram gümüş içerir.",
+                    "Tesis 1980'lerde yılda ~1 milyon ton cevherden ~120 ton gümüş üretecek biçimde tasarlandı."
+                ],
+                "kaynak": "Kaynak: MTA, Dünyada ve Türkiye'de Gümüş (2021); Etibank (1980'ler); Jeoloji Mühendisliği (1995)"
+            },
+            {
+                "baslik": "Başka madenlerden",
+                "tablo": [
+                    [
+                        "Niğde Bolkardağ",
+                        "altınla"
+                    ],
+                    [
+                        "Gümüşhane",
+                        "çinko-kurşunla"
+                    ],
+                    [
+                        "Balıkesir Balya",
+                        "kurşun-çinkoyla"
+                    ]
+                ],
+                "maddeler": [
+                    "Türkiye'de gümüş çoğu zaman kurşun, çinko, bakır ve altınla birlikte bulunur; bu madenlerde yan ürün olarak kazanılabilir.",
+                    "Gümüşhane'nin eski ocakları 1800'lerde kapandı; yörede ve Bolkardağ'da 2020'lerde yeni işletmeler çalışıyordu."
+                ],
+                "kaynak": "Kaynak: MTA (2021); MT Bilimsel (2024); KTÜ (Hazinemağara); EMX (2015, Balya)"
+            },
+            {
+                "baslik": "Ne kadar çıkıyor?",
+                "tablo": [
+                    [
+                        "2017",
+                        "~150 ton"
+                    ],
+                    [
+                        "2020",
+                        "~100–120 ton"
+                    ]
+                ],
+                "maddeler": [
+                    "2017–2022 yıllarında Türkiye'nin payı, dünya maden üretiminin yüzde birinden azdı.",
+                    "Kaynaklar bazı yıllarda çok ayrışır: 2016 için ABD Jeoloji Araştırmaları Kurumu ~377 ton, Silver Institute ~209 ton der.",
+                    "İthalat madenden çıkan gümüşün çok üstündedir: Borsa İstanbul verilerine göre 2025'te ~860 ton gümüş ithal edildi."
+                ],
+                "kaynak": "Kaynak: USGS Minerals Yearbook; World Silver Survey 2022; MTA (MAPEG verisi); Borsa İstanbul"
+            }
+        ]
+    },
+    # #28 — rehber ön paketi parti 4 (Rıdvan, 20 Ekim 2026; iki kontrol Claude'da)
+    {
+        "baslik": "Tarihin ünlü gümüş madenleri hangileri?",
+        "alt": "Laurion'dan Potosí'ye: madenler, kentler ve ticaret yolları.",
+        "buyuk": "1545",
+        "buyuk_alt": "Potosí'deki Cerro Rico'da gümüşün bulunduğu yıl",
+        "hashtag": "#gümüş #değerlimetaller #külçegümüş #gumus #silver",
+        "soru": "Bu madenlerden hangisini daha önce duymuştunuz?",
+        "sayfalar": [
+            {
+                "baslik": "Antik Çağ: Laurion ve İspanya",
+                "maddeler": [
+                    "Atina'nın Laurion madenlerinde milattan önce 483 civarında zengin bir damar bulundu. Themistokles, Atinalıları geliri gemilere harcamaya ikna etti.",
+                    "Atina'nın baykuşlu gümüş sikkeleri Laurion gümüşünden basıldı. Madenlerde ağır işi binlerce köle yaptı.",
+                    "Roma, gümüşünün büyük kısmını İspanya'dan aldı. Polybios'a göre Cartagena yakınındaki madenlerde on binlerce kişi çalışıyordu."
+                ],
+                "kaynak": "Kaynak: Herodotos; Yunanistan Kültür Bakanlığı; Livius.org; Strabon (Polybios'tan aktarma)"
+            },
+            {
+                "baslik": "Orta Avrupa'dan Amerika'ya",
+                "tablo": [
+                    [
+                        "Kutná Hora (Çekya)",
+                        "1200'ler"
+                    ],
+                    [
+                        "Potosí (Bolivya)",
+                        "1545"
+                    ],
+                    [
+                        "Zacatecas (Meksika)",
+                        "1546"
+                    ],
+                    [
+                        "Comstock (ABD)",
+                        "1859"
+                    ]
+                ],
+                "maddeler": [
+                    "Yıllar, gümüşün bulunduğu ya da madenciliğin başladığı dönemi gösterir.",
+                    "Çekya'daki Joachimsthal 1516'da kuruldu; 1534'te 18–20 bin nüfusla Bohemya'nın Prag'dan sonra en kalabalık kentiydi.",
+                    "Potosí'nin nüfusu otuz yıl içinde 150 bini aştı; kent, Amerika kıtasının en büyük şehri oldu."
+                ],
+                "kaynak": "Kaynak: UNESCO; Britannica; Radio Prague International"
+            },
+            {
+                "baslik": "Zorla çalıştırma ve Çin'e giden gümüş",
+                "maddeler": [
+                    "İspanyol yönetimi, İnka'dan kalma mita sistemini Potosí'de zorunlu maden işçiliğine çevirdi; her yıl 10 binden fazla yerli madene gönderildi.",
+                    "Ağır koşullar ve cıvayla çalışma çok can aldı. Ölenlerin sayısı bilinmiyor; tahminler tarihçiler arasında tartışmalı.",
+                    "1565'ten 1815'e kadar Manila kalyonları Meksika gümüşünü Asya'ya taşıdı. Çin'de vergiler gümüşle ödendiği için talep büyüktü."
+                ],
+                "kaynak": "Kaynak: UNESCO; Pennsylvania Üniversitesi; Britannica; World History Encyclopedia"
+            }
+        ]
+    },
+    # #29 — rehber ön paketi parti 4 (Rıdvan, 20 Ekim 2026; iki kontrol Claude'da)
+    {
+        "baslik": "Para neden artık gümüş değil?",
+        "alt": "İki madenli sistemden gümüşsüz bozuk paraya.",
+        "buyuk": "1873",
+        "buyuk_alt": "ABD'de standart gümüş dolar basımının durduğu yıl",
+        "hashtag": "#gümüş #değerlimetaller #emtia #gumus #silver",
+        "soru": "Cebinizdeki bozuk paranın hangi metalden yapıldığını hiç merak ettiniz mi?",
+        "sayfalar": [
+            {
+                "baslik": "İki madenli sistem",
+                "maddeler": [
+                    "On dokuzuncu yüzyılda birçok ülkede para hem altına hem gümüşe dayanıyordu. Yasa, iki metal arasındaki oranı sabitliyordu.",
+                    "Piyasadaki oran değişince metali daha değerli hâle gelen sikkeler saklanır ya da eritilir, ucuz olanlar dolaşır. Buna Gresham kanunu denir.",
+                    "Gresham kanunu kısaca şöyle özetlenir: kötü para iyi parayı kovar."
+                ],
+                "kaynak": "Kaynak: Britannica (“Bimetallism”, “Gresham's law”)"
+            },
+            {
+                "baslik": "1870'lerde altına geçiş",
+                "tablo": [
+                    [
+                        "Almanya",
+                        "1871–1873"
+                    ],
+                    [
+                        "ABD",
+                        "1873"
+                    ],
+                    [
+                        "Latin Para Birliği",
+                        "1874–1878"
+                    ]
+                ],
+                "maddeler": [
+                    "Almanya altına geçti, ABD standart gümüş dolar basımını durdurdu, Latin Para Birliği gümüş 5 franklık basımını önce sınırladı, sonra durdurdu.",
+                    "Gümüşün değeri düştü: bir ons altın 1873'te ~16 ons gümüş ederken 1894'te ~33 ons gümüş ediyordu."
+                ],
+                "kaynak": "Kaynak: IMF (2023); ABD 1873 Madeni Para Yasası; ABD İstatistik Yıllığı (1903); BullionVault"
+            },
+            {
+                "baslik": "Gümüşsüz bozuk paraya geçiş",
+                "tablo": [
+                    [
+                        "İngiltere",
+                        "1947"
+                    ],
+                    [
+                        "ABD, 10 ve 25 sent",
+                        "1965"
+                    ],
+                    [
+                        "Kanada, İsviçre",
+                        "1968"
+                    ]
+                ],
+                "maddeler": [
+                    "Çoğu yerde neden gümüşün pahalanıp kıtlaşmasıydı: paradaki gümüş, üzerinde yazan değere yaklaşınca ya da onu aşınca paralar saklandı, eritildi.",
+                    "İngiltere'de asıl neden, savaşta ABD'den ödünç alınan gümüşün geri ödenmesiydi; yerine bakır-nikel geldi.",
+                    "Çin 1935'te gümüş standardını bıraktı. Türkiye'de dolaşım için basılan son gümüş paralar 1947 ve 1948 tarihlidir."
+                ],
+                "kaynak": "Kaynak: Royal Mint Müzesi; Hansard (1946); ABD 1965 Madeni Para Yasası; Canadian Coin News; Swissmint; 1935 para reformu; Numista"
+            }
+        ]
+    },
+    # #30 — rehber ön paketi parti 4 (Rıdvan, 20 Ekim 2026; iki kontrol Claude'da)
+    {
+        "baslik": "Merkez bankaları neden gümüş tutmaz?",
+        "alt": "Rezervlerde altının yeri, gümüşün geçmişi ve bugünü.",
+        "buyuk": "altın",
+        "buyuk_alt": "IMF kurallarına göre rezerv sayılan tek değerli metal",
+        "hashtag": "#gümüş #değerlimetaller #külçegümüş #emtia #silver",
+        "soru": "Gümüş sertifikası diye bir kâğıt para olduğunu biliyor muydunuz? Yorumlara yazın.",
+        "sayfalar": [
+            {
+                "baslik": "Rezervde altın var, gümüş yok",
+                "tablo": [
+                    [
+                        "Saf altın külçe",
+                        "rezerv sayılır"
+                    ],
+                    [
+                        "Gümüş külçe",
+                        "mal sayılır"
+                    ]
+                ],
+                "maddeler": [
+                    "Merkez bankası rezervi başlıca döviz, Uluslararası Para Fonu'ndaki haklar ve altından oluşur. Gümüş bu listede yoktur.",
+                    "Mayıs 2026 tarihli listeye göre merkez bankaları ve resmî kurumların elinde 36.000 tonu aşkın altın var."
+                ],
+                "kaynak": "Kaynak: IMF (BPM6 ve rezerv rehberi); Dünya Altın Konseyi (IMF verisi, Mayıs 2026)"
+            },
+            {
+                "baslik": "Eskiden büyük gümüş stokları vardı",
+                "maddeler": [
+                    "ABD 1934 yasasıyla parasal stoklarının değerce dörtte birini gümüş yapmayı hedefledi. 1960'ların başında Hazine'de 1,5 milyar onsu aşkın gümüş vardı.",
+                    "Bu stok satış ve madenî para basımıyla eridi. Gümüş sertifikaları 24 Haziran 1968'den sonra gümüşe çevrilemedi.",
+                    "Çin, 1935 ile 1937 arasında yapılan anlaşmalarla gümüşünün bir kısmını ABD Hazinesi'ne sattı."
+                ],
+                "kaynak": "Kaynak: ABD Kongresi (1934); ABD Hazinesi ve Darphanesi belgeleri (1968); New York Fed (1967); ABD Dışişleri arşivi; Paper Money (2021)"
+            },
+            {
+                "baslik": "Neden gümüş değil?",
+                "maddeler": [
+                    "Gümüş piyasası altınınkinden çok küçüktür ve fiyatı daha oynaktır. Talebinin yarısından fazlası sanayiden gelir.",
+                    "ABD Hazine Bakanı 1968'de, Hazine'de kalan gümüşün “hiçbir anlamda” parasal rezerv amacıyla tutulmadığını yazdı.",
+                    "Bugün gümüş, merkez bankalarının rezervlerinde kayda değer bir yer tutmuyor."
+                ],
+                "kaynak": "Kaynak: IMF; ABD Hazinesi (Aralık 1968); World Silver Survey 2026; piyasa raporları (2025–2026)"
+            }
+        ]
+    },
 ]
 
 

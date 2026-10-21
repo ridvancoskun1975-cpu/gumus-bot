@@ -139,6 +139,18 @@ OKUMA = {
     26: ("Gümüşhane adını nereden alır?",
          "Kısa cevap: yakınındaki gümüş madenlerinden. Gümüşhane, kabaca gümüş yeri demektir.",
          "Türk kaynaklarındaki eski adı Canca; Yunanca kökenli Argyropolis adı da gümüş şehri anlamına gelir."),
+    27: ("Türkiye'de gümüş nereden çıkar?",
+         "Kısa cevap: asıl gümüş yatağı Kütahya'daki Gümüşköy; gerisi kurşun, çinko ve altın madenlerinden yan ürün olarak gelir.",
+         "İki bin on yedide Türkiye yaklaşık yüz elli ton gümüş üretti; bu, dünya maden üretiminin yüzde birinden azdı."),
+    28: ("Tarihin ünlü gümüş madenleri hangileri?",
+         "Kısa cevap: Atina'nın Laurion'u, İspanya'daki Roma madenleri, Orta Avrupa'nın madenleri ve Bolivya'daki Potosí.",
+         "Potosí'de gümüş bin beş yüz kırk beşte bulundu; Amerika gümüşü Manila kalyonlarıyla Çin'e kadar ulaştı."),
+    29: ("Para neden artık gümüş değil?",
+         "Kısa cevap: bin sekiz yüz yetmişlerde birçok ülke parasını altına bağladı; Amerika bin sekiz yüz yetmiş üçte standart gümüş dolar basımını durdurdu.",
+         "Yirminci yüzyılda gümüş pahalanınca, bozuk paralarda da yerini ucuz metallere bıraktı."),
+    30: ("Merkez bankaları neden gümüş tutmaz?",
+         "Kısa cevap: Uluslararası Para Fonu'nun kurallarına göre gümüş külçe rezerv sayılmaz; rezerv sayılan tek değerli metal altındır.",
+         "Gümüş eskiden büyük devlet stoklarında dururdu; bu stoklar zamanla satıldı ya da kullanıldı."),
 }
 
 
