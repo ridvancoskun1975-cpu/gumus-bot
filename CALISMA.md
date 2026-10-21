@@ -6,3 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
+| 2026-10-21 10:55 | Rehber ön paketi parti 4 (#27–#30 yeni bölümler, Rıdvan 20 Ekim yetkisi) | bot/bilgi.py, bot/ses.py, rehber_pdf/ (bolum-27..30, DURUM.md) | rehber-on-paket-4 · yazılıyor |
