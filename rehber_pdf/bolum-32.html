@@ -1,0 +1,132 @@
+<!-- Gümüş rehberi #32 · PDF'teki uzun hâli (rehber_pdf/YAZIM.md kurallarıyla).
+     Bölüm açılışını (numara + başlık) ve bölüm sonu notunu kitap şablonu yazar; bu dosya giriş paragrafıyla başlar.
+     Instagram'daki kısa hâl (bot/bilgi.py): spot hemen teslimin fiyatı, Londra'da iki iş günü; ekrandaki ons gümüş çoğu
+     zaman spot (paylaşımlarımızdaki de); vadeli borsada standart, ileri tarihli taraflar arası; vadelilerin çoğu teslimden
+     önce kapatılır; Borsa İstanbul'daki ons gümüş vadelisi nakdi uzlaşmalı; taşıma maliyeti (faiz, depolama, sigorta),
+     vadelinin bazen spotun altına inmesi, vadede yakınsama. COMEX sözleşme tablosu Bölüm 9'da; burada tekrar edilmez. -->
+<p class="giris">Haberlerde aynı gün hem “spot gümüş” hem “vadeli gümüş” fiyatı geçebilir; ikisi birbirine yakındır ama çoğu zaman aynı değildir. Bu bölüm, Bölüm 9'daki merkezlerden devam ederek spot, vadeli ve ileri tarihli işlemin farkını, aradaki fiyat farkının nereden geldiğini ve ekrandaki ons fiyatının hangisi olduğunu anlatır. Bilgi amaçlıdır; işlem yapmayı anlatmaz.</p>
+
+<div class="formul-kutu">
+  <div class="etiket">KISA CEVAP</div>
+  <div class="formul">Vadeli fiyat ≈ spot fiyat + taşıma maliyeti</div>
+  <div class="not">Spot, hemen teslimin fiyatıdır; vadeli ve ileri tarihli fiyat ise ileri bir tarihteki teslimin. Aradaki farkı çoğunlukla faiz, depolama ve sigorta açar.</div>
+</div>
+
+<h3><span class="num">1</span>Spot: hemen teslimin fiyatı</h3>
+<p>Borsa İstanbul'un terimler sözlüğü spot fiyatı, bir varlığı “bugün veya birkaç gün içinde teslim edilmek üzere” alabileceğiniz fiyat diye tanımlar. Gümüşte bu süre bellidir: Londra piyasasında spot işlemin ödemesi ve teslimi <b>iki iş günü</b> sonra yapılır.</p>
+<div class="parca">
+  <div class="rozet koyu">2 iş günü</div>
+  <p><b>Örnek:</b> Pazartesi yapılan bir spot işlemde, araya tatil girmezse para ve gümüş çarşamba el değiştirir. Londra'da iki iş gününden daha ileri bir tarihe yapılan teslime ise ileri tarihli işlem (forward) denir.</p>
+</div>
+<p>Günlük paylaşımlarımızdaki ons gümüş de spot fiyattır; gram fiyatı bu spot fiyattan hesaplanır (Bölüm 2).</p>
+
+<h3><span class="num">2</span>Vadeli sözleşme: borsanın standart sözleşmesi</h3>
+<p><b>Vadeli işlem sözleşmesi</b>, standart miktar ve kalitedeki bir varlığı belirli bir ileri tarihte, bugünden anlaşılan fiyattan alma ya da satma yükümlülüğüdür. Üç özelliği öne çıkar:</p>
+<ul class="duz">
+  <li><b>Borsada işlem görür:</b> sözleşmeyi borsa tasarlar; miktar, kalite ve vade herkes için aynıdır.</li>
+  <li><b>Merkezi karşı taraf vardır:</b> borsanın takas kurumu alıcıya karşı satıcı, satıcıya karşı alıcı konumuna geçer ve ödemeleri güvence altına alır.</li>
+  <li><b>Birçok vade yan yana bulunur:</b> aynı metalin farklı aylara ait sözleşmeleri aynı anda işlem görür. İşlemin en yoğun olduğu yakın vadeye “ön ay” (front month) denir.</li>
+</ul>
+<p>COMEX gümüş vadelisinin ayrıntıları Bölüm 9'da, teslimde kullanılan külçeler Bölüm 11'de.</p>
+
+<h3><span class="num">3</span>İleri tarihli işlem: taraflar arasında</h3>
+<p><b>İleri tarihli işlem</b> (forward) de ileri bir tarihte teslim sözüdür; ama borsada değil, tezgâh üstü piyasada yapılır. Vade, miktar ve teslim tarihi gibi koşulları iki taraf kendi arasında belirler. Borsanın takas güvencesi olmadığı için her taraf, karşı tarafın sözünü yerine getirmesine bağlıdır; buna <b>karşı taraf riski</b> denir. Londra'daki gümüş ticaretinde ileri tarihli işlemler bu biçimde yapılır.</p>
+<div class="birlikte">
+<table class="tablo">
+  <tr><th>FARK</th><th>SPOT</th><th>VADELİ</th><th>İLERİ TARİHLİ</th></tr>
+  <tr><td>Teslim</td><td>2 iş günü sonra (Londra)</td><td>sözleşmenin vadesinde</td><td>anlaşılan tarihte</td></tr>
+  <tr><td>Nerede?</td><td>tezgâh üstü (Londra)</td><td>borsada</td><td>tezgâh üstü</td></tr>
+  <tr><td>Koşullar</td><td>taraflar arasında</td><td>standart, borsa belirler</td><td>taraflar belirler</td></tr>
+  <tr class="son"><td>Ödeme güvencesi</td><td>taraflar arasında</td><td>borsanın takas kurumu</td><td>taraflar arasında</td></tr>
+</table>
+</div>
+
+<h3><span class="num">4</span>Fark nereden gelir? Taşıma maliyeti</h3>
+<p>Üç ay sonra gümüş teslim etmeye söz veren bir satıcıyı düşünün. Sözünü güvenle tutmak için gümüşü bugün alıp üç ay saklayabilir. Bunun bir maliyeti vardır:</p>
+<ul class="duz">
+  <li><b>Faiz:</b> gümüşe bağlanan para bu sürede faiz getirmez.</li>
+  <li><b>Depolama:</b> metali saklayan kasaya ücret ödenir.</li>
+  <li><b>Sigorta:</b> metal saklandığı sürece sigortalanır.</li>
+</ul>
+<p>Bu toplama <b>taşıma maliyeti</b> denir. Satıcı bu maliyeti vadeli fiyata yansıtır; vadeli fiyatın genelde spottan yüksek olmasının ana nedeni budur. Değerli metallerde bir kalem daha vardır: gümüşü olan, onu ödünç vererek <b>gümüş ödünç faizi</b> kazanabilir. Londra piyasasında ileri tarih farkı bu yüzden geleneksel olarak iki faizin farkıyla hesaplanır:</p>
+<div class="formul-kutu">
+  <div class="formul">İleri tarih oranı ≈ dolar faizi − gümüş ödünç faizi</div>
+  <div class="not">Oran artıysa ileri tarihli fiyat spotun üstünde, eksiyse altında oluşur. Londra'da fark doğrudan bu iki faizle yazılır; depolama ve sigorta bu hesapta ayrı kalem olarak yer almaz.</div>
+</div>
+<div class="birlikte">
+<p>Spot fiyat 50 $ olsun; üç ay, yılın dörtte biri sayılsın (örnek rakamlar):</p>
+<table class="tablo">
+  <tr><th>DURUM</th><th class="r">DOLAR FAİZİ</th><th class="r">ÖDÜNÇ FAİZİ</th><th class="r">3 AYLIK FİYAT</th></tr>
+  <tr><td>Olağan</td><td class="r">%4</td><td class="r">%1</td><td class="r">≈ 50,38 $</td></tr>
+  <tr class="son"><td>Metal kıt</td><td class="r">%4</td><td class="r">%10</td><td class="r">49,25 $</td></tr>
+</table>
+<p class="aciklama">Hesap: ilk satırda oran %3'tür, 50 × 0,03 ÷ 4 ≈ 0,38 $ eklenir; ikinci satırda oran eksi %6'dır, 50 × 0,06 ÷ 4 = 0,75 $ düşülür. Gerçek hesapta gün sayısı ve o günkü piyasa faizleri kullanılır.</p>
+</div>
+
+<h3><span class="num">5</span>Contango ve backwardation</h3>
+<p>Vadeli fiyatın spota göre durumunun iki adı vardır:</p>
+<table class="tablo">
+  <tr><th>DURUM</th><th>ADI</th><th>NE ZAMAN GÖRÜLÜR?</th></tr>
+  <tr><td>Vadeli &gt; spot</td><td>contango</td><td>olağan durum; fark çoğunlukla taşıma maliyetidir</td></tr>
+  <tr class="son"><td>Vadeli &lt; spot</td><td>backwardation</td><td>hemen teslim edilecek metal kıtlaştığında; metal ödünç almak dolar borç almaktan pahalı hâle gelir</td></tr>
+</table>
+<p>Gümüşte backwardation seyrek görülür. Yakın bir örnek Ekim 2025'tir: Londra'da serbest gümüş azalınca ödünç faizi sıçradı (Bölüm 5) ve piyasa backwardation'a girdi: Londra'da ileri tarihli fiyatlar spotun altına indi. Aynı günlerde Londra'daki spot fiyat New York'taki vadeli fiyatın da üstüne çıktı; iki şehir arasındaki fark kısa bir süre 2,5 doları aştı.</p>
+
+<h3><span class="num">6</span>Vade gelince: kapatma ya da teslim</h3>
+<p>Vade yaklaştıkça vadeli fiyat spot fiyata yaklaşır: teslime az süre kaldıkça taşıma maliyeti de küçülür. Buna <b>yakınsama</b> denir.</p>
+<p>Vadeli sözleşmeler teslim öngörür; ama çoğu vadeden önce ters işlemle kapatılır ya da sonraki vadeye aktarılır. Fiziki teslime giden pay küçüktür. Vade sonunda iki uzlaşma biçimi vardır:</p>
+<div class="parca">
+  <div class="rozet">Fiziki</div>
+  <p><b>Fiziki uzlaşma:</b> önceden belirlenen fiyat karşılığında metalin kendisi teslim edilir. COMEX gümüş vadelisi bu türdendir (Bölüm 11).</p>
+</div>
+<div class="parca">
+  <div class="rozet koyu">Nakdi</div>
+  <p><b>Nakdi uzlaşma:</b> metal el değiştirmez; vade sonu uzlaşma fiyatına göre hesaplanan fark para olarak ödenir.</p>
+</div>
+<p><b>Türkiye'de:</b> Borsa İstanbul'un Vadeli İşlem ve Opsiyon Piyasası'nda (VİOP) 15 Ocak 2021'den beri “Dolar/Ons Gümüş” vadeli işlem sözleşmesi işlem görür. Dayanak varlığı saf gümüştür, bir sözleşme 10 onstur ve uzlaşma nakittir: vade sonu uzlaşma fiyatı, son işlem günü Londra'da belirlenen LBMA gümüş fiyatıdır (Bölüm 9). Sözleşme koşulları değişebilir; bilgiler Ekim 2026 tarihlidir.</p>
+
+<h3><span class="num">7</span>Ekrandaki “ons gümüş” hangisi?</h3>
+<p>Uygulamalarda ve haber sitelerinde “ons gümüş” ya da XAG/USD diye görülen rakam çoğu zaman spot fiyattır. Bu spot fiyat da büyük ölçüde Londra'daki alım satımdan ve en çok işlem gören yakın vadeli sözleşmeden beslenir. Bazı ekranlar ise doğrudan vadeli sözleşmenin fiyatını “gümüş” diye gösterir.</p>
+<p>İki rakam arasındaki fark çoğu zaman küçüktür ama sıfır değildir; fiyatın yanında “spot” mu, yoksa bir ay adı ya da “vadeli” mi yazdığına bakın.</p>
+
+<h3><span class="num">8</span>Sık yapılan üç hata</h3>
+<ol class="hatalar">
+  <li><b>Vadeli fiyatı tahmin sanmak</b>Vadeli fiyatın spottan yüksek olması çoğu zaman taşıma maliyetinden gelir; tek başına bir yükseliş beklentisi göstermez.</li>
+  <li><b>Spotu “aynı gün teslim” sanmak</b>Londra'da spot işlemde ödeme ve teslim iki iş günü sonradır.</li>
+  <li><b>Günlük değişimleri karıştırmak</b>Spot ve vadeli fiyatın aynı gündeki yüzde değişimi farklı olabilir. Bölüm 5'teki 30 Ocak 2026 düşüşünde anlık ve vadeli fiyatın yüzde düşüşü farklıydı.</li>
+</ol>
+
+<div class="akilda">
+  <div class="etiket">AKILDA KALSIN</div>
+  <ul>
+    <li>Spot, hemen teslimin fiyatıdır; Londra'da “hemen”, iki iş günü sonra demektir. Ekrandaki ons gümüş çoğu zaman spottur.</li>
+    <li>Vadeli sözleşme borsada standart koşullarla, ileri tarihli işlem tezgâh üstünde taraflar arasında yapılır; vadelilerin çoğu teslimden önce kapatılır.</li>
+    <li>Vadeli fiyat genelde spot artı taşıma maliyetidir (contango); metal kıtlaşınca spotun altına inebilir (backwardation). Vade yaklaştıkça iki fiyat birbirine yaklaşır.</li>
+  </ul>
+</div>
+
+<p class="kaynaklar">Kaynak: LBMA ve LPMCL, A Guide to the London Precious Metals Markets (2008); LBMA, OTC rehberi ve Küresel Değerli Metaller Kodu (Ek 4); CME Group; ABD Emtia Vadeli İşlemler Komisyonu (CFTC); Borsa İstanbul (VİOP Terimler Sözlüğü, sözleşme özellikleri); Ekonomist (Ocak 2021); TÜBA Açık Ders; In Gold We Trust (2025); SMM (Ekim 2025); MetalCharts (2026); külçe satıcılarının ve bir aracı kurumun bilgi sayfaları.</p>
+
+<!-- KAYNAK: https://static.bullionstar.com/blogs/uploads/2015/02/a-guide-to-the-london-prcious-metals-markets-LBMA-LPMCL.pdf — LBMA/LPMCL rehberi: Londra'da gümüş teslimi iki iş günü; OTC, principal-to-principal; forward rate = dolar faizi − metal ödünç faizi; contango ve backwardation tanımı; backwardation metal ödünç maliyeti dolar faizini aşınca; ikili kredi riski -->
+<!-- KAYNAK: https://www.lbma.org.uk/publications/the-otc-guide/frequently-asked-questions — forward: iki iş gününden ileri teslim; contango/backwardation tanımı; metallerin faiz oranları -->
+<!-- KAYNAK: https://www.lbma.org.uk/publications/the-code/annex-4-precious-metals-market-conventions — altın ve gümüşte ileri fiyatlar faiz cinsinden kote edilir; ileri prim spot × gün × oran -->
+<!-- KAYNAK: https://www.cmegroup.com/education/articles-and-reports/spot-spread-faq — teslim günü = işlem günü + 2 iş günü (Londra) -->
+<!-- KAYNAK: https://www.cmegroup.com/education/courses/introduction-to-futures/definition-of-a-futures-contract.html — vadeli: standart varlık, borsada, merkezi takas; borsa her satıcıya alıcı, her alıcıya satıcı -->
+<!-- KAYNAK: https://www.cmegroup.com/education/courses/introduction-to-futures/futures-contracts-compared-to-forwards — forward: özel, OTC, karşı tarafa bağlı kredi riski; futures: standart, borsada, ödemeler takas kurumu güvencesinde -->
+<!-- KAYNAK: https://www.cmegroup.com/education/courses/introduction-to-precious-metals/what-is-contango-and-backwardation.html — contango/backwardation; depolama, finansman ve sigorta; vade yaklaşınca vadeli fiyat spota yakınsar -->
+<!-- KAYNAK: https://cmegroup.com/education/courses/introduction-to-futures/get-to-know-futures-expiration-and-settlement.html — emtia vadelilerinin küçük bir yüzdesi fiziki teslim; vadeden önce kapatma ya da uzatma; nakdi uzlaşma -->
+<!-- KAYNAK: https://www.cftc.gov/LearnAndProtect/EducationCenter/FuturesMarketBasics/index2.htm — vadeli: ileri tarihte alım satım anlaşması, borsada; sözleşmeler teslim öngörür ama çoğu teslimden önce kapatılır; bazıları nakit uzlaşma -->
+<!-- KAYNAK: https://www.borsaistanbul.com/files/VIOP-Terimler-Sozlugu.pdf — spot fiyat, taşıma maliyeti, vadeli işlem (standart miktar ve kalite), merkezi karşı taraf, tezgahüstü piyasa, nakdi ve fiziki uzlaşma tanımları -->
+<!-- KAYNAK: https://borsaistanbul.com/piyasalar/viop/vadeli-islem-sozlesmeleri/kiymetli-maden-vadeli-islem-sozlesmeleri — Dolar/Ons Gümüş: dayanak saf gümüş, 10 ons, nakdi uzlaşma, vade sonu fiyatı LBMA Silver Price (IBA) -->
+<!-- KAYNAK: https://borsaistanbul.com/files/dolar_ons_gumus_vadeli_islem_sozlesmeleri.pdf — Dolar/Ons Gümüş sözleşme özellikleri: saf gümüş, 10 ons, nakdi uzlaşma -->
+<!-- KAYNAK: https://www.ekonomist.com.tr/piyasalar/gumus-vadeli-islem-sozlesmeleri-15-ocakta-viopta-isleme-acilacak-17406 — Borsa İstanbul duyurusu: Dolar/Ons Gümüş vadelisi 15 Ocak 2021'de VİOP'ta işleme açıldı, 10 ons -->
+<!-- KAYNAK: https://www.qnbinvest.com.tr/duyuru/dolarons-gumus-vadeli-islem-sozlesmeleri-hk14012021 — aracı kurum duyurusu: 15 Ocak 2021'den itibaren işlem; 10 ons; nakdi uzlaşma -->
+<!-- KAYNAK: https://www.gcmyatirim.com.tr/viop/viop-sozlesmeleri/kiymetli-maden-sozlesme/gumus-usd-gumus-xagusd — aracı kurum sözleşme özeti: vade sonu uzlaşma fiyatı son işlem günü Londra'daki LBMA Silver Price; nakdi uzlaşma -->
+<!-- KAYNAK: https://acikders.tuba.gov.tr/file.php/108/LectureNotes/Ders23.pdf — Türkçe terimler: spot fiyatı, vadeli işlem, forward, taşıma maliyeti, contango, backwardation, yakınsama -->
+<!-- KAYNAK: https://metalcharts.org/guides/gold-futures-vs-spot — spot Londra OTC'de genelde iki iş günü; fark faiz, depolama, sigortadan; contango olağan, backwardation seyrek; çoğu pozisyon teslimden önce kapatılır ya da taşınır; ekrandaki fiyat çoğu zaman spot -->
+<!-- KAYNAK: https://www.elemetal.com/knowledge-center/spot-fixed-future-silver-pricing — gümüş spotu yakın vadeli sözleşmelerden beslenir; finansmanda en çok spot anılır; contango olağan; backwardation hemen teslim edilecek metale olağandışı talep; COMEX fiziki teslim -->
+<!-- KAYNAK: https://bullionstar.com/charts/silver-price-today — gümüş fiyatı spot ya da vadeli fiyattır; Londra OTC ve COMEX; ön ay: işlemin yoğunlaştığı yakın vade; contango/backwardation -->
+<!-- KAYNAK: https://www.bullionbypost.co.uk/index/silver/how-is-the-price-of-silver-set/ — spot gümüş fiyatı yoğun işlem gören vadeli sözleşme fiyatlarından belirlenir -->
+<!-- KAYNAK: https://gainesvillecoins.com/blog/swaps-leases-forwards-deep-dive-gold-wholesale-market — forward rate = dolar faizi − ödünç faizi; ödünç faizi dolar faizini aşınca eğri aşağı eğimli; forward OTC, ikili risk -->
+<!-- KAYNAK: https://ingoldwetrust.report/journal/the-great-silver-squeeze-of-october-2025-when-physical-reality-took-control/?lang=en — Ekim 2025: gümüş backwardation'a girdi (spot vadelinin üstünde); Londra spot–COMEX farkı 3 $'ı aştı; 1 aylık ödünç faizi %39 -->
+<!-- KAYNAK: https://news.metal.com/newscontent/103563716-overseas-markets-witness-rare-squeeze-scenario-with-futures-spot-misalignment-as-silver-prices-surge-toward-historic-hig — SMM, 13 Ekim 2025: LBMA spotunun COMEX vadelisine primi 2,50 $'ı aştı; nadir backwardation yapısı; Londra'da serbest gümüş azlığı -->

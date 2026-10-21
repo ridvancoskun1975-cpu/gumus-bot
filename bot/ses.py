@@ -151,6 +151,18 @@ OKUMA = {
     30: ("Merkez bankaları neden gümüş tutmaz?",
          "Kısa cevap: Uluslararası Para Fonu'nun kurallarına göre gümüş külçe rezerv sayılmaz; rezerv sayılan tek değerli metal altındır.",
          "Gümüş eskiden büyük devlet stoklarında dururdu; bu stoklar zamanla satıldı ya da kullanıldı."),
+    31: ("Ons fiyatı neden dolarla verilir?",
+         "Kısa cevap: dolar, uluslararası ticaretin ortak parası; gümüşün dünya fiyatı da ons başına dolarla verilir.",
+         "Londra'da bin sekiz yüz doksan yedide başlayan gümüş fiyatı, ilk yıllarında ons başına peniyle veriliyordu."),
+    32: ("Spot fiyat ve vadeli fiyat ne demek?",
+         "Kısa cevap: spot, hemen teslimin fiyatıdır; Londra'da bu, iki iş günü sonra teslim demektir.",
+         "Vadeli fiyat ise ileri bir tarihteki teslimin fiyatıdır; aradaki farkı çoğunlukla taşıma maliyeti açar."),
+    33: ("Fiziki ve fiziki olmayan gümüş farkı nedir?",
+         "Kısa cevap: fark dört soruda. Neye sahipsiniz, gümüş nerede durur, karşı taraf kim, elinize alabilir misiniz?",
+         "Külçe elinizdeyse gümüşün kendisine sahipsiniz; hesapta, fonda ve sertifikada çoğu zaman bir alacağa ya da paya."),
+    34: ("Dünyadaki gümüş nerede duruyor?",
+         "Kısa cevap: bir kısmı Londra, New York ve Şanghay'daki kasa ve depolarda; çok daha fazlası evlerde, takıda ve eşyada.",
+         "Londra kasalarında iki bin yirmi altı Eylül sonunda yaklaşık yirmi dokuz bin ton gümüş vardı; bu rakam her ay değişir."),
 }
 
 
