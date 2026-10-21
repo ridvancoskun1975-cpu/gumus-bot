@@ -6,4 +6,3 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
-| 21 Ekim 2026 17:25 | Sabah Reels'ine parite cümlesi (akşamdakine benzer) | bot/main.py, bot/test_gun_ici.py, templates/ozel.html, README.md | sabah-parite-cumlesi · önizlemede, Rıdvan'ın onayı bekleniyor |
