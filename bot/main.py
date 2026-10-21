@@ -731,19 +731,24 @@ def buyuk_hareket(d, zaman, esik):
 # pahalanmış demektir). Gümüşün TL fiyatı düştüğü günde de doğru: kıyas altınla. Okun rengi bilerek standart kalır
 # (düşüş kırmızı, yükseliş yeşil; Rıdvan: "herkesin gördüğü alıştığı standart bu"), cümle anlamı söyler.
 def parite_cumlesi(d, zaman):
-    """d = degisim() sonucu; zaman "bugün" / "bu hafta" / "bu ay". Görseldeki gibi 2 ondalığa yuvarlanır."""
+    """d = degisim() sonucu; zaman "bugün" / "bu hafta" / "bu ay" ya da "sabah". Görseldeki gibi 2 ondalığa yuvarlanır.
+    Sabah (Reels ve sabahki özel gün görseli) "bugün" demez: gün daha bitmedi (Rıdvan, 16 Ekim 2026), kıyas önceki
+    iş gününün akşam kaydına göre. "Güne … başladı" pazartesi de doğru (kıyas cuma akşamı)."""
     y = round(d["yuzde"], 2)
+    if zaman == "sabah":
+        if y == 0:
+            return "Gümüş güne altına karşı değişmeden başladı"
+        return f"Gümüş güne altına karşı değer {'kazanarak' if y < 0 else 'kaybederek'} başladı"
     if y == 0:
         return f"Gümüşün altına karşı değeri {zaman} değişmedi"
     return f"Gümüş {zaman} altına karşı değer {'kazandı' if y < 0 else 'kaybetti'}"
 
 
 def gorsel_parite_cumlesi(veri, tur):
-    """Parite cümlesi yalnız akşam özeti, haftalık ve aylık özette (Rıdvan, 16 Ekim 2026: "bugün" bütün günü kapsar,
-    sabah erken). Sabah Reels'i önceki akşamın kaydıyla kıyaslar, gün henüz bitmedi; orada eski tanım satırı
-    ("1 ons altın kaç ons gümüş eder") kalır. Reels takip etmeyenlere de ulaştığı için tanım yeni gelene yarar.
-    Aynı kural sabah özel gün görseline de uyar."""
-    return None if tur == "reels" else veri.get("parite_cumle")
+    """Parite cümlesi bütün fiyat görsellerinde. 16 Ekim 2026'dan 21 Ekim 2026'ya kadar sabah Reels'inde cümle yoktu
+    ("bugün" bütün günü kapsar, sabah erken), tanım satırı ("1 ons altın kaç ons gümüş eder") vardı; sabah artık
+    "Gümüş güne altına karşı …" der (veri_hazirla). Cümle yoksa şablon tanım satırına düşer."""
+    return veri.get("parite_cumle")
 
 
 def degisim(simdi, once):
@@ -777,7 +782,7 @@ def veri_hazirla(f, hesap, tur=None):
                                        BUYUK_HAREKET_GUNLUK),
         "parite": tr_sayi(f["parite"], 1),
         "parite_deg": degisim(f["parite"], f["parite_once"]),
-        "parite_cumle": parite_cumlesi(degisim(f["parite"], f["parite_once"]), "bugün"),
+        "parite_cumle": parite_cumlesi(degisim(f["parite"], f["parite_once"]), "sabah" if sabah else "bugün"),
         "dolar": tr_sayi(f["dolar"], 2),
         "dolar_deg": degisim(f["dolar"], f["dolar_once"]),
         "kur_tarihi": f"{kur_gunu.day} {AYLAR[kur_gunu.month - 1]}",

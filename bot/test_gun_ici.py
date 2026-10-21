@@ -139,8 +139,14 @@ kontrol(main.haftalik_veri_hazirla(main.ornek_haftalik(), "x")["parite_cumle"].s
 kontrol(main.aylik_veri_hazirla(main.ornek_aylik(), "x")["parite_cumle"].startswith("Gümüş bu ay"), "aylık veri")
 kontrol("renk" not in main.veri_hazirla(main.ornek_fiyatlar(), "x")["parite_deg"], "ok rengi standart (ters çevrilmez)")
 vg = main.veri_hazirla(main.ornek_fiyatlar(), "x")
-kontrol(main.gorsel_parite_cumlesi(vg, "reels") is None, "sabah Reels'inde cümle yok (tanım satırı kalır)")
 kontrol(main.gorsel_parite_cumlesi(vg, "post") == vg["parite_cumle"], "akşam özetinde cümle var")
+# Sabah (Rıdvan, 21 Ekim 2026): akşamdakine benzer cümle, ama "bugün" yok (gün daha bitmedi)
+kontrol(pc(main.degisim(72.41, 72.84), "sabah") == "Gümüş güne altına karşı değer kazanarak başladı", "sabah, parite düştü")
+kontrol(pc(main.degisim(73.10, 72.84), "sabah") == "Gümüş güne altına karşı değer kaybederek başladı", "sabah, parite yükseldi")
+kontrol(pc(main.degisim(72.840001, 72.84), "sabah") == "Gümüş güne altına karşı değişmeden başladı", "sabah, %0,00")
+vs = main.veri_hazirla(main.ornek_fiyatlar(), "x", "reels")
+kontrol(main.gorsel_parite_cumlesi(vs, "reels").startswith("Gümüş güne altına karşı"), "sabah Reels'inde sabah cümlesi")
+kontrol("bugün" not in main.gorsel_parite_cumlesi(vs, "reels"), "sabah cümlesinde \"bugün\" yok")
 kontrol(main.gorsel_parite_cumlesi(main.haftalik_veri_hazirla(main.ornek_haftalik(), "x"), "hafta").startswith("Gümüş bu hafta"),
         "haftalıkta cümle var")
 
