@@ -10,7 +10,7 @@
   <div class="isik" aria-hidden="true"></div>
   <div class="ust">
     <div class="ust-sol" style="gap: 18px">
-      <h1 style="font-size: {{ 116 if gun_ici_gorsel else 132 }}px; letter-spacing: -3px">Gümüş</h1>
+      <h1 style="font-size: {{ 96 if gun_ici_gorsel else 120 }}px; letter-spacing: -3px">Gümüş</h1>
       <div class="etiket" style="gap: 12px; font-size: 34px"><span id="nokta" class="nokta" style="width: 12px; height: 12px"></span><span>GÜNLÜK ÖZET</span></div>
       <div class="tarih mono" style="font-size: 38px">{{ tarih }} · {{ saat }}</div>
     </div>
@@ -18,11 +18,14 @@
   </div>
 
   {#- Gün içi satırı varken üst boşluk, "Gümüş" ve fiyat biraz küçülür: satır sığsın, bölümler arası nefes kalsın -#}
+  {#- Bilgi yazıları büyük (Rıdvan, 23 Ekim 2026: "bilgi içeren ana yazılar az daha büyük olabilir mi"): manşet 46,
+      gün içi değerleri 52, parite/dolar sayıları 76, başlıkları 38, cümleleri 34; yer "Gümüş" başlığı küçültülerek açıldı.
+      Sütun arası 28: dolar satırı sağdaki Reels düğmelerinin alanına (x > 900) taşmasın. -#}
   <div class="kahraman" style="gap: {{ 8 if gun_ici_gorsel else 12 }}px; padding-top: {{ 30 if gun_ici_gorsel else 44 }}px; position: relative">
     {#- Goril maskotu (bot/goril.py): hafta içi sabah Reels'i ve akşam özeti, cumartesi haftalık özet -#}
     {#- Gün içi satırı varken goril yukarı alınır: ayakları parite / dolar başlığına inmesin -#}
     {% if maskot %}<div class="maskot" aria-hidden="true" style="position: absolute; right: -14px; bottom: {{ '-12px' if gun_ici_gorsel else '-54px' }}; width: 300px; height: 328px">{% include maskot %}</div>{% endif %}
-    {% if buyuk_hareket %}{{ manset(buyuk_hareket, 40, 30) }}{% elif gun_baslik %}{{ gun_basligi(gun_baslik, 38, 26) }}{% else %}
+    {% if buyuk_hareket %}{{ manset(buyuk_hareket, 46, 34) }}{% elif gun_baslik %}{{ gun_basligi(gun_baslik, 42, 28) }}{% else %}
     <div class="kahraman-baslik" style="font-size: 36px">GRAM GÜMÜŞ</div>
     {% endif %}
     <div class="kahraman-satir" style="gap: 20px">
@@ -41,14 +44,14 @@
     <div id="gun-ici" style="display: flex; gap: 40px; margin-top: 8px">
       {% if gun_ici_gorsel.esit %}
       <div class="gun-ici-oge" style="display: flex; flex-direction: column; gap: 2px">
-        <span class="soluk" style="font-size: 30px">Gün içi</span>
-        <span style="font-size: 42px; font-weight: 700; line-height: 1.1"><span class="sayi">{{ gun_ici_gorsel.dusuk }}</span> <span class="vurgu" style="font-size: 30px">₺ · değişmedi</span></span>
+        <span class="soluk" style="font-size: 32px">Gün içi</span>
+        <span style="font-size: 52px; font-weight: 700; line-height: 1.1"><span class="sayi">{{ gun_ici_gorsel.dusuk }}</span> <span class="vurgu" style="font-size: 34px">₺ · değişmedi</span></span>
       </div>
       {% else %}
       {% for ad, deger in [("Gün içi en düşük", gun_ici_gorsel.dusuk), ("Gün içi en yüksek", gun_ici_gorsel.yuksek)] %}
       <div class="gun-ici-oge" style="display: flex; flex-direction: column; gap: 2px">
-        <span class="soluk" style="font-size: 30px">{{ ad }}</span>
-        <span style="font-size: 42px; font-weight: 700; line-height: 1.1"><span class="sayi">{{ deger }}</span> <span class="vurgu" style="font-size: 30px">₺</span></span>
+        <span class="soluk" style="font-size: 32px">{{ ad }}</span>
+        <span style="font-size: 52px; font-weight: 700; line-height: 1.1"><span class="sayi">{{ deger }}</span> <span class="vurgu" style="font-size: 34px">₺</span></span>
       </div>
       {% endfor %}
       {% endif %}
@@ -56,20 +59,20 @@
     {% endif %}
   </div>
 
-  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; border-top: 2px solid var(--cizgi); padding-top: 32px; align-items: stretch">
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; border-top: 2px solid var(--cizgi); padding-top: 32px; align-items: stretch">
     <div class="satir" style="display: flex; flex-direction: column; gap: 6px">
-      <b style="font-size: 36px">Altın / Gümüş paritesi</b>
-      <span class="soluk" style="font-size: 32px; line-height: 1.2; text-wrap: balance">{{ parite_cumle or "1 ons altın = ? ons gümüş" }}</span>
+      <b style="font-size: 38px">Altın / Gümüş paritesi</b>
+      <span class="soluk" style="font-size: 34px; line-height: 1.2; text-wrap: balance">{{ parite_cumle or "1 ons altın = ? ons gümüş" }}</span>
       <div style="display: flex; align-items: baseline; gap: 14px; margin-top: auto; padding-top: 8px">
-        <span class="sayi vurgu" style="font-size: 68px; font-weight: 700">{{ parite }}</span>
+        <span class="sayi vurgu" style="font-size: 76px; font-weight: 700">{{ parite }}</span>
         {{ degisim(parite_deg, 34, 24) }}
       </div>
     </div>
     <div class="satir" style="display: flex; flex-direction: column; gap: 6px">
-      <b style="font-size: 36px">Dolar / TL</b>
-      <span class="soluk" style="font-size: 32px; line-height: 1.2; text-wrap: balance">ECB kuru · {{ kur_tarihi }}</span>
+      <b style="font-size: 38px">Dolar / TL</b>
+      <span class="soluk" style="font-size: 34px; line-height: 1.2; text-wrap: balance">ECB kuru · {{ kur_tarihi }}</span>
       <div style="display: flex; align-items: baseline; gap: 10px; margin-top: auto; padding-top: 8px">
-        <span class="sayi" style="font-size: 68px; font-weight: 700">{{ dolar }}</span>
+        <span class="sayi" style="font-size: 76px; font-weight: 700">{{ dolar }}</span>
         <span class="vurgu" style="font-size: 42px; font-weight: 700">₺</span>
         {{ degisim(dolar_deg, 34, 24) }}
       </div>

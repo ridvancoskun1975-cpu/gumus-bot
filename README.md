@@ -5,7 +5,7 @@ Instagram'a otomatik paylaşım yapar:
 | Saat (TR) | Paylaşım |
 |---|---|
 | ~10:00 | Reels (7 sn video; 19 Ekim 2026'dan goril maskotuyla) |
-| ~20:00 | Günün özeti (10 sn video; 22 Ekim 2026'dan videoda gün içi en düşük / en yüksek) |
+| ~20:00 | Günün özeti (12 sn video; Rıdvan, 23 Ekim 2026: "günlük özet bilgi çok zaman az", önce 10 sn; özel gün görseline dönse de 12 sn. 22 Ekim 2026'dan videoda gün içi en düşük / en yüksek; 23 Ekim 2026'dan bilgi yazıları daha büyük) |
 | Çarşamba ~14:00 | Gümüş rehberi: sesli Reels + müzikli hikâye videosu, haftada 1 (28 Ekim #7, 4 Kasım #8; 11, 18, 25 Kasım 2026 #3–#5'in arşiv Reels'i; 2 Aralık'tan #9…). |
 | Cumartesi ~10:00 | Haftalık özet (13 sn video; Rıdvan, 18 Ekim 2026: "3 saniye daha uzun kalmalı", önce 10 sn: haftanın son değeri, günlük grafik, en yüksek/en düşük). Değişim önceki haftanın son değerine göre; önceki haftaya ait kayıt yoksa (kayıtlar o hafta başladıysa) özet atlanmaz, haftanın ilk kaydına göre hesaplanır ve bu görselde ve açıklamada yazılır (kısmi hafta, ilki 17 Ekim 2026). Yerelde kısmi örnek: `ORNEK_KISMI=1 python bot/main.py hazirla --tur hafta --ornek --cikti <klasör>` **Kural (Rıdvan, 15 Ekim 2026): her cumartesi** görselde ve açıklamada "Yarın ~11:00 · Pazar derin analizi: kısa ve orta vade. Kaçırmayın." hatırlatması. |
 | Pazar ~11:00 | Yapay zekâ yorumu: kısa ve orta vade (kaydırmalı 3 görsel, müziksiz; uzun vade kalıcı olarak yok) + aynı çalıştırmada sesli Reels'i (Orus erkek sesi analizin tamamını 1,5 kat hızla okur, ~1,5 dk, hareketli "Sesi açın" rozeti; ses yoksa 24 sn müzikli) ve hikâyeye 24 sn müzikli sürümü |
