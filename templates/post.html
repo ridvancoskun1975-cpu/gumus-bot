@@ -25,10 +25,18 @@
     {% if buyuk_hareket %}{{ manset(buyuk_hareket, 40, 30) }}{% elif gun_baslik %}{{ gun_basligi(gun_baslik, 38, 26) }}{% else %}
     <div class="kahraman-baslik" style="font-size: 36px">GRAM GÜMÜŞ</div>
     {% endif %}
+    {#- Fiyat 100 ₺ ve üstünde bir hane uzar ve ₺ işareti gorile değer (Rıdvan, 23 Ekim 2026: "gorile değmesin"): o zaman
+        yazı küçülür, aradaki yükseklik fiyat sütununun üstüne boşluk olarak eklenir; goril ve alttaki her şey 2 haneli
+        fiyattaki yerinde kalır (goril yukarı kayarsa sevinen gorilin kolları manşete değiyor). Sayım önceki değerden
+        başladığı için önceki değer 100'ün üstündeyse de uzun sayılır. Yalnız akşam özetinde gerekiyor: sabah Reels'i,
+        haftalık, aylık ve özel gün görselinde 100 ₺ üstünde çakışma yok. -#}
+    {%- set fiyat_boy = 158 if gun_ici_gorsel else 170 -%}
+    {%- set fiyat_uzun = (138 if gun_ici_gorsel else 140) -%}
+    {%- set fiyat_yazi = fiyat_uzun if ((gram_sayi or 0) >= 100 or (gram_once_sayi or 0) >= 100) else fiyat_boy %}
     <div class="kahraman-satir" style="gap: 20px">
-      <div class="kahraman-sayi-kolon" style="gap: 6px">
+      <div class="kahraman-sayi-kolon" style="gap: 6px; padding-top: {{ fiyat_boy - fiyat_yazi }}px">
         <span id="fiyat-deg" style="display: inline-flex; transform-origin: 100% 100%">{{ degisim(gram_deg, 44, 30) }}</span>
-        <span id="fiyat" class="kahraman-sayi sayi" style="font-size: {{ 158 if gun_ici_gorsel else 170 }}px; letter-spacing: -5px"
+        <span id="fiyat" class="kahraman-sayi sayi" style="font-size: {{ fiyat_yazi }}px; letter-spacing: -5px"
               data-hedef="{{ gram_sayi }}" data-once="{{ gram_once_sayi }}">{{ gram }}</span>
       </div>
       <span class="kahraman-birim" style="font-size: 72px; padding-bottom: 20px">₺</span>
