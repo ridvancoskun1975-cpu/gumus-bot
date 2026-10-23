@@ -21,9 +21,11 @@ REKLAMLAR = [
      "tanidik": (4, 5)},
     # Rıdvan, 21 Ekim 2026: "Ekle." İlk gün 18 Ekim (reklam Reels'inin tarihi), 6 gün; 21 Ekim 21:15'te "3 gün sonra
     # sona eriyor". Reklam 1 ile 18–19 Ekim'de üst üste biner. Profilde görünmeyen reklam, kısa kod yok.
-    {"ad": "Reklam 2", "bas": date(2026, 10, 18), "bit": date(2026, 10, 24), "hedef": "optimize edilmiş karma",
+    # Rıdvan, 23 Ekim 2026: "Uzat". Reklam 12 güne uzatıldı; 23 Ekim 11:41'de "7 gün sonra sona eriyor" → son gün 30 Ekim.
+    {"ad": "Reklam 2", "bas": date(2026, 10, 18), "bit": date(2026, 10, 30), "hedef": "optimize edilmiş karma",
      "not": "Profilde görünmeyen reklam, 13 sn hareketli video (fiyat saatleri, cumartesi haftalık rapor, pazar üst "
-            "düzey yapay zekâ analizi, sesli rehber; istifçi goril; müzik Motivate); 6 gün; hedef kitle \"gümüş\". "
+            "düzey yapay zekâ analizi, sesli rehber; istifçi goril; müzik Motivate); önce 6 gün, 23 Ekim'de 12 güne "
+            "uzatıldı (son gün 30 Ekim); hedef kitle \"gümüş\". "
             "21 Ekim ~21:35'ten sonra profil değişti (biyografi, sabitlenen tanıtım Reels'i); oran kıyası bu andan önce "
             "ve sonra ayrı yapılır"},
 ]
