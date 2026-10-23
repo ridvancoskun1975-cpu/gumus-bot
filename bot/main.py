@@ -1234,12 +1234,12 @@ ZEMIN_RENGI = "0x121418"   # templates/ortak.css içindeki --zemin ile aynı
 
 VIDEO_FPS = 30
 
-# Fiyat videolarının süresi (sn): sabah Reels'i 7, sabahki özel gün görseli 10, akşam özeti 12, haftalık ve aylık
-# özet 13 (Rıdvan, 18 Ekim 2026: "Haftalık ve aylık özet ekranda 3 saniye daha uzun kalmalı"; önce 10. Akşam özeti
-# 23 Ekim 2026'dan 12, önce 10: Rıdvan "günlük özet bilgi çok zaman az"). Hareketler ilk ~2,5 sn'de biter
-# (templates/hareket.js), goril hareketleri de durağan bir sona oturur: ek süre son hâlin ekranda kalmasıdır.
-# Akşam, haftalık ve aylık özet özel gün görseline dönse de kendi süresinde kalır.
-VIDEO_SURESI = {"reels": 7, "post": 12, "ozel": 10, "hafta": 13, "ay": 13}
+# Fiyat videolarının süresi (sn): sabah Reels'i 7, sabahki özel gün görseli 10, akşam özeti, haftalık ve aylık özet
+# 13 (Rıdvan, 18 Ekim 2026: "Haftalık ve aylık özet ekranda 3 saniye daha uzun kalmalı"; önce 10. Akşam özeti:
+# Rıdvan, 23 Ekim 2026 "günlük özet bilgi çok zaman az" → 12, aynı gece "Yeni zaman 13 sn olacak"; önce 10).
+# Hareketler ilk ~2,5 sn'de biter (templates/hareket.js), goril hareketleri de durağan bir sona oturur: ek süre son
+# hâlin ekranda kalmasıdır. Akşam, haftalık ve aylık özet özel gün görseline dönse de kendi süresinde kalır.
+VIDEO_SURESI = {"reels": 7, "post": 13, "ozel": 10, "hafta": 13, "ay": 13}
 
 
 def video_suresi(tur, sablon=None):
