@@ -733,7 +733,11 @@ BUYUK_HAREKET_GUNLUK = 2.0   # günlük paylaşımlar: önceki iş gününe gör
 # 140 px telefonda Reels ekranının beğeni/yorum düğmelerine ve hesap adı satırına bırakılır (Rıdvan'ın 17 Ekim 2026
 # ekran görüntüleriyle ölçüldü; Rıdvan onayladı: "A için önerilen çizimler uygun. uygula.").
 GEN_45 = 1080 - 88 - 180
+# 9:16 videoların içerik genişliği (sabah Reels'i ve 24 Ekim 2026'dan beri haftalık özet): 1080 − sol 96 − sağ 170;
+# alttaki 420 px hesap adı ve açıklama satırına bırakılır.
+GEN_916 = 1080 - 96 - 170
 BUYUK_HAREKET_HAFTALIK = 5.0  # haftalık özet: önceki haftanın son değerine göre
+GRAFIK_HAFTA_YUK = 176        # haftalık grafiğin çizim yüksekliği (px; dikey kart, eski 150'nin ~1,17 katı)
 
 
 def buyuk_hareket(d, zaman, esik):
@@ -906,7 +910,8 @@ def haftalik_veri_hazirla(f, hesap):
     v["parite_cumle"] = parite_cumlesi(v["parite_deg"], "bu hafta")
 
     # Grafik: gram gümüşün günlük değerleri, önceki haftanın son değeri kesikli çizgi (kısmi haftada çizgi yok)
-    gen, yuk, kenar, yan = GEN_45, 150, 30, 64   # yükseklik 230 → 150: büyüyen yazılara yer (16 Ekim 2026)
+    # Yükseklik 230 → 150 (16 Ekim 2026: büyüyen yazılara yer); 24 Ekim 2026'dan dikey 9:16 kartta GRAFIK_HAFTA_YUK
+    gen, yuk, kenar, yan = GEN_916, GRAFIK_HAFTA_YUK, 35, 75
     tum = degerler + ([] if v["kismi"] else [f["gram_once"]])
     alt_s, ust_s = min(tum), max(tum)
     aralik = (ust_s - alt_s) or 1
@@ -1175,7 +1180,7 @@ def gorsel_uret(tur, veri, png_yolu):
     html = env.get_template(f"{tur}.html").render(**veri)
     gecici = SABLONLAR / f"_cikti_{tur}.html"   # fontlar göreli yolla yüklensin diye burada
     gecici.write_text(html, encoding="utf-8")
-    boyut = {"reels": (1080, 1920), "kapak": (1080, 1920), "post": (1080, 1350), "hafta": (1080, 1350), "yasal": (1080, 1350),
+    boyut = {"reels": (1080, 1920), "kapak": (1080, 1920), "post": (1080, 1350), "hafta": (1080, 1920), "yasal": (1080, 1350),
              "bilgi": (1080, 1350), "yorum": (1080, 1350), "ay": (1080, 1350), "kisa": (1080, 1920), "ozel": (1080, 1920),
              "kart-gram": (1080, 1920), "kart-parite": (1080, 1920), "sayfa-og": (1200, 630),
              "yorum-reels": (1080, 1920), "site-reels": (1080, 1920)}[tur]
@@ -1324,7 +1329,7 @@ def hareketli_video_uret(tur, veri, mp4_yolu, sure=7, seslendirme=None, muzik=No
              "-t", str(sure), *akis,
              "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-r", str(VIDEO_FPS),
              "-c:a", "aac", "-b:a", "128k", "-shortest", "-movflags", "+faststart", str(mp4_yolu)]
-    boyut = {"reels": (1080, 1920), "kisa": (1080, 1920), "ozel": (1080, 1920),
+    boyut = {"reels": (1080, 1920), "kisa": (1080, 1920), "ozel": (1080, 1920), "hafta": (1080, 1920),
              "kart-gram": (1080, 1920), "kart-parite": (1080, 1920), "yorum-reels": (1080, 1920),
              "site-reels": (1080, 1920)}.get(tur, (1080, 1350))
     try:
@@ -1453,7 +1458,7 @@ def goril_yerlesimi_denetle(sablon, veri, sure=None):
         with sync_playwright() as p:
             kwargs = {"executable_path": os.environ["CHROME_YOLU"]} if os.environ.get("CHROME_YOLU") else {}
             tarayici = p.chromium.launch(**kwargs)
-            boyut = (1080, 1920) if sablon in ("ozel", "reels") else (1080, 1350)
+            boyut = (1080, 1920) if sablon in ("ozel", "reels", "hafta") else (1080, 1350)
             sayfa = tarayici.new_page(viewport={"width": boyut[0], "height": boyut[1]})
             sayfa.goto(gecici.as_uri())
             sayfa.evaluate("document.fonts.ready")
