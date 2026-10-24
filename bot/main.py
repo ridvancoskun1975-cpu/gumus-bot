@@ -729,12 +729,10 @@ def tr_sayi(x, basamak=2):
 # Büyük hareket manşeti: değişim bu eşiği (yüzde, mutlak) aşınca görselde "GRAM GÜMÜŞ" başlığının
 # yerine ve açıklamanın ilk satırında "Gümüş bugün %3,1 yükseldi" gibi manşet çıkar.
 BUYUK_HAREKET_GUNLUK = 2.0   # günlük paylaşımlar: önceki iş gününe göre
-# 4:5 videoların (akşam, haftalık, aylık özet) içerik genişliği: 1080 − sol 88 − sağ 180. Sağdaki 180 px ve alttaki
-# 140 px telefonda Reels ekranının beğeni/yorum düğmelerine ve hesap adı satırına bırakılır (Rıdvan'ın 17 Ekim 2026
-# ekran görüntüleriyle ölçüldü; Rıdvan onayladı: "A için önerilen çizimler uygun. uygula.").
-GEN_45 = 1080 - 88 - 180
-# 9:16 videoların içerik genişliği (sabah Reels'i ve 24 Ekim 2026'dan beri haftalık özet): 1080 − sol 96 − sağ 170;
-# alttaki 420 px hesap adı ve açıklama satırına bırakılır.
+# 9:16 fiyat videolarının içerik genişliği (sabah Reels'i; 24 Ekim 2026'dan akşam, haftalık ve aylık özet de):
+# 1080 − sol 96 − sağ 170. Sağdaki 170 px telefonda Reels ekranının beğeni/yorum düğmelerine, alttaki 420 px hesap adı ve
+# açıklama satırına bırakılır (Rıdvan'ın 17 Ekim 2026 ekran görüntüleriyle ölçüldü). Özetler önce 1080×1350 karttı
+# (GEN_45 = 1080 − 88 − 180); videoda üstte ve altta boş bantla durdukları için dikeye alındı (Rıdvan, 24 Ekim 2026).
 GEN_916 = 1080 - 96 - 170
 BUYUK_HAREKET_HAFTALIK = 5.0  # haftalık özet: önceki haftanın son değerine göre
 GRAFIK_HAFTA_YUK = 176        # haftalık grafiğin çizim yüksekliği (px; dikey kart, eski 150'nin ~1,17 katı)
@@ -963,7 +961,9 @@ def aylik_veri_hazirla(f, hesap):
     v["parite_cumle"] = parite_cumlesi(v["parite_deg"], "bu ay")
 
     # Grafik: ayın her iş günü; önceki ayın son değeri kesikli çizgi (kısmi ayda yok)
-    gen, yuk, ust, alt, yan = GEN_45, 320, 56, 76, 14   # altta en düşük etiketine ve tarihlere yer
+    # Altta en düşük etiketine ve tarihlere yer. 24 Ekim 2026'dan dikey 9:16 kart: grafik tam genişlikte ve sahneye
+    # sığan yükseklikte (eski 320 px'lik grafik sahneye sığmadığı için ~%70'e küçülüyor, etiketleri ~16 px kalıyordu)
+    gen, yuk, ust, alt, yan = GEN_916, 226, 50, 76, 16
     tum = degerler + ([] if f["kismi"] else [f["gram_once"]])
     alt_s, ust_s = min(tum), max(tum)
     aralik = (ust_s - alt_s) or 1
@@ -982,8 +982,8 @@ def aylik_veri_hazirla(f, hesap):
         x, yy = noktalar[i]
         ustte = ad != "en düşük"
         isaretler.append({"i": i, "x": x, "y": yy, "deger": deger, "oran": oran(i),
-                          "ty": yy - 22 if ustte else yy + 38,
-                          "tx": min(max(x, 70), gen - 70)})
+                          "ty": yy - 26 if ustte else yy + 44,
+                          "tx": min(max(x, 82), gen - 82)})
     etiketler = [{"x": noktalar[0][0], "metin": f"{gunler[0].day} {AYLAR[ay.month - 1]}", "yan": "start"},
                  {"x": noktalar[-1][0], "metin": f"{gunler[-1].day} {AYLAR[ay.month - 1]}", "yan": "end"}]
     v["grafik"] = {"gen": gen, "yuk": yuk, "isaretler": isaretler, "etiketler": etiketler,
@@ -1180,8 +1180,8 @@ def gorsel_uret(tur, veri, png_yolu):
     html = env.get_template(f"{tur}.html").render(**veri)
     gecici = SABLONLAR / f"_cikti_{tur}.html"   # fontlar göreli yolla yüklensin diye burada
     gecici.write_text(html, encoding="utf-8")
-    boyut = {"reels": (1080, 1920), "kapak": (1080, 1920), "post": (1080, 1350), "hafta": (1080, 1920), "yasal": (1080, 1350),
-             "bilgi": (1080, 1350), "yorum": (1080, 1350), "ay": (1080, 1350), "kisa": (1080, 1920), "ozel": (1080, 1920),
+    boyut = {"reels": (1080, 1920), "kapak": (1080, 1920), "post": (1080, 1920), "hafta": (1080, 1920), "yasal": (1080, 1350),
+             "bilgi": (1080, 1350), "yorum": (1080, 1350), "ay": (1080, 1920), "kisa": (1080, 1920), "ozel": (1080, 1920),
              "kart-gram": (1080, 1920), "kart-parite": (1080, 1920), "sayfa-og": (1200, 630),
              "yorum-reels": (1080, 1920), "site-reels": (1080, 1920)}[tur]
     # Instagram görsel gönderilerde yalnızca JPEG kabul ediyor; uzantı .jpg ise JPEG kaydedilir.
@@ -1329,7 +1329,7 @@ def hareketli_video_uret(tur, veri, mp4_yolu, sure=7, seslendirme=None, muzik=No
              "-t", str(sure), *akis,
              "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-r", str(VIDEO_FPS),
              "-c:a", "aac", "-b:a", "128k", "-shortest", "-movflags", "+faststart", str(mp4_yolu)]
-    boyut = {"reels": (1080, 1920), "kisa": (1080, 1920), "ozel": (1080, 1920), "hafta": (1080, 1920),
+    boyut = {"reels": (1080, 1920), "kisa": (1080, 1920), "ozel": (1080, 1920), "hafta": (1080, 1920), "ay": (1080, 1920), "post": (1080, 1920),
              "kart-gram": (1080, 1920), "kart-parite": (1080, 1920), "yorum-reels": (1080, 1920),
              "site-reels": (1080, 1920)}.get(tur, (1080, 1350))
     try:
@@ -1458,7 +1458,7 @@ def goril_yerlesimi_denetle(sablon, veri, sure=None):
         with sync_playwright() as p:
             kwargs = {"executable_path": os.environ["CHROME_YOLU"]} if os.environ.get("CHROME_YOLU") else {}
             tarayici = p.chromium.launch(**kwargs)
-            boyut = (1080, 1920) if sablon in ("ozel", "reels", "hafta") else (1080, 1350)
+            boyut = (1080, 1920) if sablon in ("ozel", "reels", "hafta", "ay", "post") else (1080, 1350)
             sayfa = tarayici.new_page(viewport={"width": boyut[0], "height": boyut[1]})
             sayfa.goto(gecici.as_uri())
             sayfa.evaluate("document.fonts.ready")
