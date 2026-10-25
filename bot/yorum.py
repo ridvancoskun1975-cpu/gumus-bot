@@ -769,7 +769,7 @@ def aciklama(v, yorum, kaynak_satirlari, gelismeler=None):
             f"Gram gümüş: {v['gram']} ₺ (haftalık {v['gram_deg']['isaret']} {v['gram_deg']['metin']}) · {v['veri_ani']}",
             "\n".join(vade_satirlari) + "\nAyrıntılar görsellerde, kaydırın →",
             "\n".join(degisim_satirlari) if degisim_satirlari else None,
-            "Sizce gümüş önümüzdeki haftalarda ne yöne gider? Yorumlara yazın 👇" if soru else None,
+            # Yorum sorusu kaldırıldı (Rıdvan, 25 Ekim 2026 09:19: "Soruyu kaldır").
             _nasil_hazirlandi(gelismeler),
             "Uyarı: " + UYARI,
             f"Veriler: {v['veri_ani']} itibarıyla.\n{satirlar}",
@@ -777,8 +777,8 @@ def aciklama(v, yorum, kaynak_satirlari, gelismeler=None):
         ]
         return "\n\n".join(p for p in parcalar if p)
 
-    # Instagram sınırı 2200 karakter: önce haber kaynakları kısaltılır, sonra soru satırı düşer.
-    for soru, sayi in [(True, None), (True, 6), (True, 4), (False, 4), (False, 3)]:
+    # Instagram sınırı 2200 karakter: haber kaynakları kısaltılır.
+    for soru, sayi in [(False, None), (False, 6), (False, 4), (False, 3)]:
         metin = kur(soru, sayi)
         if len(metin) <= 2200:
             return metin
