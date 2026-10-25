@@ -6,6 +6,5 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
-| 2026-10-25 15:16 | **Pazar Reels'i çerçeve %10 büyük** (Rıdvan, 25 Ekim 15:15 "Uygun, uygula"): vade sahnesi bütünüyle ×1,1, sağa ve alta taşar; @hesap + yapay zekâ satırı üst şeride. | `templates/yorum-reels.html`, `README.md` | main (küçük iş) |
 | 2026-10-25 08:55 | **Yasal denetim düzeltmeleri (25 Ekim; rapor: proje `arastirma/yasal-inceleme-25-ekim.md`).** 1–2 (pazar yorumu EK/3 uyarısı, yön değişikliği satırı, soru kaldırıldı) main'de, 09:33 onaylı. Sırada 3–6: "tek adres", sesli rehber Reels'inde ekranda yapay zekâ sesi notu, yasal bildirim, site künyesi. Kitap işleri 26 Ekim 12:00 sonrası. | `templates/site-reels.html`, `bot/main.py` (tanıtım açıklaması), rehber Reels şablonu, `bot/yasal.py`, `templates/taban.html` | `yasal-duzeltme` · önizleme |
 | 2026-10-21 20:30 | **Kota notu (Rıdvan, 21 Ekim: "öneriyi uygula"):** haftalık Max kullanımı %66. 26 Ekim pazartesi 12:00'ye kadar büyük iş başlatma (yeni bölüm, toplu denetim, uzun araştırma, çok alt görevli iş); yalnız küçük düzeltmeler. Aynı anda çok sohbet açma. Bu satır 26 Ekim 12:00'de geçersiz olur; o saatten sonra gören silsin, Rıdvan'a sormasın. | — | kota · 26 Ekim 12:00'ye kadar |

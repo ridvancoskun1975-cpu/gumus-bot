@@ -12,14 +12,27 @@
    sahnesi eklenir ve öğeler kendi cümlesi okunurken belirir (kapak_g, v.g: sahne süresine oran). Profil ızgarası ortadaki 3:4 alanı (y 240–1680) gösterir;
    Reels ekranının güvenli alanı (Rıdvan, 17 Ekim 2026; reels.html ile aynı ölçüler): üst 220 px (Reels yazısı, kamera),
    alt 420 px (hesap adı, açıklama, müzik), sağ 170 px (beğeni/yorum düğmeleri) boş kalır; sol kenar 64 px.
+   Çerçeve %10 büyük (Rıdvan, 25 Ekim 2026: "Yazılar çok ufak", "Komple çerçeve büyümeli", "Sağdaki ve alttaki
+   sınırlara biraz taşısa sorun olmaz"; önizlemeye "Uygun, uygula"): üst şerit ve vade sahnesi ×1,1, oranlar aynı
+   (vade sahnesi 858×1058'lik eski düzeninde dizilip --k ile büyütülür). Vade sahnesi sağda düğmelerin, altta profil
+   fotoğrafının kenarına değer; daha büyüğünde son satır hesap adının arkasında kalır. Hesap + yapay zekâ satırı bu
+   yüzden altta değil üst şeritte (altta hesap adı satırı üstüne biniyordu; yapay zekâ beyanı her karede görünmeli).
    Kare çağrılmazsa (kapak görseli) yalnızca kapak sahnesi son hâliyle görünür. */
 .yr { position: relative; width: 1080px; height: 1920px; box-sizing: border-box; background: var(--zemin);
-  color: var(--yazi); font-family: 'Archivo', sans-serif; overflow: hidden; }
-.yr .kenar { position: absolute; left: 52px; right: 90px; display: flex; justify-content: space-between; align-items: center; }
-.yr .seri { gap: 14px; font-size: 32px; }
+  color: var(--yazi); font-family: 'Archivo', sans-serif; overflow: hidden; --k: 1.1; }
+.yr .kenar { position: absolute; left: 52px; right: 52px; display: flex; justify-content: space-between; align-items: center; }
+.yr .kenar-sol { flex: 1; min-width: 0; margin-right: 24px; display: flex; flex-direction: column; gap: 13px; }
+.yr .kenar-ust { display: flex; justify-content: space-between; align-items: center; }
+.yr .kunye { font-size: 24px; color: var(--soluk); white-space: nowrap; }
+.yr .kunye b { color: var(--yazi); font-weight: 700; }
+.yr .seri { gap: 15px; font-size: 35px; }
 .yr .sahne-k { position: absolute; inset: 0; }
 .yr .sahne-k.gizli { display: none; }
 .yr .blok { position: absolute; left: 52px; right: 170px; }
+/* vade sahnesinin çerçevesi: içerik eski 858×1058 alanda dizilir, bütünüyle --k kat büyür */
+.yr .olcek-dis { right: auto; width: calc(858px * var(--k)); height: calc(1058px * var(--k)); }
+.yr .olcek { position: absolute; left: 0; top: 0; width: 858px; height: 1058px; display: flex; flex-direction: column;
+  transform: scale(var(--k)); transform-origin: 0 0; }
 .yr h1 { font-size: 104px; letter-spacing: -4px; line-height: 0.95; text-wrap: balance; }
 .yr .tarih { margin-top: 24px; font-size: 40px; }
 .yr .fiyat-blok { border-top: 3px solid var(--cizgi); padding-top: 30px; }
@@ -39,7 +52,6 @@
 .yr .yon.dusus { color: var(--dusus); }
 .yr .yon.dusus svg { transform: rotate(180deg); }
 .yr .yon small { font-size: 0.8em; font-weight: 600; color: var(--soluk); }
-.yr .yz-not { font-size: 27px; }
 /* "Ayrıntılar geliyor →" (Rıdvan 22:09: ilk sayfada sağa ok). Solda: sağ kenarı Reels'in beğeni/yorum düğmeleri kapatır. */
 .yr .ileri { display: inline-flex; align-items: center; gap: 16px; font-size: 40px; font-weight: 800;
   padding: 18px 32px; border-radius: 999px; border: 3px solid var(--vurgu); color: var(--yazi); }
@@ -82,10 +94,17 @@
 <body>
 <div class="yr" id="yr" data-sureler="{{ sahne_sureleri | join(',') }}">
   <div class="isik" aria-hidden="true"></div>
+  {#- Üst şerit ×1,1 (25 Ekim 2026). Yapay zekâ ibaresi küçük (Rıdvan, 15 Ekim 21:38) ama ilk kareden görünür; bütün
+      sahnelerde, etiketin altında (altta Instagram'ın hesap adı satırı üstüne biniyordu). -#}
   <div class="kenar" style="top: 246px">
-    <div class="etiket seri"{% if sesli %} style="font-size: 25px; letter-spacing: 3px; white-space: nowrap"{% endif %}><span id="nokta" class="nokta" style="width: 14px; height: 14px"></span><span>GÜMÜŞ GÖRÜNÜMÜ · <span id="sayac">HER PAZAR</span></span></div>
-    {% if sesli %}{{ ses_rozeti(29) }}{% endif %}
-    {{ ag_etiketi(104, 118, '10px 12px', 18, 40, 15) }}
+    <div class="kenar-sol">
+      <div class="kenar-ust">
+        <div class="etiket seri"{% if sesli %} style="font-size: 27.5px; letter-spacing: 3px; white-space: nowrap"{% endif %}><span id="nokta" class="nokta" style="width: 15px; height: 15px"></span><span>GÜMÜŞ GÖRÜNÜMÜ · <span id="sayac">HER PAZAR</span></span></div>
+        {% if sesli %}{{ ses_rozeti(32) }}{% endif %}
+      </div>
+      <div class="kunye"><b>{{ hesap }}</b> · Üst düzey yapay zekâ ile üretilmiştir · yatırım tavsiyesi değildir.</div>
+    </div>
+    {{ ag_etiketi(114, 130, '11px 13px', 20, 44, 16.5) }}
   </div>
 
   {# ---- 1) kapak ---- #}
@@ -119,7 +138,8 @@
   {# ---- 2–4) vadeler: kaydırmalı gönderinin vade sayfalarıyla aynı içerik ---- #}
   {% for v in vadeler %}
   <div class="sahne-k gizli" id="s{{ loop.index }}" data-sayac="{{ '%02d' % (loop.index + 1) }} / {{ '%02d' % (vadeler | length + 1) }}">
-    <div class="blok" style="top: 362px; bottom: 500px; display: flex; flex-direction: column" data-sigdir>
+    <div class="blok olcek-dis" style="top: 384px">
+    <div class="olcek" data-sigdir>
       <div data-g="0">
         <div class="no mono">{{ '%02d' % loop.index }}</div>
         <h2>{{ v.ad }}</h2>
@@ -143,6 +163,7 @@
       <div class="parca" data-g="{{ g.seyir or 0.28 }}"><div class="kucuk-baslik">OLASI SEYİR</div><div class="metin">{{ v.yorum.seyir }}</div></div>
       <div class="parca" data-g="{{ g.izle or 0.4 }}"><div class="kucuk-baslik">İZLENECEK</div><div class="metin izle">{{ v.yorum.izlenecek }}</div></div>
     </div>
+    </div>
   </div>
   {% endfor %}
 
@@ -160,12 +181,6 @@
   </div>
   {% endif %}
 
-  {#- Yapay zekâ ibaresi altta, küçük (Rıdvan, 15 Ekim 21:38) ama ilk kareden görünür ve arayüzün kapattığı
-      alt şeridin (420 px) üstünde; bütün sahnelerde. -#}
-  <div class="blok" style="top: 1428px">
-    <b style="font-size: 34px">{{ hesap }}</b>
-    <div class="soluk yz-not" style="margin-top: 4px">Üst düzey yapay zekâ ile üretilmiştir · yatırım tavsiyesi değildir.</div>
-  </div>
 </div>
 <script>
 // Vade sahnesinde metin sığan en büyük boyda (52 → 28 px); sahneden taşmasın.
