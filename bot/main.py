@@ -1706,6 +1706,9 @@ def yayinla(cikti, taban_url, bekle_dk=0):
 
 def _yayinla(cikti, taban_url):
     meta = json.loads((cikti / "meta.json").read_text(encoding="utf-8"))
+    if meta.get("reels_tekrar"):   # yalnız pazar Reels'i + hikâyesi (pazar_reels_tekrar)
+        yorum_reelsi(hesap_bilgisi()["user_id"], meta["reels"], taban_url)
+        return
     if meta["tur"] == "hikaye":
         videolar = meta.get("hikaye_videolari") or []
         if not videolar:
@@ -2554,14 +2557,67 @@ def yorum_seslendirmesi(veri, cikti):
         return None
 
 
+IG_SINIR = 2200
+# Sığdırma hedefi biraz altında: Instagram'ın sayımı bizimkinden birkaç karakter farklı olabilir (25 Ekim 2026).
+IG_HEDEF = 2180
+
+
+def ig_uzunluk(metin):
+    """Instagram'ın saydığı uzunluk (UTF-16 birimi; emoji 2 sayılır). Sınır 2200."""
+    return len(metin.encode("utf-16-le")) // 2
+
+
+def aciklama_sigdir(metin, sinir=IG_HEDEF):
+    """Açıklama sınırı aşarsa "Haber kaynakları" satırındaki alan adlarını sondan azaltır ("ve N kaynak daha").
+    25 Ekim 2026: pazar Reels'inin açıklaması 2213 karakterle reddedildi (kaydırmalı gönderi 2189 ile geçti)."""
+    import re
+    if ig_uzunluk(metin) > sinir:   # önce Reels'in uzun yönlendirme satırı kısalır
+        metin = re.sub(r"Yorumun \d+ sayfası profildeki kaydırmalı gönderide de var →",
+                       "Sayfalar profildeki kaydırmalı gönderide →", metin)
+    desen = re.compile(r"Haber kaynakları \(web araması\): ([^\n]*)")
+    while ig_uzunluk(metin) > sinir:
+        m = desen.search(metin)
+        if not m:
+            break
+        satir = m.group(1)
+        ek = re.search(r" ve (\d+) kaynak daha$", satir)
+        fazla = int(ek.group(1)) if ek else 0
+        alanlar = (satir[:ek.start()] if ek else satir).split(", ")
+        if len(alanlar) <= 1:
+            break
+        alanlar.pop()
+        metin = metin[:m.start(1)] + ", ".join(alanlar) + f" ve {fazla + 1} kaynak daha" + metin[m.end(1):]
+    return metin
+
+
 def _yorum_sesli_metin(metin):
-    """Açıklamaya seslendirme notu (uyarıdan önce). Sınır aşılırsa önce soru satırı çıkar; yine aşarsa not eklenmez."""
+    """Açıklamaya seslendirme notu (uyarıdan önce). Sınır aşılırsa haber kaynakları kısaltılır; yine aşarsa not eklenmez."""
     import ses
     ek = ses.ACIKLAMA_SATIRI + "\n\n"
     yeni = metin.replace("Uyarı: ", ek + "Uyarı: ", 1) if "Uyarı: " in metin else metin + "\n\n" + ses.ACIKLAMA_SATIRI
-    if len(yeni) > 2200:
-        yeni = yeni.replace("Sizce gümüş önümüzdeki haftalarda ne yöne gider? Yorumlara yazın 👇\n\n", "")
-    return yeni if len(yeni) <= 2200 else metin
+    yeni = aciklama_sigdir(yeni)
+    return yeni if ig_uzunluk(yeni) <= IG_SINIR else aciklama_sigdir(metin)
+
+
+def pazar_reels_tekrar(cikti):
+    """Paylaşılamayan pazar Reels'ini (ve hikâyesini) aynı videoyla yeniden gönderir; yorum yeniden yazılmaz.
+    Dosyalar depodaki tekrar/ klasöründe: o günkü üretimin meta.json'u + Reels videosu, kapak, hikâye videosu
+    (Claude ilgili çalıştırmanın onizleme-yorum eserinden koyar). Elle: Run workflow → tür: yorum, konu: reels-tekrar,
+    deneme: false. Açıklama sınıra sığdırılır."""
+    import shutil
+    kaynak = KOK / "tekrar"
+    meta = json.loads((kaynak / "meta.json").read_text(encoding="utf-8"))
+    r = dict(meta["reels"])
+    for anahtar in ("dosya", "kapak", "hikaye_dosya"):
+        if r.get(anahtar):
+            shutil.copy(kaynak / r[anahtar], cikti / r[anahtar])
+    r["aciklama"] = _yorum_sesli_metin(aciklama_sigdir(r["aciklama"])) if r.get("seslendirme") else aciklama_sigdir(r["aciklama"])
+    if ig_uzunluk(r["aciklama"]) > IG_SINIR:
+        raise RuntimeError(f"Reels açıklaması sığmadı ({ig_uzunluk(r['aciklama'])} > {IG_SINIR})")
+    (cikti / "meta.json").write_text(json.dumps({"tur": "yorum", "reels_tekrar": True, "reels": r},
+                                                ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"Pazar Reels'i yeniden gönderilecek: {r['dosya']} ({ig_uzunluk(r['aciklama'])} karakter açıklama)")
+    print(r["aciklama"])
 
 
 def yorum_reels_uret(cikti, veri, metin, damga):
@@ -2580,8 +2636,8 @@ def yorum_reels_uret(cikti, veri, metin, damga):
         print(f"::warning::Pazar Reels'i üretilemedi ({type(e).__name__}: {e}); yalnızca kaydırmalı gönderi gidecek.")
         return None
     # Açıklama kaydırmalıyla aynı (uyarılar, kaynaklar, etiketler); yalnızca "kaydırın" satırı profile yönlendirir.
-    reels_metin = metin.replace("Ayrıntılar görsellerde, kaydırın →",
-                                f"Yorumun {len(veri['vadeler']) + 1} sayfası profildeki kaydırmalı gönderide de var →")
+    reels_metin = aciklama_sigdir(metin.replace("Ayrıntılar görsellerde, kaydırın →",
+                                f"Yorumun {len(veri['vadeler']) + 1} sayfası profildeki kaydırmalı gönderide de var →"))
     # Yedek kapak anı: kapak sahnesinin bütün öğeleri görünürken (kapak sahnesinin sonundan 1 sn önce)
     sonuc = {"dosya": mp4.name, "kapak": kapak.name, "kapak_ms": int((sahneler_[0] - 1) * 1000),
              "aciklama": reels_metin, "seslendirme": None}
@@ -2794,6 +2850,9 @@ def hazirla(tur, cikti, ornek, konu=None):
         tanitim_hazirla(cikti)
         return
     if tur == "yorum":
+        if os.environ.get("KONU", "").strip() == "reels-tekrar":
+            pazar_reels_tekrar(cikti)
+            return
         if YORUM_DURAKLAT and os.environ.get("GITHUB_EVENT_NAME") == "schedule":
             print("::warning::Paylaşım atlandı: zamanlı pazar yorumu duraklatıldı (main.YORUM_DURAKLAT; Rıdvan, "
                   "25 Ekim 2026). Elle Run workflow → tür: yorum yine çalışır.")

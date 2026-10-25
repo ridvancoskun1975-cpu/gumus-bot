@@ -177,4 +177,13 @@ kontrol("Yön değişti." in env.get_template("yorum.html").render(**ortak, sayf
 kontrol(env.get_template("yorum-reels.html").render(**ortak, sahne_sureleri=[8, 8, 8]).count("Yön değişti.") == 1,
         "Reels'te not")
 
+# 4) Instagram açıklama sınırı (25 Ekim 2026: Reels açıklaması 2213 karakterle reddedildi)
+uzun = "Başlık\n\n" + "x" * 2000 + "\n\nHaber kaynakları (web araması): " + ", ".join(f"kaynak{i}.com.tr" for i in range(12)) + "\n\n#gümüş"
+k = main.aciklama_sigdir(uzun)
+kontrol(main.ig_uzunluk(k) <= main.IG_HEDEF and "kaynak daha" in k and k.endswith("#gümüş"), "haber kaynakları kısaltılarak sığar")
+kontrol(main.aciklama_sigdir("kısa") == "kısa", "kısa açıklamaya dokunulmaz")
+kontrol(main.ig_uzunluk("🎙") == 2, "emoji Instagram'da 2 sayılır")
+s2 = main._yorum_sesli_metin(uzun.replace("Başlık", "Uyarı: başlık"))
+kontrol("🎙" in s2 and main.ig_uzunluk(s2) <= main.IG_SINIR, "seslendirme notu sığdırılarak eklenir")
+
 print(f"test_pazar: {gecen} sınama geçti")
