@@ -15,8 +15,14 @@
     bantla yerleşiyordu). Kenarlar sabah Reels'iyle aynı: sağdaki 170 px ve alttaki 420 px Reels düğmelerine, hesap adı
     ve açıklama satırına bırakılır. Yazılar ve grafik eski kartın ~1,17 katı: birbirine oranları aynı. Genişlik artmadığı
     için goril eski boyunda. -#}
-<div class="sahne" style="position: relative; width: 1080px; height: 1920px; padding: 220px 170px 420px 96px">
+{#- Çerçeve %10 büyük (Rıdvan, 25 Ekim 2026: pazar Reels'inden sonra "Haftalık ve aylık raporları da yüzde 10 büyük
+    halleri ile karşılaştırmalı göster"; önizlemeye "İkisi de uygun, uygula"): içerik eski 814×1280 alanda dizilir,
+    bütünüyle ×1,1 büyür (oranlar, goril ve grafik aynı). Sağa ve alta taşar: alt satır (hesap, yasal satır) Reels
+    ekranında Instagram'ın hesap adı satırının hizasına iner (Rıdvan önizlemede gördü, onayladı). -#}
+<div class="sahne" style="position: relative; width: 1080px; height: 1920px; padding: 0">
   <div class="isik" aria-hidden="true"></div>
+  <div class="cerceve" style="position: absolute; left: 96px; top: 220px; width: 814px; height: 1280px; display: flex;
+       flex-direction: column; justify-content: space-between; transform: scale(1.1); transform-origin: 0 0">
   <div class="ust">
     <div class="ust-sol" style="gap: 19px">
       <h1 style="font-size: 140px; letter-spacing: -3.5px">Gümüş</h1>
@@ -102,6 +108,7 @@
       <span>Bilgi amaçlıdır, yatırım tavsiyesi değildir.</span>
       <span>Metal fiyatları: {{ kaynak_metal }}</span>
     </div>
+  </div>
   </div>
 </div>
 <script>{% include "hareket.js" %}</script>
