@@ -228,7 +228,7 @@ def siradaki_aylik(bugun, kayitlar):
 # ---------------------------------------------------------------- program
 
 def program(simdi=None, kayit_gunleri=(), hikaye_turleri=None, rehber_saati=(13, 45), rehber_hikaye=None,
-            yorum_reels=None, rehber_reels=None):
+            yorum_reels=None, rehber_reels=None, pazar_hikaye=None):
     """Sayfa için hazır program.
 
     Döndürür: {"satirlar": [{"zaman", "ne", "ek": [satır, …]}], "guncelleme": "Hafta içi ~10:00 ve ~20:00",
@@ -247,6 +247,10 @@ def program(simdi=None, kayit_gunleri=(), hikaye_turleri=None, rehber_saati=(13,
         if yorum_reels is None:
             # Pazar yorumu 15 Ekim 2026'dan beri kaydırmalının yanında Reels (17 Ekim'den beri 24 sn) ve hikâye olarak da gider
             yorum_reels = getattr(bot, "YORUM_REELS", False)
+    if pazar_hikaye is None:
+        import main as bot
+        # Pazar hikâyesi 25 Ekim 2026'dan beri kapalı (main.PAZAR_HIKAYE)
+        pazar_hikaye = getattr(bot, "PAZAR_HIKAYE", True)
     if rehber_reels is None:
         import main as bot
         # Rehber günü 16 Ekim 2026'dan beri kaydırmalı yerine sesli Reels (main.REHBER_REELS)
@@ -258,7 +262,8 @@ def program(simdi=None, kayit_gunleri=(), hikaye_turleri=None, rehber_saati=(13,
         if tur == "bilgi" and rehber_reels:
             bicim = "sesli Reels"
         if tur == "yorum" and yorum_reels:
-            bicim = f"{bicim}, Reels ve hikâye" if bicim else "Reels ve hikâye"
+            ek = "Reels ve hikâye" if pazar_hikaye else "Reels"
+            bicim = (f"{bicim}, {ek}" if pazar_hikaye else f"{bicim} ve {ek}") if bicim else ek
         elif tur in hikaye_turleri:
             bicim = f"{bicim} ve hikâye" if bicim else "hikâye"
         return f"{TUR_ADI.get(tur, tur)} ({bicim})" if bicim else TUR_ADI.get(tur, tur)

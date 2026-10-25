@@ -35,9 +35,10 @@
   bir arayüz gerektiren çözüm önerme.
 - Taahhüt: hafta içi her gün 2 kez gram fiyatı (~10:00 Reels, ~20:00 özet); bu ikisi kaldırılmaz, başka içerikle
   değiştirilmez.
-- Pazar yorumu 3 sayılır (kaydırmalı + Reels + hikâye). Pazar Reels'i sesli (Rıdvan, 17 Ekim 2026: Gemini erkek
-  sesi, analizin tamamı okunur; okumayı ona sormadan kısaltma). Ses **Orus** (`ses.YORUM_SES`; Rıdvan, 3 örnekten "Ses 2"); hikâyeye 24 sn müzikli sürüm
-  gider; ses alınamazsa Reels 24 sn müzikli gider (yedek yol kaldırılmaz). Ses, üslup ya da okunan metin
+- Pazar yorumu 2 sayılır (kaydırmalı + Reels; hikâye 25 Ekim 2026'da kaldırıldı, Rıdvan: "Hikayeyi kaldıralım";
+  `main.PAZAR_HIKAYE`; öne çıkan yerine pazar analizi profilde sabitlenir). Pazar Reels'i sesli (Rıdvan, 17 Ekim 2026: Gemini erkek
+  sesi, analizin tamamı okunur; okumayı ona sormadan kısaltma). Ses **Orus** (`ses.YORUM_SES`; Rıdvan, 3 örnekten "Ses 2"); 24 sn müzikli sürüm
+  yine üretilir; ses alınamazsa Reels 24 sn müzikli gider (yedek yol kaldırılmaz). Ses, üslup ya da okunan metin
   değişecekse önce önizleme ve onay.
 - Pazar yorumunun orta vade geçmişini MetalCharts Starter verir (17 Ekim 2026); Ocak 2027'de iptal (11 Ocak
   hatırlatması), sonra kendi kayıtlarımız. Pazar yorumu önizlemesini Rıdvan'a gerçek veriyle üret (deneme, ornek

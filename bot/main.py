@@ -1830,8 +1830,8 @@ def yorum_reelsi(kullanici_id, reels, taban_url):
         print(f"::warning::Pazar Reels'i paylaşılamadı ({type(e).__name__}: {e}); kaydırmalı gönderi paylaşıldı. "
               "Reels'i sonradan göndermek için Claude'a yaz.")
         return
-    # Sesli Reels ~1,5 dk: hikâyeye 24 sn'lik müzikli sürüm gider (hikâye en çok 60 sn)
-    if not _hikaye_izinli("pazar yorumu"):
+    # Sesli Reels ~1,5 dk: hikâyeye 24 sn'lik müzikli sürüm gider (hikâye en çok 60 sn). 25 Ekim 2026'dan beri kapalı.
+    if not PAZAR_HIKAYE or not _hikaye_izinli("pazar yorumu"):
         return
     hikaye = reels.get("hikaye_dosya")
     hikaye_paylas(kullanici_id, taban_url.rstrip("/") + "/" + hikaye if hikaye else video_url)
@@ -2502,6 +2502,9 @@ def yorum_hazirla(cikti, ornek):
 # gönderiden hemen sonra paylaşılır ve aynı video hikâyeye de konur. Reels üretilemez ya da paylaşılamazsa
 # kaydırmalı gönderi yine gider (yalnızca uyarı). Kapatmak için False.
 YORUM_REELS = True
+# Pazar hikâyesi kaldırıldı (Rıdvan, 25 Ekim 2026 11:55: "Hikayeyi kaldıralım"): pazar yorumu kaydırmalı + sesli Reels,
+# günlük sınırda 2 sayılır. Hikâyenin 24 sn müzikli videosu yine üretilir (ses alınamazsa Reels o videoyla gider).
+PAZAR_HIKAYE = False
 # Zamanlı pazar yorumunu duraklatır (Rıdvan, 25 Ekim 2026 08:49: "pazar yorumunu duraklatalım şimdilik. Düzenlemeleri
 # yaptıktan sonra pazar yorumu çıksın."; 25 Ekim yasal denetiminin pazar yorumu düzeltmeleri bitene kadar). Yalnız zamanlı
 # çalıştırma atlanır; elle Run workflow → tür: yorum (onaydan sonra) normal çalışır. Düzenlemeler main'e alınınca False.

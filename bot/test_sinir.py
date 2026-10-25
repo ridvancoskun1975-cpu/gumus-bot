@@ -69,9 +69,9 @@ gy = {1: [is_("yayinla", "completed", "success", bit="2026-10-13T20:59:59Z")],  
 esit([x[0] for x in sinir.paylasim_sayisi([{"id": 1}, {"id": 2}], gy, SIMDI, 0)], [2], "gece yarısı")
 # eser okunamazsa (eski çalıştırma, tür bilinmiyor) güvenli taraf: 2 sayılır
 esit(sinir.paylasim_sayisi([{"id": 2}], {2: gy[2]}, SIMDI, 0)[0][4], 2, "tür bilinmiyorsa 2")
-# tahminler: sabah Reels'i hikâyesiz 1; akşam özeti, haftalık, aylık, rehber 2; pazar yorumu 3
+# tahminler: sabah Reels'i hikâyesiz 1; akşam özeti, haftalık, aylık, rehber 2; pazar yorumu 2 (25 Ekim 2026'dan beri hikâyesiz)
 esit((sinir.TAHMIN["reels"], sinir.TAHMIN["post"], sinir.TAHMIN["bilgi"], sinir.TAHMIN["yorum"],
-      sinir.TAHMIN["kisa"]), (1, 2, 2, 3, 1), "tür tahminleri")
+      sinir.TAHMIN["kisa"]), (1, 2, 2, 2, 1), "tür tahminleri")
 
 
 # ---------------------------------------------------------------- karar (GitHub okuması sahte)
@@ -113,9 +113,9 @@ for tur, n, yayin, onay, bek in [
     ("post", 2, True, False, (0, "tam")),      # 2 + 2 = 4 sınırda, tam
     ("post", 4, True, False, (1, "tam")),      # hikâyesiz de 5 → onaysız durur
     ("post", 4, True, True, (0, "tam")),       # onaylı: tam gider
-    ("yorum", 0, True, False, (0, "tam")),     # pazar: 3
-    ("yorum", 2, True, False, (0, "yok")),     # 2 + 3 = 5 → hikâyesiz 4
-    ("yorum", 3, True, False, (1, "tam")),     # hikâyesiz de 5 → durur
+    ("yorum", 0, True, False, (0, "tam")),     # pazar: 2 (kaydırmalı + Reels)
+    ("yorum", 2, True, False, (0, "tam")),     # 2 + 2 = 4 sınırda
+    ("yorum", 3, True, False, (1, "tam")),     # 3 + 2 = 5, bırakılacak hikâye yok → durur
     ("ay", 1, True, False, (0, "tam")),        # aylık özet günü 14:00: 1 + 2 = 3
     ("hafta", 0, True, False, (0, "tam")),
     ("kisa", 3, True, False, (0, "tam")),      # 3 + 1 = 4

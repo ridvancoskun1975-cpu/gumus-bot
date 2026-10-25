@@ -44,7 +44,9 @@ try:
     main.yorum_reelsi("1", {"dosya": "r.mp4", "kapak": "k.jpg", "kapak_ms": 11500, "aciklama": "x"}, "https://ornek/")
     kontrol(("POST", "1/media", "REELS") in istekler and ("POST", "1/media_publish", None) in istekler,
             "Reels konteyneri ve yayın")
-    kontrol(cagrilar == ["hikaye"], "Reels'ten sonra aynı video hikâyeye")
+    # Pazar hikâyesi 25 Ekim 2026'dan beri kapalı (main.PAZAR_HIKAYE): Reels gider, hikâye gitmez
+    kontrol(cagrilar == ([] if not main.PAZAR_HIKAYE else ["hikaye"]), "pazar hikâyesi yalnız PAZAR_HIKAYE açıksa")
+    kontrol(main.PAZAR_HIKAYE is False, "pazar hikâyesi kapalı (Rıdvan, 25 Ekim 2026)")
 finally:
     main._url_hazir_mi, main._istek, main.hikaye_paylas = eski
 

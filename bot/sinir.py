@@ -47,12 +47,12 @@ GUN_SINIRI = {
 }
 # Bir çalıştırmanın takipçiye gösterdiği içerik sayısı (gerçek sayı eserde yoksa ve bu çalıştırma için):
 # reels sabah Reels'i (hikâyesiz); post akşam özeti + hikâyesi; hafta / ay özet + hikâyesi; yorum kaydırmalı +
-# Reels + hikâyesi; bilgi rehber Reels'i + müzikli rehber hikâye videosu (60 sn'yi aşan bölümde 2 video olabilir);
+# Reels (25 Ekim 2026'dan beri hikâyesiz; main.PAZAR_HIKAYE); bilgi rehber Reels'i + müzikli rehber hikâye videosu (60 sn'yi aşan bölümde 2 video olabilir);
 # kisa rehber arşivi Reels'i; kart; yasal kaydırmalı; hikaye elle rehber hikâyesi.
-TAHMIN = {"reels": 1, "post": 2, "hafta": 2, "ay": 2, "yorum": 3, "bilgi": 2, "kisa": 1, "kart": 1, "yasal": 1,
+TAHMIN = {"reels": 1, "post": 2, "hafta": 2, "ay": 2, "yorum": 2, "bilgi": 2, "kisa": 1, "kart": 1, "yasal": 1,
           "hikaye": 1, "tanitim": 1}   # tanitim: bilgi sayfasının bir kezlik tanıtım Reels'i (hikâyesiz)
 # Hikâye kopyası düşerse kalan sayı (yalnız bu türlerde hikâye bir kopyadır ve bırakılabilir)
-HIKAYESIZ = {"post": 1, "hafta": 1, "ay": 1, "yorum": 2, "bilgi": 1}
+HIKAYESIZ = {"post": 1, "hafta": 1, "ay": 1, "bilgi": 1}   # yorum: 25 Ekim 2026'dan beri hikâyesiz (2)
 TR = ZoneInfo("Europe/Istanbul")
 IS_AKISI = "paylas.yml"
 YAYIN_ISI = "yayinla"
