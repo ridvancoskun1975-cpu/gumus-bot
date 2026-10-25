@@ -725,8 +725,8 @@ def seslendirme_parcalari(v):
         veri = f"{x['etiket']}: " + ", ".join(_degisim_okuma(h["ad"], h["deg"]) for h in x["hucreler"]) + "."
         if x.get("not"):
             veri += f" {x['not']}."
-        degisim = ([("degisim", f"{x['onceki']['tarih_metni']} yorumunda {x['onceki']['yon']} ağır basıyordu. "
-                                f"Değişikliğin nedeni: {y['degisim'].rstrip('.')}.")]
+        degisim = ([("degisim", f"Yön değişti. {x['onceki']['tarih_metni']} yorumunda {x['onceki']['yon']} ağır "
+                                f"basıyordu. Nedeni: {y['degisim'].rstrip('.')}.")]
                    if x.get("onceki") and (y.get("degisim") or "").strip() else [])
         sahneler.append([
             ("baslik", f"{x['ad']}, {x['ufuk']}."),
