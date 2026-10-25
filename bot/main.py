@@ -2450,6 +2450,10 @@ def yorum_hazirla(cikti, ornek):
 # gönderiden hemen sonra paylaşılır ve aynı video hikâyeye de konur. Reels üretilemez ya da paylaşılamazsa
 # kaydırmalı gönderi yine gider (yalnızca uyarı). Kapatmak için False.
 YORUM_REELS = True
+# Zamanlı pazar yorumunu duraklatır (Rıdvan, 25 Ekim 2026 08:49: "pazar yorumunu duraklatalım şimdilik. Düzenlemeleri
+# yaptıktan sonra pazar yorumu çıksın."; 25 Ekim yasal denetiminin pazar yorumu düzeltmeleri bitene kadar). Yalnız zamanlı
+# çalıştırma atlanır; elle Run workflow → tür: yorum (onaydan sonra) normal çalışır. Düzenlemeler main'e alınınca False.
+YORUM_DURAKLAT = True
 # Rıdvan 21:59: "3 sn giriş 6 sn sayfalar"; 22:05: "Giriş çok kısa oldu. Hepsi 8 saniye olsun".
 # Müzikli sürümde sahne sayısı vadelere göre: kapak + vade başına YORUM_REELS_SAHNELER[0] sn (kısa ve orta vade: 24 sn).
 YORUM_REELS_SAHNELER = (8, 8, 8)   # sn: kapak, kısa, orta vade (toplam 24 sn)
@@ -2741,6 +2745,10 @@ def hazirla(tur, cikti, ornek, konu=None):
         tanitim_hazirla(cikti)
         return
     if tur == "yorum":
+        if YORUM_DURAKLAT and os.environ.get("GITHUB_EVENT_NAME") == "schedule":
+            print("::warning::Paylaşım atlandı: zamanlı pazar yorumu duraklatıldı (main.YORUM_DURAKLAT; Rıdvan, "
+                  "25 Ekim 2026). Elle Run workflow → tür: yorum yine çalışır.")
+            return
         try:
             yorum_hazirla(cikti, ornek)
         except VeriYok as e:
