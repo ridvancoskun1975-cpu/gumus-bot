@@ -97,7 +97,7 @@ EK3 = ("Burada yer alan yatırım bilgi, yorum ve tavsiyeleri yatırım danışm
        "durumunuz ile risk ve getiri tercihlerinize uygun olmayabilir. Bu nedenle, sadece burada yer alan bilgilere "
        "dayanılarak yatırım kararı verilmesi beklentilerinize uygun sonuçlar doğurmayabilir.")
 kontrol(yorum.UYARI_EK3 == EK3, "EK/3 uyarı notu harfi harfine")
-kontrol(yorum.UYARI.startswith(EK3) and "yapay zekâ" in yorum.UYARI[len(EK3):], "yapay zekâ cümlesi EK/3'ten sonra, ayrı")
+kontrol(yorum.UYARI == EK3 and "yapay zekâ" in yorum.YZ_NOTU, "yapay zekâ cümlesi EK/3'ten ayrı")
 
 # Yön değişikliği (md. 78/2-c): yön değiştiyse gerekçe zorunlu; değişmediyse gerekçe görünmez
 onceki = {"tarih": date(2026, 10, 18), **yorum.ORNEK_ONCEKI}          # kısa: düşüş → bu hafta yükseliş; orta aynı
@@ -163,7 +163,7 @@ metin = yorum.aciklama(v, yz, "Gram fiyatı … hesaplanmıştır.\nMetal fiyatl
 kontrol("Değişiklik · kısa vade: 18 Ekim yorumunda düşüş ağır basıyordu, bu hafta yükseliş. Nedeni: Ons cuma" in metin,
         "açıklamada değişiklik satırı")
 kontrol("Değişiklik · orta vade" not in metin, "yön aynıysa açıklamada satır yok")
-kontrol("Uyarı: " + EK3 in metin, "açıklamada EK/3 metni harfi harfine")
+kontrol("Uyarı: " + EK3 + "\n\n" + yorum.YZ_NOTU + "\n\n" in metin, "açıklamada EK/3 harfi harfine, YZ notu ayrı paragraf")
 kontrol(len(metin) <= 2200, f"açıklama 2200 sınırında ({len(metin)})")
 okuma = [m for sahne in yorum.seslendirme_parcalari(v) for _, m in sahne]
 kontrol(any(m.startswith("Yön değişti. 18 Ekim yorumunda düşüş ağır basıyordu. Nedeni:") for m in okuma),

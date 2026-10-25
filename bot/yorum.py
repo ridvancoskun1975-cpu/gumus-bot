@@ -668,7 +668,9 @@ UYARI_EK3 = ("Burada yer alan yatırım bilgi, yorum ve tavsiyeleri yatırım da
              "Bu tavsiyeler mali durumunuz ile risk ve getiri tercihlerinize uygun olmayabilir. Bu nedenle, sadece "
              "burada yer alan bilgilere dayanılarak yatırım kararı verilmesi beklentilerinize uygun sonuçlar "
              "doğurmayabilir.")
-UYARI = UYARI_EK3 + " Buradaki yorumlar üst düzey yapay zekâ ile üretilmiştir ve hata içerebilir."
+UYARI = UYARI_EK3
+# Rıdvan, 25 Ekim 2026 09:29: yapay zekâ cümlesi uyarıdan sonra ayrı paragraf
+YZ_NOTU = "Buradaki yorumlar üst düzey yapay zekâ ile üretilmiştir. Hata içerebilir."
 
 
 def _nasil_hazirlandi(gelismeler):
@@ -772,6 +774,7 @@ def aciklama(v, yorum, kaynak_satirlari, gelismeler=None):
             # Yorum sorusu kaldırıldı (Rıdvan, 25 Ekim 2026 09:19: "Soruyu kaldır").
             _nasil_hazirlandi(gelismeler),
             "Uyarı: " + UYARI,
+            YZ_NOTU,
             f"Veriler: {v['veri_ani']} itibarıyla.\n{satirlar}",
             HASHTAG,
         ]
