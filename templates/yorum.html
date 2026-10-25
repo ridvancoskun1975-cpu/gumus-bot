@@ -42,6 +42,10 @@ h2 { margin: 4px 0 0; font-size: 88px; line-height: 1; font-weight: 800; letter-
 .yz-blok .kucuk-baslik { margin-bottom: 8px; }
 .metin { font-size: var(--metin, 42px); line-height: 1.3; font-weight: 500; text-wrap: pretty; }
 .izle { color: var(--vurgu); font-weight: 700; }
+/* Yön değişikliği (SPK III-37.1 md. 78/2-c; 25 Ekim 2026): önceki yorumun tarihi, yönü ve değişikliğin nedeni */
+.degisim-not { margin-top: 10px; border-left: 4px solid var(--vurgu); padding: 2px 0 2px 16px; font-size: 27px;
+  line-height: 1.25; color: var(--soluk); text-wrap: pretty; }
+.degisim-not b { color: var(--yazi); font-weight: 700; }
 </style>
 </head>
 <body>
@@ -91,7 +95,7 @@ h2 { margin: 4px 0 0; font-size: 88px; line-height: 1; font-weight: 800; letter-
     <span class="mono soluk" style="font-size: 30px; white-space: nowrap">{{ '%02d' % (sayfa + 1) }} / {{ '%02d' % toplam }}</span>
   </div>
 
-  <div class="govde" id="govde" data-degisken="--metin" data-en-buyuk="42" data-en-kucuk="34">
+  <div class="govde" id="govde" data-degisken="--metin" data-en-buyuk="42" data-en-kucuk="{{ 30 if v.onceki else 34 }}">
     <div class="no mono">{{ '%02d' % sayfa }}</div>
     <h2>{{ v.ad }}</h2>
     <div class="ufuk">{{ v.ufuk }}</div>
@@ -108,7 +112,8 @@ h2 { margin: 4px 0 0; font-size: 88px; line-height: 1; font-weight: 800; letter-
       {% if v.not %}<div class="veri-not">{{ v.not }}</div>{% endif %}
     </div>
 
-    <div class="yz-blok"><div class="kucuk-baslik">AĞIR BASAN</div>{{ yon_isareti(v.yorum, 44, 34) }}</div>
+    <div class="yz-blok"><div class="kucuk-baslik">AĞIR BASAN</div>{{ yon_isareti(v.yorum, 44, 34) }}
+      {% if v.onceki %}<div class="degisim-not"><b>Yön değişti.</b> {{ v.onceki.tarih_metni }} yorumunda {{ v.onceki.yon }} ağır basıyordu. Nedeni: {{ v.yorum.degisim }}</div>{% endif %}</div>
     <div class="yz-blok"><div class="kucuk-baslik">DURUM</div><div class="metin">{{ v.yorum.durum }}</div></div>
     <div class="yz-blok"><div class="kucuk-baslik">OLASI SEYİR</div><div class="metin">{{ v.yorum.seyir }}</div></div>
     <div class="yz-blok"><div class="kucuk-baslik">İZLENECEK</div><div class="metin izle">{{ v.yorum.izlenecek }}</div></div>

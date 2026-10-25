@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Gümüş Görünümü Reels</title>
+<style>@font-face { font-family: 'Archivo'; font-weight: 100 900; src: url('../assets/fonts/archivo-latin-wght-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: 'Archivo'; font-weight: 100 900; src: url('../assets/fonts/archivo-latin-ext-wght-normal.woff2') format('woff2');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: 'JetBrains Mono'; font-weight: 100 800; src: url('../assets/fonts/jetbrains-mono-latin-wght-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: 'JetBrains Mono'; font-weight: 100 800; src: url('../assets/fonts/jetbrains-mono-latin-ext-wght-normal.woff2') format('woff2');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+
+:root { --zemin: #121418; --yazi: #EDEFF2; --soluk: #9AA3AE; --cizgi: #2C313A; --vurgu: #C9D1DA; --artis: #5BC98C; --dusus: #F07A6A; }
+html, body { margin: 0; background: var(--zemin); }
+.sahne { box-sizing: border-box; background: var(--zemin); color: var(--yazi); font-family: 'Archivo', sans-serif;
+  display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
+.sayi { font-variant-numeric: tabular-nums; }
+.mono { font-family: 'JetBrains Mono', monospace; }
+.soluk { color: var(--soluk); }
+.vurgu { color: var(--vurgu); }
+.ust { display: flex; justify-content: space-between; align-items: flex-start; }
+.ust-sol { display: flex; flex-direction: column; }
+.etiket { display: flex; align-items: center; font-weight: 500; letter-spacing: 4px; color: var(--soluk); }
+.nokta { border-radius: 50%; background: var(--vurgu); display: inline-block; }
+h1 { margin: 0; line-height: 0.9; font-weight: 800; }
+.tarih { color: var(--vurgu); }
+.ag { box-sizing: border-box; border: 3px solid var(--vurgu); border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; }
+.ag b { font-weight: 800; line-height: 1; color: var(--vurgu); }
+.kahraman { display: flex; flex-direction: column; border-top: 2px solid var(--cizgi); }
+.kahraman-baslik { font-weight: 700; letter-spacing: 3px; color: var(--soluk); }
+.kahraman-satir { display: flex; align-items: flex-end; }
+.kahraman-sayi-kolon { display: flex; flex-direction: column; align-items: flex-end; }
+.kahraman-sayi { font-weight: 800; line-height: 1; }
+.kahraman-birim { font-weight: 700; line-height: 1; color: var(--vurgu); }
+.degisim { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; }
+.degisim.artis { color: var(--artis); }
+.degisim.dusus { color: var(--dusus); }
+.degisim.dusus svg { transform: rotate(180deg); }
+.alt { display: flex; justify-content: space-between; align-items: flex-end; gap: 40px; }
+.alt b { font-weight: 700; }
+.alt-sag { display: flex; flex-direction: column; align-items: flex-end; text-align: right; gap: 6px; }
+
+/* Video parıltısı (yalnızca hareketli videoda geçer; durağan görselde ekran dışında) */
+.isik { position: absolute; inset: -20% 0; pointer-events: none; transform: translateX(-140%);
+  background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.10) 50%, transparent 65%); }
+
+/* Büyük hareket manşeti (günlük değişim eşiği aşınca "GRAM GÜMÜŞ" başlığının yerine) */
+.manset { align-self: flex-start; display: inline-flex; align-items: center; gap: 0.35em; font-weight: 800;
+  padding: 0.22em 0.55em; border-radius: 14px; border: 3px solid currentColor; transform-origin: 0 50%; }
+.manset.artis { color: var(--artis); background: rgba(91, 201, 140, 0.14); }
+.manset.dusus { color: var(--dusus); background: rgba(240, 122, 106, 0.14); }
+.manset.dusus svg { transform: rotate(180deg); }
+
+/* Günlük başlık (bot/baslik.py): "GRAM GÜMÜŞ" başlığının yerine, o günün verisinden kurallı başlık.
+   Büyük hareket manşetinden sakin: yazı beyaz, yalnızca ok renkli; atmaz. */
+.gun-baslik { align-self: flex-start; display: inline-flex; align-items: center; gap: 0.42em; font-weight: 700;
+  color: var(--yazi); padding: 0.24em 0.62em 0.24em 0.5em; border-radius: 12px; border: 2px solid var(--cizgi);
+  background: rgba(201, 209, 218, 0.07); white-space: nowrap; }
+.gun-baslik svg { flex: none; color: var(--artis); }
+.gun-baslik.dusus svg { color: var(--dusus); transform: rotate(180deg); }
+
+/* Goril maskotu (bot/goril.py; çizimler templates/goril/) */
+.maskot svg { width: 100%; height: 100%; display: block; overflow: visible; }
+
+/* Sesli Reels rozeti (makrolar.html → ses_rozeti) */
+.ses-rozet { display: inline-flex; align-items: center; gap: 0.45em; padding: 0.38em 0.85em 0.38em 0.7em;
+  border-radius: 999px; border: 3px solid var(--vurgu); background: rgba(18, 20, 24, 0.86); color: var(--yazi);
+  font-family: 'Archivo', sans-serif; font-weight: 800; letter-spacing: 0; line-height: 1; white-space: nowrap; }
+.ses-rozet .hoparlor { width: 1.45em; height: 1.12em; color: var(--vurgu); transform-origin: 30% 50%; }
+/* Pazar yorumunun Reels'i (1080×1920): kaydırmalı gönderinin 4 sayfası sırayla, ekranı dolduran bir video
+   (Rıdvan, 15 Ekim 2026 21:53: "Reels'te düzgün bir pazar analizi videosu olmalı. Zaten 4 sayfa. Süre biraz
+   uzun olabilir"; 21:59: "21 sn olsun, 3 sn giriş 6 sn sayfalar"). Sahneler: kapak → kısa → orta vade (uzun vade 17 Ekim 2026'da kalıcı olarak kaldırıldı)
+   (+ isteğe bağlı kapanış). Süreler bot/main.py →
+   YORUM_REELS_SAHNELER (sahne_sureleri olarak gelir); sesli Reels'te (17 Ekim 2026) süreler sesten gelir, kapanış
+   sahnesi eklenir ve öğeler kendi cümlesi okunurken belirir (kapak_g, v.g: sahne süresine oran). Profil ızgarası ortadaki 3:4 alanı (y 240–1680) gösterir;
+   Reels ekranının güvenli alanı (Rıdvan, 17 Ekim 2026; reels.html ile aynı ölçüler): üst 220 px (Reels yazısı, kamera),
+   alt 420 px (hesap adı, açıklama, müzik), sağ 170 px (beğeni/yorum düğmeleri) boş kalır; sol kenar 64 px.
+   Kare çağrılmazsa (kapak görseli) yalnızca kapak sahnesi son hâliyle görünür. */
+.yr { position: relative; width: 1080px; height: 1920px; box-sizing: border-box; background: var(--zemin);
+  color: var(--yazi); font-family: 'Archivo', sans-serif; overflow: hidden; }
+.yr .kenar { position: absolute; left: 52px; right: 90px; display: flex; justify-content: space-between; align-items: center; }
+.yr .seri { gap: 14px; font-size: 32px; }
+.yr .sahne-k { position: absolute; inset: 0; }
+.yr .sahne-k.gizli { display: none; }
+.yr .blok { position: absolute; left: 52px; right: 170px; }
+.yr h1 { font-size: 104px; letter-spacing: -4px; line-height: 0.95; text-wrap: balance; }
+.yr .tarih { margin-top: 24px; font-size: 40px; }
+.yr .fiyat-blok { border-top: 3px solid var(--cizgi); padding-top: 30px; }
+.yr .kucuk-baslik { font-size: 32px; font-weight: 700; letter-spacing: 4px; color: var(--soluk); }
+.yr .fiyat-satir { display: flex; align-items: baseline; gap: 16px; margin-top: 8px; }
+.yr .fiyat { font-size: 128px; font-weight: 800; line-height: 1; letter-spacing: -6px; }
+.yr .birim { font-size: 78px; font-weight: 700; color: var(--vurgu); }
+.yr .fiyat-alt { display: flex; align-items: center; gap: 18px; margin-top: 14px; font-size: 34px; }
+.yr .vade { display: grid; grid-template-columns: 200px 1fr; gap: 22px; align-items: center; padding: 22px 0;
+  border-top: 3px solid var(--cizgi); }
+.yr .vade:last-child { border-bottom: 3px solid var(--cizgi); }
+.yr .vade-ad b { display: block; font-size: 38px; font-weight: 800; }
+.yr .vade-ad span { font-size: 32px; color: var(--soluk); }
+.yr .vade-ozet { margin-top: 6px; font-size: 38px; font-weight: 600; line-height: 1.18; text-wrap: balance; }
+.yr .yon { display: inline-flex; align-items: center; gap: 12px; font-weight: 800; }
+.yr .yon.artis { color: var(--artis); }
+.yr .yon.dusus { color: var(--dusus); }
+.yr .yon.dusus svg { transform: rotate(180deg); }
+.yr .yon small { font-size: 0.8em; font-weight: 600; color: var(--soluk); }
+.yr .yz-not { font-size: 27px; }
+/* "Ayrıntılar geliyor →" (Rıdvan 22:09: ilk sayfada sağa ok). Solda: sağ kenarı Reels'in beğeni/yorum düğmeleri kapatır. */
+.yr .ileri { display: inline-flex; align-items: center; gap: 16px; font-size: 40px; font-weight: 800;
+  padding: 18px 32px; border-radius: 999px; border: 3px solid var(--vurgu); color: var(--yazi); }
+.yr .ileri .ok { display: inline-block; color: var(--vurgu); }
+/* vade sahneleri */
+.yr .no { font-size: 36px; font-weight: 600; color: var(--vurgu); letter-spacing: 2px; }
+.yr h2 { margin: 4px 0 0; font-size: 112px; line-height: 1; font-weight: 800; letter-spacing: -4px; }
+.yr .ufuk { font-size: 38px; color: var(--soluk); margin-top: 10px; }
+.yr .veri { border-top: 3px solid var(--cizgi); border-bottom: 3px solid var(--cizgi); padding: 22px 0 24px; }
+.yr .hucreler { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 14px; }
+/* yalnız hücre adı; değişim okunun rengine dokunmaz (önceden ok gri çıkıyordu) */
+.yr .hucre > span:not(.degisim) { display: block; font-size: 32px; color: var(--soluk); margin-bottom: 6px; }
+.yr .bos { font-size: 44px; font-weight: 700; color: var(--soluk); }
+.yr .veri-not { margin-top: 10px; font-size: 30px; color: var(--soluk); line-height: 1.25; }
+.yr .parca { margin-top: 34px; }
+.yr .parca .kucuk-baslik { margin-bottom: 10px; }
+.yr .metin { font-size: var(--metin, 48px); line-height: 1.2; font-weight: 500; text-wrap: pretty; }
+.yr .izle { color: var(--vurgu); font-weight: 700; }
+/* Yön değişikliği (SPK III-37.1 md. 78/2-c; 25 Ekim 2026): önceki yorumun tarihi, yönü ve değişikliğin nedeni */
+.yr .degisim-not { margin-top: 10px; border-left: 4px solid var(--vurgu); padding: 2px 0 2px 16px; font-size: 30px;
+  line-height: 1.26; color: var(--soluk); text-wrap: pretty; }
+.yr .degisim-not b { color: var(--yazi); font-weight: 700; }
+/* vade sahnesi güvenli alanda: başlık, etiketler ve aralıklar sıkı; yer metne kalır */
+.yr [data-sigdir] .no { font-size: 30px; display: inline; margin-right: 16px; }
+.yr [data-sigdir] h2 { font-size: 72px; letter-spacing: -3px; margin: 0; display: inline; }
+.yr [data-sigdir] .ufuk { font-size: 32px; margin: 0 0 0 16px; display: inline; }
+.yr [data-sigdir] .parca { margin-top: 16px; }
+.yr [data-sigdir] .kucuk-baslik { font-size: 26px; letter-spacing: 3px; }
+.yr [data-sigdir] .parca .kucuk-baslik { margin-bottom: 6px; }
+.yr [data-sigdir] .veri { padding: 16px 0 18px; }
+.yr [data-sigdir] .hucreler { margin-top: 8px; }
+.yr [data-sigdir] .hucre > span:not(.degisim) { font-size: 28px; margin-bottom: 2px; }
+.yr [data-sigdir] .veri-not { font-size: 26px; margin-top: 6px; }
+/* kapanış */
+.yr .kapanis h2 { font-size: 104px; }
+.yr .cagri { display: inline-flex; align-items: center; gap: 18px; font-size: 44px; font-weight: 800;
+  padding: 24px 36px; border-radius: 999px; background: var(--yazi); color: var(--zemin); transform-origin: 0 50%; }
+</style>
+</head>
+<body>
+<div class="yr" id="yr" data-sureler="8,8,8">
+  <div class="isik" aria-hidden="true"></div>
+  <div class="kenar" style="top: 246px">
+    <div class="etiket seri"><span id="nokta" class="nokta" style="width: 14px; height: 14px"></span><span>GÜMÜŞ GÖRÜNÜMÜ · <span id="sayac">HER PAZAR</span></span></div>
+    
+    <div class="ag" style="width: 104px; height: 118px; padding: 10px 12px">
+  <span class="mono soluk" style="font-size: 18px">47</span>
+  <b style="font-size: 40px">Ag</b>
+  <span class="mono soluk" style="font-size: 15px">107,87</span>
+</div>
+  </div>
+
+  
+  <div class="sahne-k" id="s0" data-sayac="HER PAZAR">
+    
+    <div class="blok" data-g="0" style="top: 400px">
+      <h1>Kısa ve orta vade</h1>
+      <div class="tarih">25 Ekim 2026 · Pazar</div>
+    </div>
+    <div class="blok fiyat-blok" data-g="0.1" style="top: 690px">
+      <div class="kucuk-baslik">GRAM GÜMÜŞ</div>
+      <div class="fiyat-satir"><span class="fiyat sayi">106,04</span><span class="birim">₺</span></div>
+      <div class="fiyat-alt"><span class="degisim artis" style="font-size: 42px">
+  <svg width="32" height="32" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 L22 20 H2 Z" fill="currentColor"></path></svg>
+  <span class="sayi">%2,59</span>
+</span><span class="soluk">haftalık · 23 Ekim Cuma kapanışı</span></div>
+    </div>
+    <div class="blok" style="top: 975px">
+      
+      <div class="vade" data-g="0.25" data-x="60">
+        <div class="vade-ad"><b>Kısa vade</b><span>1–4 hafta</span></div>
+        <div>
+          <span class="yon artis" style="font-size: 34px">
+  <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 L22 20 H2 Z" fill="currentColor"></path></svg>
+  <span>Yükseliş ağır basıyor <small>· orta eğilim</small></span>
+</span>
+          <div class="vade-ozet">Cuma toparlanması, kur desteği</div>
+        </div>
+      </div>
+      
+      <div class="vade" data-g="0.35" data-x="60">
+        <div class="vade-ad"><b>Orta vade</b><span>1–6 ay</span></div>
+        <div>
+          <span class="yon artis" style="font-size: 34px">
+  <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 L22 20 H2 Z" fill="currentColor"></path></svg>
+  <span>Yükseliş ağır basıyor <small>· hafif eğilim</small></span>
+</span>
+          <div class="vade-ozet">Kur desteği, ons belirleyici</div>
+        </div>
+      </div>
+      
+    </div>
+    <div class="blok" data-g="0.55" style="top: 1272px">
+      <span class="ileri">Ayrıntılar geliyor <svg class="ok" id="ileri-ok" width="52" height="40" viewBox="0 0 52 40" aria-hidden="true"><path d="M4 20 H44 M30 6 L46 20 L30 34" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+    </div>
+  </div>
+
+  
+  
+  <div class="sahne-k gizli" id="s1" data-sayac="02 / 03">
+    <div class="blok" style="top: 362px; bottom: 500px; display: flex; flex-direction: column" data-sigdir>
+      <div data-g="0">
+        <div class="no mono">01</div>
+        <h2>Kısa vade</h2>
+        <div class="ufuk">1–4 hafta</div>
+      </div>
+      
+      <div class="veri parca" data-g="0.04">
+        <div class="kucuk-baslik">SON 4 GÜN</div>
+        <div class="hucreler">
+          
+          <div class="hucre"><span>Gram gümüş</span>
+            <span class="degisim artis" style="font-size: 38px">
+  <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 L22 20 H2 Z" fill="currentColor"></path></svg>
+  <span class="sayi">%2,59</span>
+</span>
+          </div>
+          
+          <div class="hucre"><span>Ons gümüş</span>
+            <span class="degisim artis" style="font-size: 38px">
+  <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 L22 20 H2 Z" fill="currentColor"></path></svg>
+  <span class="sayi">%2,31</span>
+</span>
+          </div>
+          
+          <div class="hucre"><span>Dolar/TL</span>
+            <span class="degisim artis" style="font-size: 38px">
+  <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 L22 20 H2 Z" fill="currentColor"></path></svg>
+  <span class="sayi">%0,26</span>
+</span>
+          </div>
+          
+        </div>
+        <div class="veri-not">Kayıtlar 19 Ekim&#39;de başladığı için son 4 gün</div>
+      </div>
+      <div class="parca" data-g="0.1"><div class="kucuk-baslik">AĞIR BASAN</div><span class="yon artis" style="font-size: 40px">
+  <svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 L22 20 H2 Z" fill="currentColor"></path></svg>
+  <span>Yükseliş ağır basıyor <small>· orta eğilim</small></span>
+</span>
+        <div class="degisim-not" data-g="0.12"><b>Yön değişti.</b> 18 Ekim yorumunda düşüş ağır basıyordu. Nedeni: Ons cuma günü toparlandı, dolar/TL&#39;deki artış da gram fiyatı destekledi.</div></div>
+      <div class="parca" data-g="0.16"><div class="kucuk-baslik">DURUM</div><div class="metin">Hafta başında gerileyen ons cuma günü toparlandı; gram fiyattaki artışa dolar/TL de katkı verdi.</div></div>
+      <div class="parca" data-g="0.28"><div class="kucuk-baslik">OLASI SEYİR</div><div class="metin">Ons toparlanmayı sürdürürse gram fiyat desteklenebilir; enflasyon verisi faiz beklentilerini sertleştirirse dalgalanma artabilir.</div></div>
+      <div class="parca" data-g="0.4"><div class="kucuk-baslik">İZLENECEK</div><div class="metin izle">ABD enflasyon verisi, TCMB kararı, ons</div></div>
+    </div>
+  </div>
+  
+  <div class="sahne-k gizli" id="s2" data-sayac="03 / 03">
+    <div class="blok" style="top: 362px; bottom: 500px; display: flex; flex-direction: column" data-sigdir>
+      <div data-g="0">
+        <div class="no mono">02</div>
+        <h2>Orta vade</h2>
+        <div class="ufuk">1–6 ay</div>
+      </div>
+      
+      <div class="veri parca" data-g="0.04">
+        <div class="kucuk-baslik">SON 3 AY</div>
+        <div class="hucreler">
+          
+          <div class="hucre"><span>Gram gümüş</span>
+            <b class="bos">—</b>
+          </div>
+          
+          <div class="hucre"><span>Ons gümüş</span>
+            <b class="bos">—</b>
+          </div>
+          
+          <div class="hucre"><span>Dolar/TL</span>
+            <span class="degisim artis" style="font-size: 38px">
+  <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 L22 20 H2 Z" fill="currentColor"></path></svg>
+  <span class="sayi">%4,38</span>
+</span>
+          </div>
+          
+        </div>
+        <div class="veri-not">Gram ve ons için son 3 ay kayıt henüz yok · kayıtlar 19 Ekim 2026&#39;de başladı</div>
+      </div>
+      <div class="parca" data-g="0.1"><div class="kucuk-baslik">AĞIR BASAN</div><span class="yon artis" style="font-size: 40px">
+  <svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 L22 20 H2 Z" fill="currentColor"></path></svg>
+  <span>Yükseliş ağır basıyor <small>· hafif eğilim</small></span>
+</span>
+        </div>
+      <div class="parca" data-g="0.16"><div class="kucuk-baslik">DURUM</div><div class="metin">Kendi kayıtlarımız kısa; dolar/TL üç ayda istikrarlı yükseldi, Fed temkinli bir dil kullanıyor.</div></div>
+      <div class="parca" data-g="0.28"><div class="kucuk-baslik">OLASI SEYİR</div><div class="metin">Kurdaki eğilim korunursa onstaki düşüşler gram fiyata daha az yansıyabilir; faiz indirimleri gecikirse ons baskı altında kalabilir.</div></div>
+      <div class="parca" data-g="0.4"><div class="kucuk-baslik">İZLENECEK</div><div class="metin izle">Fed faiz beklentileri, dolar/TL, sanayi talebi</div></div>
+    </div>
+  </div>
+  
+
+  
+  <div class="blok" style="top: 1428px">
+    <b style="font-size: 34px">@gunlukgumus</b>
+    <div class="soluk yz-not" style="margin-top: 4px">Üst düzey yapay zekâ ile üretilmiştir · yatırım tavsiyesi değildir.</div>
+  </div>
+</div>
+<script>
+// Vade sahnesinde metin sığan en büyük boyda (52 → 28 px); sahneden taşmasın.
+function sigdir() {
+  document.querySelectorAll('[data-sigdir]').forEach(function (g) {
+    var s = g.closest('.sahne-k'), gizli = s.classList.contains('gizli');
+    s.classList.remove('gizli');
+    for (var boy = 52; boy >= 28; boy--) {
+      g.style.setProperty('--metin', boy + 'px');
+      if (g.scrollHeight <= g.clientHeight + 1) break;
+    }
+    if (gizli) s.classList.add('gizli');
+  });
+}
+document.fonts.ready.then(sigdir);
+
+// Hareket: bot her kare için window.kare(t) çağırır; çağrılmazsa sayfa kapak sahnesinin son hâlinde kalır.
+(function () {
+  const kok = document.getElementById('yr');
+  const sureler = kok.dataset.sureler.split(',').map(Number);
+  const sahneler = Array.from(document.querySelectorAll('.sahne-k'));
+  const sayac = document.getElementById('sayac'), nokta = document.getElementById('nokta');
+  const isik = document.querySelector('.isik');
+  const yumusak = p => 1 - Math.pow(1 - Math.min(Math.max(p, 0), 1), 3);
+  let hazir = false;
+
+  window.kare = function (t) {
+    if (!hazir) { sigdir(); hazir = true; }
+    // hangi sahne, sahnenin içinde kaçıncı saniye
+    let i = 0, bas = 0;
+    while (i < sureler.length - 1 && t >= bas + sureler[i]) { bas += sureler[i]; i++; }
+    const yerel = t - bas;
+    sahneler.forEach((s, j) => s.classList.toggle('gizli', j !== i));
+    const s = sahneler[i];
+    sayac.textContent = s.dataset.sayac;
+    // sahne geçişi: 0,3 sn'de belirir, son 0,3 sn'de söner (ilk sahne baştan görünür, son sahne sönmez);
+    // öğeler data-g × sahne süresinde, 0,4 sn'de belirir
+    const giris = i === 0 ? 1 : yumusak(yerel / 0.3);
+    const cikis = i < sureler.length - 1 ? yumusak((sureler[i] - yerel) / 0.3) : 1;
+    s.style.opacity = Math.min(giris, cikis);
+    s.querySelectorAll('[data-g]').forEach(el => {
+      const q = yumusak((yerel - parseFloat(el.dataset.g) * sureler[i]) / 0.4);
+      const dx = parseFloat(el.dataset.x || 0), dy = dx ? 0 : 30;
+      el.style.opacity = q;
+      el.style.transform = `translate(${(1 - q) * dx}px, ${(1 - q) * dy}px)`;
+    });
+    const ok = document.getElementById('ileri-ok');
+    if (ok) ok.style.transform = `translateX(${12 * (0.5 - 0.5 * Math.cos(2 * Math.PI * t / 0.9))}px)`;
+    if (nokta) nokta.style.opacity = 0.35 + 0.65 * (0.5 + 0.5 * Math.cos(2 * Math.PI * t / 1.2));
+    if (window.sesRozeti) window.sesRozeti(t);
+    if (isik) {
+      const r = (t - 3.0) / 1.3;
+      isik.style.transform = r >= 0 && r <= 1 ? `translateX(${-140 + 280 * r}%)` : 'translateX(-140%)';
+    }
+  };
+})();
+</script>
+</body>
+</html>

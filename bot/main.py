@@ -2321,6 +2321,46 @@ def kapanis_fiyati(ecb):
                  "kur_tarihi": kur_gunu.isoformat(), "gram": gumus * dolar / ONS_GRAM}
 
 
+_ONCEKI_YORUM_BASLIK = "Haftalık gümüş görünümü |"
+
+
+def onceki_yorum(bugun):
+    """Instagram'daki bir önceki pazar yorumunun yönleri: {"tarih": date, "kisa": {"yon", "guc"}, "orta": {…}}
+    ya da None. Açıklamadaki vade satırlarından okunur ("Kısa vade (1–4 hafta): ▼ Düşüş ağır basıyor (orta eğilim) · …").
+    SPK III-37.1 md. 78/2-c için (25 Ekim 2026 yasal denetimi): yön değişirse değişiklik, gerekçesi ve önceki yorumun
+    tarihi yazılır. Bugünkü ya da daha yeni gönderi sayılmaz. Anahtar yoksa ya da istek başarısızsa None (uyarıyla)."""
+    import re
+    import yorum
+    if not os.environ.get("IG_TOKEN"):
+        return None
+    try:
+        cevap = _istek("GET", "me/media", fields="caption,timestamp", limit=25)
+    except Exception as e:
+        print(f"::warning::Önceki pazar yorumu okunamadı ({type(e).__name__}: {str(e)[:150]}); "
+              "yön değişikliği satırı bu hafta yazılmayacak.")
+        return None
+    adlar = {v["ad"]: v["anahtar"] for v in yorum.VADELER}
+    guc = {"hafif": "zayıf", "orta": "orta", "belirgin": "belirgin"}
+    desen = re.compile(r"^(\w+ vade) \([^)]*\): [▲▼] (\w+) ağır basıyor \((hafif|orta|belirgin) eğilim\)", re.M)
+    adaylar = []
+    for m in cevap.get("data", []):
+        metin = m.get("caption") or ""
+        if not metin.startswith(_ONCEKI_YORUM_BASLIK) or not m.get("timestamp"):
+            continue
+        gun = datetime.strptime(m["timestamp"], "%Y-%m-%dT%H:%M:%S%z").astimezone(TR_SAAT).date()
+        if gun >= bugun:
+            continue
+        yonler = {adlar[a]: {"yon": y.lower(), "guc": guc[g]} for a, y, g in desen.findall(metin) if a in adlar}
+        if yonler:
+            adaylar.append((gun, yonler))
+    if not adaylar:
+        print("Bilgi: Instagram'da önceki pazar yorumu bulunamadı; yön değişikliği satırı yok.")
+        return None
+    gun, yonler = max(adaylar, key=lambda a: a[0])
+    print(f"Önceki pazar yorumu: {gun.isoformat()} · " + ", ".join(f"{k} {x['yon']}" for k, x in yonler.items()))
+    return {"tarih": gun, **yonler}
+
+
 def yorum_hazirla(cikti, ornek):
     """Pazar yapay zekâ yorumu: kapak + kısa ve orta vade, kaydırmalı 3 görsel (Rıdvan, 17 Ekim 2026; uzun vade
     kalıcı olarak yok). Ayrıntı: bot/yorum.py
@@ -2361,11 +2401,14 @@ def yorum_hazirla(cikti, ornek):
     ist = {v["anahtar"]: ist[v["anahtar"]] for v in aktif}
 
     if ornek:
-        gelismeler, yz = yorum.ORNEK_GELISMELER, yorum.ORNEK_YORUM
-        hatalar = yorum.denetle(yz, gelismeler, aktif)
+        gelismeler, yz = yorum.ORNEK_GELISMELER, json.loads(json.dumps(yorum.ORNEK_YORUM))
+        onceki = {"tarih": bugun - timedelta(days=7), **yorum.ORNEK_ONCEKI}
+        hatalar = yorum.denetle(yz, gelismeler, aktif, onceki)
         if hatalar:
             raise RuntimeError(f"Örnek yorum denetimden geçmedi: {hatalar}")
+        yz = yorum.degisim_temizle(yz, onceki, aktif)
     else:
+        onceki = onceki_yorum(bugun)
         gelismeler = yorum.haftanin_gelismeleri(bugun)
         if gelismeler is None and os.environ.get("ANTHROPIC_API_KEY", "").strip():
             # 14 Ekim 2026 denemesi: tarama bir kez kaynaksız döndü, hemen ardından düzgün çalıştı. Bir kez daha dene
@@ -2373,7 +2416,8 @@ def yorum_hazirla(cikti, ornek):
             print("Haber taraması bir kez daha deneniyor.")
             gelismeler = yorum.haftanin_gelismeleri(bugun)
         yz = yorum.yz_yorum(yorum.model_girdisi(seri, ecb, ist, bugun, kaynak_notu, gelismeler,
-                                                kapanis=kapanis == max(seri)), gelismeler)
+                                                kapanis=kapanis == max(seri), onceki=onceki),
+                            gelismeler, onceki=onceki)
         if yz is None:
             raise VeriYok("ANTHROPIC_API_KEY tanımlı değil (GitHub → Settings → Secrets and variables → Actions).")
 
@@ -2403,7 +2447,12 @@ def yorum_hazirla(cikti, ornek):
                     f"{ilk.day} {AYLAR[ilk.month - 1]} {ilk.year}'de başladı")
         elif x["kisa_kayit"]:
             not_ = f"Kayıtlar {ilk.day} {AYLAR[ilk.month - 1]}'de başladığı için {x['etiket'].lower()}"
+        # Yön değiştiyse önceki yorum (SPK md. 78/2-c; 25 Ekim 2026): görselde AĞIR BASAN altında, açıklamada, sesli okumada
+        degisti = yorum.yon_degisti(yz, onceki, v["anahtar"]) and (yz[v["anahtar"]].get("degisim") or "").strip()
         vadeler.append({**v, "etiket": x["etiket"], "not": not_, "yorum": yz[v["anahtar"]],
+                        "onceki": ({"yon": onceki[v["anahtar"]]["yon"], "guc": onceki[v["anahtar"]]["guc"],
+                                    "tarih_metni": f"{onceki['tarih'].day} {AYLAR[onceki['tarih'].month - 1]}"}
+                                   if degisti else None),
                         "hucreler": [hucre("Gram gümüş", x["gram"]), hucre("Ons gümüş", x["ons"]),
                                      hucre("Dolar/TL", x["dolar"])]})
     veri = {

@@ -58,6 +58,10 @@
 .yr .parca .kucuk-baslik { margin-bottom: 10px; }
 .yr .metin { font-size: var(--metin, 48px); line-height: 1.2; font-weight: 500; text-wrap: pretty; }
 .yr .izle { color: var(--vurgu); font-weight: 700; }
+/* Yön değişikliği (SPK III-37.1 md. 78/2-c; 25 Ekim 2026): önceki yorumun tarihi, yönü ve değişikliğin nedeni */
+.yr .degisim-not { margin-top: 10px; border-left: 4px solid var(--vurgu); padding: 2px 0 2px 16px; font-size: 30px;
+  line-height: 1.26; color: var(--soluk); text-wrap: pretty; }
+.yr .degisim-not b { color: var(--yazi); font-weight: 700; }
 /* vade sahnesi güvenli alanda: başlık, etiketler ve aralıklar sıkı; yer metne kalır */
 .yr [data-sigdir] .no { font-size: 30px; display: inline; margin-right: 16px; }
 .yr [data-sigdir] h2 { font-size: 72px; letter-spacing: -3px; margin: 0; display: inline; }
@@ -133,7 +137,8 @@
         </div>
         {% if v.not %}<div class="veri-not">{{ v.not }}</div>{% endif %}
       </div>
-      <div class="parca" data-g="{{ g.agir or 0.1 }}"><div class="kucuk-baslik">AĞIR BASAN</div>{{ yon_isareti(v.yorum, 40, 30) }}</div>
+      <div class="parca" data-g="{{ g.agir or 0.1 }}"><div class="kucuk-baslik">AĞIR BASAN</div>{{ yon_isareti(v.yorum, 40, 30) }}
+        {% if v.onceki %}<div class="degisim-not" data-g="{{ g.degisim or g.agir or 0.12 }}"><b>Yön değişti.</b> {{ v.onceki.tarih_metni }} yorumunda {{ v.onceki.yon }} ağır basıyordu. Nedeni: {{ v.yorum.degisim }}</div>{% endif %}</div>
       <div class="parca" data-g="{{ g.durum or 0.16 }}"><div class="kucuk-baslik">DURUM</div><div class="metin">{{ v.yorum.durum }}</div></div>
       <div class="parca" data-g="{{ g.seyir or 0.28 }}"><div class="kucuk-baslik">OLASI SEYİR</div><div class="metin">{{ v.yorum.seyir }}</div></div>
       <div class="parca" data-g="{{ g.izle or 0.4 }}"><div class="kucuk-baslik">İZLENECEK</div><div class="metin izle">{{ v.yorum.izlenecek }}</div></div>

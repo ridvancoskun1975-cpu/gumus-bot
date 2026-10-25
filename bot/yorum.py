@@ -79,6 +79,13 @@ GUC_ADI = {"zayıf": "hafif eğilim", "orta": "orta eğilim", "belirgin": "belir
 SINIR = {"ozet": 5, "durum": 18, "seyir": 26, "izlenecek": 8}
 PAY = {"ozet": 1, "durum": 4, "seyir": 5, "izlenecek": 3}
 
+# Yön değişikliği (25 Ekim 2026 yasal denetimi; SPK III-37.1 md. 78/2-c): bir vadede ağır basan yön önceki pazar
+# yorumundakinden farklıysa değişiklik, gerekçesi ve önceki yorumun tarihi açıkça yazılır (görselde AĞIR BASAN altında,
+# açıklamada, sesli okumada). Önceki yön Instagram'daki son pazar yorumunun açıklamasından okunur (main.onceki_yorum);
+# model gerekçeyi "degisim" alanına yazar, yön aynıysa boş bırakır.
+DEGISIM_SINIRI = 14
+DEGISIM_PAY = 3
+
 # Yönlendirici, kesinlik bildiren ya da abartılı ifadeler; rakamlar.
 YASAK = [
     (r"\b(al|alın|alınız|almalı|almak|sat|satın|satınız|satmalı|satmak|tut|tutun|tutmalı|tutmak)\b", "al/sat/tut"),
@@ -120,6 +127,7 @@ Kurallar (hepsine uy):
 10. Bir vade için fiyat kaydı yetersizse (veri_yeterli: false) bu, görselde ayrıca not olarak yazılır; "durum" alanında kayıtların kısa olduğunu tekrarlama. O vadeyi özetteki uzun dönem bağlam ve kur verisiyle, daha temkinli yaz.
 11. Her vade için ağır basan yönü seç: "yükseliş" ya da "düşüş". Yatay, nötr ya da belirsiz seçeneği yok; okur net bir değerlendirme görmeli. Yönü dayanaklardaki ağırlığa göre seç, keyfi seçme. Etkenler karışıksa biraz daha ağır basan tarafı seç ve gücünü "zayıf" yaz; gücü dürüstçe belirle ("zayıf", "orta", "belirgin"). Ağır basan yön bir değerlendirmedir: kesinlik, hedef ya da al-sat önerisi değildir.
 12. "ozet" ve "seyir" ağır basan yönle uyumlu olsun, ikisini dengeleyip nötr bir sonuca bağlama. "seyir"de önce ağır basan yönü ve nedenini koşullu yaz, sonra karşı yönü kısa bir risk olarak an.
+13. Girdide "onceki_yorum" varsa her vadenin önceki pazar yorumundaki ağır basan yönü oradadır. Yönü yine dayanaklara göre seç; önceki yorum seni bağlamaz. Bir vadede yön değiştiyse o vadenin "degisim" alanına değişikliğin nedenini yaz: o yorumdan bu yana verilerde ya da haberlerde ne değişti, tek cümle, en fazla 14 kelime; önceki değerlendirmeyi savunma, "geçen hafta" diye başlama. Yön aynıysa ya da "onceki_yorum" yoksa "degisim" boş metin olsun.
 
 Her vade için alanlar:
 - yon: ağır basan yön, "yükseliş" ya da "düşüş".
@@ -127,7 +135,8 @@ Her vade için alanlar:
 - ozet: kapakta görünen çok kısa başlık, en fazla 5 kelime; ağır basan yönü yansıtsın.
 - durum: verilerde ve haberlerde ne görülüyor, en fazla 18 kelime, tek cümle.
 - seyir: koşullu olası seyir; önce ağır basan yön, sonra karşı yön kısa risk olarak; en fazla 26 kelime.
-- izlenecek: izlenecek etkenler, en fazla 8 kelime, cümle değil."""
+- izlenecek: izlenecek etkenler, en fazla 8 kelime, cümle değil.
+- degisim: yalnız yön önceki yorumdakinden farklıysa değişikliğin nedeni, en fazla 14 kelime; değilse boş metin."""
 
 
 def sistem(vadeler=None):
@@ -139,7 +148,9 @@ def _vade_sema():
     alan = lambda a: {"type": "string", "description": f"en fazla {SINIR[a]} kelime"}
     ozellik = {"yon": {"type": "string", "enum": list(YONLER), "description": "ağır basan yön"},
                "guc": {"type": "string", "enum": list(GUCLER), "description": "ağır basan yönün gücü"},
-               **{k: alan(k) for k in SINIR}}
+               **{k: alan(k) for k in SINIR},
+               "degisim": {"type": "string", "description": f"yalnız ağır basan yön geçen yorumdakinden farklıysa "
+                           f"değişikliğin nedeni, en fazla {DEGISIM_SINIRI} kelime; değilse boş metin"}}
     return {"type": "object", "additionalProperties": False, "properties": ozellik, "required": list(ozellik)}
 
 
@@ -372,7 +383,15 @@ def vade_istatistikleri(seri, ecb, vadeler=None):
     return sonuc
 
 
-def model_girdisi(seri, ecb, ist, bugun, kaynak_notu, gelismeler=None, kapanis=False):
+def onceki_girdisi(onceki):
+    """Modele verilecek önceki pazar yorumu: {"tarih", "kisa": {"yon", "guc"}, …} ya da None."""
+    if not onceki:
+        return None
+    return {"tarih": onceki["tarih"].isoformat(),
+            **{k: {"yon": x["yon"], "guc": x["guc"]} for k, x in onceki.items() if k != "tarih"}}
+
+
+def model_girdisi(seri, ecb, ist, bugun, kaynak_notu, gelismeler=None, kapanis=False, onceki=None):
     son_gun = max(seri)
     son = seri[son_gun]
     yuv = lambda x, n=2: None if x is None else round(x, n)
@@ -412,7 +431,23 @@ def model_girdisi(seri, ecb, ist, bugun, kaynak_notu, gelismeler=None, kapanis=F
         "haftanin_gelismeleri": (gelismeler["metin"] if gelismeler else
                                  "YOK — bu hafta haber taraması yapılamadı. Güncel olaylardan, kurum adlarından "
                                  "söz etme; yalnızca fiyat ve kur verilerine dayan."),
+        **({"onceki_yorum": onceki_girdisi(onceki)} if onceki else {}),
     }
+
+
+def yon_degisti(yorum, onceki, anahtar):
+    """Bu vadede ağır basan yön önceki pazar yorumundakinden farklı mı (önceki yoksa False)."""
+    x = (onceki or {}).get(anahtar)
+    return bool(x) and x.get("yon") in YONLER and (yorum.get(anahtar) or {}).get("yon") != x["yon"]
+
+
+def degisim_temizle(yorum, onceki, vadeler=None):
+    """Yön değişmeyen vadelerde "degisim" boşaltılır (model yanlışlıkla yazdıysa görünmesin)."""
+    for v in vadeler or VADELER:
+        alanlar = yorum.get(v["anahtar"]) or {}
+        if not yon_degisti(yorum, onceki, v["anahtar"]):
+            alanlar["degisim"] = ""
+    return yorum
 
 
 # ---------------------------------------------------------------- denetim
@@ -421,10 +456,11 @@ def _kucuk(s):
     return s.replace("I", "ı").replace("İ", "i").lower()
 
 
-def denetle(yorum, gelismeler=None, vadeler=None):
+def denetle(yorum, gelismeler=None, vadeler=None, onceki=None):
     """Kurallara uymayan alanların listesi (boşsa yorum yayımlanabilir).
 
     gelismeler: haftanın gelişmeleri özeti; yorumdaki kurum/olay adları bu metinde geçmeli.
+    onceki: önceki pazar yorumunun yönleri (main.onceki_yorum); yön değiştiyse "degisim" dolu olmalı.
     """
     ozet = _kucuk(gelismeler["metin"]) if gelismeler else ""
     hatalar = []
@@ -434,14 +470,20 @@ def denetle(yorum, gelismeler=None, vadeler=None):
             hatalar.append(f"{v['anahtar']}.yon: 'yükseliş' ya da 'düşüş' olmalı (verilen: {alanlar.get('yon')!r})")
         if alanlar.get("guc") not in GUCLER:
             hatalar.append(f"{v['anahtar']}.guc: 'zayıf', 'orta' ya da 'belirgin' olmalı (verilen: {alanlar.get('guc')!r})")
-        for alan, sinir in SINIR.items():
+        degisti = yon_degisti(yorum, onceki, v["anahtar"])
+        if degisti and not (alanlar.get("degisim") or "").strip():
+            hatalar.append(f"{v['anahtar']}.degisim: boş — ağır basan yön önceki yorumdakinden farklı "
+                           f"({onceki[v['anahtar']]['yon']} → {alanlar.get('yon')}); değişikliğin nedenini yaz")
+        denetlenecek = {**SINIR, **({"degisim": DEGISIM_SINIRI} if degisti else {})}
+        for alan, sinir in denetlenecek.items():
             metin = (alanlar.get(alan) or "").strip()
             yer = f"{v['anahtar']}.{alan}"
             if not metin:
-                hatalar.append(f"{yer}: boş")
+                if alan != "degisim":
+                    hatalar.append(f"{yer}: boş")
                 continue
             kelime = len(metin.split())
-            if kelime > sinir + PAY[alan]:
+            if kelime > sinir + (DEGISIM_PAY if alan == "degisim" else PAY[alan]):
                 hatalar.append(f"{yer}: {kelime} kelime (en fazla {sinir})")
             kucuk = _kucuk(metin)
             for desen, ad in YASAK:
@@ -519,7 +561,7 @@ def _cagir(anahtar, mesajlar, vadeler=None):
     return metin, cevap
 
 
-def yz_yorum(girdi, gelismeler=None, vadeler=None):
+def yz_yorum(girdi, gelismeler=None, vadeler=None, onceki=None):
     """Claude'dan yorum alır; kurallara uymazsa hataları göstererek en fazla 2 kez yeniden ister."""
     anahtar = os.environ.get("ANTHROPIC_API_KEY", "").strip()
     if not anahtar:
@@ -534,12 +576,12 @@ def yz_yorum(girdi, gelismeler=None, vadeler=None):
         except ValueError:
             hatalar = ["yanıt geçerli JSON değil"]
         else:
-            hatalar = denetle(yorum, gelismeler, vadeler)
+            hatalar = denetle(yorum, gelismeler, vadeler, onceki)
             if not hatalar:
                 kullanim = cevap.get("usage", {})
                 print(f"Yapay zekâ yorumu alındı ({MODEL}, {kullanim.get('input_tokens')} girdi / "
                       f"{kullanim.get('output_tokens')} çıktı token, {tur + 1}. deneme)")
-                return yorum
+                return degisim_temizle(yorum, onceki, vadeler)
         print(f"Uyarı: yorum kurallara uymadı ({tur + 1}. deneme): {hatalar}", file=sys.stderr)
         mesajlar += [{"role": "assistant", "content": metin},
                      {"role": "user", "content": "Şu sorunlar var, kurallara uyarak yeniden yaz:\n- "
@@ -578,6 +620,7 @@ ORNEK_YORUM = {
         "seyir": "Ons toparlanmayı sürdürürse gram fiyat desteklenebilir; enflasyon verisi faiz beklentilerini "
                  "sertleştirirse dalgalanma artabilir.",
         "izlenecek": "ABD enflasyon verisi, TCMB kararı, ons",
+        "degisim": "Ons cuma günü toparlandı, dolar/TL'deki artış da gram fiyatı destekledi.",
     },
     "orta": {
         "yon": "yükseliş", "guc": "zayıf",
@@ -586,8 +629,12 @@ ORNEK_YORUM = {
         "seyir": "Kurdaki eğilim korunursa onstaki düşüşler gram fiyata daha az yansıyabilir; faiz indirimleri "
                  "gecikirse ons baskı altında kalabilir.",
         "izlenecek": "Fed faiz beklentileri, dolar/TL, sanayi talebi",
+        "degisim": "",
     },
 }
+
+# Örnek önceki yorum: kısa vadede yön değişmiş, orta vadede aynı (değişiklik satırını önizlemede göstermek için).
+ORNEK_ONCEKI = {"kisa": {"yon": "düşüş", "guc": "zayıf"}, "orta": {"yon": "yükseliş", "guc": "zayıf"}}
 
 
 def ornek_veri(bugun):
@@ -612,12 +659,18 @@ def ornek_veri(bugun):
 
 # ---------------------------------------------------------------- açıklama
 
-UYARI = ("Burada yer alan yatırım bilgi, yorum ve tavsiyeleri yatırım danışmanlığı kapsamında değildir. "
-         "Yatırım danışmanlığı hizmeti; aracı kurumlar, portföy yönetim şirketleri, mevduat kabul etmeyen "
-         "bankalar ile müşteri arasında imzalanacak yatırım danışmanlığı sözleşmesi çerçevesinde sunulmaktadır. "
-         "Buradaki yorumlar üst düzey yapay zekâ ile üretilmiş olsa da hata içerebilir; mali durumunuz ile risk "
-         "ve getiri tercihlerinize uygun olmayabilir. Bu nedenle, sadece burada yer alan bilgilere dayanılarak yatırım kararı verilmesi "
-         "beklentilerinize uygun sonuçlar doğurmayabilir.")
+# SPK III-37.1 Tebliği EK/3 uyarı notu, harfi harfine (RG 11.07.2013/28704; md. 79: metnin sonunda, dikkat çekici).
+# Değiştirilmez; yapay zekâ cümlesi ayrı eklenir (25 Ekim 2026 yasal denetimi: önceki metin 2014 öncesi eski uyarıdan
+# uyarlanmıştı ve standart nota bir cümle karışmıştı).
+UYARI_EK3 = ("Burada yer alan yatırım bilgi, yorum ve tavsiyeleri yatırım danışmanlığı kapsamında değildir. "
+             "Yatırım danışmanlığı hizmeti, yetkili kuruluşlar tarafından kişilerin risk ve getiri tercihleri "
+             "dikkate alınarak kişiye özel sunulmaktadır. Burada yer alan yorum ve tavsiyeler ise genel niteliktedir. "
+             "Bu tavsiyeler mali durumunuz ile risk ve getiri tercihlerinize uygun olmayabilir. Bu nedenle, sadece "
+             "burada yer alan bilgilere dayanılarak yatırım kararı verilmesi beklentilerinize uygun sonuçlar "
+             "doğurmayabilir.")
+UYARI = UYARI_EK3
+# Rıdvan, 25 Ekim 2026 09:29: yapay zekâ cümlesi uyarıdan sonra ayrı paragraf
+YZ_NOTU = "Buradaki yorumlar üst düzey yapay zekâ ile üretilmiştir. Hata içerebilir."
 
 
 def _nasil_hazirlandi(gelismeler):
@@ -674,10 +727,14 @@ def seslendirme_parcalari(v):
         veri = f"{x['etiket']}: " + ", ".join(_degisim_okuma(h["ad"], h["deg"]) for h in x["hucreler"]) + "."
         if x.get("not"):
             veri += f" {x['not']}."
+        degisim = ([("degisim", f"Yön değişti. {x['onceki']['tarih_metni']} yorumunda {x['onceki']['yon']} ağır "
+                                f"basıyordu. Nedeni: {y['degisim'].rstrip('.')}.")]
+                   if x.get("onceki") and (y.get("degisim") or "").strip() else [])
         sahneler.append([
             ("baslik", f"{x['ad']}, {x['ufuk']}."),
             ("veri", veri),
             ("agir", f"Ağır basan: {y['yon']}, {GUC_ADI[y['guc']]}."),
+            *degisim,
             ("durum", f"Durum. {y['durum']}"),
             ("seyir", f"Olası seyir. {y['seyir']}"),
             ("izle", f"İzlenecek: {y['izlenecek']}."),
@@ -695,6 +752,12 @@ def yon_metni(vade):
 def aciklama(v, yorum, kaynak_satirlari, gelismeler=None):
     vade_satirlari = [f"{x['ad']} ({x['ufuk']}): {yon_metni(yorum[x['anahtar']])} · {yorum[x['anahtar']]['ozet']}"
                       for x in v["vadeler"]]
+    # SPK III-37.1 md. 78/2-c: yön değiştiyse değişiklik, gerekçesi ve önceki yorumun tarihi (25 Ekim 2026 denetimi)
+    degisim_satirlari = [f"Değişiklik · {x['ad'].lower()}: {x['onceki']['tarih_metni']} yorumunda "
+                         f"{x['onceki']['yon']} ağır basıyordu, bu hafta {yorum[x['anahtar']]['yon']}. "
+                         f"Nedeni: {yorum[x['anahtar']]['degisim'].rstrip('.')}."
+                         for x in v["vadeler"]
+                         if x.get("onceki") and (yorum[x["anahtar"]].get("degisim") or "").strip()]
     alanlar = kaynak_alanlari(gelismeler)
 
     def kur(soru=True, kaynak_sayisi=None):
@@ -707,16 +770,18 @@ def aciklama(v, yorum, kaynak_satirlari, gelismeler=None):
             f"Haftalık gümüş görünümü | Üst düzey yapay zekâ yorumu · {v['tarih']}",
             f"Gram gümüş: {v['gram']} ₺ (haftalık {v['gram_deg']['isaret']} {v['gram_deg']['metin']}) · {v['veri_ani']}",
             "\n".join(vade_satirlari) + "\nAyrıntılar görsellerde, kaydırın →",
-            "Sizce gümüş önümüzdeki haftalarda ne yöne gider? Yorumlara yazın 👇" if soru else None,
+            "\n".join(degisim_satirlari) if degisim_satirlari else None,
+            # Yorum sorusu kaldırıldı (Rıdvan, 25 Ekim 2026 09:19: "Soruyu kaldır").
             _nasil_hazirlandi(gelismeler),
             "Uyarı: " + UYARI,
+            YZ_NOTU,
             f"Veriler: {v['veri_ani']} itibarıyla.\n{satirlar}",
             HASHTAG,
         ]
         return "\n\n".join(p for p in parcalar if p)
 
-    # Instagram sınırı 2200 karakter: önce haber kaynakları kısaltılır, sonra soru satırı düşer.
-    for soru, sayi in [(True, None), (True, 6), (True, 4), (False, 4), (False, 3)]:
+    # Instagram sınırı 2200 karakter: haber kaynakları kısaltılır.
+    for soru, sayi in [(False, None), (False, 6), (False, 4), (False, 3)]:
         metin = kur(soru, sayi)
         if len(metin) <= 2200:
             return metin
