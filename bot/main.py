@@ -2453,7 +2453,7 @@ YORUM_REELS = True
 # Zamanlı pazar yorumunu duraklatır (Rıdvan, 25 Ekim 2026 08:49: "pazar yorumunu duraklatalım şimdilik. Düzenlemeleri
 # yaptıktan sonra pazar yorumu çıksın."; 25 Ekim yasal denetiminin pazar yorumu düzeltmeleri bitene kadar). Yalnız zamanlı
 # çalıştırma atlanır; elle Run workflow → tür: yorum (onaydan sonra) normal çalışır. Düzenlemeler main'e alınınca False.
-YORUM_DURAKLAT = True
+YORUM_DURAKLAT = False
 # Rıdvan 21:59: "3 sn giriş 6 sn sayfalar"; 22:05: "Giriş çok kısa oldu. Hepsi 8 saniye olsun".
 # Müzikli sürümde sahne sayısı vadelere göre: kapak + vade başına YORUM_REELS_SAHNELER[0] sn (kısa ve orta vade: 24 sn).
 YORUM_REELS_SAHNELER = (8, 8, 8)   # sn: kapak, kısa, orta vade (toplam 24 sn)
