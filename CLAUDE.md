@@ -106,8 +106,9 @@
   "rehber sırasına girsinler"; `bot/bilgi.py` → `ARSIV_SIRASI`: 11, 18 ve 25 Kasım, #7–#8'den sonra; tür `kisa`). Yalnız Reels: kaydırmalı ve hikâye tekrar gitmez; Reels üretilemezse o gün paylaşım
   yok. Tarih ya da bölüm değişecekse önce Rıdvan'a sor.
 - "Rehber" öne çıkanının standardı (Rıdvan, 14 Ekim 2026): her bölüm tek video; öne çıkandaki sıra önemli değil,
-  eksik olmaması önemli. Ekleme hatırlatması çarşamba ~14:45'te gelir (20 Ekim 2026 kota tasarrufuyla 14:15'ten) (zamanlanmış görev "Çarşamba hatırlatması:
-  rehber hikâyesini öne çıkana ekle"); pazar hatırlatmasında yalnızca sabitleme var (Rıdvan, 19 Ekim 2026 "uygun"). Tek tek kare olarak giden eski #1–#2 yerine videoları 18 Ekim'de paylaşılır, eski
+  eksik olmaması önemli. Öne çıkana eklemeyi ve pazar analizini sabitlemeyi Rıdvan kendisi yapar; bunlar için hatırlatma
+  görevi yok (Rıdvan, 25 Ekim 2026: "sabitleme görevini hatırlatmana gerek yok … Hatırlatmaları kaldır."; çarşamba ve pazar
+  hatırlatmaları silindi). Yeniden kurma. Tek tek kare olarak giden eski #1–#2 yerine videoları 18 Ekim'de paylaşılır, eski
   kareleri Rıdvan siler. Rehber hikâyesini elle kareler hâlinde paylaşma.
 - Claude API kredisi (pazar yorumu): bakiye Anthropic'ten okunamıyor, özel gumus-kayit deposundaki `api-bakiye.md`
   tahmin eder (bot/bakiye.py): yüklenen (Anthropic makbuz maillerinden, "credit purchase" satırı, KDV hariç) −
