@@ -41,6 +41,17 @@ GOOGLE_DOGRULAMA = "googleade97aa5989bb9eb.html"
 # Sitede istifçi goril: tanıtım kartında ve 404 sayfasında, fiyattan bağımsız tek hâl
 # (Rıdvan, 19 Ekim 2026 "2 ama istifçi goril"). False yapılırsa site eskisi gibi gorilsiz üretilir.
 SITE_GORIL = True
+
+# Künye (5651 sayılı Kanun md. 3, Yönetmelik md. 5: içerik sağlayıcının tanıtıcı bilgileri ana sayfadan ulaşılan
+# "İletişim" başlığı altında; yasal inceleme 25 Ekim 2026, 6. madde). Rıdvan, 26 Ekim 2026: "şimdiden ekleyelim",
+# ad ve yer kendisi verdi. Her sayfanın altında (templates/taban.html). telefon None = yazılmaz.
+KUNYE = {
+    "ad": "Rıdvan Çoşkun",
+    "yer": "Beylikdüzü, İstanbul",
+    "eposta": "gumusagtr@gmail.com",
+    "telefon": None,
+    "yer_saglayici": "GitHub Pages (GitHub, Inc.)",
+}
 # Son pazar analizi düğmesi (Rıdvan, 18 Ekim 2026 "2 uygun"): pazar yorumunun açıklaması bununla başlar
 # (bot/yorum.py → aciklama()); Instagram'daki son kaydırmalı yorum bu başlıkla bulunur.
 PAZAR_BASLIK = "Haftalık gümüş görünümü | Üst düzey yapay zekâ yorumu"
@@ -310,6 +321,7 @@ def veri_hazirla(gecmis, simdi=None, pazar=None):
         "surum": simdi.strftime("%Y%m%d%H%M"),
         "hesap": hesap,
         "instagram": f"https://www.instagram.com/{hesap.lstrip('@')}/",
+        "kunye": KUNYE,
         "whatsapp": "https://wa.me/?text=" + quote(paylasim_metni),
         "guncelleme": guncelleme,
         "guncelleme_kisa": f"{_kisa_tarih(gun)} {son.get('saat', '')}".strip(),

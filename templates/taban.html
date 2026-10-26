@@ -147,6 +147,9 @@ details { scroll-margin-top: 90px; }
 .yasal li { color: var(--soluk); }
 footer { border-top: 1px solid var(--cizgi); margin-top: 34px; padding: 20px 0 40px; color: var(--soluk); font-size: 14px; }
 footer p { margin: 6px 0; }
+footer .iletisim { margin: 0 0 16px; padding-bottom: 14px; border-bottom: 1px solid var(--cizgi); }
+footer .iletisim h2 { margin: 0 0 6px; font-size: 15px; color: var(--yazi); }
+footer .iletisim a { color: var(--yazi); }
 /* İlk temasta tanıtım ve Instagram daveti (templates/tanitim.html): az ve öz, sayfa başına bir kez */
 .davet { margin: 26px 0 4px; padding: 16px; background: var(--kart); border: 1px solid rgba(201, 209, 218, 0.38);
   border-radius: 14px; }
@@ -179,6 +182,15 @@ footer p { margin: 6px 0; }
 
 <footer>
   <div class="kap">
+    {% if kunye %}
+    <section class="iletisim" id="iletisim" aria-labelledby="h-iletisim">
+      <h2 id="h-iletisim">İletişim</h2>
+      <p>İçerik sağlayıcı: {{ kunye.ad }} · {{ kunye.yer }}</p>
+      <p>E-posta: <a href="mailto:{{ kunye.eposta }}">{{ kunye.eposta }}</a>{% if kunye.telefon %} · Telefon: {{ kunye.telefon }}{% endif %} · Instagram: <a href="{{ instagram }}">{{ hesap }}</a></p>
+      <p>Yer sağlayıcı: {{ kunye.yer_saglayici }}</p>
+      <p>E-posta ya da mesajla yazarsanız iletişim bilgileriniz yalnızca size yanıt vermek için kullanılır.</p>
+    </section>
+    {% endif %}
     <p><b style="color: var(--yazi)">{{ hesap }}</b> · Gram gümüş fiyatı{% if program %}, {{ program.fiyat_ozet }}{% endif %}.</p>
     <p><a href="{{ kok }}">Gram gümüş fiyatı</a> · <a href="{{ kok }}hesap/">Hesap makinesi</a> · <a href="{{ kok }}gecmis/">Geçmiş fiyatlar</a> · <a href="{{ kok }}rehber/">Gümüş rehberi</a></p>
     <p>Bilgi amaçlıdır, yatırım tavsiyesi değildir. Yazı tipleri: Archivo ve JetBrains Mono (SIL Open Font License).</p>
