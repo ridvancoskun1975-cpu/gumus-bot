@@ -564,9 +564,17 @@ try:
     main._istek = lambda yontem, yol, **p: {"id": "m"}
     main.hikaye_paylas = lambda kid, url: olaylar.append(("hikaye", url))
     try:
+        # 25 Ekim 2026'dan beri pazar hikâyesi yok (Rıdvan: "Hikayeyi kaldıralım"; main.PAZAR_HIKAYE)
         main.yorum_reelsi("1", {"dosya": "yorum-reels-sesli-x.mp4", "hikaye_dosya": "yorum-reels-x.mp4"}, "https://o/")
+        dogrula(olaylar == [("reels", "https://o/yorum-reels-sesli-x.mp4")], f"pazar yayını (hikâyesiz): {olaylar}")
+        olaylar.clear()
+        eski_hikaye, main.PAZAR_HIKAYE = main.PAZAR_HIKAYE, True
+        try:
+            main.yorum_reelsi("1", {"dosya": "yorum-reels-sesli-x.mp4", "hikaye_dosya": "yorum-reels-x.mp4"}, "https://o/")
+        finally:
+            main.PAZAR_HIKAYE = eski_hikaye
         dogrula(olaylar == [("reels", "https://o/yorum-reels-sesli-x.mp4"), ("hikaye", "https://o/yorum-reels-x.mp4")],
-                f"pazar yayını: {olaylar}")
+                f"pazar yayını (hikâye açıkken): {olaylar}")
     finally:
         for k, v in yedek.items():
             setattr(main, k, v)
