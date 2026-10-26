@@ -29,8 +29,8 @@ SAYFALAR = [
         "maddeler": [
             "Gösterge fiyattır; kuyumcu, banka ve borsa fiyatlarından farklıdır. İşçilik, makas "
             "ve vergiler dahil değildir.",
-            "Dolar/TL, Avrupa Merkez Bankası'nın (ECB) orta kurudur. TCMB ve bankaların alış "
-            "kurundan genelde biraz (binde birkaç) yüksektir; gram fiyat da aynı oranda farklı çıkar.",
+            "Dolar/TL, Avrupa Merkez Bankası'nın (ECB) orta kurudur. Bankaların döviz alış kuru "
+            "genelde bundan düşük, satış kuru yüksektir; banka ve kuyumcu fiyatı da buna göre farklı çıkar.",
             "ECB kuru iş günleri ~17:00'de yenilenir: ~10:00 paylaşımı önceki iş gününün, "
             "~20:00 özeti o günün kurunu kullanır.",
             "Oklar önceki iş gününe, haftalık ve aylık özette önceki döneme göredir. Veriler "
