@@ -29,7 +29,7 @@ KOK = Path(__file__).resolve().parent.parent
 
 # Açıklama: fiyatsız, site adresiyle başlar, model ya da şirket adı yok, Instagram sınırında
 a = main.tanitim_aciklamasi("Örnek müzik – Pixabay")
-kontrol(a.startswith(f"Gram gümüşün bilgi sayfası: {bilgi.SITE} (link bio'da)"), "ilk satır site adresi")
+kontrol(a.startswith(f"Gram gümüşün adresi: {bilgi.SITE} (link bio'da)"), "ilk satır site adresi")
 kontrol("biyografi" not in a and "Kaç gram" not in a, "terim link bio'da; kaç gram/kaç lira yok (Rıdvan, 19 Ekim 2026)")
 kontrol(len(main.TANITIM_OZELLIKLER) == 5 and not any("Kaç gram" in o["baslik"] for o in main.TANITIM_OZELLIKLER),
         "videoda beş özellik (PDF rehber dahil), kaç gram/kaç lira yok")
@@ -83,7 +83,7 @@ with tempfile.TemporaryDirectory() as d:
     kontrol(meta["kapak"].endswith(".jpg") and (d / meta["kapak"]).stat().st_size > 20000, "kapak (son hâl)")
     kontrol(meta["kapak_ms"] == int((main.TANITIM_SURE - 0.5) * 1000), "yedek kapak anı")
     kontrol("dosyalar" not in meta and "hikayeler" not in meta and "hikaye_videolari" not in meta, "kaydırmalı ve hikâye yok")
-    kontrol(meta["aciklama"].startswith("Gram gümüşün bilgi sayfası"), "açıklama metada")
+    kontrol(meta["aciklama"].startswith("Gram gümüşün adresi"), "açıklama metada")
     if not os.environ.get("HIZLI"):
         kontrol((d / meta["dosya"]).stat().st_size > 100000, "video üretildi")
 
