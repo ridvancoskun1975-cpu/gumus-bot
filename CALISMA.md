@@ -6,4 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
-| 2026-10-26 12:07 | **Yasal denetim düzeltmeleri (rapor: proje `arastirma/yasal-inceleme-25-ekim.md`).** 1–2 bitti (25 Ekim). Şimdi 3: "tek adres" (site tanıtım Reels'i); sonra 4 sesli rehber Reels'inde yapay zekâ sesi notu, 5 yasal bildirim, 6 site künyesi, kitap işleri. | `templates/site-reels.html`, `bot/main.py` (tanıtım açıklaması) | `yasal-3-tek-adres` · önizleme |
+| 2026-10-26 12:07 | **Yasal denetim düzeltmeleri (rapor: proje `arastirma/yasal-inceleme-25-ekim.md`).** 1–3 bitti (3: 26 Ekim, "Gram gümüşün bilgi sayfası"). Şimdi 4: sesli rehber Reels'inde ekranda yapay zekâ seslendirme notu; sonra 5 yasal bildirim, 6 site künyesi, kitap işleri. | rehber Reels şablonu, `bot/main.py` (rehber Reels) | `yasal-4-ses-notu` · önizleme |
