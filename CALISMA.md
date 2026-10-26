@@ -6,3 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
+| 2026-10-26 21:25 | **Yasal açıklar (rapor: proje `arastirma/yasal-uygulama-durumu.md`).** Şimdi: kaynaksız "ECB kuru bankaların alış kurundan binde birkaç yüksek" cümlesi; sonra 10 MetalCharts satırı, 16–19. | `bot/yasal.py`, `bot/bilgi.py` (#6), `templates/sayfa.html`, `rehber_pdf/bolum-02.html` | `yasal-kur-cumlesi` · önizleme |
