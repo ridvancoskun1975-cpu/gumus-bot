@@ -1,13 +1,15 @@
-"""Profilde sabitlenecek yasal bilgilendirme gönderisinin içeriği (kaydırmalı, 5 görsel).
+"""Profilde sabitlenecek yasal bilgilendirme gönderisinin içeriği (kaydırmalı, 6 görsel).
 
 Metni değiştirince "Son güncelleme" tarihini de güncelle, sonra
 Actions → Gümüş paylaşımı → Run workflow → tür: yasal ile yeniden üret.
 Instagram'da eski gönderinin sabitlemesini kaldırıp yenisini sabitlemek gerekir.
 """
 
-GUNCELLEME = "13 Ekim 2026"
+GUNCELLEME = "26 Ekim 2026"
 
 # Kapaktan sonraki sayfalar. Her madde görselde ayrı bir satır olur; kısa tut.
+# 26 Ekim 2026 (yasal inceleme 5. madde): sesli Reels, yön değişikliği satırı, aylık özet, çarşamba rehberi, site,
+# reklam etiketleri ve müzik künyesi cümlesi güncellendi; yapay zekâ ayrı sayfa oldu.
 SAYFALAR = [
     {
         "baslik": "Yatırım tavsiyesi değildir",
@@ -31,8 +33,8 @@ SAYFALAR = [
             "kurundan genelde biraz (binde birkaç) yüksektir; gram fiyat da aynı oranda farklı çıkar.",
             "ECB kuru iş günleri ~17:00'de yenilenir: ~10:00 paylaşımı önceki iş gününün, "
             "~20:00 özeti o günün kurunu kullanır.",
-            "Oklar önceki iş gününe, haftalık özette önceki haftaya göredir. Veriler gecikmeli ya "
-            "da hatalı olabilir.",
+            "Oklar önceki iş gününe, haftalık ve aylık özette önceki döneme göredir. Veriler "
+            "gecikmeli ya da hatalı olabilir.",
         ],
     },
     {
@@ -40,7 +42,7 @@ SAYFALAR = [
         "kaynaklar": [
             ("Ons gümüş ve ons altın (USD)", "MetalCharts · metalcharts.org"),
             ("Dolar/TL", "Avrupa Merkez Bankası (ECB) referans kurları · frankfurter.dev"),
-            ("Müzik", "Pixabay İçerik Lisansı · künye her paylaşımın açıklamasında"),
+            ("Müzik", "Pixabay İçerik Lisansı · künye müzikli paylaşımların açıklamasında"),
             ("Pazar yorumundaki haberler", "Web araması · kaynaklar her yorumun açıklamasında"),
         ],
         "maddeler": [
@@ -48,14 +50,24 @@ SAYFALAR = [
         ],
     },
     {
+        "baslik": "Yapay zekâ",
+        "maddeler": [
+            "Pazar yorumu fiyat ve kur verileri ile haftanın haberlerinden yapay zekâ ile üretilir; "
+            "tahmindir, hata içerebilir ve uzman incelemesinden geçmez.",
+            "Ağır basan yön önceki yorumdan farklıysa değişiklik, nedeni ve önceki yorumun tarihi "
+            "yazılır.",
+            "Rehber ve pazar Reels'lerindeki seslendirmeler yapay zekâ ile üretilir; ekranda ve "
+            "açıklamada belirtilir.",
+        ],
+    },
+    {
         "baslik": "Otomatik paylaşım",
         "maddeler": [
-            "Paylaşımlar otomatik üretilir: hafta içi ~10:00 ve ~20:00, cumartesi ~10:00 "
-            "haftalık özet, pazar ~11:00 yapay zekâ yorumu.",
-            "Pazar yorumları fiyat ve kur verileri ile haftanın haberlerinden yapay zekâ ile "
-            "üretilir; tahmindir, hata içerebilir ve uzman incelemesinden geçmez.",
-            "Reklam ya da iş birliği içeren paylaşımlar #reklam etiketiyle açıkça belirtilir; "
-            "fiyat verileri reklamdan etkilenmez.",
+            "Hafta içi ~10:00 ve ~20:00 fiyat, çarşamba ~14:00 gümüş rehberi, cumartesi ~10:00 "
+            "haftalık özet, pazar ~11:00 yorum; ayın ilk günlerinde aylık özet.",
+            "gunlukgumus.com (link bio'da) hafta içi günde 4 kez güncellenir; canlı fiyat değildir.",
+            "Reklam ve iş birlikleri #Reklam ya da #İşbirliği etiketi ve Instagram'ın ücretli "
+            "ortaklık etiketiyle belirtilir; fiyat verileri reklamdan etkilenmez.",
             "Hatalı bir değer görürseniz DM ile bildirebilirsiniz.",
         ],
     },
@@ -64,18 +76,21 @@ SAYFALAR = [
 ACIKLAMA = f"""Yasal bilgilendirme | Son güncelleme: {GUNCELLEME}
 
 1) Yatırım tavsiyesi değildir
-Bu hesaptaki tüm paylaşımlar yalnızca bilgi amaçlıdır ve alım-satım önerisi içermez. Hiçbir paylaşım yatırım danışmanlığı kapsamında değildir; yatırım danışmanlığı, SPK'dan yetki almış kuruluşlarla imzalanan yatırım danışmanlığı sözleşmesi çerçevesinde sunulur. Paylaşılan değerler mali durumunuza, risk ve getiri tercihlerinize uygun olmayabilir; yalnızca bu bilgilere dayanarak yatırım kararı vermeyin. Bu hesap DM üzerinden tavsiye vermez, para ya da yatırım talep etmez; hesap adına size ulaşan kişilere itibar etmeyin.
+Bu hesaptaki tüm paylaşımlar yalnızca bilgi amaçlıdır, alım-satım önerisi içermez ve yatırım danışmanlığı kapsamında değildir; yatırım danışmanlığı, SPK'dan yetki almış kuruluşlarla imzalanan sözleşme çerçevesinde sunulur. Paylaşılan değerler mali durumunuza, risk ve getiri tercihlerinize uygun olmayabilir; yalnızca bunlara dayanarak yatırım kararı vermeyin. Bu hesap DM'den tavsiye vermez, para ya da yatırım istemez; hesap adına size ulaşanlara itibar etmeyin.
 
 2) Fiyatlar nasıl hesaplanır
-Gram gümüş = ons gümüş (USD) × dolar/TL ÷ 31,1035. Bu bir gösterge fiyattır; kuyumcu, banka ve borsa alış-satış fiyatlarından farklıdır, işçilik, makas ve vergiler dahil değildir. Dolar/TL, Avrupa Merkez Bankası'nın (ECB) euro referans kurlarından EUR çaprazıyla hesaplanan orta kurdur; TCMB'nin ve bankaların alış kurundan genelde biraz (binde birkaç) yüksektir, gram gümüş de aynı oranda farklı çıkar. ECB kuru her iş günü yaklaşık 17:00'de yenilenir: 10:00 paylaşımında önceki iş gününün, 20:00 özetinde o günün kuru kullanılır. Değişimler önceki iş gününe, haftalık özette önceki haftaya göredir. Veriler gecikmeli, eksik ya da hatalı olabilir.
+Gram gümüş = ons gümüş (USD) × dolar/TL ÷ 31,1035. Gösterge fiyattır; kuyumcu, banka ve borsa fiyatlarından farklıdır, işçilik, makas ve vergiler dahil değildir. Dolar/TL, ECB euro referans kurlarından EUR çaprazıyla hesaplanan orta kurdur; ECB kuru iş günleri ~17:00'de yenilenir: 10:00 paylaşımında önceki iş gününün, 20:00 özetinde o günün kuru kullanılır. Değişimler önceki iş gününe, haftalık ve aylık özette önceki döneme göredir. Veriler gecikmeli ya da hatalı olabilir.
 
 3) Kaynaklar
 Metal fiyatları: MetalCharts (metalcharts.org)
-Dolar/TL: Avrupa Merkez Bankası (ECB) euro referans kurları, Frankfurter (frankfurter.dev) üzerinden
-Müzik: Pixabay İçerik Lisansı; künye her paylaşımın açıklamasında.
+Dolar/TL: ECB euro referans kurları, Frankfurter (frankfurter.dev) üzerinden
+Müzik: Pixabay İçerik Lisansı; künye müzikli paylaşımların açıklamasında.
 Bu hesabın bu kuruluşlarla bir bağı yoktur.
 
-4) Otomatik paylaşım
-Paylaşımlar otomatik olarak üretilir: hafta içi yaklaşık 10:00 ve 20:00'de, cumartesi 10:00'da haftalık özet, pazar 11:00'de yapay zekâ yorumu. Pazar yorumları fiyat ve kur verileri ile web aramasıyla derlenen haftanın haberlerinden yapay zekâ ile üretilir (kaynaklar yorumun açıklamasında); tahmin niteliğindedir, hata içerebilir ve yayından önce uzman incelemesinden geçmez. Reklam ya da iş birliği içeren paylaşımlar #reklam etiketiyle açıkça belirtilir; fiyat verileri ve hesaplama yöntemi reklamdan etkilenmez. Hatalı bir değer görürseniz DM ile bildirebilirsiniz.
+4) Yapay zekâ
+Pazar yorumu fiyat, kur ve haftanın haberlerinden yapay zekâ ile üretilir (kaynaklar açıklamada); tahmindir, hata içerebilir, uzman incelemesinden geçmez. Ağır basan yön önceki yorumdan farklıysa değişiklik, nedeni ve önceki tarih yazılır. Rehber ve pazar Reels'lerindeki seslendirmeler yapay zekâ ile üretilir; ekranda ve açıklamada belirtilir.
+
+5) Otomatik paylaşım
+Hafta içi ~10:00 ve ~20:00 fiyat, çarşamba ~14:00 gümüş rehberi, cumartesi ~10:00 haftalık özet, pazar ~11:00 yorum; ayın ilk günlerinde aylık özet. gunlukgumus.com (link bio'da) hafta içi günde 4 kez güncellenir; canlı fiyat değildir. Reklam ve iş birlikleri #Reklam ya da #İşbirliği etiketi ve Instagram'ın ücretli ortaklık etiketiyle belirtilir; fiyat verileri reklamdan etkilenmez. Hatalı bir değer görürseniz DM ile bildirebilirsiniz.
 
 #gümüş #gramgümüş #gümüşfiyatları"""
