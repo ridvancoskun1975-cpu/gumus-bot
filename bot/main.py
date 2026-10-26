@@ -2749,7 +2749,7 @@ def tanitim_aciklamasi(muzik=None):
     """Tanıtım Reels'inin açıklaması (fiyatsız; model ya da şirket adı yok)."""
     import bilgi
     satirlar = [
-        f"Gram gümüş için tek adres: {bilgi.SITE} ({bilgi.LINK_BIO})",
+        f"Gram gümüşün bilgi sayfası: {bilgi.SITE} ({bilgi.LINK_BIO})",
         "",
         "Sitemizde neler var?",
         "· Hesap makinesi: gram ↔ TL, Türkçe sayı yazımıyla (1.250,5)",
