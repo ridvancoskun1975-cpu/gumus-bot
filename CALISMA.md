@@ -6,4 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
-| 2026-10-26 12:07 | **Yasal denetim düzeltmeleri (rapor: proje `arastirma/yasal-inceleme-25-ekim.md`).** 1–5 bitti (5: 26 Ekim onaylandı; yeni yasal bildirim 27 Ekim 04:00'te yalnız ızgaraya gidiyor). Sıradaki 6: site künyesi; sonra kitap işleri. | `templates/taban.html` | `main` · beklemede |
+| 2026-10-26 12:07 | **Yasal denetim düzeltmeleri (rapor: proje `arastirma/yasal-inceleme-25-ekim.md`).** 1–5 bitti (5: 26 Ekim onaylandı; yeni yasal bildirim 27 Ekim 04:00'te yalnız ızgaraya gidiyor). Şimdi 6: site künyesi (İletişim); sonra kitap işleri. | `templates/taban.html`, `bot/sayfa.py` | `yasal-6-kunye` · önizleme |
