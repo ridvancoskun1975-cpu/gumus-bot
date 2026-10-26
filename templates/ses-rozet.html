@@ -7,12 +7,20 @@
 /* Rehber Reels'inin üstüne bindirilen "sesi açın" rozeti (bot/main.py → _ses_rozeti_kareleri): saydam zeminde
    tek başına çizilir, her kare ayrı PNG olur ve videonun üst ortasına (kare içeriğinin üstündeki boşluğa) konur. */
 html, body { background: transparent !important; margin: 0; }
-.kutu { display: inline-block; padding: 6px; }
+.kutu { display: inline-flex; flex-direction: column; align-items: center; padding: 6px; }
 .kutu.opak .ses-rozet { background: rgb(18, 20, 24); }
+/* Yapay zekâ sesi beyanı (yasal inceleme 25 Ekim 2026, 4. madde): rozetin hemen altında, her karede. */
+.ses-not { margin-top: 0.32em; padding: 0.22em 0.6em; border-radius: 999px; background: rgba(18, 20, 24, 0.86);
+  color: var(--soluk); font-family: 'Archivo', sans-serif; font-weight: 600; line-height: 1.1; white-space: nowrap; }
+.kutu.opak .ses-not { background: rgb(18, 20, 24); }
+/* Üstteki küçük rozette satır yanda durur: altına koyunca karenin "GÜMÜŞ REHBERİ" etiketine biner. */
+.kutu.yan { flex-direction: row; }
+.kutu.yan .ses-not { margin: 0 0 0 0.45em; }
 </style>
 </head>
 <body>
-<div class="kutu{% if opak %} opak{% endif %}" id="kutu">{{ ses_rozeti(yazi) }}</div>
+<div class="kutu{% if opak %} opak{% endif %}{% if yan %} yan{% endif %}" id="kutu">{{ ses_rozeti(yazi) }}{% if notu %}
+<div class="ses-not" style="font-size: {{ (yazi * 0.62) | round | int }}px">{{ notu }}</div>{% endif %}</div>
 <script>window.kare = function (t) { window.sesRozeti(t); };</script>
 </body>
 </html>

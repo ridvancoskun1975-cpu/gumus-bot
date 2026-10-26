@@ -2040,16 +2040,23 @@ SES_ROZETI_KARE = 36        # 1,2 sn'lik döngü, 30 fps
 SES_ROZETI_ORTA_SN = 2.5    # sn, ortadaki büyük rozetin ekranda kaldığı süre
 SES_ROZETI_ORTA_YAZI = 72   # px (üstteki 42)
 SES_ROZETI_KARARTMA = 0.55  # ortadaki rozet varken zeminin kararması (0 = yok, 1 = siyah)
+# Yapay zekâ sesi beyanı (yasal inceleme 25 Ekim 2026, 4. madde; Meta'nın gerçekçi yapay zekâ sesi etiketi, AB Yapay
+# Zekâ Tüzüğü md. 50): üstteki rozetin yanında (videonun tamamı), ortadaki büyük rozetin altında (ilk saniyeler) küçük satır. Boş metin = satır yok.
+SES_NOTU = "Seslendirme: yapay zekâ"
 
 
-def _ses_rozeti_kareleri(klasor, yazi=42, opak=False):
+def _ses_rozeti_kareleri(klasor, yazi=42, opak=False, notu=None, yan=False):
     """Rozetin döngü karelerini saydam PNG olarak klasöre yazar; ffmpeg girdi deseni (rozet_%02d.png) döner.
-    opak=True: rozetin zemini tam dolu (ortadaki büyük rozet; arkadaki yazı içinden görünmesin)."""
+    opak=True: rozetin zemini tam dolu (ortadaki büyük rozet; arkadaki yazı içinden görünmesin).
+    notu: rozetin altındaki küçük satır (None = SES_NOTU); yan=True: satır rozetin sağında (üstteki küçük rozet)."""
     from jinja2 import Environment, FileSystemLoader
     from playwright.sync_api import sync_playwright
     env = Environment(loader=FileSystemLoader(str(SABLONLAR)), autoescape=True)
     gecici = SABLONLAR / "_ses_rozet.html"
-    gecici.write_text(env.get_template("ses-rozet.html").render(yazi=yazi, opak=opak), encoding="utf-8")
+    gecici.write_text(env.get_template("ses-rozet.html").render(yazi=yazi, opak=opak,
+                                                                notu=SES_NOTU if notu is None else notu,
+                                                                yan=yan),
+                      encoding="utf-8")
     klasor = Path(klasor)
     klasor.mkdir(parents=True, exist_ok=True)
     try:
@@ -2111,7 +2118,7 @@ def rehber_reels_tam_uret(cikti, konu, damga, hikayeler, plan):
         rozet_girdi = []
         if sl_:   # sesliyse üst ortada "Sesi açın" rozeti (hareketli) + ilk saniyelerde ortada büyük rozet
             try:
-                desen = _ses_rozeti_kareleri(rozet_klasoru / "ust")
+                desen = _ses_rozeti_kareleri(rozet_klasoru / "ust", yan=True)
                 rozet_girdi = ["-stream_loop", "-1", "-framerate", str(VIDEO_FPS), "-i", desen]
                 r = 1 + ses_girdi.count("-i")
                 goruntu = (f"[0:v]scale=1080:1920,fps={VIDEO_FPS}[zemin];[{r}:v]format=rgba[rozet];"
