@@ -6,4 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
-| 2026-10-26 12:07 | **Yasal denetim düzeltmeleri (rapor: proje `arastirma/yasal-inceleme-25-ekim.md`).** 1–4 bitti (4: 26 Ekim, rehber Reels'inde "Seslendirme: yapay zekâ"). Şimdi 5: yasal bildirim; sonra 6 site künyesi, kitap işleri. | `bot/yasal.py` | `yasal-5-bildirim` · önizleme |
+| 2026-10-26 12:07 | **Yasal denetim düzeltmeleri (rapor: proje `arastirma/yasal-inceleme-25-ekim.md`).** 1–5 bitti (5: 26 Ekim onaylandı; yeni yasal bildirim 27 Ekim 04:00'te yalnız ızgaraya gidiyor). Sıradaki 6: site künyesi; sonra kitap işleri. | `templates/taban.html` | `main` · beklemede |
