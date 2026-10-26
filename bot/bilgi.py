@@ -303,8 +303,8 @@ BOLUMLER = [
             {
                 "baslik": "Kur ve zaman",
                 "maddeler": [
-                    "Paylaşımlarımız ECB orta kurunu kullanır; bankaların döviz alış kurundan "
-                    "genelde binde birkaç yüksektir.",
+                    "Paylaşımlarımız ECB orta kurunu kullanır; bankaların döviz alış kuru genelde "
+                    "bundan düşük, satış kuru yüksektir.",
                     "Kuyumcu fiyatı anlık değişir; paylaşımlarımız günde iki kez güncellenir.",
                     "Gösterge fiyat fikir edinmek içindir; işlemden önce güncel alış-satış "
                     "fiyatını sorun.",
