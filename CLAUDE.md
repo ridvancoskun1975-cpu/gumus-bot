@@ -48,6 +48,9 @@
   kararır ve rozet ortada büyük çıkar (Rıdvan, 19 Ekim 2026 "onaylıyorum uygula": üstteki rozet masaüstü akışında
   kırpılıyor, telefon akışında "Orijinal ses" satırının altında kalıyor; `bot/main.py` → `SES_ROZETI_ORTA_*`).
   Pazar Reels'inin rozeti yerinde kalır (Rıdvan: "pazarda sorun yok").
+  Sesli rehber Reels'inde iki rozetle birlikte "Seslendirme: yapay zekâ" satırı da var (Rıdvan, 26 Ekim 2026 "Uygun";
+  yasal inceleme 4: Meta yapay zekâ sesi etiketi, AB Yapay Zekâ Tüzüğü md. 50; `main.SES_NOTU`). Kaldırma; yalnız müzikle
+  giden Reels'te çıkmaz.
 - Instagram'a tarayıcıyla bakılmaz.
 - Sitede ve açıklamalarda model ya da şirket adı yazılmaz.
   (Bu dört kural: Rıdvan, 16 Ekim 2026 "CLAUDE.md'ye ekle".)
