@@ -10,14 +10,21 @@ her zaman güncel kalmalı.") sayfadaki saatler, günler ve takvim buradan gelir
 - ilk haftalık özet ve ilk pazar yorumu: günlük kayıtların başladığı güne göre (botun kendi kurallarıyla)
 - ECB kurunun yayın saati: iş günleri 16:00 Frankfurt saati, o günün Türkiye karşılığı (yaz/kış saati)
 
-Cron saatleri UTC'dir; Türkiye yıl boyu UTC+3. GitHub zamanlı işleri genelde 5-15 dk gecikmeli başlatır ve
-üretim birkaç dakika sürer; bu yüzden gösterilen saat = cron + GECIKME_DK, 5 dakikaya yuvarlanmış ("~10:00").
+Cron saatleri UTC'dir; Türkiye yıl boyu UTC+3.
+
+Hedef saat (Rıdvan, 28 Ekim 2026: "takipçilere 20 00 yazdık … işleme önce başlamalıyız", "söze uymamız
+gerekiyor"): GitHub zamanlı işleri 20–50 dk gecikmeli başlatıyordu (akşam özeti 20:17–20:50 arası gidiyordu).
+Bu yüzden cron'lar hedeften ~40 dk önce (HEDEF_SAATLERI); iş akışı kurulumdan sonra `python bot/program.py bekle
+<tür>` ile hedef saate kadar bekler (geçmişse beklemez), fiyatı o anda alır. Gösterilen saat = hedef + GECIKME_DK,
+5 dakikaya yuvarlanmış ("~10:00"); hedefi olmayan bir cron için cron + GECIKME_ESKI_DK.
 Yalnızca standart kütüphane ve botun kendi modülleri kullanılır.
 
-Yerelde: python bot/program.py → bugünkü tabloyu yazdırır.
+Yerelde: python bot/program.py → bugünkü tabloyu yazdırır; python bot/program.py bekle post → hedefe kadar bekler.
 """
+import os
 import re
 import sys
+import time
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -31,7 +38,22 @@ IS_AKISI = KOK / ".github" / "workflows" / "paylas.yml"
 TR_SAAT = ZoneInfo("Europe/Istanbul")
 ECB_SAATI = (16, 0)                       # ECB referans kurları iş günleri ~16:00 CET/CEST'te yayımlanır
 ECB_YER = ZoneInfo("Europe/Berlin")
-GECIKME_DK = 10                           # cron saatinden paylaşıma kadar geçen yaklaşık süre
+# Hedef saatler (TR): zamanlı çalışma bu saate kadar bekler, fiyatı o anda alır; üretim + paylaşım ~3–5 dk
+# sürer, paylaşım ~hedef + 5 dk'da görünür. Cron bundan ~40 dk önce olmalı (GitHub gecikmesi için).
+# Tür iş akışının "Türü belirle" adımındaki türdür; bilgi cron'u rehber (bilgi), aylık özet (ay) ya da rehber
+# arşivi (kisa) olabilir, üçü aynı hedefte. Burada olmayan tür (yasal, hikaye, tanitim, kart) beklemez.
+HEDEF_SAATLERI = {
+    "reels": (9, 55),    # hafta içi sabah Reels'i → ~10:00
+    "post": (19, 55),    # hafta içi akşam özeti → ~20:00
+    "bilgi": (13, 55),   # rehber günü → ~14:00
+    "ay": (13, 55),      # aylık özet (rehbersiz ayın ilk iş günü) → ~14:00
+    "kisa": (13, 55),    # rehber arşivi Reels'i → ~14:00
+    "hafta": (9, 55),    # cumartesi haftalık özet → ~10:00
+    "yorum": (10, 55),   # pazar yorumu → ~11:00
+}
+GECIKME_DK = 5                            # hedef saatten paylaşıma kadar geçen yaklaşık süre (üretim + paylaşım)
+GECIKME_ESKI_DK = 10                      # hedefi olmayan cron için: cron saatinden paylaşıma kadar (eski kural)
+EN_COK_BEKLEME_SN = 60 * 60               # güvenlik: hedef bundan uzaksa beklemeden devam (yanlış ayar koruması)
 SIRADAKI_GUN_SAYISI = 4                   # rehber satırında gösterilecek sıradaki gün sayısı
 KAYIT_TURLERI = ("reels", "post")         # günlük fiyat kaydı yazan (fiyatı güncelleyen) türler
 
@@ -101,12 +123,75 @@ def cron_coz(cron):
     return (tr.hour, tr.minute), gunler
 
 
-def yayin_saati(cron):
-    """"~10:00" — cron saati + GECIKME_DK, 5 dakikaya yuvarlanmış (TR)."""
-    (s, d), _ = cron_coz(cron)
-    toplam = s * 60 + d + GECIKME_DK
-    toplam = int(round(toplam / 5.0)) * 5
+def _yuvarla(toplam_dk):
+    toplam = int(round(toplam_dk / 5.0)) * 5
     return f"~{(toplam // 60) % 24:02d}:{toplam % 60:02d}"
+
+
+def yayin_saati(cron, tur=None):
+    """"~10:00" — türün hedef saati + GECIKME_DK; hedefi yoksa cron saati + GECIKME_ESKI_DK (TR), 5 dk'ya yuvarlı."""
+    if tur in HEDEF_SAATLERI:
+        s, d = HEDEF_SAATLERI[tur]
+        return _yuvarla(s * 60 + d + GECIKME_DK)
+    (s, d), _ = cron_coz(cron)
+    return _yuvarla(s * 60 + d + GECIKME_ESKI_DK)
+
+
+def hedef_denetle(yol=None):
+    """Hedefi olan her türün cron'u hedeften 10–60 dk önce olmalı (yoksa bekleme işe yaramaz ya da çok uzun).
+    Sorun listesi döndürür (boşsa tamam)."""
+    sorunlar = []
+    for cron, tur in cronlar(yol):
+        if tur not in HEDEF_SAATLERI:
+            continue
+        (s, d), _ = cron_coz(cron)
+        hs, hd = HEDEF_SAATLERI[tur]
+        fark = (hs * 60 + hd) - (s * 60 + d)
+        if not 10 <= fark <= 60:
+            sorunlar.append(f"{tur}: cron {s:02d}:{d:02d} TR, hedef {hs:02d}:{hd:02d}, fark {fark} dk (10–60 olmalı)")
+    return sorunlar
+
+
+def bekleme_suresi(tur, simdi=None):
+    """Hedef saate kaç saniye var (TR). Hedefi olmayan tür, geçmiş hedef ya da EN_COK_BEKLEME_SN'den uzak hedef → 0."""
+    if tur not in HEDEF_SAATLERI:
+        return 0
+    simdi = simdi or datetime.now(TR_SAAT)
+    s, d = HEDEF_SAATLERI[tur]
+    hedef = simdi.astimezone(TR_SAAT).replace(hour=s, minute=d, second=0, microsecond=0)
+    kalan = (hedef - simdi).total_seconds()
+    if kalan <= 0 or kalan > EN_COK_BEKLEME_SN:
+        return 0
+    return int(kalan)
+
+
+def bekle(tur, simdi=None, uyu=time.sleep, yaz=print):
+    """Hedef saate kadar bekler, beklenen saniyeyi döndürür. Hiçbir durumda hata fırlatmaz (paylaşımı durdurmasın)."""
+    try:
+        simdi = simdi or datetime.now(TR_SAAT)
+        sn = bekleme_suresi(tur, simdi)
+        if tur not in HEDEF_SAATLERI:
+            yaz(f"Bekleme yok: '{tur}' türünün hedef saati yok.")
+            return 0
+        s, d = HEDEF_SAATLERI[tur]
+        if sn == 0:
+            yaz(f"Bekleme yok: şu an {simdi.astimezone(TR_SAAT):%H:%M} TR, hedef {s:02d}:{d:02d} "
+                f"(geçmiş ya da {EN_COK_BEKLEME_SN // 60} dk'dan uzak); hemen devam.")
+            return 0
+        yaz(f"Hedef saate kadar bekleniyor: şu an {simdi.astimezone(TR_SAAT):%H:%M} TR, hedef {s:02d}:{d:02d} "
+            f"({sn // 60} dk {sn % 60} sn).")
+        kalan = sn
+        while kalan > 0:
+            adim = min(kalan, 300)
+            uyu(adim)
+            kalan -= adim
+            if kalan > 0:
+                yaz(f"  … {kalan // 60} dk kaldı")
+        yaz(f"Hedef saat geldi ({s:02d}:{d:02d} TR); devam.")
+        return sn
+    except Exception as hata:  # noqa: BLE001 — bekleme paylaşımı asla durdurmaz
+        yaz(f"::warning::Hedef saat beklemesi atlandı ({hata!r}); hemen devam.")
+        return 0
 
 
 def gun_metni(gunler):
@@ -271,7 +356,7 @@ def program(simdi=None, kayit_gunleri=(), hikaye_turleri=None, rehber_saati=(13,
     satirlar, saatler = [], {}
     for cron, tur in cronlar():
         (s, d), gunler = cron_coz(cron)
-        saat = yayin_saati(cron)
+        saat = yayin_saati(cron, tur)
         saatler.setdefault(tur, []).append((saat, gunler))
         sira = (min(gunler), s * 60 + d)
         if tur == "bilgi":
@@ -391,5 +476,14 @@ def program(simdi=None, kayit_gunleri=(), hikaye_turleri=None, rehber_saati=(13,
 
 if __name__ == "__main__":
     import json
+    if len(sys.argv) >= 2 and sys.argv[1] == "bekle":
+        # İş akışı: zamanlı çalışmada hedef saate kadar bekle. Çıkış kodu her zaman 0 (paylaşımı durdurmaz).
+        tur_adi = sys.argv[2] if len(sys.argv) > 2 else os.environ.get("TUR", "")
+        bekle(tur_adi)
+        sys.exit(0)
+    if len(sys.argv) >= 2 and sys.argv[1] == "hedef-denetle":
+        sorunlar = hedef_denetle()
+        print("\n".join(sorunlar) if sorunlar else "Hedef saatler ve cron'lar uyumlu.")
+        sys.exit(1 if sorunlar else 0)
     p = program()
     print(json.dumps(p, ensure_ascii=False, indent=2))
