@@ -165,7 +165,11 @@ def bekleme_suresi(tur, simdi=None):
     return int(kalan)
 
 
-def bekle(tur, simdi=None, uyu=time.sleep, yaz=print):
+def _yaz(*a):
+    print(*a, flush=True)   # iş akışı günlüğünde bekleme ilerlemesi anında görünsün
+
+
+def bekle(tur, simdi=None, uyu=time.sleep, yaz=_yaz):
     """Hedef saate kadar bekler, beklenen saniyeyi döndürür. Hiçbir durumda hata fırlatmaz (paylaşımı durdurmasın)."""
     try:
         simdi = simdi or datetime.now(TR_SAAT)
