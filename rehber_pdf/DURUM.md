@@ -33,31 +33,31 @@ durumla karşılaştırır; uyuşmazlık hatadır. Yazım kuralları: `YAZIM.md`
 | 11 | Külçe gümüş hangi boylarda olur? | 16 Aralık 2026 | onaylandı | kaynak ✓ · denetle ✓ | 2027 |
 | 12 | Aynı değerde altın ve gümüş | 23 Aralık 2026 | onaylandı | kaynak ✓ · denetle ✓ | 2027 |
 | 13 | Akçeden kuruşa: gümüş para | 30 Aralık 2026 | onaylandı | kaynak ✓ · denetle ✓ | 2027 |
-| 14 | Gerçek gümüş nasıl anlaşılır? | 6 Ocak 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
-| 15 | Gümüşün simgesi neden Ag? | 13 Ocak 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
-| 16 | Gümüş neden değerli metal sayılır? | 20 Ocak 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
-| 17 | Gümüş neden en parlak metaldir? | 27 Ocak 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
-| 18 | Gümüş hangi birimlerle tartılır? | 3 Şubat 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
-| 19 | Cevherden külçeye: gümüş nasıl üretilir? | 10 Şubat 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
-| 20 | Gümüş nasıl saflaştırılır? | 17 Şubat 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
-| 21 | Külçe sikke nedir? | 24 Şubat 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
-| 22 | Koleksiyon değeri ile metal değeri farkı nedir? | 3 Mart 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
-| 23 | Gümüş tıpta neden kullanılır? | 10 Mart 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
-| 24 | Fotoğraf filmi gümüşle nasıl çalışır? | 17 Mart 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
-| 25 | Güneş paneli ve elektrikli araç neden gümüş ister? | 24 Mart 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
-| 26 | Gümüşhane adını nereden alır? | 31 Mart 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
-| 27 | Türkiye'de gümüş nereden çıkar? | 7 Nisan 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
-| 28 | Tarihin ünlü gümüş madenleri hangileri? | 14 Nisan 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
-| 29 | Para neden artık gümüş değil? | 21 Nisan 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
-| 30 | Merkez bankaları neden gümüş tutmaz? | 28 Nisan 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
-| 31 | Ons fiyatı neden dolarla verilir? | 5 Mayıs 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
-| 32 | Spot fiyat ve vadeli fiyat ne demek? | 12 Mayıs 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
-| 33 | Fiziki ve fiziki olmayan gümüş farkı nedir? | 19 Mayıs 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
-| 34 | Dünyadaki gümüş nerede duruyor? | 26 Mayıs 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
-| 35 | Gümüş verileri nereden gelir? | 2 Haziran 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
-| 36 | 1980'de gümüş piyasasında ne oldu? | 9 Haziran 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
-| 37 | Gümüş haberlerini okurken nelere dikkat etmeli? | 16 Haziran 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
-| 38 | Gümüş sözlüğü: hangi terim ne demek? | 23 Haziran 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
+| 14 | Gerçek gümüş nasıl anlaşılır? | 6 Ocak 2027 | yazılıyor · kitap-2028-duzeltme | kaynak ✓ · denetle ✓ | 2028 |
+| 15 | Gümüşün simgesi neden Ag? | 13 Ocak 2027 | yazılıyor · kitap-2028-duzeltme | kaynak ✓ · denetle ✓ | 2028 |
+| 16 | Gümüş neden değerli metal sayılır? | 20 Ocak 2027 | yazılıyor · kitap-2028-duzeltme | kaynak ✓ · denetle ✓ | 2028 |
+| 17 | Gümüş neden en parlak metaldir? | 27 Ocak 2027 | yazılıyor · kitap-2028-duzeltme | kaynak ✓ · denetle ✓ | 2028 |
+| 18 | Gümüş hangi birimlerle tartılır? | 3 Şubat 2027 | yazılıyor · kitap-2028-duzeltme | kaynak ✓ · denetle ✓ | 2028 |
+| 19 | Cevherden külçeye: gümüş nasıl üretilir? | 10 Şubat 2027 | yazılıyor · kitap-2028-duzeltme | kaynak ✓ · denetle ✓ | 2028 |
+| 20 | Gümüş nasıl saflaştırılır? | 17 Şubat 2027 | yazılıyor · kitap-2028-duzeltme | kaynak ✓ · denetle ✓ | 2028 |
+| 21 | Külçe sikke nedir? | 24 Şubat 2027 | yazılıyor · kitap-2028-duzeltme | kaynak ✓ · denetle ✓ | 2028 |
+| 22 | Koleksiyon değeri ile metal değeri farkı nedir? | 3 Mart 2027 | yazılıyor · kitap-2028-duzeltme | kaynak ✓ · denetle ✓ | 2028 |
+| 23 | Gümüş tıpta neden kullanılır? | 10 Mart 2027 | yazılıyor · kitap-2028-duzeltme | kaynak ✓ · denetle ✓ | 2028 |
+| 24 | Fotoğraf filmi gümüşle nasıl çalışır? | 17 Mart 2027 | yazılıyor · kitap-2028-duzeltme | kaynak ✓ · denetle ✓ | 2028 |
+| 25 | Güneş paneli ve elektrikli araç neden gümüş ister? | 24 Mart 2027 | yazılıyor · kitap-2028-duzeltme | kaynak ✓ · denetle ✓ | 2028 |
+| 26 | Gümüşhane adını nereden alır? | 31 Mart 2027 | yazılıyor · kitap-2028-duzeltme | kaynak ✓ · denetle ✓ | 2028 |
+| 27 | Türkiye'de gümüş nereden çıkar? | 7 Nisan 2027 | yazılıyor · kitap-2028-duzeltme | kaynak ✓ · denetle ✓ | 2028 |
+| 28 | Tarihin ünlü gümüş madenleri hangileri? | 14 Nisan 2027 | yazılıyor · kitap-2028-duzeltme | kaynak ✓ · denetle ✓ | 2028 |
+| 29 | Para neden artık gümüş değil? | 21 Nisan 2027 | yazılıyor · kitap-2028-duzeltme | kaynak ✓ · denetle ✓ | 2028 |
+| 30 | Merkez bankaları neden gümüş tutmaz? | 28 Nisan 2027 | yazılıyor · kitap-2028-duzeltme | kaynak ✓ · denetle ✓ | 2028 |
+| 31 | Ons fiyatı neden dolarla verilir? | 5 Mayıs 2027 | yazılıyor · kitap-2028-duzeltme | kaynak ✓ · denetle ✓ | 2028 |
+| 32 | Spot fiyat ve vadeli fiyat ne demek? | 12 Mayıs 2027 | yazılıyor · kitap-2028-duzeltme | kaynak ✓ · denetle ✓ | 2028 |
+| 33 | Fiziki ve fiziki olmayan gümüş farkı nedir? | 19 Mayıs 2027 | yazılıyor · kitap-2028-duzeltme | kaynak ✓ · denetle ✓ | 2028 |
+| 34 | Dünyadaki gümüş nerede duruyor? | 26 Mayıs 2027 | yazılıyor · kitap-2028-duzeltme | kaynak ✓ · denetle ✓ | 2028 |
+| 35 | Gümüş verileri nereden gelir? | 2 Haziran 2027 | yazılıyor · kitap-2028-duzeltme | kaynak ✓ · denetle ✓ | 2028 |
+| 36 | 1980'de gümüş piyasasında ne oldu? | 9 Haziran 2027 | yazılıyor · kitap-2028-duzeltme | kaynak ✓ · denetle ✓ | 2028 |
+| 37 | Gümüş haberlerini okurken nelere dikkat etmeli? | 16 Haziran 2027 | yazılıyor · kitap-2028-duzeltme | kaynak ✓ · denetle ✓ | 2028 |
+| 38 | Gümüş sözlüğü: hangi terim ne demek? | 23 Haziran 2027 | yazılıyor · kitap-2028-duzeltme | kaynak ✓ · denetle ✓ | 2028 |
 
 ## Ekler
 
