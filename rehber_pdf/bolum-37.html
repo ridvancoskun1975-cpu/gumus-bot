@@ -1,10 +1,10 @@
 <!-- Gümüş rehberi #37 · PDF'teki uzun hâli (rehber_pdf/YAZIM.md kurallarıyla).
      Bölüm açılışını (numara + başlık) ve bölüm sonu notunu kitap şablonu yazar; bu dosya giriş paragrafıyla başlar.
-     Instagram'daki kısa hâl (b37-kisa.json): beş soru (kim söyledi, hangi birim, hangi fiyat, neye göre, ölçüm mü tahmin mi);
+     Instagram'daki kısa hâl (bot/bilgi.py): beş soru (kim söyledi, hangi birim, hangi fiyat, neye göre, ölçüm mü tahmin mi);
      aynı anın aynı gümüşü 60,00 $ / 77,16 ₺ / 77.161,79 ₺ (ons 60 $, kur 40 ₺, örnek); birincil kaynak ve aktarma; spot,
      vadeli, Londra referans fiyatı, gün içi en yüksek ve kapanış; TÜİK Nisan 2022 TÜFE aylık %7,25, yıllık %69,97; yüzde ile
      yüzde puan (%40 → %45: 5 puan, %12,5); lirada rekor ≠ dolarda rekor; 29 Ocak 2026'daki ~121,6 $ nominal rekor 1980 zirvesinin
-     enflasyona göre düzeltilmiş hâlinin altında; LBMA anketinde (Ocak 2026) analist tahminleri kat kat ayrılıyordu
+     enflasyona göre düzeltilmiş hâlinin altında; LBMA anketinde (Ocak 2026) analistlerin ortalama tahminleri arasında yaklaşık üç kat fark vardı
      (yasal inceleme 25 Ekim 2026: fiyat aralığı hedef gibi okunmasın diye rakamsız).
      Örnek başlıklar uydurmadır. Haber sitesi, banka, aracı kurum adı yok. Veri kaynakları Bölüm 35'te; 1980'in
      hikâyesi Bölüm 36'da. Spot/vadeli Bölüm 32, piyasalar ve hafta sonu Bölüm 9, kur etkisi
@@ -86,7 +86,7 @@
 </div>
 <div class="parca">
   <div class="rozet">Enflasyon</div>
-  <p><b>Nominal mi, reel mi?</b> Enflasyon düşülmemiş fiyata nominal, düşülmüş fiyata reel fiyat denir. 1980 zirvesi (Londra referans fiyatı 49,45 dolar), ABD Çalışma İstatistikleri Bürosu'nun (BLS) tüketici fiyat endeksiyle Ağustos 2026 dolarına çevrilince yaklaşık 213 dolar eder: <span class="mono">49,45 × 334,98 ÷ 77,8</span> (Ağustos 2026 ve Ocak 1980 endeksleri). Anlık fiyatın 29 Ocak 2026'da gün içinde gördüğü yaklaşık 121,6 dolarlık nominal rekor (Bölüm 5) bunun altında kaldı. 1980'in hikâyesi Bölüm 36'da.</p>
+  <p><b>Nominal mi, reel mi?</b> Enflasyon düşülmemiş fiyata nominal, düşülmüş fiyata reel fiyat denir. 1980 zirvesi (Londra referans fiyatı 49,45 dolar), ABD Çalışma İstatistikleri Bürosu'nun (BLS) tüketici fiyat endeksiyle Ağustos 2026 dolarına çevrilince yaklaşık 213 dolar eder: <span class="mono">49,45 × 334,98 ÷ 77,8</span> (Ağustos 2026 ve Ocak 1980 endeksleri). Anlık fiyatın 29 Ocak 2026'da gün içinde gördüğü yaklaşık 121,6 dolarlık nominal rekor (Bölüm 5) bunun altında kaldı. İki rakam farklı fiyat türleridir (3. başlık), ama 1980'in gün içi en yüksek fiyatıyla hesaplansa da sonuç değişmez. 1980'in hikâyesi Bölüm 36'da.</p>
 </div>
 <p>Lirada da öyle. Gram gümüş bir yılda %30 artarken tüketici fiyatları %35 arttıysa reel değişim eksidir:</p>
 <div class="formul-kutu">
@@ -96,7 +96,7 @@
 
 <h3><span class="num">6</span>Ölçüm mü, tahmin mi?</h3>
 <p>Gerçekleşmiş bir fiyat ya da kurumların bildirdiği bir sayım (kasa, depo) <b>ölçümdür</b>. Arz-talep tabloları gibi hesaplar ve “e” işaretli rakamlar tahmindir, sonraki raporlarda düzeltilebilir (Bölüm 35). “Beklenti”, “öngörü”, “hedef” ise bir kişinin ya da kurumun görüşüdür.</p>
-<p>Tahminler birbirinden çok uzak olabilir: LBMA'nın Ocak 2026'da yayımladığı yıllık ankette analistlerin 2026 için gümüş tahminleri birbirinden kat kat ayrılıyordu; en yüksek tahmin, en düşüğün yaklaşık dört katıydı. Bir tahmin haberinde kimin, ne zaman ve hangi varsayımla tahmin yaptığına bakın.</p>
+<p>Tahminler birbirinden çok uzak olabilir: LBMA'nın Ocak 2026'da yayımladığı yıllık ankette analistlerin 2026 için verdiği ortalama gümüş fiyatı tahminlerinin en yükseği, en düşüğünün yaklaşık üç katıydı. Bir tahmin haberinde kimin, ne zaman ve hangi varsayımla tahmin yaptığına bakın.</p>
 
 <h3><span class="num">7</span>Grafiğin eksenine bakın</h3>
 <ul class="duz">
@@ -126,7 +126,7 @@
   </ul>
 </div>
 
-<p class="kaynaklar">Kaynak: TÜİK (TÜFE bülteni, Nisan 2022; Türk-İş ve AloMaliye aktarımları); Birleşik Krallık ONS ve OSR (2023); AB açık veri portalı; LBMA tahmin anketi ve The Alchemist (2026); CME Group ve CFTC belgeleri (2010, 2017); ABD Çalışma İstatistikleri Bürosu (BLS), TÜFE-U (Ocak 1980; Ağustos ve Eylül 2026 bültenleri); Idaho Çalışma Bakanlığı TÜFE tablosu (2026); Britannica (“Silver Thursday”); Reuters (Şubat 2026); Avam Kamarası Kütüphanesi; Ondokuz Mayıs Üniversitesi ders notu (noktalama); Wikipedia (ikincil, karşılaştırma için); bir bankanın ve bir grafik yazılımının bilgi sayfaları; çevrim içi sözlük ve finans bilgi siteleri; piyasa haberleri; fiyat geçmişi ve piyasa veri sitelerinin bilgi sayfaları; külçe satıcılarının bilgi sayfaları (karşılaştırma için).</p>
+<p class="kaynaklar">Kaynak: TÜİK (TÜFE bülteni, Nisan 2022; Türk-İş ve AloMaliye aktarımları); Birleşik Krallık ONS ve OSR (2023); AB açık veri portalı; LBMA tahmin anketi ve The Alchemist (2026); CME Group ve CFTC belgeleri (2010, 2017); ABD Çalışma İstatistikleri Bürosu (BLS), TÜFE-U (Ocak 1980; Ağustos ve Eylül 2026 bültenleri); Idaho Çalışma Bakanlığı TÜFE tablosu (2026); Britannica (“Silver Thursday”); Reuters (Şubat 2026); Avam Kamarası Kütüphanesi; Ondokuz Mayıs Üniversitesi ders notu (noktalama); Wikipedia (ikincil, karşılaştırma için); bir bankanın ve bir grafik yazılımının bilgi sayfaları; çevrim içi sözlük ve finans bilgi siteleri; piyasa haberleri; fiyat geçmişi ve piyasa veri sitelerinin bilgi sayfaları; bir külçe satıcısının bilgi sayfası (karşılaştırma için).</p>
 
 <!-- KAYNAK: https://www.turkis.org.tr/storage/2022/05/Nisan2022enflasyonu.pdf — TÜİK TÜFE Nisan 2022 bülteni (5 Mayıs 2022, sendika yazısının eki): bir önceki aya göre %7,25, bir önceki yılın Aralık ayına göre %31,71, bir önceki yılın aynı ayına göre %69,97, on iki aylık ortalamalara göre %34,46 -->
 <!-- KAYNAK: https://www.alomaliye.com/2022/05/05/enflasyon-rakamlari-aciklandi-nisan-2022-tufe/ — aynı dört rakam (%7,25; %31,71; %69,97; %34,46) -->
@@ -152,7 +152,7 @@
 <!-- KAYNAK: https://metalcharts.org/silver-price-adjusted-for-inflation — 1980 zirvesi 2025 dolarıyla yaklaşık 195 $ (yıllık TÜFE ortalamaları); Ocak 2026'daki ~121,62 $ rekor reel olarak bunun altında -->
 <!-- KAYNAK: https://www.richify.ai/tr/glossary/reel-faiz — reel = (1 + nominal) ÷ (1 + enflasyon) − 1 (Fisher) -->
 <!-- KAYNAK: https://fvt.com.tr/araclar/enflasyon-reel-getiri-hesaplama — aynı formül: (1+nominal)/(1+enflasyon)−1 -->
-<!-- KAYNAK: https://www.lbma.org.uk/forecast-survey-2026/at-a-glance — LBMA 2026 tahmin anketi: gümüşte en düşük 42,00 $, en yüksek 165,00 $ (ortalama 79,57 $) -->
+<!-- KAYNAK: https://www.lbma.org.uk/forecast-survey-2026/at-a-glance — LBMA 2026 tahmin anketi: gümüşte en düşük 42,00 $, en yüksek 165,00 $ (ortalama 79,57 $); 28 Ekim 2026 bağımsız denetim: 42–165 $ farklı analistlerin işlem aralığı uçları; analistlerin ortalama fiyat tahminlerinde en yüksek 125,00 $, en düşük 44,25 $ (oran ≈2,8) — metin bu yüzden 'yaklaşık üç katı' -->
 <!-- KAYNAK: https://www.lbma.org.uk/alchemist/issue-120/precious-metals-set-for-volatile-2026-as-momentum-collides-with-mounting-risks — LBMA Alchemist: 2026 gümüş tahmin aralığı 42,00–165,00 $ -->
 <!-- KAYNAK: https://www.kitco.com/news/article/2026-01-20/lbma-precious-metals-analyst-survey-sees-silver-well-above-100-wide-range — piyasa haberi (20 Ocak 2026): anket o gün yayımlandı; en düşük 42 $, en yüksek 165 $ -->
 <!-- KAYNAK: https://www.cmegroup.com/tools-information/lookups/advisories/market-regulation/SER-5147.html — CME duyurusu (2010): gümüş uzlaşma aralığı 13:24:00–13:25:00 ET -->

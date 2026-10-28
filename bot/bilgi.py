@@ -1594,7 +1594,7 @@ BOLUMLER = [
             {
                 "baslik": "Banka hesabı ve fon",
                 "maddeler": [
-                    "Türkiye'de banka gümüş hesabı, bakiyesi gümüşle izlenen bir mevduattır. Alımda kambiyo vergisi (BSMV) uygulanabilir; oranı bankanıza sorun.",
+                    "Türkiye'de banka gümüş hesabı, bakiyesi gümüşle izlenen bir mevduattır. Alımda kambiyo vergisi (BSMV) uygulanabilir; ayrıntıyı bankanıza sorun.",
                     "Gümüş fonunda gümüşe değil, fonun bir payına sahipsiniz. Bazı fonlar kasada külçe, bazıları vadeli sözleşme ya da başka fon tutar.",
                     "Fonun ne tuttuğu ve gümüşü kimin sakladığı izahnamesinde yazar. Payı gümüşe çevirmek genelde yalnız yetkili kurumlara açıktır."
                 ],
@@ -1842,9 +1842,9 @@ BOLUMLER = [
                 "maddeler": [
                     "Lirada rekor, dolarda rekor demek değildir: lira değer kaybederken gram gümüş rekor kırabilir, ons ise zirvesinin altında kalabilir.",
                     "Enflasyonu da sorun: 29 Ocak 2026'daki yaklaşık 121,6 dolarlık rekor, 1980 zirvesinin enflasyona göre düzeltilmiş hâlinin altında kaldı.",
-                    "“Beklenti” ve analist tahmini ölçüm değil, görüştür. Ocak 2026'da analistlerin o yıl için gümüş tahminleri birbirinden kat kat ayrılıyordu."
+                    "“Beklenti” ve analist tahmini ölçüm değil, görüştür. Ocak 2026'da analistlerin o yıl için gümüş tahminleri birbirinden çok uzaktı."
                 ],
-                "kaynak": "Kaynak: LBMA tahmin anketi (Ocak 2026); ABD Çalışma İstatistikleri Bürosu (BLS) tüketici fiyat endeksi"
+                "kaynak": "Kaynak: LBMA tahmin anketi (Ocak 2026); ABD Çalışma İstatistikleri Bürosu (BLS) tüketici fiyat endeksi; Reuters (Şubat 2026)"
             }
         ]
     },
