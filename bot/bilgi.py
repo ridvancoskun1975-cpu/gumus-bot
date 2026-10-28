@@ -912,7 +912,7 @@ BOLUMLER = [
                     "Altın çözünmez, çamur olarak toplanır; bakır çözeltide kalır.",
                     "Bu yolla binde 999, hatta binde 999,9 ve üstü saflık elde edilir."
                 ],
-                "kaynak": "Kaynak: Metso; BullionStar; ABD patentleri (1992, 1997)"
+                "kaynak": "Kaynak: rafineri donanımı üreticisi ve külçe satıcılarının bilgi sayfaları; ABD patentleri (1992, 1997)"
             },
             {
                 "baslik": "Geri kazanım ve onay",
@@ -1392,7 +1392,7 @@ BOLUMLER = [
                     "Almanya altına geçti, ABD standart gümüş dolar basımını durdurdu, Latin Para Birliği gümüş 5 franklık basımını önce sınırladı, sonra durdurdu.",
                     "Gümüşün değeri düştü: bir ons altın 1873'te ~16 ons gümüş ederken 1894'te ~33 ons gümüş ediyordu."
                 ],
-                "kaynak": "Kaynak: IMF (2023); ABD 1873 Madeni Para Yasası; ABD İstatistik Yıllığı (1903); BullionVault"
+                "kaynak": "Kaynak: IMF (2023); ABD 1873 Madeni Para Yasası; ABD İstatistik Yıllığı (1903); bir külçe satıcısının yazısı (2010)"
             },
             {
                 "baslik": "Gümüşsüz bozuk paraya geçiş",
