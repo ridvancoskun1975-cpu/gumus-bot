@@ -33,9 +33,9 @@ jobs:
     outputs:
       sonuc: ${{ steps.sayfa.outputs.sonuc }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
           cache: pip
@@ -48,7 +48,7 @@ jobs:
 
       # Fiyat kayıtları paylaşım işinin sakladığı önbellekten okunur (geri yazılmaz).
       - name: Günlük kayıtları getir
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: veri/gecmis.json
           key: gecmis-sayfa-${{ github.run_id }}
@@ -57,7 +57,7 @@ jobs:
       # Gün içi kayıtlar (kaydet.yml): 12:35 ve 16:35 yenilemesinde bugünün fiyatı en yeni gün içi noktadan gelir
       # (bot/sayfa.py → gun_ici_ile). Yalnızca okunur; bulunamazsa sayfa günlük kayıtlarla üretilir.
       - name: Gün içi kayıtları getir
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: veri/gun_ici.json
           key: gunici-sayfa-${{ github.run_id }}
@@ -87,12 +87,12 @@ jobs:
       - name: Son başarılı hâli sakla
         if: steps.sayfa.outputs.sonuc == 'yeni'
         continue-on-error: true
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: veri/sayfa_son
           key: sayfa-${{ github.run_id }}-${{ github.run_attempt }}
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         if: steps.sayfa.outputs.sonuc == 'yeni'
         with:
           path: site
@@ -111,4 +111,4 @@ jobs:
     steps:
       - name: Sayfayı internete koy (GitHub Pages)
         id: yayin
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

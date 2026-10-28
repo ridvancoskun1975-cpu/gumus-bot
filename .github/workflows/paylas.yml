@@ -71,7 +71,7 @@ jobs:
       calis: ${{ steps.tur.outputs.calis }}
       hikaye: ${{ steps.sinir.outputs.hikaye }}   # tam ya da yok (günlük sınır; bot/sinir.py)
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           sparse-checkout: bot
 
@@ -176,9 +176,9 @@ jobs:
       tur: ${{ needs.kontrol.outputs.tur }}
       hikaye: ${{ needs.kontrol.outputs.hikaye }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
           cache: pip
@@ -222,7 +222,7 @@ jobs:
 
       # Günlük fiyat kayıtları ("önceki gün" ve haftalık özet için) GitHub önbelleğinde durur.
       - name: Günlük kayıtları getir
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: veri/gecmis.json
           key: gecmis-${{ github.run_id }}-${{ github.run_attempt }}
@@ -240,7 +240,7 @@ jobs:
       # Gün içi noktalar (akşam özetindeki "Gün içi: en düşük … · en yüksek …" satırı) ayrı dosyada ve ayrı
       # önbellekte: yalnızca fiyat alan çalıştırmalar (Reels, özet, kart) ve kaydet.yml yazar.
       - name: Gün içi kayıtları getir
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: veri/gun_ici.json
           key: gunici-${{ github.run_id }}-${{ github.run_attempt }}
@@ -325,7 +325,7 @@ jobs:
         id: sayfa_onceki
         if: steps.uret.outputs.devam == 'true' && steps.sayfa.outputs.sonuc != 'yeni'
         continue-on-error: true
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: veri/sayfa_son
           key: sayfa-${{ github.run_id }}-${{ github.run_attempt }}
@@ -347,7 +347,7 @@ jobs:
       - name: Bilgi sayfası · son başarılı hâli sakla
         if: steps.sayfa.outputs.sonuc == 'yeni'
         continue-on-error: true
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: veri/sayfa_son
           key: sayfa-${{ github.run_id }}-${{ github.run_attempt }}
@@ -379,7 +379,7 @@ jobs:
 
       - name: Günlük kayıtları sakla
         if: always() && hashFiles('veri/gecmis.json') != ''
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: veri/gecmis.json
           key: gecmis-${{ github.run_id }}-${{ github.run_attempt }}
@@ -398,20 +398,20 @@ jobs:
       # yeniden yazıp bir kaydı silmesin.
       - name: Gün içi kayıtları sakla
         if: always() && hashFiles('veri/gun_ici_degisti.txt') != ''
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: veri/gun_ici.json
           key: gunici-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Önizleme olarak sakla
         if: steps.uret.outputs.devam == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: onizleme-${{ needs.kontrol.outputs.tur }}
           path: site
           retention-days: 7
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         if: steps.uret.outputs.devam == 'true'
         with:
           path: site
@@ -437,17 +437,17 @@ jobs:
     steps:
       - name: Dosyayı internete koy (GitHub Pages)
         id: yayin
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
       - run: pip install -q requests
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: onizleme-${{ needs.uret.outputs.tur }}
           path: site
@@ -470,7 +470,7 @@ jobs:
       - name: Görünen içerik sayısını sakla
         if: always() && steps.gorunen.outputs.n != '' && steps.gorunen.outputs.n != '0'
         continue-on-error: true
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: gorunen-${{ github.run_attempt }}-${{ steps.gorunen.outputs.n }}
           path: ${{ runner.temp }}/gorunen.txt

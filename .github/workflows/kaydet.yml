@@ -33,18 +33,18 @@ jobs:
     runs-on: ubuntu-24.04   # sabit sürüm: ubuntu-latest 19 Ekim 2026 itibarıyla Ubuntu 26e geçiyor
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           sparse-checkout: bot
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
       - run: pip install -q requests
 
       - name: Gün içi kayıtları getir
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: veri/gun_ici.json
           key: gunici-${{ github.run_id }}-${{ github.run_attempt }}
@@ -57,7 +57,7 @@ jobs:
 
       - name: Gün içi kayıtları sakla
         if: always() && hashFiles('veri/gun_ici_degisti.txt') != ''
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: veri/gun_ici.json
           key: gunici-${{ github.run_id }}-${{ github.run_attempt }}
