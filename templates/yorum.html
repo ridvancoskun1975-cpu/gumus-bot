@@ -85,6 +85,7 @@ h2 { margin: 4px 0 0; font-size: 88px; line-height: 1; font-weight: 800; letter-
     <b style="font-size: 30px">{{ hesap }}</b>
     <div class="alt-sag">
       <span class="soluk" style="font-size: 24px">Üst düzey yapay zekâ ile üretilmiştir, yatırım tavsiyesi değildir.</span>
+      {% if kaynak_metal %}<span class="soluk" style="font-size: 24px">Metal fiyatları: {{ kaynak_metal }}</span>{% endif %}
       <span class="vurgu" style="font-size: 28px; font-weight: 700">Kaydırın →</span>
     </div>
   </div>
@@ -123,7 +124,8 @@ h2 { margin: 4px 0 0; font-size: 88px; line-height: 1; font-weight: 800; letter-
     <b style="font-size: 30px">{{ hesap }}</b>
     <div class="alt-sag soluk" style="font-size: 23px">
       <span>Üst düzey yapay zekâ ile üretilmiştir, yatırım tavsiyesi değildir.</span>
-      <span>Veriler {{ veri_tarihi }} · kaynaklar açıklamada</span>
+      {% if kaynak_metal %}<span>Metal fiyatları: {{ kaynak_metal }}</span>
+      <span>Veriler {{ veri_tarihi }} · diğer kaynaklar açıklamada</span>{% else %}<span>Veriler {{ veri_tarihi }} · kaynaklar açıklamada</span>{% endif %}
     </div>
   </div>
 {% endif %}

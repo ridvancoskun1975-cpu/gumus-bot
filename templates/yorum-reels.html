@@ -66,6 +66,9 @@
 .yr .hucre > span:not(.degisim) { display: block; font-size: 32px; color: var(--soluk); margin-bottom: 6px; }
 .yr .bos { font-size: 44px; font-weight: 700; color: var(--soluk); }
 .yr .veri-not { margin-top: 10px; font-size: 30px; color: var(--soluk); line-height: 1.25; }
+/* MetalCharts kaynağı (yasal inceleme 10; Starter iptali Ocak 2027): fiyat ve yüzdeler gösterilen sahnelerde görünür */
+.yr .veri-not.kaynak { font-size: 24px; }
+.yr .kapak-kaynak { font-size: 26px; color: var(--soluk); }
 .yr .parca { margin-top: 34px; }
 .yr .parca .kucuk-baslik { margin-bottom: 10px; }
 .yr .metin { font-size: var(--metin, 48px); line-height: 1.2; font-weight: 500; text-wrap: pretty; }
@@ -133,6 +136,7 @@
     <div class="blok" data-g="{{ kg.ileri or 0.55 }}" style="top: 1272px">
       <span class="ileri">Ayrıntılar geliyor <svg class="ok" id="ileri-ok" width="52" height="40" viewBox="0 0 52 40" aria-hidden="true"><path d="M4 20 H44 M30 6 L46 20 L30 34" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
     </div>
+    {% if kaynak_metal %}<div class="blok kapak-kaynak" data-g="{{ kg.fiyat or 0.1 }}" style="top: 1400px">Metal fiyatları: {{ kaynak_metal }}</div>{% endif %}
   </div>
 
   {# ---- 2–4) vadeler: kaydırmalı gönderinin vade sayfalarıyla aynı içerik ---- #}
@@ -156,6 +160,7 @@
           {% endfor %}
         </div>
         {% if v.not %}<div class="veri-not">{{ v.not }}</div>{% endif %}
+        {% if kaynak_metal %}<div class="veri-not kaynak">Metal fiyatları: {{ kaynak_metal }}</div>{% endif %}
       </div>
       <div class="parca" data-g="{{ g.agir or 0.1 }}"><div class="kucuk-baslik">AĞIR BASAN</div>{{ yon_isareti(v.yorum, 40, 30) }}
         {% if v.onceki %}<div class="degisim-not" data-g="{{ g.degisim or g.agir or 0.12 }}"><b>Yön değişti.</b> {{ v.onceki.tarih_metni }} yorumunda {{ v.onceki.yon }} ağır basıyordu. Nedeni: {{ v.yorum.degisim }}</div>{% endif %}</div>

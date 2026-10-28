@@ -107,19 +107,32 @@ def _seyir(kayitlar, deger, bicim):
     return satirlar
 
 
+# Sitenin güncelleme saatleri (sayfa.veri_hazirla → site_guncelleme; ör. "Hafta içi ~10:00, ~12:35, ~16:35 ve
+# ~20:00"). sayfalar() her üretimde doldurur; saatler elle yazılmaz (Rıdvan, 14 Ekim 2026). Yasal inceleme 17
+# (25 Ekim 2026): eski "günde iki kez" metni site 20 Ekim'den beri günde 4 kez güncellendiği için yanlıştı.
+_SITE_SAATLERI = [None]
+
+
+def _guncelleme_notu(ne="fiyat"):
+    s = _SITE_SAATLERI[0]
+    if s:
+        return f"Anlık (canlı) {ne} değildir; güncelleme saatleri: {s[0].lower() + s[1:]} (Türkiye saati)."
+    return f"Anlık (canlı) {ne} değildir; hafta içi günde birkaç kez güncellenir."
+
+
 def _ortak_notlar(ek=None):
     n = list(ek or [])
     n.append("Değer, uluslararası ons fiyatı ve ECB dolar kuruyla hesaplanan ham gümüş değeridir. Kuyumcu, "
              "banka ve satıcı fiyatları işçilik, alış-satış farkı (makas) ve vergiler yüzünden farklıdır; "
              "satış fiyatı genelde daha yüksek, alış (bozdurma) fiyatı daha düşüktür.")
-    n.append("Anlık (canlı) fiyat değildir; hafta içi günde iki kez, Instagram paylaşımlarıyla birlikte "
-             "güncellenir.")
+    n.append(_guncelleme_notu())
     return n
 
 
 def sayfalar(v, gecmis, euro=None):
     """Bütün dar arama sayfalarının verisi: [{yol, sablon, ...}]. v = sayfa.veri_hazirla() çıktısı;
     euro = {ECB tarihi: EUR/TRY} (euro_kurlari(); yoksa euro sayfası üretilmez)."""
+    _SITE_SAATLERI[0] = v.get("site_guncelleme")
     kayitlar = sorted((date.fromisoformat(g), k) for g, k in gecmis.items())
     gun, son = kayitlar[-1]
     gram, dolar, ons = son["gram"], son["dolar"], son["gumus"]
@@ -204,14 +217,14 @@ def sayfalar(v, gecmis, euro=None):
         ekle(
             yol=tl_yol[t], kisa=f"{ad} kaç gram gümüş", grup="TL → gram",
             title=f"{ad} Kaç Gram Gümüş Eder? {gram_yaz(g)} · {tarih_kisa}",
-            desc=f"{ad} ile {gram_yaz(g)} saf gümüş alınır ({tarih}, gram {bot.tr_sayi(gram)} ₺). 500 TL'den "
+            desc=f"{ad}, {gram_yaz(g)} saf gümüşe denk gelir ({tarih}, gram {bot.tr_sayi(gram)} ₺). 500 TL'den "
                  f"1 milyon TL'ye tablo ve son günler. Bilgi amaçlıdır, yatırım tavsiyesi değildir.",
             h1=f"{ad} kaç gram gümüş eder?",
             cevap=bot.tr_sayi(g, 1 if g >= 100 else 2), birim="g",
             alt=f"yaklaşık {bot.tr_sayi(g / 1000, 2)} kg" if g >= 1000 else None,
-            ozet=f"{tarih} itibarıyla {ad} ile ham fiyattan {gram_yaz(g)} saf gümüş alınır "
+            ozet=f"{tarih} itibarıyla {ad}, ham fiyatla {gram_yaz(g)} saf gümüşe denk gelir "
                  f"(1 gram {bot.tr_sayi(gram)} ₺). Kuyumcu ve bankada satış fiyatı daha yüksek olduğu için "
-                 f"alınan miktar bundan az olur.",
+                 f"alınabilecek miktar bundan az olur.",
             formul=f"{bot.tr_sayi(t, 0)} ₺ ÷ {bot.tr_sayi(gram)} ₺ (1 gram) = {gram_yaz(g)}",
             tablolar=[{"baslik": "Tutara göre gümüş", "sutunlar": ["Tutar", "Saf gümüş"],
                        "satirlar": tablo, "sayisal": [1]}],
@@ -354,7 +367,7 @@ def sayfalar(v, gecmis, euro=None):
                 "(ayrıntı rehberde).",
                 "Gram altın burada ons altın ve ECB dolar kurundan hesaplanan ham değerdir (24 ayar, işçiliksiz); "
                 "piyasadaki gram altın fiyatından farklıdır.",
-                "Anlık (canlı) değer değildir; hafta içi günde iki kez güncellenir."],
+                _guncelleme_notu("değer")],
         ilgili=[("Gram gümüş kaç dolar", yollar["dolar"]), ("Gümüş fiyatları geçmiş", yollar["gecmis"])]
                + rehber_bag(4, "Altın/gümüş paritesi ne anlatır?"),
     )
