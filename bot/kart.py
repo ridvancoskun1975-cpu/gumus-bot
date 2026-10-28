@@ -31,8 +31,8 @@ TL_MIKTARLAR = [1000, 5000, 10000]
 GRAM_MIKTARLAR = [(100, "100 gram"), (1000, "1 kilogram")]
 HAFTA_SAYISI = 6          # altın–gümüş kartında gösterilecek en çok önceki hafta
 HASHTAG = {
-    "gram": "#gümüş #gramgümüş #külçegümüş #gümüşyatırımı #gümüşfiyatları",
-    "parite": "#gümüş #gramgümüş #değerlimetaller #gümüşyatırımı #emtia",
+    "gram": "#gümüş #gramgümüş #külçegümüş #gümüşrehberi #gümüşfiyatları",
+    "parite": "#gümüş #gramgümüş #değerlimetaller #gümüşrehberi #emtia",
 }
 AYLAR_KISA = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"]
 

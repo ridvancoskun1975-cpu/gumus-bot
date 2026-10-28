@@ -98,7 +98,7 @@ BOLUMLER = [
         "alt": "Tek satırlık formül ve adım adım bir örnek.",
         "buyuk": "÷ 31,1035",
         "buyuk_alt": "formülün sabit sayısı: bir onstaki gram",
-        "hashtag": "#gümüş #gramgümüş #gümüşfiyatları #gümüşyatırımı #gumus",
+        "hashtag": "#gümüş #gramgümüş #gümüşfiyatları #gümüşrehberi #gumus",
         "soru": "Hesabı kendiniz yapmayı denediniz mi? Sonucu yorumlara yazın.",
         "sayfalar": [
             {
@@ -138,7 +138,7 @@ BOLUMLER = [
         "alt": "Saflık, milyem ve takıdaki 925 farkı.",
         "buyuk": "999",
         "buyuk_alt": "binde 999 saf gümüş",
-        "hashtag": "#gümüş #külçegümüş #gümüşyatırımı #değerlimetaller #silver",
+        "hashtag": "#gümüş #külçegümüş #gümüşrehberi #değerlimetaller #silver",
         "soru": "Gümüşü siz hangi biçimde tercih ediyorsunuz: külçe mi, takı mı? Yorumlarda konuşalım.",
         "sayfalar": [
             {
@@ -202,7 +202,7 @@ BOLUMLER = [
         "alt": "Paylaşımlarımızdaki o oranın anlamı.",
         "buyuk": "Au ÷ Ag",
         "buyuk_alt": "1 ons altın kaç ons gümüş eder",
-        "hashtag": "#gümüş #gümüşyatırımı #değerlimetaller #emtia #gumus",
+        "hashtag": "#gümüş #gümüşrehberi #değerlimetaller #emtia #gumus",
         "soru": "Pariteyi takip ediyor musunuz? Yorumlara yazın.",
         "sayfalar": [
             {
@@ -318,7 +318,7 @@ BOLUMLER = [
         "alt": "Takıdan güneş paneline: gümüşün iş başındaki hali.",
         "buyuk": "#1",
         "buyuk_alt": "elektriği ve ısıyı en iyi ileten metal",
-        "hashtag": "#gümüş #değerlimetaller #emtia #gümüşyatırımı #silver",
+        "hashtag": "#gümüş #değerlimetaller #emtia #gümüşrehberi #silver",
         "soru": "Bu kullanım alanlarından hangisini biliyordunuz?",
         "sayfalar": [
             {
@@ -435,7 +435,7 @@ BOLUMLER = [
         "alt": "Kararmanın nedeni ve saklama.",
         "buyuk": "kükürt",
         "buyuk_alt": "kararmanın asıl sebebi",
-        "hashtag": "#gümüş #külçegümüş #gümüşyatırımı #değerlimetaller #gumus",
+        "hashtag": "#gümüş #külçegümüş #gümüşrehberi #değerlimetaller #gumus",
         "soru": "Gümüşlerinizi nasıl saklıyorsunuz?",
         "sayfalar": [
             {
@@ -468,7 +468,7 @@ BOLUMLER = [
         "alt": "1 onstan 30 kiloya: boy, prim ve pratiklik.",
         "buyuk": "~31 kg",
         "buyuk_alt": "uluslararası piyasanın standart külçesi (yaklaşık 1.000 ons)",
-        "hashtag": "#gümüş #külçegümüş #gramgümüş #gümüşyatırımı #silver",
+        "hashtag": "#gümüş #külçegümüş #gramgümüş #gümüşrehberi #silver",
         "soru": "Sizce en pratik boy hangisi?",
         "sayfalar": [
             {
@@ -508,7 +508,7 @@ BOLUMLER = [
         "alt": "Parite 80 iken gümüş ne kadar yer kaplar?",
         "buyuk": "147×",
         "buyuk_alt": "aynı değerdeki gümüşün hacmi, altına göre (parite 80 iken)",
-        "hashtag": "#gümüş #değerlimetaller #gümüşyatırımı #emtia #gumus",
+        "hashtag": "#gümüş #değerlimetaller #gümüşrehberi #emtia #gumus",
         "soru": "Bu farkı tahmin etmiş miydiniz?",
         "sayfalar": [
             {
@@ -578,7 +578,7 @@ BOLUMLER = [
         "alt": "Basit ipuçları ve kesin yol.",
         "buyuk": "999 · 925",
         "buyuk_alt": "damga ilk ipucu, kesin kanıt değil",
-        "hashtag": "#gümüş #külçegümüş #gramgümüş #gümüşyatırımı #silver",
+        "hashtag": "#gümüş #külçegümüş #gramgümüş #gümüşrehberi #silver",
         "soru": "Siz hiç sahte gümüşle karşılaştınız mı?",
         "sayfalar": [
             {

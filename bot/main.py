@@ -1010,16 +1010,16 @@ def _kaynak_satirlari(v):
 # Instagram Aralık 2025'ten beri gönderi başına en fazla 5 hashtag'e izin veriyor.
 # Etiket havuzu paylaşımlara dağıtılır: her paylaşım 5 etiket alır, hepsi kullanılmış olur.
 HASHTAG_REELS = "#gümüş #gramgümüş #gümüşfiyatları #külçegümüş #silver"        # hafta içi ~10:00
-HASHTAG_POST = "#gümüş #gümüşyatırımı #değerlimetaller #emtia #gumus"           # hafta içi ~20:00 özet
+HASHTAG_POST = "#gümüş #gümüşrehberi #değerlimetaller #emtia #gumus"           # hafta içi ~20:00 özet
 # Haftalık özet iki set arasında hafta hafta döner (ISO hafta numarası çiftse 1., tekse 2. set;
 # ilk haftalık özet 17 Ekim 2026 = 42. hafta, yatırım ağırlıklı 1. setle başlar — Rıdvan 14 Ekim 2026).
 HASHTAG_HAFTA = (
-    "#gümüş #gramgümüş #gümüşyatırımı #gümüşfiyatları #değerlimetaller",
+    "#gümüş #gramgümüş #gümüşrehberi #gümüşfiyatları #değerlimetaller",
     "#gümüş #gramgümüş #külçegümüş #gumus #silver",
 )
 
 
-HASHTAG_AY = "#gümüş #gramgümüş #gümüşfiyatları #gümüşyatırımı #değerlimetaller"
+HASHTAG_AY = "#gümüş #gramgümüş #gümüşfiyatları #gümüşrehberi #değerlimetaller"
 
 
 def hashtag_sec(tur, tarih=None):
@@ -2748,7 +2748,7 @@ TANITIM_OZELLIKLER = [
     {"baslik": "Gümüş uzmanlık kitabı", "alt": "Ücretsiz PDF, 1 Ocak 2027'den itibaren", "ikinci_satir": True,
      "simge": '<path d="M13 5h19l9 9v33H13z"/><path d="M32 5v9h9"/><path d="M20 26h14M20 33h14M20 40h9"/>'},
 ]
-HASHTAG_TANITIM = "#gümüş #gramgümüş #gümüşfiyatları #gümüşyatırımı #külçegümüş"
+HASHTAG_TANITIM = "#gümüş #gramgümüş #gümüşfiyatları #gümüşrehberi #külçegümüş"
 # Tanıtım Reels'inin müziği (Rıdvan, 19 Ekim 2026 23:10: "müzik harekete geçirecek bir reklam müziği olmalı"; 3 önizlemeden
 # 23:14 "3"): Reklam 1'deki "Motivate", parçanın en güçlü 12 saniyesi (1:47'den). Parça Pixabay lisansı gereği yalnız özel
 # gumus-kayit deposunda (muzik/); paylas.yml "Tanıtım müziği" adımı KAYIT_PAT ile assets/muzik-tanitim.mp3'e indirir.

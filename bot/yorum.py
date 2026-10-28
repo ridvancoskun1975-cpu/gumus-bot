@@ -46,7 +46,7 @@ YANIT_SINIRI = 64000
 # arasındaki en uzun sessizliktir, çağrının toplam süresi değil.
 ZAMAN_ASIMI = 600
 
-HASHTAG = "#gümüş #gümüşyatırımı #gümüşfiyatları #değerlimetaller #emtia"
+HASHTAG = "#gümüş #gümüşrehberi #gümüşfiyatları #değerlimetaller #emtia"
 
 # pencere: gün; esnek: kayıt kısaysa eldeki en uzun süreyle (en az 3 gün; ilk hafta salı→cuma) hesaplanır
 VADELER = [
