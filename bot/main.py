@@ -2476,6 +2476,8 @@ def yorum_hazirla(cikti, ornek):
         "vadeler": vadeler,
         "hesap": hesap,
         "dayanak": "Fiyat ve kur verileri + haftanın haberleri" if gelismeler else "Fiyat ve kur verileri",
+        # Görselde MetalCharts kaynağı (yasal inceleme 10, 28 Ekim 2026: ücretsiz planda görünür bağlantı şartı)
+        "kaynak_metal": KAYNAK_METAL,
         "baslik": yorum.vade_basligi(aktif),   # "Kısa ve orta vade"
     }
 

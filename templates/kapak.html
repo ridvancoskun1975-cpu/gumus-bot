@@ -82,7 +82,12 @@
 
   <div class="alt-kenar">
     <span>{% if buyuk_hareket and not ozel %}{{ hesap }}{% endif %}</span>
-    <span>Bilgi amaçlıdır, yatırım tavsiyesi değildir.</span>
+    {#- MetalCharts kaynağı (25 Ekim 2026 yasal inceleme 10: ücretsiz planda herkese açık gösterimde görünür bağlantı
+        şartı; Starter iptali Ocak 2027). Fiyatsız kapaklarda (rehber) kaynak_metal yok, satır çıkmaz. -#}
+    <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px; text-align: right">
+      <span>Bilgi amaçlıdır, yatırım tavsiyesi değildir.</span>
+      {% if kaynak_metal %}<span>Metal fiyatları: {{ kaynak_metal }}</span>{% endif %}
+    </span>
   </div>
 </div>
 {% if maskot %}<script>
