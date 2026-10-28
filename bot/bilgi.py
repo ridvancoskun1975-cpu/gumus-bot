@@ -305,7 +305,8 @@ BOLUMLER = [
                 "maddeler": [
                     "Paylaşımlarımız ECB orta kurunu kullanır; bankaların döviz alış kuru genelde "
                     "bundan düşük, satış kuru yüksektir.",
-                    "Kuyumcu fiyatı anlık değişir; paylaşımlarımız günde iki kez güncellenir.",
+                    "Kuyumcu fiyatı anlık değişir; Instagram paylaşımlarımız günde iki kez, sitemiz "
+                    "günde birkaç kez güncellenir.",
                     "Gösterge fiyat fikir edinmek içindir; işlemden önce güncel alış-satış "
                     "fiyatını sorun.",
                 ],
