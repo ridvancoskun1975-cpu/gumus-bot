@@ -2,18 +2,22 @@ name: Gümüş paylaşımı
 
 on:
   schedule:
-    # Saatler UTC'dir. Türkiye = UTC+3. GitHub zamanlı işleri genelde 5-15 dk gecikmeli başlatır.
-    - cron: '50 6 * * 1-5'    # 09:50 TR -> Reels
-    - cron: '50 16 * * 1-5'   # 19:50 TR -> Günlük özet
-    - cron: '50 6 * * 6'      # Cumartesi 09:50 TR -> Haftalık özet
-    - cron: '50 7 * * 0'      # Pazar 10:50 TR -> Yapay zekâ yorumu (kısa/orta vade, kaydırmalı 3 görsel)
-    # Hafta içi 13:50 TR -> Gümüş rehberi (bilgi). Hangi gün hangi bölüm: bot/bilgi.py → takvim()
+    # Saatler UTC'dir. Türkiye = UTC+3. GitHub zamanlı işleri 20–50 dk gecikmeli başlatıyor; bu yüzden her
+    # cron hedef saatten ~45 dk ÖNCEDİR ve "uret" işi kurulumdan sonra hedef saate kadar bekler
+    # (bot/program.py → HEDEF_SAATLERI, `bekle`; Rıdvan, 28 Ekim 2026: "takipçilere 20 00 yazdık … işleme önce
+    # başlamalıyız"). Saat değişecekse HEDEF_SAATLERI'ndeki hedef ve buradaki cron birlikte değişir
+    # (python bot/program.py hedef-denetle). Sitedeki saatler hedeften üretilir.
+    - cron: '10 6 * * 1-5'    # 09:10 TR -> Reels (hedef 09:55 → ~10:00)
+    - cron: '10 16 * * 1-5'   # 19:10 TR -> Günlük özet (hedef 19:55 → ~20:00)
+    - cron: '10 6 * * 6'      # Cumartesi 09:10 TR -> Haftalık özet (hedef 09:55 → ~10:00)
+    - cron: '10 7 * * 0'      # Pazar 10:10 TR -> Yapay zekâ yorumu (hedef 10:55 → ~11:00; kısa/orta vade, kaydırmalı 3 görsel)
+    # Hafta içi 13:10 TR (hedef 13:55 → ~14:00) -> Gümüş rehberi (bilgi). Hangi gün hangi bölüm: bot/bilgi.py → takvim()
     # (19–21 Ekim 2026 her gün, 28 Ekim'den itibaren haftada 1, çarşamba; Rıdvan 19 Ekim 2026). Rehber olmayan günlerden ayın ilk iş günü aylık özet
     # gider (bot/aylik.py; ilki 2 Kasım 2026). İkisi de yoksa "kontrol" işi birkaç saniyede biter.
     # Rehber günü akışa sesli Reels gider (kaydırmalının yerine; main.REHBER_REELS), hikâyeye müzikli rehber videosu.
     # Rehber ve aylık özet yoksa rehber arşivi günü olabilir (bot/bilgi.py → arsiv_takvim(); #3–#5 birer kez,
     # haftalık rehber sırasında, çarşamba): tür kisa, yalnız sesli Reels. Cumartesi kısa Reels'i 16 Ekim 2026'da kaldırıldı (Rıdvan).
-    - cron: '50 10 * * 1-5'
+    - cron: '10 10 * * 1-5'
     # Çarşamba ve cuma 11:50 TR haftalık kartlar (bot/kart.py) 19 Ekim 2026'da kaldırıldı (Rıdvan: takipçiyi
     # bıktırmamak için paylaşım sayısı azaltıldı; kartlar sabah ve akşam verilen fiyatın tekrarıydı). Kod duruyor:
     # elle Run workflow → tür: kart; geri açmak için cron '50 8 * * 3,5' ve aşağıdaki eşleme yeter.
@@ -82,13 +86,13 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             tur="${{ inputs.tur }}"
-          elif [ "${{ github.event.schedule }}" = "50 16 * * 1-5" ]; then
+          elif [ "${{ github.event.schedule }}" = "10 16 * * 1-5" ]; then
             tur=post
-          elif [ "${{ github.event.schedule }}" = "50 6 * * 6" ]; then
+          elif [ "${{ github.event.schedule }}" = "10 6 * * 6" ]; then
             tur=hafta
-          elif [ "${{ github.event.schedule }}" = "50 7 * * 0" ]; then
+          elif [ "${{ github.event.schedule }}" = "10 7 * * 0" ]; then
             tur=yorum
-          elif [ "${{ github.event.schedule }}" = "50 10 * * 1-5" ]; then
+          elif [ "${{ github.event.schedule }}" = "10 10 * * 1-5" ]; then
             tur=bilgi
           else
             tur=reels
@@ -170,7 +174,8 @@ jobs:
     if: needs.kontrol.outputs.calis == 'true'
     runs-on: ubuntu-24.04   # sabit sürüm: ubuntu-latest 19 Ekim 2026 itibarıyla Ubuntu 26e geçiyor
     # Pazar yorumu Opus 5.5 "ekstra yüksek" çabayla yazılır; düşünme dakikalar sürebilir, süre geniş.
-    timeout-minutes: ${{ needs.kontrol.outputs.tur == 'yorum' && 45 || (needs.kontrol.outputs.tur == 'bilgi' || needs.kontrol.outputs.tur == 'kisa') && 25 || 15 }}
+    # Zamanlı çalışma hedef saate kadar en çok ~50 dk bekler (aşağıda "Hedef saate kadar bekle"); süreler buna göre +50.
+    timeout-minutes: ${{ needs.kontrol.outputs.tur == 'yorum' && 95 || (needs.kontrol.outputs.tur == 'bilgi' || needs.kontrol.outputs.tur == 'kisa') && 75 || 65 }}
     outputs:
       devam: ${{ steps.uret.outputs.devam }}
       tur: ${{ needs.kontrol.outputs.tur }}
@@ -219,6 +224,19 @@ jobs:
             rm -f assets/muzik-tanitim.mp3
             echo "::warning::Tanıtım müziği indirilemedi; Reels her zamanki müzikle üretilecek."
           fi
+
+      # Hedef saat (Rıdvan, 28 Ekim 2026): GitHub zamanlı işi 20–50 dk geç başlattığı için cron hedeften ~45 dk
+      # öncedir; kurulum bitince burada hedef saate kadar beklenir (bot/program.py → HEDEF_SAATLERI: sabah 09:55,
+      # rehber 13:55, akşam 19:55, cumartesi 09:55, pazar 10:55), fiyat ve kayıtlar ondan sonra alınır. Hedef
+      # geçmişse beklemez. Yalnız zamanlı çalışmada; elle denemelerde yok. Her hatada beklemeden devam eder
+      # (continue-on-error + betik hiç hata fırlatmaz): bekleme paylaşımı hiçbir zaman durduramaz.
+      - name: Hedef saate kadar bekle
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        timeout-minutes: 50
+        env:
+          TUR: ${{ needs.kontrol.outputs.tur }}
+        run: python bot/program.py bekle "$TUR"
 
       # Günlük fiyat kayıtları ("önceki gün" ve haftalık özet için) GitHub önbelleğinde durur.
       - name: Günlük kayıtları getir

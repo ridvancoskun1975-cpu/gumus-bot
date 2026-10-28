@@ -68,8 +68,8 @@ finally:
 
 # Söz boş kalmasın: haftalık özet cumartesi, pazar yorumu pazar zamanlı (biri takvimden çıkarsa kural konuşulur)
 akis = (Path(__file__).parent.parent / ".github" / "workflows" / "paylas.yml").read_text(encoding="utf-8")
-kontrol("cron: '50 6 * * 6'" in akis, "haftalık özet her cumartesi zamanlı")
-kontrol("cron: '50 7 * * 0'" in akis, "pazar yorumu her pazar zamanlı (hatırlatmanın sözü)")
+kontrol("cron: '10 6 * * 6'" in akis, "haftalık özet her cumartesi zamanlı (09:10 başlar, 09:55'e kadar bekler)")
+kontrol("cron: '10 7 * * 0'" in akis, "pazar yorumu her pazar zamanlı (hatırlatmanın sözü; 10:10 başlar, 10:55'e kadar bekler)")
 
 # Haftalık özet her zaman hafta şablonuyla çizilir (özel gün şablonunda şerit yok): gerçek veride özel gün yok
 f = main.ornek_haftalik()

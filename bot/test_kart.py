@@ -25,8 +25,11 @@ CARSAMBA, PERSEMBE, CUMA = date(2026, 10, 21), date(2026, 10, 22), date(2026, 10
 import program  # noqa: E402
 zamanlar = program.cronlar()
 turler = {c: t for c, t in zamanlar}
-esit(turler.get("50 6 * * 1-5"), "reels", "taahhüt: hafta içi her gün ~10:00 Reels")
-esit(turler.get("50 16 * * 1-5"), "post", "taahhüt: hafta içi her gün ~20:00 özet")
+# 28 Ekim 2026'dan beri cron hedeften 45 dk önce (GitHub gecikmesi), bot hedefe kadar bekler; söz yine ~10:00 ve ~20:00.
+esit(turler.get("10 6 * * 1-5"), "reels", "taahhüt: hafta içi her gün ~10:00 Reels")
+esit(turler.get("10 16 * * 1-5"), "post", "taahhüt: hafta içi her gün ~20:00 özet")
+esit(program.yayin_saati("10 6 * * 1-5", "reels"), "~10:00", "taahhüt: Reels hedefi ~10:00")
+esit(program.yayin_saati("10 16 * * 1-5", "post"), "~20:00", "taahhüt: özet hedefi ~20:00")
 esit(sum(1 for _, t in zamanlar if t in ("reels", "post")), 2, "fiyat paylaşımları yalnızca bu ikisi")
 kart_cron = [c for c, t in zamanlar if t == "kart"]
 # Rıdvan, 19 Ekim 2026: kartlar takvimden kaldırıldı (takipçiyi bıktırmamak için paylaşım sayısı azaltıldı);

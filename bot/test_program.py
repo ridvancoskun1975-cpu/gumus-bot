@@ -43,11 +43,49 @@ def kontrol(ad, kosul, ayrinti=""):
 
 # İş akışı okuma
 c = dict((cron, tur) for cron, tur in prg.cronlar())
-kontrol("cron → tür eşlemesi", c.get("50 6 * * 1-5") == "reels" and c.get("50 16 * * 1-5") == "post"
-        and c.get("50 10 * * 1-5") == "bilgi" and c.get("50 7 * * 0") == "yorum", c)
-kontrol("cron saati TR + gecikme", prg.yayin_saati("50 6 * * 1-5") == "~10:00" and prg.yayin_saati("50 16 * * 1-5") == "~20:00")
-kontrol("cron günleri", prg.cron_coz("50 7 * * 0")[1] == {6} and prg.cron_coz("50 6 * * 6")[1] == {5}
-        and prg.cron_coz("50 6 * * 1-5")[1] == set(range(5)))
+# 28 Ekim 2026'dan beri cron'lar hedef saatten ~45 dk önce (GitHub gecikmesi), bot hedefe kadar bekler.
+kontrol("cron → tür eşlemesi", c.get("10 6 * * 1-5") == "reels" and c.get("10 16 * * 1-5") == "post"
+        and c.get("10 10 * * 1-5") == "bilgi" and c.get("10 7 * * 0") == "yorum" and c.get("10 6 * * 6") == "hafta", c)
+kontrol("gösterilen saat hedeften: ~10:00 / ~20:00 / ~14:00 / ~11:00",
+        prg.yayin_saati("10 6 * * 1-5", "reels") == "~10:00" and prg.yayin_saati("10 16 * * 1-5", "post") == "~20:00"
+        and prg.yayin_saati("10 10 * * 1-5", "bilgi") == "~14:00" and prg.yayin_saati("10 7 * * 0", "yorum") == "~11:00"
+        and prg.yayin_saati("10 6 * * 6", "hafta") == "~10:00")
+kontrol("hedefi olmayan tür için eski kural (cron + 10 dk)", prg.yayin_saati("50 8 * * 3,5", "kart") == "~12:00"
+        and prg.yayin_saati("50 8 * * 3,5") == "~12:00")
+kontrol("hedef saatler ile cron'lar uyumlu (10–60 dk önce)", prg.hedef_denetle() == [], prg.hedef_denetle())
+kontrol("bütün zamanlı türlerin hedefi var", all(t in prg.HEDEF_SAATLERI for _, t in prg.cronlar()), prg.cronlar())
+kontrol("cron günleri", prg.cron_coz("10 7 * * 0")[1] == {6} and prg.cron_coz("10 6 * * 6")[1] == {5}
+        and prg.cron_coz("10 6 * * 1-5")[1] == set(range(5)))
+
+# Bekleme (hedef saate kadar): sahte saat ve sahte uyku ile
+uykular = []
+def sahte_uyu(sn):
+    uykular.append(sn)
+def an(s, d, sn=0):
+    return datetime(2026, 10, 29, s, d, sn, tzinfo=TR)
+uykular.clear(); b = prg.bekle("post", an(19, 20), uyu=sahte_uyu, yaz=lambda *_: None)
+kontrol("akşam 19:20'de başlayan post 35 dk bekler", b == 35 * 60 and sum(uykular) == 35 * 60 and max(uykular) <= 300, (b, uykular))
+uykular.clear(); b = prg.bekle("reels", an(9, 12, 30), uyu=sahte_uyu, yaz=lambda *_: None)
+kontrol("sabah 09:12:30'da başlayan reels 09:55'e kadar bekler", b == 42 * 60 + 30 and sum(uykular) == b, (b, uykular))
+uykular.clear(); b = prg.bekle("post", an(20, 31), uyu=sahte_uyu, yaz=lambda *_: None)
+kontrol("hedef geçmişse beklemez (bugünkü gibi geç başlayan çalışma)", b == 0 and uykular == [], (b, uykular))
+uykular.clear(); b = prg.bekle("post", an(19, 55), uyu=sahte_uyu, yaz=lambda *_: None)
+kontrol("tam hedefte beklemez", b == 0 and uykular == [])
+uykular.clear(); b = prg.bekle("yasal", an(9, 0), uyu=sahte_uyu, yaz=lambda *_: None)
+kontrol("hedefi olmayan tür (yasal) beklemez", b == 0 and uykular == [])
+uykular.clear(); b = prg.bekle("post", an(17, 0), uyu=sahte_uyu, yaz=lambda *_: None)
+kontrol("hedef 60 dk'dan uzaksa beklemez (yanlış ayar koruması)", b == 0 and uykular == [])
+uykular.clear(); b = prg.bekle("bilgi", an(13, 10), uyu=sahte_uyu, yaz=lambda *_: None)
+kontrol("rehber 13:10 → 13:55, aylık özet ve arşiv aynı hedef", b == 45 * 60
+        and prg.bekleme_suresi("ay", an(13, 10)) == 45 * 60 and prg.bekleme_suresi("kisa", an(13, 10)) == 45 * 60)
+kontrol("pazar yorumu 10:10 → 10:55, cumartesi 09:10 → 09:55", prg.bekleme_suresi("yorum", an(10, 10)) == 45 * 60
+        and prg.bekleme_suresi("hafta", an(9, 10)) == 45 * 60)
+def patlayan(_):
+    raise RuntimeError("uyku bozuk")
+kontrol("bekleme hatası paylaşımı durdurmaz (0 döner, hata fırlatmaz)",
+        prg.bekle("post", an(19, 30), uyu=patlayan, yaz=lambda *_: None) == 0)
+kontrol("UTC verilen 'şimdi' de doğru (16:20Z = 19:20 TR → 35 dk)",
+        prg.bekleme_suresi("post", datetime(2026, 10, 29, 16, 20, tzinfo=__import__("datetime").timezone.utc)) == 35 * 60)
 kontrol("gece yarısını geçen cron günü kayar", prg.cron_coz("30 22 * * 1")[1] == {1})   # pazartesi 22:30 UTC = salı 01:30 TR
 
 # 14 Ekim sabah: ilk hafta her gün, sonra salı/perşembe; bugünkü bölüm listede
