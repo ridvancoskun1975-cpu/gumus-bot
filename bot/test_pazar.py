@@ -143,6 +143,14 @@ try:
     o = main.onceki_yorum(date(2026, 10, 25))
     kontrol(o == {"tarih": date(2026, 10, 18), "kisa": {"yon": "düşüş", "guc": "zayıf"},
                   "orta": {"yon": "yükseliş", "guc": "orta"}}, f"önceki yorum 18 Ekim'den okunur: {o}")
+    # Yeni güç etiketi (28 Ekim 2026: "zayıf / orta güçte / güçlü işaret") de okunur; açıklama yon_metni ile yazılır
+    yeni = (f"Kısa vade (1–4 hafta): {yorum.yon_metni({'yon': 'düşüş', 'guc': 'belirgin'})} · x\n"
+            f"Orta vade (1–6 ay): {yorum.yon_metni({'yon': 'yükseliş', 'guc': 'zayıf'})} · y")
+    main._istek = lambda *a, **k: {"data": [{"caption": "Haftalık gümüş görünümü | Üst düzey yapay zekâ yorumu · "
+                                                         "1 Kasım 2026\n\n" + yeni, "timestamp": "2026-11-01T08:10:00+0000"}]}
+    o = main.onceki_yorum(date(2026, 11, 8))
+    kontrol(o and o["kisa"] == {"yon": "düşüş", "guc": "belirgin"} and o["orta"] == {"yon": "yükseliş", "guc": "zayıf"},
+            f"yeni etiketli açıklama da okunur: {o}")
     def patla(*a, **k):
         raise RuntimeError("ağ yok")
     main._istek = patla

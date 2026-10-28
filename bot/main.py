@@ -2350,8 +2350,11 @@ def onceki_yorum(bugun):
               "yön değişikliği satırı bu hafta yazılmayacak.")
         return None
     adlar = {v["ad"]: v["anahtar"] for v in yorum.VADELER}
-    guc = {"hafif": "zayıf", "orta": "orta", "belirgin": "belirgin"}
-    desen = re.compile(r"^(\w+ vade) \([^)]*\): [▲▼] (\w+) ağır basıyor \((hafif|orta|belirgin) eğilim\)", re.M)
+    # Eski ("hafif/orta/belirgin eğilim") ve yeni ("zayıf/orta güçte/güçlü işaret", 28 Ekim 2026) etiketlerin ikisi de okunur
+    guc = {"hafif": "zayıf", "orta": "orta", "belirgin": "belirgin",
+           "zayıf işaret": "zayıf", "orta güçte işaret": "orta", "güçlü işaret": "belirgin"}
+    desen = re.compile(r"^(\w+ vade) \([^)]*\): [▲▼] (\w+) ağır basıyor "
+                       r"\((?:(hafif|orta|belirgin) eğilim|(zayıf işaret|orta güçte işaret|güçlü işaret))\)", re.M)
     adaylar = []
     for m in cevap.get("data", []):
         metin = m.get("caption") or ""
@@ -2360,7 +2363,8 @@ def onceki_yorum(bugun):
         gun = datetime.strptime(m["timestamp"], "%Y-%m-%dT%H:%M:%S%z").astimezone(TR_SAAT).date()
         if gun >= bugun:
             continue
-        yonler = {adlar[a]: {"yon": y.lower(), "guc": guc[g]} for a, y, g in desen.findall(metin) if a in adlar}
+        yonler = {adlar[a]: {"yon": y.lower(), "guc": guc[g1 or g2]} for a, y, g1, g2 in desen.findall(metin)
+                  if a in adlar}
         if yonler:
             adaylar.append((gun, yonler))
     if not adaylar:

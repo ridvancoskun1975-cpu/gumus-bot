@@ -27,9 +27,9 @@
 </div>
 {%- endmacro %}
 
-{# Pazar yorumu: ağır basan yön ("▼ Düşüş ağır basıyor · orta eğilim"); bot/yorum.py → YONLER, GUC_ADI #}
+{# Pazar yorumu: ağır basan yön ("▼ Düşüş ağır basıyor · orta güçte işaret"); bot/yorum.py → YONLER, GUC_ADI #}
 {% macro yon_isareti(y, yazi, ok) -%}
-{%- set guc = {"zayıf": "hafif eğilim", "orta": "orta eğilim", "belirgin": "belirgin eğilim"} -%}
+{%- set guc = {"zayıf": "zayıf işaret", "orta": "orta güçte işaret", "belirgin": "güçlü işaret"} -%}
 <span class="yon {{ 'artis' if y.yon == 'yükseliş' else 'dusus' }}" style="font-size: {{ yazi }}px">
   <svg width="{{ ok }}" height="{{ ok }}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 L22 20 H2 Z" fill="currentColor"></path></svg>
   <span>{{ y.yon | capitalize }} ağır basıyor <small>· {{ guc[y.guc] }}</small></span>

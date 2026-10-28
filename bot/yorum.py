@@ -73,7 +73,9 @@ def vade_basligi(vadeler):
 # Her vade için model yükseliş ya da düşüş seçer (yatay/belirsiz seçeneği yok) ve gücünü dürüstçe belirtir.
 YONLER = ("yükseliş", "düşüş")
 GUCLER = ("zayıf", "orta", "belirgin")
-GUC_ADI = {"zayıf": "hafif eğilim", "orta": "orta eğilim", "belirgin": "belirgin eğilim"}
+# Güç etiketi (25 Ekim 2026 yasal inceleme 18: "belirgin eğilim" kesinlik tonu taşıyordu; tanımlayıcı dil, önizleme
+# 28 Ekim 2026). Eski etiketler main.onceki_yorum'da hâlâ okunur (yön değişikliği satırı için).
+GUC_ADI = {"zayıf": "zayıf işaret", "orta": "orta güçte işaret", "belirgin": "güçlü işaret"}
 
 # Kelime sınırları (görselde büyük yazı sığsın diye). Model açıklamada bunları görür; kod biraz pay bırakır.
 SINIR = {"ozet": 5, "durum": 18, "seyir": 26, "izlenecek": 8}
@@ -744,7 +746,7 @@ def seslendirme_parcalari(v):
 
 
 def yon_metni(vade):
-    """"▼ Düşüş ağır basıyor (orta eğilim)" — açıklamada ve görselde aynı ifade."""
+    """"▼ Düşüş ağır basıyor (orta güçte işaret)" — açıklamada ve görselde aynı ifade."""
     ok = "▲" if vade["yon"] == "yükseliş" else "▼"
     return f"{ok} {vade['yon'].capitalize()} ağır basıyor ({GUC_ADI[vade['guc']]})"
 
