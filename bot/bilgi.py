@@ -966,7 +966,7 @@ BOLUMLER = [
                     "Hepsi 1 ons gümüş içerir; yıl, ilk basım yılıdır. Saflık binde 999 (Maple Leaf'te 999,9; Britannia'da 2013'ten önce 958).",
                     "Nominal değerleri: 1 ABD doları, 5 Kanada doları, 2 sterlin, 1,50 avro. Avustralya'nın Kangaroo'su da tanınmış bir örnektir."
                 ],
-                "kaynak": "Kaynak: ABD Darphanesi, Kanada Kraliyet Darphanesi ve The Royal Mint ürün sayfaları; Wikipedia"
+                "kaynak": "Kaynak: ABD Darphanesi, Kanada Kraliyet Darphanesi ve The Royal Mint ürün sayfaları; Wikipedia (ikincil)"
             },
             {
                 "baslik": "Nominal değer ve farklar",

@@ -66,3 +66,14 @@ Ek dosyaları `ek-<harf>.html`; her baskıya girer. Ek eklenince bu satırın ye
 | Ek | Başlık | Uzun metin | Kontrol | Baskı |
 |---|---|---|---|---|
 | — | henüz ek yok | — | — | — |
+
+## 2028 baskısı öncesi kontrol listesi
+
+28 Ekim 2026 yasal düzeltmelerinden (yasal inceleme 12–15) kalan, Aralık 2027 ön denetiminde yeniden bakılacaklar:
+
+- B14, B20: Tebliğ 2023/1'in yürürlükteki hâli (en son 2026/1 ile değişti, RG 29.07.2026; md. 4, 8, 13, 16 aynı).
+- B22: 2863 md. 23 (31.07.2026'da 7590 sayılı Kanun md. 23'e dokunmadı); mevzuat.gov.tr'den bir kez bakılmalı.
+- B23: Sağlık Beyanı Denetimi Hakkında Yönetmelik (RG 13.06.2023/32220) ve 32169 sayılı gıda yönetmeliği yürürlükte mi.
+- B32: VİOP vade sonu fiyatı kuralı. B33: BYF/sertifika ürünleri, mevduat sigortası tutarı ve kapsamı.
+- B34: Ekim 2026 COMEX ve SHFE stok rakamları yalnız veri sitelerine dayanıyor; birincil kaynakla yenilenmeli ya da güncellenmeli.
+- B35: Maden Yönetmeliği değişiklikleri. B37: nominal rekor ve TÜFE-U hesabı (bot/ayrintili.py ile birlikte).
