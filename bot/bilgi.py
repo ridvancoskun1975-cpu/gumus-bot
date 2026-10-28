@@ -1594,11 +1594,11 @@ BOLUMLER = [
             {
                 "baslik": "Banka hesabı ve fon",
                 "maddeler": [
-                    "Türkiye'de bankalar gümüş depo hesabı açabilir. Hesap, bakiyesi gümüş cinsinden izlenen bir mevduattır; karşı taraf bankadır.",
+                    "Türkiye'de banka gümüş hesabı, bakiyesi gümüşle izlenen bir mevduattır. Alımda kambiyo vergisi (BSMV) uygulanabilir; oranı bankanıza sorun.",
                     "Gümüş fonunda gümüşe değil, fonun bir payına sahipsiniz. Bazı fonlar kasada külçe, bazıları vadeli sözleşme ya da başka fon tutar.",
                     "Fonun ne tuttuğu ve gümüşü kimin sakladığı izahnamesinde yazar. Payı gümüşe çevirmek genelde yalnız yetkili kurumlara açıktır."
                 ],
-                "kaynak": "Kaynak: Hazine tebliği (Resmî Gazete, 29 Mayıs 2008); mevduat sigortası yönetmeliği; Borsa İstanbul; ABD CFTC"
+                "kaynak": "Kaynak: Hazine tebliği (2008); 9595 sayılı Karar (2025); mevduat sigortası yönetmeliği; Borsa İstanbul; ABD CFTC"
             },
             {
                 "baslik": "Karşı taraf kim?",
@@ -1841,10 +1841,10 @@ BOLUMLER = [
                 "baslik": "Rekor ve tahmin",
                 "maddeler": [
                     "Lirada rekor, dolarda rekor demek değildir: lira değer kaybederken gram gümüş rekor kırabilir, ons ise zirvesinin altında kalabilir.",
-                    "Enflasyonu da sorun: Ocak 2026'daki yaklaşık 121,6 dolarlık rekor, 1980 zirvesinin enflasyona göre düzeltilmiş hâlinin altında kaldı.",
-                    "“Beklenti” ve analist tahmini ölçüm değil, görüştür. Ocak 2026'da analistlerin o yıl için öngördüğü fiyatlar 42 ile 165 dolar arasındaydı."
+                    "Enflasyonu da sorun: 29 Ocak 2026'daki yaklaşık 121,6 dolarlık rekor, 1980 zirvesinin enflasyona göre düzeltilmiş hâlinin altında kaldı.",
+                    "“Beklenti” ve analist tahmini ölçüm değil, görüştür. Ocak 2026'da analistlerin o yıl için gümüş tahminleri birbirinden kat kat ayrılıyordu."
                 ],
-                "kaynak": "Kaynak: LBMA tahmin anketi (Ocak 2026); ABD tüketici fiyat endeksiyle düzeltilmiş fiyat hesapları (2026)"
+                "kaynak": "Kaynak: LBMA tahmin anketi (Ocak 2026); ABD Çalışma İstatistikleri Bürosu (BLS) tüketici fiyat endeksi"
             }
         ]
     },
