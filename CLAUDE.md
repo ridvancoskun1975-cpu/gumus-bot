@@ -86,8 +86,8 @@
   yayınlar (gunlukgumus.com/rehber.pdf; `sayfa.yml` o gece çalışır). Baskı yokken sitede "Yakında · 1 Ocak 2027" kartı
   (`ILK_BASKI`). Dil (Rıdvan, 22:21; "Ücretsiz PDF rehber" fazla basitti): sitede "Gümüşte uzmanlaşmanın kısa yolu ·
   ücretsiz PDF kitap", Reels'te "Gümüş uzmanlık kitabı · ücretsiz PDF, 1 Ocak 2027'den itibaren", kapakta "Gümüş uzmanlık
-  kitabı" ve "Gümüşü bir uzman gibi okuyun"; "uzman olursunuz" gibi söz verilmez. PDF değiştirmeden ve
-  ücretsiz paylaşılabilir; sayfalarda model ya da şirket adı yok. Kitap yalnız sitede (rehber sayfası, ana sayfa)
+  kitabı" ve "Gümüşü bir uzman gibi okuyun"; "uzman olursunuz" gibi söz verilmez. PDF Creative Commons BY-NC-ND 4.0 lisanslıdır (Rıdvan, 28 Ekim 2026 "C evet"): kaynak gösterilerek, değiştirmeden ve
+  ticari olmayan amaçla paylaşılabilir; sayfalarda model ya da şirket adı yok. Kitap yalnız sitede (rehber sayfası, ana sayfa)
   ve site tanıtım Reels'inde tanıtılır: rehber Reels'inin site kartı ve okuması, sitenin tanıtım kartı ve özet/rehber
   açıklamalarındaki site satırı için Rıdvan 19 Ekim 2026'da "gerek yok" dedi ("her yere kitap yazmak bana biraz garip
   geldi"; 22:44 "karar değiştirdim"); ekleme, Aralık geri sayımı da önerme.
