@@ -6,4 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
-| 2026-10-26 21:25 | **Yasal açıklar (rapor: proje `arastirma/yasal-uygulama-durumu.md`).** Şimdi: kaynaksız "ECB kuru bankaların alış kurundan binde birkaç yüksek" cümlesi; sonra 10 MetalCharts satırı, 16–19. | `bot/yasal.py`, `bot/bilgi.py` (#6), `templates/sayfa.html`, `rehber_pdf/bolum-02.html` | `yasal-kur-cumlesi` · önizleme |
+| 2026-10-28 18:05 | **Yasal açıklar (rapor: proje `arastirma/yasal-uygulama-durumu.md`).** Kur cümlesi main'de (Rıdvan 28 Ekim 17:59 "Onaylıyorum"). Şimdi: 10 MetalCharts satırı (önizleme); sonra kitap 2028 düzeltmeleri (12–15, bölüm 14–38), 16–17. | `templates/yorum.html`, `templates/yorum-reels.html`, `templates/kapak.html`, `rehber_pdf/bolum-14..38.html`, `bot/bilgi.py`, `bot/dar_sayfalar.py`, `templates/sayfa.html` | `yasal-metalcharts` · `kitap-2028-duzeltme` · `yasal-dusuk` |

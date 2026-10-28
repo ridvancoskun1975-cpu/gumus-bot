@@ -82,7 +82,10 @@ esit("tür: hikaye, konu: 8" in cikti, True, "rehber hikâyesinin sonradan nası
 yorum = {"tur": "yorum", "dosyalar": ["y1.png", "y2.png", "y3.png"], "aciklama": "a",
          "reels": {"dosya": "yorum.mp4", "hikaye_dosya": "yorum-h.mp4", "aciklama": "a"}}
 main._kaydirmali_konteyner = lambda kid, urller, aciklama: sahte_istek("POST", f"{kid}/media", media_type="CAROUSEL")
-esit(calistir(yorum, None)[:2], (3, 1), "pazar: kaydırmalı + Reels + hikâye = 3")
+if main.PAZAR_HIKAYE:
+    esit(calistir(yorum, None)[:2], (3, 1), "pazar: kaydırmalı + Reels + hikâye = 3")
+else:  # Pazar hikâyesi 25 Ekim 2026'dan beri kapalı (Rıdvan: "Hikayeyi kaldıralım")
+    esit(calistir(yorum, None)[:2], (2, 0), "pazar: kaydırmalı + Reels = 2 (hikâye kapalı)")
 esit(calistir(yorum, "yok")[:2], (2, 0), "pazar hikaye=yok: kaydırmalı + Reels")
 
 hikaye = {"tur": "hikaye", "konu": 6, "hikaye_videolari": ["h1.mp4"]}
