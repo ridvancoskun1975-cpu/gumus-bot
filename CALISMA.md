@@ -6,3 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
+| 29 Eki 15:20 | Site tanıtım kartı: telefonda büyük yazıda satır kayması | templates/tanitim.html, templates/taban.html | site-tanitim-kayma · önizleme |
