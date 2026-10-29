@@ -28,6 +28,15 @@ REKLAMLAR = [
             "uzatıldı (son gün 30 Ekim); hedef kitle \"gümüş\". "
             "21 Ekim ~21:35'ten sonra profil değişti (biyografi, sabitlenen tanıtım Reels'i); oran kıyası bu andan önce "
             "ve sonra ayrı yapılır"},
+    # Rıdvan, 29 Ekim 2026 22:51: "Yeni reklam verdim"; 22:53: "Başka reklam vermeyeceğim. Yeni reklam gününe göre
+    # gerekli ayarlamaları yap. Onaylıyorum." Reklam araçları ekranı 29 Ekim 22:50'de "5 gün sonra sona eriyor" → son
+    # gün 3 Kasım (4 Kasım'a sarkarsa Rıdvan "uzat" der). Reklam 2 ile 29–30 Ekim'de üst üste biner. Profilde
+    # görünmeyen reklam, kısa kod yok. Rıdvan'ın dediğine göre bundan sonra reklam yok: 4 Kasım'dan itibaren
+    # reklamsız dönem; ilk tam reklamsız hafta 9–15 Kasım (16 Kasım raporu).
+    {"ad": "Reklam 3", "bas": date(2026, 10, 29), "bit": date(2026, 11, 3), "hedef": "çeşitli eylemler",
+     "not": "Profilde görünmeyen reklam, Reklam 2 ile aynı 13 sn video (fiyat saatleri, cumartesi haftalık rapor, "
+            "pazar üst düzey yapay zekâ analizi, sesli rehber; istifçi goril; müzik Motivate); 5 gün; hedef kitle "
+            "\"gümüş\""},
 ]
 
 
