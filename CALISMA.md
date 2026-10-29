@@ -6,3 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
+| 29 Ekim 2026 22:55 | Reklam 3 (29 Ekim – 3 Kasım) reklam kaydına ekleniyor (Rıdvan 22:53 "Onaylıyorum") | bot/reklam.py | main, doğrudan |
