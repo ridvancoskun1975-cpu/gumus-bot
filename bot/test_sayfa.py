@@ -60,13 +60,15 @@ kontrol("yorum açıklaması PAZAR_BASLIK ile başlar",
         f'f"{B} · ' in (Path(__file__).resolve().parent / "yorum.py").read_text(encoding="utf-8"))
 
 # Sayfa üretimi: örnek kayıtlarla, düğmeli ve düğmesiz
+# Düğme yazısında kırılmayan boşluk var (29 Ekim 2026 tanıtım kartı düzeltmesi: telefonda satır kaymasın)
+DUGME_YAZI = "Son pazar analizi&nbsp;· 18\u00a0Ekim"
 cikti = Path(tempfile.mkdtemp())
 gecmis = sayfa.ornek_gecmis()
 sayfa.uret(cikti, gecmis, pazar={"url": "https://i/p/yorum-kay/", "tarih": "18 Ekim"}, kati=True)
 ana = (cikti / "index.html").read_text(encoding="utf-8")
-kontrol("düğme ana sayfada", "Son pazar analizi · 18 Ekim" in ana and 'href="https://i/p/yorum-kay/"' in ana)
+kontrol("düğme ana sayfada", DUGME_YAZI in ana and 'href="https://i/p/yorum-kay/"' in ana)
 hesap = (cikti / "hesap" / "100-gram-gumus-kac-tl" / "index.html").read_text(encoding="utf-8")
-kontrol("düğme alt sayfalarda da (tanıtım kartı)", "Son pazar analizi · 18 Ekim" in hesap)
+kontrol("düğme alt sayfalarda da (tanıtım kartı)", DUGME_YAZI in hesap)
 kontrol("tablolar ve üstteki Hesap makinesi düğmesi yok",
         "Kaç gram eder?</caption>" not in ana and "Kaç lira eder?" not in ana and 'href="#hesap-makinesi"' not in ana)
 kontrol("hesap makinesi ve Bütün hesaplar duruyor", 'id="hesap"' in ana and 'href="hesap/"' in ana)
