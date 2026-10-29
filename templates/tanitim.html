@@ -6,23 +6,24 @@
     kaydırmalı gönderisine gider (bot/sayfa.py → son_pazar_analizi()); bulunamazsa düğme çıkmaz.
     İstifçi goril (Rıdvan, 19 Ekim 2026 "2 ama istifçi goril"): kartın sağ üstünde küçük, fiyattan bağımsız tek hâl
     (yön göstermez, al/sat işareti gibi okunmasın). Kart görününce bir kez külçe istifler, sonra durur; hareket
-    azaltmayı seçenlerde hiç oynamaz. Kapatma: bot/sayfa.py → SITE_GORIL = False. -#}
+    azaltmayı seçenlerde hiç oynamaz. Kapatma: bot/sayfa.py → SITE_GORIL = False.
+    Telefonda büyük yazı (Rıdvan, 29 Ekim 2026: "Yazı aşağı kaymış"; Instagram'ın içindeki tarayıcı telefonun yazı
+    boyutunu uygular): goril sağa yaslanır, yazı onun yanından akar ve altında kartın tam genişliğini kullanır;
+    hizmetler alt alta, aralarında "·" yok (tek başına satıra düşüyordu). Düğmede tarih bölünmez ("25 Ekim"). -#}
 {% macro kart() -%}
 {%- if tanitim %}
 <aside class="davet" aria-labelledby="davet-baslik">
   <div class="davet-ust">
-    <div>
-      <h2 id="davet-baslik">{{ tanitim.baslik }}</h2>
-      <p class="davet-satir">{% for h in tanitim.satir %}<span>{{ h }}</span>{% if not loop.last %} · {% endif %}{% endfor %}</p>
-    </div>
     {%- if site_goril %}
     <div class="site-goril davet-goril" aria-hidden="true">{% include "goril/istif.svg" %}</div>
     {%- endif %}
+    <h2 id="davet-baslik">{{ tanitim.baslik }}</h2>
+    <p class="davet-satir">{% for h in tanitim.satir %}<span>{{ h }}</span>{% endfor %}</p>
   </div>
   <div class="dugmeler">
     <a class="dugme" href="{{ instagram }}">Instagram'da takip et</a>
     {%- if tanitim.pazar %}
-    <a class="dugme ikincil" href="{{ tanitim.pazar.url }}">Son pazar analizi · {{ tanitim.pazar.tarih }}</a>
+    <a class="dugme ikincil" href="{{ tanitim.pazar.url }}">Son pazar analizi&nbsp;· {{ tanitim.pazar.tarih | replace(" ", "\u00a0") }}</a>
     {%- endif %}
   </div>
 </aside>
