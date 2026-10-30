@@ -1,4 +1,5 @@
-"""Pazar yapay zekâ yorumu: gram gümüş için kısa ve orta vadeli görünüm (kaydırmalı, 3 görsel).
+"""Pazar yapay zekâ yorumu: gram gümüş için kısa ve orta vadeli görünüm (kaydırmalı: kapak, kısa vade, orta vade ve
+haber taraması yapılabildiyse "Haftanın gelişmeleri"; 30 Ekim 2026'dan beri 4 görsel, tarama yoksa 3).
 Uzun vade 17 Ekim 2026'da kalıcı olarak kaldırıldı (Rıdvan: "Kısa orta uzun yazan her yer artık kısa ve orta olmalı";
 11:47: "geleceği de etkilemeli. Kısa, orta, uzun yerine sadece kısa ve orta kalacak").
 
@@ -138,7 +139,22 @@ Her vade için alanlar:
 - durum: verilerde ve haberlerde ne görülüyor, en fazla 18 kelime, tek cümle.
 - seyir: koşullu olası seyir; önce ağır basan yön, sonra karşı yön kısa risk olarak; en fazla 26 kelime.
 - izlenecek: izlenecek etkenler, en fazla 8 kelime, cümle değil.
-- degisim: yalnız yön önceki yorumdakinden farklıysa değişikliğin nedeni, en fazla 14 kelime; değilse boş metin."""
+- degisim: yalnız yön önceki yorumdakinden farklıysa değişikliğin nedeni, en fazla 14 kelime; değilse boş metin.
+
+Ayrıca "haberler" listesi (kaydırmalı gönderinin son sayfası "Haftanın gelişmeleri"):
+14. "haftanin_gelismeleri" özetinden bu haftanın gümüş için en önemli 3 ya da 4 gelişmesini seç. Her madde yalnızca olanı anlatır: yorum, tahmin, fiyata etki ya da değerlendirme yazma (onlar vade sayfalarında). Özette geçmeyen hiçbir şeyi yazma. Kurallar 3–7 burada da geçerli: kendi cümlelerin, alıntı yok, rakam ve tarih yok (gerekirse "beklentinin üzerinde", "geriledi" gibi yön bildir), emir ve abartı yok. Aynı konuyu iki kez yazma.
+15. Her madde: konu ("Gümüş", "Dolar ve faiz", "Talep ve arz", "Türkiye", "Önümüzdeki hafta"), metin (tek cümle, en fazla 14 kelime) ve kaynak (özette o bilginin yanında "(kaynak: …)" içinde yazan alan adlarından biri, ör. "kitco.com"; yalnızca alan adı).
+16. Özet yoksa ("YOK — …") "haberler" boş liste olsun."""
+
+# "Haftanın gelişmeleri" sayfası (Rıdvan, 30 Ekim 2026: pazar yorumunu uzatmak yerine kaydırmalıya 4. sayfa, "1").
+# Haber taramasının özetinden 3–4 kısa madde; yorum katılmaz, her maddede kaynak alan adı görünür. Model aynı çağrıda
+# yazar (ek istek yok). Maddeler denetimden geçmezse sayfa düşer, yorum yine yayımlanır (haberler_ayikla).
+HABER_KONULARI = ("Gümüş", "Dolar ve faiz", "Talep ve arz", "Türkiye", "Önümüzdeki hafta")
+HABER_KONU_BASLIK = {"Gümüş": "GÜMÜŞ", "Dolar ve faiz": "DOLAR VE FAİZ", "Talep ve arz": "TALEP VE ARZ",
+                     "Türkiye": "TÜRKİYE", "Önümüzdeki hafta": "ÖNÜMÜZDEKİ HAFTA"}
+HABER_SINIRI = 14
+HABER_PAY = 3
+HABER_EN_AZ, HABER_EN_COK = 3, 4
 
 
 def sistem(vadeler=None):
@@ -156,11 +172,21 @@ def _vade_sema():
     return {"type": "object", "additionalProperties": False, "properties": ozellik, "required": list(ozellik)}
 
 
+def _haber_sema():
+    madde = {"type": "object", "additionalProperties": False,
+             "properties": {"konu": {"type": "string", "enum": list(HABER_KONULARI)},
+                            "metin": {"type": "string", "description": f"tek cümle, en fazla {HABER_SINIRI} kelime"},
+                            "kaynak": {"type": "string", "description": "özette geçen kaynak alan adı"}},
+             "required": ["konu", "metin", "kaynak"]}
+    return {"type": "array", "items": madde,
+            "description": f"{HABER_EN_AZ}–{HABER_EN_COK} madde; haber özeti yoksa boş liste"}
+
+
 def sema(vadeler=None):
     vadeler = vadeler or VADELER
     return {"type": "object", "additionalProperties": False,
-            "properties": {v["anahtar"]: _vade_sema() for v in vadeler},
-            "required": [v["anahtar"] for v in vadeler]}
+            "properties": {**{v["anahtar"]: _vade_sema() for v in vadeler}, "haberler": _haber_sema()},
+            "required": [v["anahtar"] for v in vadeler] + ["haberler"]}
 
 
 SEMA = sema()
@@ -500,6 +526,52 @@ def denetle(yorum, gelismeler=None, vadeler=None, onceki=None):
     return hatalar
 
 
+def haberler_ayikla(haberler, gelismeler=None):
+    """"Haftanın gelişmeleri" maddelerini denetler: (hatalar, geçerli maddeler).
+
+    Her madde: konu listede, metin 1–14 kelime (küçük pay), yasak ifade yok, kurum/olay adı özette geçiyor, kaynak
+    özetin kaynak alan adlarından biri. Özet yoksa liste her zaman boş döner (hata sayılmaz). Geçerli madde sayısı
+    3'ten azsa ya da 4'ten fazlaysa hata yazılır; çağıran 4'ten fazlasını kırpar, 3'ten azında sayfayı düşürür.
+    """
+    if not gelismeler:
+        return [], []
+    ozet = _kucuk(gelismeler["metin"])
+    alanlar = {k["alan"] for k in gelismeler.get("kaynaklar") or []}
+    hatalar, gecerli, konular = [], [], set()
+    for i, h in enumerate(haberler if isinstance(haberler, list) else []):
+        yer, h = f"haberler[{i}]", h if isinstance(h, dict) else {}
+        metin = (h.get("metin") or "").strip()
+        kaynak = _alan_adi("https://" + (h.get("kaynak") or "").strip().split("://")[-1]) if h.get("kaynak") else ""
+        sorun = None
+        if h.get("konu") not in HABER_KONULARI:
+            sorun = f"konu listede yok ({h.get('konu')!r})"
+        elif not metin:
+            sorun = "metin boş"
+        elif len(metin.split()) > HABER_SINIRI + HABER_PAY:
+            sorun = f"{len(metin.split())} kelime (en fazla {HABER_SINIRI})"
+        elif kaynak not in alanlar:
+            sorun = f"kaynak özette yok ({h.get('kaynak')!r}; olanlar: {', '.join(sorted(alanlar))})"
+        else:
+            kucuk = _kucuk(metin)
+            ad = next((ad for desen, ad in YASAK if re.search(desen, kucuk)), None)
+            if ad:
+                sorun = f"yasak ifade ({ad}): {metin!r}"
+            for grup, desenler in OLAY_GRUPLARI.items():
+                bulunan = next((m.group(0) for d in desenler for m in [re.search(d, kucuk)] if m), None)
+                if not sorun and bulunan and not any(re.search(d, ozet) for d in desenler):
+                    sorun = f"güncel olay/kurum ({grup}: {bulunan!r}) haber özetinde geçmiyor"
+        if not sorun and (h["konu"], _kucuk(metin)) in konular:
+            sorun = "aynı madde iki kez"
+        if sorun:
+            hatalar.append(f"{yer}: {sorun}")
+            continue
+        konular.add((h["konu"], _kucuk(metin)))
+        gecerli.append({"konu": h["konu"], "baslik": HABER_KONU_BASLIK[h["konu"]], "metin": metin, "kaynak": kaynak})
+    if not hatalar and not HABER_EN_AZ <= len(gecerli) <= HABER_EN_COK:
+        hatalar.append(f"haberler: {len(gecerli)} madde (en az {HABER_EN_AZ}, en fazla {HABER_EN_COK})")
+    return hatalar, gecerli
+
+
 # ---------------------------------------------------------------- yapay zekâ çağrısı
 
 def _api(anahtar, govde, zaman_asimi=ZAMAN_ASIMI):
@@ -571,6 +643,7 @@ def yz_yorum(girdi, gelismeler=None, vadeler=None, onceki=None):
     mesajlar = [{"role": "user", "content":
                  "Bu haftanın gram gümüş verileri ve haftanın gelişmeleri aşağıda (JSON). "
                  f"{vade_basligi(vadeler or VADELER)} için yorumu yaz.\n\n" + json.dumps(girdi, ensure_ascii=False, indent=1)}]
+    son_saglam = None                       # vadeleri kurallara uyan son yanıt (haberler sorunlu olsa da)
     for tur in range(3):
         metin, cevap = _cagir(anahtar, mesajlar, vadeler)
         try:
@@ -579,15 +652,34 @@ def yz_yorum(girdi, gelismeler=None, vadeler=None, onceki=None):
             hatalar = ["yanıt geçerli JSON değil"]
         else:
             hatalar = denetle(yorum, gelismeler, vadeler, onceki)
+            haber_hatalari, haberler = haberler_ayikla(yorum.get("haberler"), gelismeler)
+            # Haber sayfası için en az 3 geçerli madde yeter: fazlası kırpılır, kuralsız madde atılır (yeniden istek
+            # yok; her istek kredi harcar). 3'ten az geçerli madde varsa yorum yeniden istenir.
+            haber_tamam = not gelismeler or len(haberler) >= HABER_EN_AZ
             if not hatalar:
-                kullanim = cevap.get("usage", {})
-                print(f"Yapay zekâ yorumu alındı ({MODEL}, {kullanim.get('input_tokens')} girdi / "
-                      f"{kullanim.get('output_tokens')} çıktı token, {tur + 1}. deneme)")
-                return degisim_temizle(yorum, onceki, vadeler)
+                yorum["haberler"] = haberler[:HABER_EN_COK] if len(haberler) >= HABER_EN_AZ else []
+                son_saglam = yorum
+                if haber_tamam:
+                    kullanim = cevap.get("usage", {})
+                    print(f"Yapay zekâ yorumu alındı ({MODEL}, {kullanim.get('input_tokens')} girdi / "
+                          f"{kullanim.get('output_tokens')} çıktı token, {tur + 1}. deneme)")
+                    if haber_hatalari:
+                        print(f"::warning::Haftanın gelişmeleri: kurala uymayan maddeler atıldı ({haber_hatalari}); "
+                              f"{len(yorum['haberler'])} madde kaldı")
+                    return degisim_temizle(yorum, onceki, vadeler)
+            hatalar += haber_hatalari
         print(f"Uyarı: yorum kurallara uymadı ({tur + 1}. deneme): {hatalar}", file=sys.stderr)
         mesajlar += [{"role": "assistant", "content": metin},
                      {"role": "user", "content": "Şu sorunlar var, kurallara uyarak yeniden yaz:\n- "
                       + "\n- ".join(hatalar)}]
+    if son_saglam is not None:
+        # Yalnızca "Haftanın gelişmeleri" maddeleri uymadı: yorum yine yayımlanır. En az 3 geçerli madde varsa onlar,
+        # yoksa sayfa çıkmaz (kaydırmalı 3 sayfa). Pazar paylaşımı haber sayfası yüzünden hiçbir zaman durmaz.
+        if len(son_saglam["haberler"]) < HABER_EN_AZ:
+            son_saglam["haberler"] = []
+        print(f"::warning::Haftanın gelişmeleri maddeleri kurallara uymadı ({hatalar}); "
+              + ("geçerli maddelerle devam" if son_saglam["haberler"] else "sayfa bu hafta çıkmayacak"))
+        return degisim_temizle(son_saglam, onceki, vadeler)
     raise RuntimeError(f"Yapay zekâ yorumu 3 denemede kurallara uymadı: {hatalar}")
 
 
@@ -637,6 +729,18 @@ ORNEK_YORUM = {
 
 # Örnek önceki yorum: kısa vadede yön değişmiş, orta vadede aynı (değişiklik satırını önizlemede göstermek için).
 ORNEK_ONCEKI = {"kisa": {"yon": "düşüş", "guc": "zayıf"}, "orta": {"yon": "yükseliş", "guc": "zayıf"}}
+
+# Örnek "Haftanın gelişmeleri" maddeleri (ORNEK_GELISMELER'den; uydurma, yalnızca düzeni denemek için).
+ORNEK_HABERLER = [
+    {"konu": "Gümüş", "metin": "Ons gümüş hafta başında geriledi, cuma günü altınla birlikte toparlanarak haftayı kapattı.",
+     "kaynak": "ornek-haber.com"},
+    {"konu": "Dolar ve faiz", "metin": "Fed yetkilileri faiz indirimlerinde acele edilmeyeceğini söyledi; dolar haftayı yatay kapattı.",
+     "kaynak": "ornek-ajans.com"},
+    {"konu": "Talep ve arz", "metin": "Güneş paneli üreticilerinden gelen gümüş talebinin güçlü kaldığı bildirildi.",
+     "kaynak": "ornek-haber.com"},
+    {"konu": "Önümüzdeki hafta", "metin": "ABD enflasyon verisi ve TCMB faiz kararı takvimde.",
+     "kaynak": "ornek-ajans.com"},
+]
 
 
 def ornek_veri(bugun):

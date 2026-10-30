@@ -2375,9 +2375,19 @@ def onceki_yorum(bugun):
     return {"tarih": gun, **yonler}
 
 
+def hafta_araligi(bugun):
+    """Pazar yorumunun haftası, pazartesi–cuma: "26–30 Ekim" ya da ay değişiyorsa "29 Eylül – 3 Ekim"."""
+    pzt = bugun - timedelta(days=bugun.weekday())
+    cum = pzt + timedelta(days=4)
+    if pzt.month == cum.month:
+        return f"{pzt.day}–{cum.day} {AYLAR[cum.month - 1]}"
+    return f"{pzt.day} {AYLAR[pzt.month - 1]} – {cum.day} {AYLAR[cum.month - 1]}"
+
+
 def yorum_hazirla(cikti, ornek):
-    """Pazar yapay zekâ yorumu: kapak + kısa ve orta vade, kaydırmalı 3 görsel (Rıdvan, 17 Ekim 2026; uzun vade
-    kalıcı olarak yok). Ayrıntı: bot/yorum.py
+    """Pazar yapay zekâ yorumu: kapak + kısa ve orta vade (Rıdvan, 17 Ekim 2026; uzun vade kalıcı olarak yok) +
+    haber taraması yapılabildiyse "Haftanın gelişmeleri" (Rıdvan, 30 Ekim 2026): kaydırmalı 4 görsel, taramasız 3.
+    Ayrıntı: bot/yorum.py
 
     Pazar sabahı bütün verilerle şekillenir: botun günlük kayıtları, o anki (haftanın kapanış)
     fiyatı, 13 aylık dolar/TL, varsa MetalCharts geçmişi ve web aramasıyla derlenen haftanın haberleri.
@@ -2418,8 +2428,9 @@ def yorum_hazirla(cikti, ornek):
         gelismeler, yz = yorum.ORNEK_GELISMELER, json.loads(json.dumps(yorum.ORNEK_YORUM))
         onceki = {"tarih": bugun - timedelta(days=7), **yorum.ORNEK_ONCEKI}
         hatalar = yorum.denetle(yz, gelismeler, aktif, onceki)
-        if hatalar:
-            raise RuntimeError(f"Örnek yorum denetimden geçmedi: {hatalar}")
+        haber_hatalari, yz["haberler"] = yorum.haberler_ayikla(yorum.ORNEK_HABERLER, gelismeler)
+        if hatalar or haber_hatalari:
+            raise RuntimeError(f"Örnek yorum denetimden geçmedi: {hatalar + haber_hatalari}")
         yz = yorum.degisim_temizle(yz, onceki, aktif)
     else:
         onceki = onceki_yorum(bugun)
@@ -2434,6 +2445,9 @@ def yorum_hazirla(cikti, ornek):
                             gelismeler, onceki=onceki)
         if yz is None:
             raise VeriYok("ANTHROPIC_API_KEY tanımlı değil (GitHub → Settings → Secrets and variables → Actions).")
+    # "Haftanın gelişmeleri" sayfası (Rıdvan, 30 Ekim 2026): haber taraması yoksa ya da maddeler denetimden geçmediyse
+    # liste boş, sayfa çıkmaz. Vade sözlüğünden ayrı tutulur (açıklama, seslendirme ve Reels yalnızca vadeleri kullanır).
+    haberler = yz.pop("haberler", None) or []
 
     son_gun = max(seri)
     son = seri[son_gun]
@@ -2483,20 +2497,24 @@ def yorum_hazirla(cikti, ornek):
         # Görselde MetalCharts kaynağı (yasal inceleme 10, 28 Ekim 2026: ücretsiz planda görünür bağlantı şartı)
         "kaynak_metal": KAYNAK_METAL,
         "baslik": yorum.vade_basligi(aktif),   # "Kısa ve orta vade"
+        "haberler": haberler,
+        "hafta_araligi": hafta_araligi(bugun),
     }
+    veri["sayfa_sayisi"] = len(vadeler) + 1 + (1 if haberler else 0)
 
     damga = datetime.now(TR_SAAT).strftime("%Y%m%d-%H%M")
     dosyalar = []
-    for sayfa in range(len(vadeler) + 1):
+    for sayfa in range(veri["sayfa_sayisi"]):
         jpg = cikti / f"yorum-{damga}-{sayfa + 1}.jpg"
-        gorsel_uret("yorum", {**veri, "sayfa": sayfa, "toplam": len(vadeler) + 1}, jpg)
+        gorsel_uret("yorum", {**veri, "sayfa": sayfa, "toplam": veri["sayfa_sayisi"]}, jpg)
         dosyalar.append(jpg.name)
     kaynaklar = _kaynak_satirlari(veri).replace(f"\nMüzik: {muzik_kunyesi()}", "")
     metin = yorum.aciklama(veri, yz, kaynaklar, gelismeler)
     reels = yorum_reels_uret(cikti, veri, metin, damga) if YORUM_REELS else None
     (cikti / "meta.json").write_text(json.dumps({"tur": "yorum", "dosyalar": dosyalar, "aciklama": metin,
                                                  "reels": reels,
-                                                 "yorum": yz, "istatistik": ist, "gelismeler": gelismeler,
+                                                 "yorum": yz, "haberler": haberler, "istatistik": ist,
+                                                 "gelismeler": gelismeler,
                                                  "son_veri": {"tarih": son_gun, **son}},
                                                 ensure_ascii=False, indent=2, default=str), encoding="utf-8")
     if gelismeler:
@@ -2653,7 +2671,7 @@ def yorum_reels_uret(cikti, veri, metin, damga):
         return None
     # Açıklama kaydırmalıyla aynı (uyarılar, kaynaklar, etiketler); yalnızca "kaydırın" satırı profile yönlendirir.
     reels_metin = aciklama_sigdir(metin.replace("Ayrıntılar görsellerde, kaydırın →",
-                                f"Yorumun {len(veri['vadeler']) + 1} sayfası profildeki kaydırmalı gönderide de var →"))
+                                f"Yorumun {veri.get('sayfa_sayisi') or len(veri['vadeler']) + 1} sayfası profildeki kaydırmalı gönderide de var →"))
     # Yedek kapak anı: kapak sahnesinin bütün öğeleri görünürken (kapak sahnesinin sonundan 1 sn önce)
     sonuc = {"dosya": mp4.name, "kapak": kapak.name, "kapak_ms": int((sahneler_[0] - 1) * 1000),
              "aciklama": reels_metin, "seslendirme": None}
