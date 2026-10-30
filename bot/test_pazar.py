@@ -196,4 +196,65 @@ kontrol(main.ig_uzunluk("🎙") == 2, "emoji Instagram'da 2 sayılır")
 s2 = main._yorum_sesli_metin(uzun.replace("Başlık", "Uyarı: başlık"))
 kontrol("🎙" in s2 and main.ig_uzunluk(s2) <= main.IG_SINIR, "seslendirme notu sığdırılarak eklenir")
 
+# 5) "Haftanın gelişmeleri" sayfası (Rıdvan, 30 Ekim 2026): 3–4 kaynaklı madde, yorum yok; sorunluysa sayfa düşer
+G = yorum.ORNEK_GELISMELER
+hatalar, hb = yorum.haberler_ayikla(yorum.ORNEK_HABERLER, G)
+kontrol(hatalar == [] and len(hb) == 4 and hb[1]["baslik"] == "DOLAR VE FAİZ", "örnek maddeler denetimden geçer")
+kontrol(yorum.haberler_ayikla(yorum.ORNEK_HABERLER, None) == ([], []), "haber özeti yoksa sayfa yok, hata da yok")
+bozuk = copy.deepcopy(yorum.ORNEK_HABERLER)
+bozuk[0]["kaynak"] = "uydurma.com"
+bozuk[1]["metin"] = "Ons yüzde 3 yükseldi."
+bozuk[2]["metin"] = "Gümüş almak için fırsat doğdu."
+bozuk[3]["metin"] = "Savaş haberleri gümüşü etkiledi."
+h, g = yorum.haberler_ayikla(bozuk, G)
+kontrol(len(h) == 4 and g == [] and "kaynak özette yok" in h[0] and "rakam" in h[1] and "fırsat" in h[2]
+        and "savaş" in h[3], "kaynak, rakam, yönlendirme ve özette olmayan olay reddedilir")
+kontrol(any("madde" in x for x in yorum.haberler_ayikla(yorum.ORNEK_HABERLER[:2], G)[0]), "2 madde yetmez")
+www = [{**x, "kaynak": "www." + x["kaynak"]} for x in yorum.ORNEK_HABERLER]
+kontrol(yorum.haberler_ayikla(www, G)[0] == [], "kaynak alan adı www ile de kabul")
+kontrol("haberler" in yorum.sema()["required"] and yorum.sema()["properties"]["haberler"]["type"] == "array",
+        "Claude'a giden şemada haberler")
+
+# yz_yorum: vadeler uyar, maddeler 3 denemede uymazsa yorum yine yayımlanır, sayfa düşer (pazar paylaşımı durmaz)
+import os  # noqa: E402
+eski_cagir, eski_anahtar = yorum._cagir, os.environ.get("ANTHROPIC_API_KEY")
+os.environ["ANTHROPIC_API_KEY"] = "sahte"
+try:
+    import json as _json
+    yanit = {**copy.deepcopy(yorum.ORNEK_YORUM), "haberler": bozuk}
+    yorum._cagir = lambda *a, **k: (_json.dumps(yanit, ensure_ascii=False), {"usage": {}})
+    sonuc = yorum.yz_yorum({}, G)
+    kontrol(sonuc["haberler"] == [] and sonuc["kisa"]["ozet"] == yorum.ORNEK_YORUM["kisa"]["ozet"],
+            "maddeler uymazsa yorum yine çıkar, haber sayfası yok")
+    cagri = []
+    yorum._cagir = lambda *a, **k: (cagri.append(1), (_json.dumps(yanit, ensure_ascii=False), {"usage": {}}))[1]
+    besinci = {"konu": "Türkiye", "metin": "Dolar/TL hafta boyunca kademeli yükselişini sürdürdü.", "kaynak": "ornek-ajans.com"}
+    yanit = {**copy.deepcopy(yorum.ORNEK_YORUM), "haberler": yorum.ORNEK_HABERLER + [besinci]}
+    sonuc = yorum.yz_yorum({}, G)
+    kontrol(len(sonuc["haberler"]) == 4 and len(cagri) == 1, "5 madde gelirse ilk 4'ü kalır, yeniden istek yok")
+    cagri.clear()
+    yanit = {**copy.deepcopy(yorum.ORNEK_YORUM), "haberler": yorum.ORNEK_HABERLER[:3] + bozuk[:1]}
+    sonuc = yorum.yz_yorum({}, G)
+    kontrol(len(sonuc["haberler"]) == 3 and len(cagri) == 1, "kuralsız madde atılır, 3 madde yeter, yeniden istek yok")
+    cagri.clear()
+    yanit = {**copy.deepcopy(yorum.ORNEK_YORUM), "haberler": bozuk}
+    yorum.yz_yorum({}, G)
+    kontrol(len(cagri) == 3, "geçerli madde 3'ten azsa yeniden istenir (en çok 3 istek)")
+    yanit = {**copy.deepcopy(yorum.ORNEK_YORUM), "haberler": yorum.ORNEK_HABERLER}
+    kontrol(len(yorum.yz_yorum({}, G)["haberler"]) == 4, "uyan maddeler ilk denemede alınır")
+finally:
+    yorum._cagir = eski_cagir
+    if eski_anahtar is None:
+        os.environ.pop("ANTHROPIC_API_KEY", None)
+    else:
+        os.environ["ANTHROPIC_API_KEY"] = eski_anahtar
+
+# Şablon: 4. sayfa yalnız haber varsa; Reels açıklaması kaydırmalının sayfa sayısını söyler
+s4 = env.get_template("yorum.html").render(**{**ortak, "sayfa": 3, "toplam": 4, "haberler": hb, "hafta_araligi": "26–30 Ekim"})
+kontrol("<h2>Haftanın gelişmeleri</h2>" in s4 and "kaynak: ornek-ajans.com" in s4 and "04 / 04" in s4, "4. sayfa çizilir")
+kontrol("<h2>Haftanın gelişmeleri</h2>" not in env.get_template("yorum.html").render(**{**ortak, "sayfa": 2, "haberler": []}),
+        "haber yoksa 3. sayfa orta vade")
+kontrol(main.hafta_araligi(date(2026, 11, 1)) == "26–30 Ekim" and main.hafta_araligi(date(2026, 10, 4)) == "28 Eylül – 2 Ekim",
+        "hafta aralığı")
+
 print(f"test_pazar: {gecen} sınama geçti")
