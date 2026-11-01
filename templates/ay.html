@@ -25,8 +25,10 @@
        flex-direction: column; justify-content: space-between; transform: scale(1.1); transform-origin: 0 0">
   <div class="ust">
     <div class="ust-sol" style="gap: 19px">
-      <h1 style="font-size: 140px; letter-spacing: -3.5px">Gümüş</h1>
-      <div class="etiket" style="gap: 14px; font-size: 30px"><span id="nokta" class="nokta" style="width: 14px; height: 14px"></span><span>AYLIK ÖZET</span></div>
+      {#- "AYLIK ÖZET" büyük ve beyaz (Rıdvan, 1 Kasım 2026: "Aylık özet olduğu çok anlaşılmıyor"); başlık yüksekliği
+        aynı kalsın diye "Gümüş" 140 → 118 px (başlık uzarsa grafik küçülür). -#}
+      <h1 style="font-size: 118px; letter-spacing: -3px">Gümüş</h1>
+      <div class="etiket" style="gap: 16px; font-size: 52px; font-weight: 800; letter-spacing: 3px; color: var(--yazi)"><span id="nokta" class="nokta" style="width: 20px; height: 20px"></span><span>AYLIK ÖZET</span></div>
       <div class="tarih mono" style="font-size: 35px">{{ ay_adi }}{% if kismi %} · {{ aralik }}{% endif %}</div>
     </div>
     {{ ag_etiketi(150, 170, '14px 16px', 26, 56, 21) }}
