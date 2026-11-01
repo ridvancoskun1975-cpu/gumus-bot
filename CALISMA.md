@@ -6,4 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
-| 2026-11-01 18:45 | **Aylık özete "Son 1 yıl" satırı** (Rıdvan 1 Kasım 18:39 "3 Uygun bence. Örnek görebilir miyim"): görsel + açıklama; önizleme, onayla main'e (2 Kasım 13:10'dan önce). | `bot/main.py`, `templates/ay.html`, `bot/test_aylik.py` | `aylik-yillik` |
+| 2026-11-01 19:10 | **Aylık özet: "AYLIK ÖZET" etiketini büyütme** (Rıdvan 1 Kasım 19:08 "Aylık özet olduğu çok anlaşılmıyor"; "Son 1 yıl" main'de, 19:04 "Bu şekilde uygun uygula"): önizleme, onayla main'e (2 Kasım 13:10'dan önce). | `templates/ay.html` | `aylik-etiket` |
