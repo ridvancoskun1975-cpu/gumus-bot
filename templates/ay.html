@@ -40,7 +40,11 @@
     {% endif %}
     <div class="kahraman-satir" style="gap: 23px">
       <div class="kahraman-sayi-kolon" style="gap: 7px">
-        <span id="fiyat-deg" style="display: inline-flex; transform-origin: 100% 100%">{{ degisim(gram_deg, 42, 30) }}</span>
+        {% if yil_deg %}<div style="display: flex; width: 100%; justify-content: space-between; align-items: baseline; gap: 20px">
+          <span class="soluk" style="font-size: 30px">1 gram</span>
+          <span id="fiyat-deg" style="display: inline-flex; transform-origin: 100% 100%">{{ degisim(gram_deg, 42, 30) }}</span>
+        </div>{% else %}
+        <span id="fiyat-deg" style="display: inline-flex; transform-origin: 100% 100%">{{ degisim(gram_deg, 42, 30) }}</span>{% endif %}
         <span id="fiyat" class="kahraman-sayi sayi" style="font-size: 164px; letter-spacing: -6px"
               data-hedef="{{ gram_sayi }}" data-once="{{ gram_once_sayi }}">{{ gram }}</span>
       </div>
@@ -48,11 +52,13 @@
     </div>
     {#- İki kısa satır (24 Ekim 2026): büyük yazıda tek satır sağdaki gorille çakışırdı; fiyat da bu yüzden 164 px
       (eski 150; 176'da 100 ₺ üstünde ₺ işareti gorile biniyordu) -#}
-    {#- "Son 1 yıl" (Rıdvan, 1 Kasım 2026: "3 Uygun bence"): ayın değişiminin yanında uzun vade bağlamı, ilk satırın
-      sonunda. Yeni satır açılmaz: kahraman uzarsa grafik küçülür (manşetli ayda zaten küçük). İlk satır kısa olduğu için
-      sağdaki gorile (~600 px'ten sonra) erişmez; ikinci satır ("önceki ayın son değerine göre") uzun, oraya konmaz.
-      Karşılaştırma yoksa (bot/main.py → yillik_baz, yil_alanlari) bölüm çıkmaz. -#}
-    <div class="soluk" style="font-size: 30px; line-height: 1.25">Türk lirası · 1 gram{% if yil_deg %}<span id="yil-satiri" style="white-space: nowrap"> · Son 1 yıl&nbsp;{{ degisim(yil_deg, 30, 21) }}</span>{% endif %}<br>{{ baz_metin }}</div>
+    {#- "Son 1 yıl" (Rıdvan, 1 Kasım 2026: "3 Uygun bence"; ilk küçük hâli "çok ufak görünüyor, biraz büyütemez miyiz";
+      "1 gram yukarıda yazsa … sanki bir yılı etkiliyor gibi"): "1 gram" fiyatın üstüne, yüzde rozetinin soluna çıkar;
+      fiyatın altındaki ilk satır yalnız "Son 1 yıl ▲ %x", büyük ve beyaz. Ayrı satır açılmaz: kahraman uzarsa grafik
+      küçülür (manşetli ayda zaten küçük; ayrı satırda Ekim 2026 grafiği 159 px'ten 89 px'e iniyordu, böyle 143 px).
+      Satır kısa: sağdaki gorile (~600 px'ten sonra) erişmez. Karşılaştırma yoksa (bot/main.py → yillik_baz,
+      yil_alanlari) eski düzen: rozet yalnız, altında "Türk lirası · 1 gram". -#}
+    <div class="soluk" style="font-size: 30px; line-height: 1.25">{% if yil_deg %}<span id="yil-satiri" style="white-space: nowrap; font-size: 38px"><span style="color: var(--yazi); font-weight: 600">Son 1 yıl</span>&nbsp;{{ degisim(yil_deg, 42, 30) }}</span>{% else %}Türk lirası · 1 gram{% endif %}<br>{{ baz_metin }}</div>
   </div>
 
   {% set gr = grafik %}
