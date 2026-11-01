@@ -128,7 +128,8 @@ kontrol(len(main.aciklama_yaz(dict(vh2, goril_satiri="🦍 Goril bu hafta sevin�
 a = main.ornek_aylik(kismi=False)
 a.update({"ons": 60.0, "ons_once": 55.0, "dolar": 50.2, "dolar_once": 49.3})
 ay = main.aciklama_yaz(main.aylik_veri_hazirla(a, "gunlukgumus"), "ay")
-kontrol("\nAyın kaynağı: ons gümüş ▲ %9,1 · dolar/TL ▲ %1,8\n\n" in ay, "aylık: kaynak satırı")
+# 1 Kasım 2026'dan beri altında "Son 1 yıl" satırı var (örnek veride de; bot/test_aylik.py)
+kontrol("\nAyın kaynağı: ons gümüş ▲ %9,1 · dolar/TL ▲ %1,8\nSon 1 yıl: " in ay, "aylık: kaynak satırı")
 # Site satırı (Rıdvan, 19 Ekim 2026: web sayfası tanıtımı): haftalık ve aylık özette, uyarının hemen üstünde;
 # günlük fiyat paylaşımlarında yok
 site_ = main.site_satiri()

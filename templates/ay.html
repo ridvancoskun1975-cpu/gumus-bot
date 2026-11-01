@@ -48,7 +48,11 @@
     </div>
     {#- İki kısa satır (24 Ekim 2026): büyük yazıda tek satır sağdaki gorille çakışırdı; fiyat da bu yüzden 164 px
       (eski 150; 176'da 100 ₺ üstünde ₺ işareti gorile biniyordu) -#}
-    <div class="soluk" style="font-size: 30px; line-height: 1.25">Türk lirası · 1 gram<br>{{ baz_metin }}</div>
+    {#- "Son 1 yıl" (Rıdvan, 1 Kasım 2026: "3 Uygun bence"): ayın değişiminin yanında uzun vade bağlamı, ilk satırın
+      sonunda. Yeni satır açılmaz: kahraman uzarsa grafik küçülür (manşetli ayda zaten küçük). İlk satır kısa olduğu için
+      sağdaki gorile (~600 px'ten sonra) erişmez; ikinci satır ("önceki ayın son değerine göre") uzun, oraya konmaz.
+      Karşılaştırma yoksa (bot/main.py → yillik_baz, yil_alanlari) bölüm çıkmaz. -#}
+    <div class="soluk" style="font-size: 30px; line-height: 1.25">Türk lirası · 1 gram{% if yil_deg %}<span id="yil-satiri" style="white-space: nowrap"> · Son 1 yıl&nbsp;{{ degisim(yil_deg, 30, 21) }}</span>{% endif %}<br>{{ baz_metin }}</div>
   </div>
 
   {% set gr = grafik %}

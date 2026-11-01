@@ -612,6 +612,48 @@ def _ay_ayir(tarihler, bugun=None):
     return bu_ay, (onceki[-1] if onceki else None), ay_bas
 
 
+# "Son 1 yıl" satırı (aylık özet; Rıdvan, 1 Kasım 2026: Ekim 2026'nın sert düşüşünün yanında uzun vade bağlamı,
+# "3 Uygun bence"). Karşılaştırma ayın son kaydının bir yıl önceki günüyle (o gün kayıt/kapanış yoksa en çok
+# YIL_TOLERANS gün önceki en yakın günle) yapılır. Önce botun kendi kayıtları (13 Ekim 2026'da başladı, Ekim 2027'den
+# itibaren yeter); yoksa MetalCharts günlük kapanışı (yalnız ücretli planda; 403'te None) × o günün ECB kuru. İkisi de
+# yoksa satır çıkmaz; hiçbir hata paylaşımı durdurmaz. Geçmiş hiçbir yere yazılmaz (MetalCharts lisansı).
+YIL_TOLERANS = 4
+
+
+def _yil_once(gun):
+    try:
+        return gun.replace(year=gun.year - 1)
+    except ValueError:                       # 29 Şubat
+        return gun.replace(year=gun.year - 1, day=28)
+
+
+def yillik_baz(gecmis, son_gun, metal=None, kur=None):
+    """Bir yıl önceki karşılaştırma: {"tarih", "gram", "kaynak": "kayit"|"metalcharts"} ya da None.
+    metal/kur verilmezse gerektiğinde metal_gecmisi() ve ecb_gecmisi() çağrılır (sınamalarda verilir)."""
+    hedef = _yil_once(son_gun)
+    alt = hedef - timedelta(days=YIL_TOLERANS)
+    kendi = [d for d in gecmis if alt <= d <= hedef and (gecmis[d] or {}).get("gram")]
+    if kendi:
+        d = max(kendi)
+        return {"tarih": d.isoformat(), "gram": gecmis[d]["gram"], "kaynak": "kayit"}
+    try:
+        metal = metal if metal is not None else metal_gecmisi()
+        xag = (metal or {}).get("XAG") or {}
+        gunler = sorted((d for d in xag if alt <= d <= hedef), reverse=True)
+        if not gunler:
+            return None
+        kur = kur if kur is not None else ecb_gecmisi()
+        for d in gunler:
+            kur_gunleri = [k for k in kur if d - timedelta(days=YIL_TOLERANS) <= k <= d]
+            if kur_gunleri and xag[d] > 0:
+                k = max(kur_gunleri)
+                return {"tarih": d.isoformat(), "gram": xag[d] * kur[k] / ONS_GRAM, "kaynak": "metalcharts",
+                        "kur_tarihi": k.isoformat()}
+    except Exception as e:  # noqa: BLE001 — satır çıkmaz, paylaşım sürer
+        print(f"::warning::Son 1 yıl satırı için geçmiş alınamadı ({type(e).__name__}: {e}); satır yazılmayacak.")
+    return None
+
+
 def aylik_fiyatlari_al(bugun=None):
     gecmis = {date.fromisoformat(k): v for k, v in gecmis_oku().items()}
     gunler, onceki_gun, ay_bas = _ay_ayir(gecmis, bugun)
@@ -628,6 +670,7 @@ def aylik_fiyatlari_al(bugun=None):
         "ay": ay_bas.isoformat(), "kismi": kismi, "baz_tarih": baz_gun.isoformat(),
         "gunluk": [{"tarih": g.isoformat(), "gram": gecmis[g]["gram"]} for g in gunler],
         "donem_kayit": _donem_kayit(gecmis, gunler[-1]),
+        "yil": yillik_baz(gecmis, gunler[-1]),      # "Son 1 yıl" satırı (None olabilir)
     }
 
 
@@ -646,6 +689,8 @@ def ornek_aylik(kismi=False):
     f["donem_kayit"] = {**({} if kismi else {"2026-09-30": 97.62}), **{g["tarih"]: g["gram"] for g in gunluk}}
     f.update({"son_saat": "20:00", "ay": "2026-10-01", "kismi": kismi,
               "baz_tarih": gunluk[0]["tarih"] if kismi else "2026-09-30", "gunluk": gunluk})
+    if os.environ.get("ORNEK_YIL", "1") != "0":          # "Son 1 yıl" satırı (örnek değer); ORNEK_YIL=0 → yok
+        f["yil"] = {"tarih": "2025-10-31", "gram": 65.12, "kaynak": "metalcharts", "kur_tarihi": "2025-10-31"}
     return f
 
 
@@ -936,6 +981,28 @@ AY_DEN = ["Ocak'tan", "Şubat'tan", "Mart'tan", "Nisan'dan", "Mayıs'tan", "Hazi
           "Ağustos'tan", "Eylül'den", "Ekim'den", "Kasım'dan", "Aralık'tan"]
 
 
+def yil_alanlari(f):
+    """Aylık özetin "Son 1 yıl" alanları: görsel (yil_deg: yon/isaret/metin, yil_baz) ve açıklama (yil_satiri,
+    yil_notu). Yıllık karşılaştırma yoksa ya da hesaplanamazsa boş: satır çıkmaz."""
+    try:
+        yil = f.get("yil")
+        if not yil or not yil.get("gram"):
+            return {}
+        bz = date.fromisoformat(yil["tarih"])
+        d = _yuvarla_degisim(f["gram"], yil["gram"])
+        yon = "dusus" if d["isaret"] == "▼" else "artis"
+        baz = f"{bz.day} {AYLAR[bz.month - 1]} {bz.year}"
+        not_ = (f"Son 1 yıl değişimi {baz} değerine göredir (MetalCharts günlük kapanışı ve o günün ECB kuruyla)."
+                if yil.get("kaynak") == "metalcharts" else f"Son 1 yıl değişimi {baz} kaydına göredir.")
+        return {"yil_deg": {"yon": yon, "isaret": d["isaret"], "metin": d["metin"]},
+                "yil_baz": baz,
+                "yil_satiri": f"Son 1 yıl: {d['isaret']} {d['metin']} ({baz}: {tr_sayi(yil['gram'], 2)} ₺)",
+                "yil_notu": not_}
+    except Exception as e:  # noqa: BLE001
+        print(f"::warning::Son 1 yıl satırı hazırlanamadı ({type(e).__name__}: {e}); satır yazılmayacak.")
+        return {}
+
+
 def aylik_veri_hazirla(f, hesap):
     v = veri_hazirla(f, hesap)
     ay = date.fromisoformat(f["ay"])
@@ -959,6 +1026,7 @@ def aylik_veri_hazirla(f, hesap):
     v["gun_sayisi"] = len(gunler)
     v["kaynak_satiri"] = kaynak_satiri(f, "Ayın")
     v["parite_cumle"] = parite_cumlesi(v["parite_deg"], "bu ay")
+    v.update(yil_alanlari(f))
 
     # Grafik: ayın her iş günü; önceki ayın son değeri kesikli çizgi (kısmi ayda yok)
     # Altta en düşük etiketine ve tarihlere yer. 24 Ekim 2026'dan dikey 9:16 kart: grafik tam genişlikte ve sahneye
@@ -1139,11 +1207,12 @@ def aciklama_yaz(v, tur):
             f"{ilk}\n"
             f"{v.get('goril_satiri', '')}"
             f"Aylık gümüş özeti · {v['ay_adi']}{' (' + v['aralik'] + ')' if v['kismi'] else ''}\n"
-            f"{v['kaynak_satiri'] + chr(10) if v.get('kaynak_satiri') else ''}\n"
+            f"{v['kaynak_satiri'] + chr(10) if v.get('kaynak_satiri') else ''}"
+            f"{v['yil_satiri'] + chr(10) if v.get('yil_satiri') else ''}\n"
             f"Ayın en yükseği: {v['en_yuksek']} ₺ ({v['en_yuksek_gun']}) · en düşüğü: {v['en_dusuk']} ₺ ({v['en_dusuk_gun']})\n"
             f"Altın/Gümüş paritesi: {v['parite']} ({p['isaret']} {p['metin']})\n"
             f"Dolar/TL: {v['dolar']} ₺ ({d['isaret']} {d['metin']})\n\n"
-            f"{not_}\n"
+            f"{not_}{' ' + v['yil_notu'] if v.get('yil_notu') else ''}\n"
             f"{PAYLASIM_SATIRI + chr(10) if v.get('buyuk_hareket') else ''}\n"
             f"{site_satiri()}\n\n"
             "Bilgi amaçlıdır, yatırım tavsiyesi değildir.\n\n"
