@@ -13,7 +13,7 @@ vf.push('format=yuv420p');
 const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(FPS), '-vcodec', 'mjpeg', '-i', '-',
   '-vf', vf.join(','), '-c:v', 'libx264', '-preset', 'medium', '-crf', '17', '-r', String(FPS), '-pix_fmt', 'yuv420p', '-movflags', '+faststart', gecici], { stdio: ['pipe', 'inherit', 'inherit'] });
 const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--allow-file-access-from-files'] });
-const page = await browser.newPage({ viewport: { width: 1080, height: 1920 }, deviceScaleFactor: 1 });
+const page = await browser.newPage({ viewport: { width: parseInt(process.env.W || '1080'), height: parseInt(process.env.H || '1920') }, deviceScaleFactor: 1 });
 page.on('pageerror', e => { console.error('sayfa hatası:', e.message); process.exitCode = 1; });
 await page.goto('file://' + path.resolve(html));
 await page.waitForFunction('window.hazir === true', null, { timeout: 60000 });

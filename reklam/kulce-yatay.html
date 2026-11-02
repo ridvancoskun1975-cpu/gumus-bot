@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Gümüş külçeler · 3D</title>
+<style>
+  html, body { margin: 0; background: #000; overflow: hidden; }
+  canvas { display: block; }
+  @font-face { font-family: 'Archivo'; font-weight: 100 900; src: url('assets/archivo-latin-wght-normal.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+  @font-face { font-family: 'Archivo'; font-weight: 100 900; src: url('assets/archivo-latin-ext-wght-normal.woff2') format('woff2'); unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+  /* Ekran yazısı: 1. cümle sahnenin altında, Reels güvenli alanında (alt 420 px, sağ 170 px) */
+  #yazi { position: absolute; left: 110px; width: 760px; top: 380px; color: #EDEFF2; font-family: 'Archivo', sans-serif;
+    font-weight: 800; font-size: 108px; line-height: 1.02; letter-spacing: -3px; opacity: 0; }
+  #yazi em { font-style: normal; color: #C9D1DA; }
+  #alt { position: absolute; left: 112px; top: 650px; color: #9AA3AE; font-family: 'Archivo', sans-serif; font-weight: 500;
+    font-size: 28px; letter-spacing: 1px; opacity: 0; }
+</style>
+</head>
+<body>
+<div id="yazi">Gümüş bugün<br><em>kaç lira?</em></div>
+<div id="alt">gunlukgumus.com</div>
+<script type="importmap">{ "imports": { "three": "./node_modules/three/build/three.module.js", "three/addons/": "./node_modules/three/examples/jsm/" } }</script>
+<script type="module">
+import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+const W = 1920, H = 1080;
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(1);
+renderer.setSize(W, H);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.15;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.prepend(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x000000);
+const pmrem = new THREE.PMREMGenerator(renderer);
+// Stüdyo çevresi: siyah odada birkaç uzun ışık paneli (gümüşte keskin, kontrastlı yansımalar için)
+function studyo() {
+  const s = new THREE.Scene();
+  s.background = new THREE.Color(0x000000);
+  // Yumuşak kubbe: üst açık gri, alt siyah (geniş, yumuşak yansıma; külçe kapkara kalmasın)
+  const kubbe = new THREE.Mesh(new THREE.SphereGeometry(30, 32, 16), new THREE.ShaderMaterial({ side: THREE.BackSide,
+    vertexShader: 'varying vec3 p; void main(){ p = position; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
+    fragmentShader: 'varying vec3 p; void main(){ float u = clamp(p.y/30.0, -1.0, 1.0); float g = mix(0.07, 0.20, smoothstep(-0.6, 0.95, u)); g = mix(0.0, g, smoothstep(-0.98, -0.75, u)); gl_FragColor = vec4(vec3(g), 1.0); }' }));
+  s.add(kubbe);
+  const panel = (w, h, x, y, z, rx, ry, rz, c, i) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(c).multiplyScalar(i), side: THREE.DoubleSide }));
+    m.position.set(x, y, z); m.rotation.set(rx, ry, rz); s.add(m);
+  };
+  panel(18, 3.2, 0, 7, -4, Math.PI / 2.6, 0, 0, 0xffffff, 7);      // tepe uzun panel (arka)
+  panel(18, 2.2, 0, 7.5, 4, -Math.PI / 2.6, 0, 0, 0xf4f7ff, 3.5);    // tepe uzun panel (ön)
+  panel(5, 10, -9, 3, 0, 0, Math.PI / 2, 0, 0xdde7ff, 3);          // sol dikey soğuk panel
+  panel(5, 10, 9, 3, 0, 0, -Math.PI / 2, 0, 0xfff3e4, 3);          // sağ dikey sıcak panel
+  panel(10, 2, 0, 2.5, -9, 0, 0, 0, 0xffffff, 1.2);                 // arka alçak panel
+  panel(16, 5, 0, -1.2, 9, Math.PI / 2.4, 0, 0, 0xffffff, 2.4);      // ön alçak sektirme kartı (yukarıdan bakınca yüzler kararmasın)
+  panel(18, 0.7, 0, 5.2, 1.5, -Math.PI / 2.2, 0, 0, 0xffffff, 9);    // ince keskin tepe çizgisi
+  panel(2.2, 10, -7.5, 3, 5, 0, Math.PI / 3, 0, 0xffffff, 4);        // sol ön dikey şerit
+  panel(2.2, 10, 7.5, 3, 5, 0, -Math.PI / 3, 0, 0xffffff, 4);        // sağ ön dikey şerit
+    return s;
+}
+const env = pmrem.fromScene(studyo(), 0.02).texture;
+scene.environment = env;
+scene.environmentIntensity = 1.0;
+
+const camera = new THREE.PerspectiveCamera(21, W / H, 0.1, 100);
+
+// Külçe: yuvarlatılmış kutu, yukarı doğru daralır (gerçek külçe biçimi). Üstünde yazı yok (bozuk yazı riski yok).
+function kulce(w = 2.0, h = 0.62, d = 1.0) {
+  const g = new RoundedBoxGeometry(w, h, d, 6, 0.055);
+  const pos = g.attributes.position;
+  const k = 0.10;                                   // üst kenar %10 dar
+  for (let i = 0; i < pos.count; i++) {
+    const y = pos.getY(i), s = 1 - k * (y / h + 0.5);
+    pos.setX(i, pos.getX(i) * s); pos.setZ(i, pos.getZ(i) * s);
+  }
+  pos.needsUpdate = true;
+  g.computeVertexNormals();
+  return g;
+}
+const metal = new THREE.MeshPhysicalMaterial({
+  color: 0xeef1f4, metalness: 1.0, roughness: 0.12, clearcoat: 0.5, clearcoatRoughness: 0.06,
+  envMapIntensity: 1.5, reflectivity: 1.0,
+});
+const geo = kulce();
+const grup = new THREE.Group();
+scene.add(grup);
+const H1 = 0.62;
+// Piramit: altta 3, ortada 2, üstte 1; hafif rastgele dönüşler (sabit tohum) doğallık için
+const yerler = [
+  [-1.04, 0, 0.0, 0.010], [0, 0, 0.0, -0.006], [1.04, 0, 0.0, 0.008],
+  [-0.52, H1, 0.0, -0.004], [0.52, H1, 0.0, 0.006],
+  [0, 2 * H1, 0.0, 0.0],
+];
+for (const [x, y, z, r] of yerler) {
+  const m = new THREE.Mesh(geo, metal);
+  m.position.set(x, y + H1 / 2, z);
+  m.rotation.y = r;
+  m.castShadow = true; m.receiveShadow = true;
+  grup.add(m);
+}
+// Zemin: koyu, hafif parlak; külçelerin yansıması için aynalanmış kopya ve üstünde karartma
+const zemin = new THREE.Mesh(new THREE.PlaneGeometry(40, 40),
+  new THREE.MeshStandardMaterial({ color: 0x07080a, metalness: 0.6, roughness: 0.45 }));
+zemin.rotation.x = -Math.PI / 2; zemin.receiveShadow = true;
+scene.add(zemin);
+zemin.material = new THREE.ShadowMaterial({ color: 0x000000, opacity: 0.55 });   // yalnız gölge; zemin siyah
+// Yansıma: külçelerin aynalanmış soluk kopyası, zeminden uzaklaştıkça siyaha karışır
+const yansima = grup.clone();
+yansima.scale.y = -1;
+yansima.traverse(o => { if (o.isMesh) { o.material = new THREE.MeshPhysicalMaterial({ color: 0xeef1f4, metalness: 1, roughness: 0.3, envMapIntensity: 0.55, transparent: true, opacity: 0.35, depthWrite: false }); o.castShadow = false; o.receiveShadow = false; } });
+scene.add(yansima);
+const solgun = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.ShaderMaterial({
+  transparent: true, depthWrite: false,
+  vertexShader: 'varying vec3 p; void main(){ p = (modelMatrix * vec4(position,1.0)).xyz; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+  fragmentShader: 'varying vec3 p; void main(){ float d = max(abs(p.x)-1.6, 0.0); float z = abs(p.z); float a = smoothstep(0.35, 2.4, z) ; a = max(a, smoothstep(0.2, 2.0, d)); gl_FragColor = vec4(0.0,0.0,0.0,a); }',
+}));
+solgun.rotation.x = -Math.PI / 2; solgun.position.y = 0.0015; solgun.renderOrder = 2;
+scene.add(solgun);
+const havuz = new THREE.SpotLight(0xffffff, 10, 20, 0.5, 0.9, 1.2); havuz.position.set(0, 7, 0); havuz.target.position.set(0, 0, 0); scene.add(havuz, havuz.target);
+
+// Işıklar: anahtar ışık (gölge), tepe ışığı, soğuk kenar ışığı, gezen parıltı ışığı
+const anahtar = new THREE.SpotLight(0xffffff, 60, 30, 0.55, 0.5, 1.6);
+anahtar.position.set(4, 7, 5); anahtar.castShadow = true;
+anahtar.shadow.mapSize.set(2048, 2048); anahtar.shadow.bias = -0.0004; anahtar.shadow.radius = 4;
+scene.add(anahtar);
+const kenar = new THREE.DirectionalLight(0xbfd3ff, 1.6); kenar.position.set(-6, 3, -4); scene.add(kenar);
+const tepe = new THREE.PointLight(0xffffff, 18, 20, 1.5); tepe.position.set(0, 5, 1); scene.add(tepe);
+const parilti = new THREE.PointLight(0xffffff, 0, 12, 2.0); scene.add(parilti);
+
+// Sahne süresi ve kamera: alçak açıyla yakından başlar, 5 sn'de ~80° dolaşıp hafif yükselir ve açılır
+const SURE = 5.0;
+const kenet = x => Math.min(Math.max(x, 0), 1);
+const yum = x => { x = kenet(x); return x * x * (3 - 2 * x); };
+const yazi = document.getElementById('yazi'), alt = document.getElementById('alt');
+
+window.kare = function (t) {
+  const u = kenet(t / SURE);
+  const aci = -0.95 + 1.45 * u;                   // radyan: soldan sağa dolaş
+  const yar = 12.0 - 1.6 * yum(u);                // yaklaş
+  const yuk = 1.6 + 1.7 * yum(u);                 // yüksel
+  camera.position.set(Math.sin(aci) * yar, yuk, Math.cos(aci) * yar);
+  camera.lookAt(-1.35, 0.8, 0);   // külçeler sağda, yazı solda
+  // çevre yansımaları yavaşça kayar (metal canlı görünsün)
+  scene.environmentRotation.y = -0.9 * (t / SURE);   // kamerayla birlikte, yansımalar hep önde kalsın
+  // gezen parıltı: 1,0–2,6 sn arasında üstten geçer
+  const p = (t - 1.0) / 1.6;
+  if (p > 0 && p < 1) { parilti.intensity = 45 * Math.sin(Math.PI * p); parilti.position.set(-3 + 6 * p, 2.6, 1.2 - 0.6 * p); }
+  else parilti.intensity = 0;
+  // yazı 1,2 sn'de belirir, 4,6 sn'de kaybolur
+  const g = yum((t - 0.9) / 0.5) * (1 - yum((t - 4.5) / 0.4));
+  yazi.style.opacity = g.toFixed(3);
+  yazi.style.transform = `translateY(${((1 - yum((t - 0.9) / 0.5)) * 30).toFixed(1)}px)`;
+  alt.style.opacity = (yum((t - 2.0) / 0.6) * (1 - yum((t - 4.5) / 0.4))).toFixed(3);
+  renderer.render(scene, camera);
+};
+window.hazir = true;
+window.kare(2.4);
+</script>
+</body>
+</html>

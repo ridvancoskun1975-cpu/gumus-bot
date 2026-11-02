@@ -9,4 +9,4 @@
 - Ses: `python bot/ses.py ornek --sesler Orus --metin "a || b || c || d" --hiz 1.15 --uslup "<reklam üslubu>"` (ses-ornek.yml iş akışı; parçalar 0,8 / 5,3 / 11,2 / 13,9 sn'ye yerleştirildi).
 - Müzik: gumus-kayit/muzik Motivate (NastelBom, Pixabay), 1:47'den 16 sn, %20 ses. Geçiş sesleri: Mixkit (whoosh-fast, transition-snap; Mixkit SFX Free License).
 - Çalışma ortamı: Playwright Chromium (`--use-gl=angle --use-angle=swiftshader --allow-file-access-from-files`), `npm i three@0.170.0`, fontlar assets/fonts, goril templates/goril.
-- Yatay (16:9) sürüm henüz yok; istenirse aynı sahnelerden üretilir.
+- Yatay (16:9) sürüm: `*-yatay.html` sahneleri, `W=1920 H=1080` ile render; ses izi dikey videodan kopyalanır (Rıdvan 2 Kasım 13:50: "Instagram reklamı ve Google reklamı olarak").

@@ -3,7 +3,7 @@ import { chromium } from 'playwright';
 import path from 'node:path';
 const [html, t, cikti] = process.argv.slice(2);
 const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--allow-file-access-from-files'] });
-const page = await browser.newPage({ viewport: { width: 1080, height: 1920 }, deviceScaleFactor: 1 });
+const page = await browser.newPage({ viewport: { width: parseInt(process.env.W || '1080'), height: parseInt(process.env.H || '1920') }, deviceScaleFactor: 1 });
 page.on('pageerror', e => console.error('sayfa hatası:', e.message));
 page.on('console', m => { if (m.type() === 'error') console.error('konsol:', m.text()); });
 await page.goto('file://' + path.resolve(html));
