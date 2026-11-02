@@ -576,9 +576,12 @@ def ornek_sesler(sesler, klasor, metin=ORNEK_METIN, uslup=USLUP_ERKEK, anahtar_=
     except Exception:
         ffmpeg = None
     sonuc = []
-    for i, ad in enumerate(sesler, 1):
+    # Tek seste " || " ile ayrılmış metin: her parça ayrı dosya (reklam videosu gibi sahnelere oturtmak için)
+    parcalar = [m.strip() for m in metin.split("||") if m.strip()] if len(sesler) == 1 and "||" in metin else None
+    isler = [(ad, metin) for ad in sesler] if parcalar is None else [(sesler[0], m) for m in parcalar]
+    for i, (ad, m) in enumerate(isler, 1):
         try:
-            o = hizlandir(kirp(seslendir(okunur(metin), ses=ad, uslup=uslup, anahtar_=anahtar_, model=YEDEK_MODEL)), hiz)
+            o = hizlandir(kirp(seslendir(okunur(m), ses=ad, uslup=uslup, anahtar_=anahtar_, model=YEDEK_MODEL)), hiz)
         except SesHatasi as e:
             print(f"Uyarı: {ad} okunamadı ({e})", file=sys.stderr)
             if "per day" in str(e) or "günlük" in str(e):
