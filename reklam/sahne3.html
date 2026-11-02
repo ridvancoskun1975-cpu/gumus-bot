@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Sahne 3 · takip edin</title>
+<style>
+@font-face { font-family: 'Archivo'; font-weight: 100 900; src: url('assets/archivo-latin-wght-normal.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Archivo'; font-weight: 100 900; src: url('assets/archivo-latin-ext-wght-normal.woff2') format('woff2'); unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+:root { --zemin: #000; --yazi: #EDEFF2; --soluk: #9AA3AE; --cizgi: #2C313A; --vurgu: #C9D1DA; }
+html, body { margin: 0; background: var(--zemin); overflow: hidden; }
+.sahne { position: relative; width: 1080px; height: 1920px; background: var(--zemin); color: var(--yazi); font-family: 'Archivo', sans-serif; overflow: hidden; }
+.vinyet { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 60%, rgba(201,209,218,0.09), transparent 58%); }
+.baslik { position: absolute; left: 96px; right: 150px; top: 300px; font-size: 104px; font-weight: 800; line-height: 1.0; letter-spacing: -3.5px; opacity: 0; }
+.baslik em { font-style: normal; color: var(--vurgu); }
+.soru { position: absolute; left: 96px; top: 610px; font-size: 104px; font-weight: 800; letter-spacing: -3.5px; line-height: 1; opacity: 0; }
+.maskot { position: absolute; left: 50%; top: 730px; width: 520px; height: 568px; margin-left: -300px; opacity: 0; }
+.cagri { position: absolute; left: 96px; top: 1310px; display: inline-flex; align-items: center; gap: 18px; font-size: 56px; font-weight: 800;
+  color: var(--zemin); background: var(--vurgu); border-radius: 999px; padding: 22px 42px 26px; opacity: 0; }
+.hesap { position: absolute; left: 96px; top: 1436px; font-size: 54px; font-weight: 800; letter-spacing: -1px; opacity: 0; }
+.site { position: absolute; left: 96px; top: 1504px; font-size: 40px; font-weight: 600; color: var(--vurgu); opacity: 0; }
+.alt { position: absolute; left: 96px; right: 170px; top: 1580px; display: flex; gap: 28px; font-size: 24px; color: var(--soluk); opacity: 0; }
+</style>
+</head>
+<body>
+<div class="sahne">
+  <div class="vinyet"></div>
+  <div class="baslik" id="baslik">Gümüş sırtlı goril<br><em>takipte.</em></div>
+  <div class="soru" id="soru">Ya siz?</div>
+  <div class="maskot" id="maskot"><svg id="goril-istif" style="width:100%;height:100%" viewBox="0 0 320 350" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <defs>
+    <radialGradient id="gi-isik" cx="50%" cy="58%" r="50%">
+      <stop offset="0" stop-color="#C9D1DA" stop-opacity="0.16"/>
+      <stop offset="0.6" stop-color="#C9D1DA" stop-opacity="0.05"/>
+      <stop offset="1" stop-color="#C9D1DA" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="gi-gumus" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F2F5F8"/>
+      <stop offset="1" stop-color="#A9B3BE"/>
+    </linearGradient>
+    <linearGradient id="gi-kulce-on" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#D5DBE2"/>
+      <stop offset="1" stop-color="#8E98A4"/>
+    </linearGradient>
+    <!-- tek külçe (yan görünüş): alt kenarın ortası (0,0) -->
+    <g id="gi-kulce">
+      <path d="M-33 0 L33 0 L28 -12 L-28 -12 Z" fill="url(#gi-kulce-on)"/>
+      <path d="M-28 -12 L28 -12 L24 -16 L-24 -16 Z" fill="#F2F5F8"/>
+      <path d="M-18 -7 L-8 -7" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+    </g>
+  </defs>
+
+  <g id="gi-hepsi">
+    <ellipse cx="160" cy="210" rx="160" ry="145" fill="url(#gi-isik)"/>
+
+    <!-- gölgeler -->
+    <ellipse cx="122" cy="338" rx="82" ry="9" fill="#000000" opacity="0.45"/>
+    <ellipse cx="266" cy="338" rx="44" ry="6" fill="#000000" opacity="0.45"/>
+
+    <!-- külçe yığını (videoda büyür) -->
+    <g id="gi-yigin" class="goril-beden">
+      <use href="#gi-kulce" x="266" y="334"/>
+      <use href="#gi-kulce" x="266" y="318"/>
+      <use href="#gi-kulce" x="266" y="302"/>
+      <use href="#gi-kulce" x="266" y="286"/>
+      <use href="#gi-kulce" x="266" y="270"/>
+      <use href="#gi-kulce" x="266" y="254"/>
+      <use href="#gi-kulce" x="266" y="238"/>
+    </g>
+
+    <!-- goril (yığının solunda) -->
+    <g class="goril-beden" transform="translate(-38 0) translate(160 338) scale(0.95) translate(-160 -338)">
+      <g id="gi-govde">
+        <g fill="#3B4149">
+          <path d="M104 282 C96 304 98 324 110 332 L146 332 C150 318 148 300 142 286 Z"/>
+          <path d="M216 282 C224 304 222 324 210 332 L174 332 C170 318 172 300 178 286 Z"/>
+        </g>
+        <g fill="#6F7680">
+          <ellipse cx="124" cy="333" rx="26" ry="8"/>
+          <ellipse cx="196" cy="333" rx="26" ry="8"/>
+        </g>
+        <path d="M98 160 C66 168 56 226 70 266 C80 296 116 310 160 310 C204 310 240 296 250 266 C264 226 254 168 222 160 Z" fill="#454C55"/>
+        <path d="M70 212 C62 240 66 270 84 290 C98 304 120 310 140 311 Q132 297 120 298 Q116 284 104 286 Q102 272 92 272 Q92 258 84 255 Q86 242 78 238 Q80 225 70 212 Z" fill="url(#gi-gumus)"/>
+        <path d="M250 212 C258 240 254 270 236 290 C222 304 200 310 180 311 Q188 297 200 298 Q204 284 216 286 Q218 272 228 272 Q228 258 236 255 Q234 242 242 238 Q240 225 250 212 Z" fill="url(#gi-gumus)"/>
+        <path d="M116 186 C124 176 152 176 160 190 C168 176 196 176 204 186 C212 198 210 228 196 240 C184 250 168 246 160 236 C152 246 136 250 124 240 C110 228 108 198 116 186 Z" fill="#7A818B"/>
+        <path d="M160 194 L160 232" stroke="#5E656F" stroke-width="3" stroke-linecap="round"/>
+        <path d="M134 262 q26 12 52 0" stroke="#5E656F" stroke-width="3" stroke-linecap="round" fill="none"/>
+
+        <!-- sol kol: boyunca sarkar, parmak eklemleri yerde -->
+        <path d="M110 178 Q66 232 80 304" stroke="#2B3037" stroke-width="47" stroke-linecap="round" fill="none"/>
+        <path d="M110 178 Q66 232 80 304" stroke="#454C55" stroke-width="40" stroke-linecap="round" fill="none"/>
+        <path d="M84 196 Q64 228 66 262" stroke="#C9D1DA" stroke-width="5" stroke-linecap="round" fill="none" opacity="0.5"/>
+        <ellipse cx="82" cy="318" rx="21" ry="14" fill="#5E656F"/>
+        <g stroke="#454C55" stroke-width="3" stroke-linecap="round">
+          <path d="M72 322 l0 7"/><path d="M82 323 l0 7"/><path d="M92 322 l0 7"/>
+        </g>
+
+        <!-- baş -->
+        <g id="gi-bas">
+          <path d="M124 150 C118 126 128 104 148 96 C154 90 166 90 172 96 C192 104 202 126 196 150 C194 170 182 180 160 180 C138 180 126 170 124 150 Z" fill="#454C55"/>
+          <path d="M132 136 C132 122 144 116 160 120 C176 116 188 122 188 136 C194 150 190 172 160 176 C130 172 126 150 132 136 Z" fill="#7A818B"/>
+          <path d="M130 128 C138 118 152 118 160 126 C168 118 182 118 190 128 C184 126 176 127 170 132 L150 132 C144 127 136 126 130 128 Z" fill="#353B43"/>
+          <!-- açık gözler: bakışı elindeki külçeyi izler -->
+          <ellipse cx="145" cy="139" rx="6.5" ry="6" fill="#EDEFF2"/>
+          <ellipse cx="175" cy="139" rx="6.5" ry="6" fill="#EDEFF2"/>
+          <g id="gi-gozbebek" fill="#121418">
+            <circle cx="145" cy="139" r="3.6"/>
+            <circle cx="175" cy="139" r="3.6"/>
+          </g>
+          <path d="M150 146 C150 140 170 140 170 146 C170 152 162 154 160 151 C158 154 150 152 150 146 Z" fill="#4C535C"/>
+          <circle cx="155" cy="147" r="2.2" fill="#121418"/>
+          <circle cx="165" cy="147" r="2.2" fill="#121418"/>
+          <!-- memnun, kapalı gülümseme -->
+          <path d="M145 160 Q160 170 175 160" stroke="#121418" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+          <circle cx="137" cy="155" r="4" fill="#F07A6A" opacity="0.25"/>
+          <circle cx="183" cy="155" r="4" fill="#F07A6A" opacity="0.25"/>
+        </g>
+      </g>
+    </g>
+
+    <!-- sağ kol ve taşınan külçe (konumu betikte hesaplanır) -->
+    <g id="gi-kol" class="goril-beden">
+      <path id="gi-kol-kontur" d="M162 178 Q214 196 226 238" stroke="#2B3037" stroke-width="47" stroke-linecap="round" fill="none"/>
+      <path id="gi-kol-ic" d="M162 178 Q214 196 226 238" stroke="#454C55" stroke-width="40" stroke-linecap="round" fill="none"/>
+      <g id="gi-tasinan" transform="translate(226 262)"><use href="#gi-kulce" x="0" y="0"/></g>
+      <g id="gi-el" transform="translate(226 240)">
+        <ellipse cx="0" cy="0" rx="20" ry="15" fill="#5E656F"/>
+        <g stroke="#454C55" stroke-width="3" stroke-linecap="round">
+          <path d="M-9 2 l0 9"/><path d="M0 3 l0 9"/><path d="M9 2 l0 9"/>
+        </g>
+      </g>
+    </g>
+
+    <!-- "tın" parıltısı -->
+    <path id="gi-tin" d="M0 -12 l3 9 l9 3 l-9 3 l-3 9 l-3 -9 l-9 -3 l9 -3 z" fill="#FFFFFF" opacity="0"/>
+  </g>
+</svg>
+</div>
+  <div class="cagri" id="cagri">Takip edin <span aria-hidden="true">↗</span></div>
+  <div class="hesap" id="hesap">@gunlukgumus</div>
+  <div class="site" id="site">gunlukgumus.com</div>
+  <div class="alt" id="alt"><span>Bilgi amaçlıdır, yatırım tavsiyesi değildir.</span><span>·</span><span>Seslendirme: yapay zekâ</span></div>
+</div>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const kenet = x => Math.min(Math.max(x, 0), 1);
+  const yum = x => { x = kenet(x); return x * x * (3 - 2 * x); };
+  const ara = (t, a, b) => yum((t - a) / (b - a));
+  function gir(el, g, dx, dy, sc) { el.style.opacity = g.toFixed(3); el.style.transform = `translate(${((1 - g) * (dx || 0)).toFixed(1)}px, ${((1 - g) * (dy || 0)).toFixed(1)}px)` + (sc ? ` scale(${sc.toFixed(4)})` : ''); }
+  window.kare = function (t) {
+    gir($('baslik'), ara(t, 0.0, 0.5), 0, 40);
+    gir($('soru'), ara(t, 1.7, 2.1), 0, 30);
+    gir($('maskot'), ara(t, 0.2, 0.7), 0, 60);
+    const c = ara(t, 2.4, 2.9);
+    const zip = t > 3.0 ? 1 + 0.035 * (0.5 - 0.5 * Math.cos(2 * Math.PI * (t - 3.0) / 1.2)) : 1;
+    gir($('cagri'), c, 0, 30, zip);
+    gir($('hesap'), ara(t, 2.7, 3.1), 0, 20);
+    gir($('site'), ara(t, 2.9, 3.3), 0, 20);
+    gir($('alt'), ara(t, 3.2, 3.6), 0, 10);
+  };
+  window.hazir = true;
+  window.kare(4.0);
+})();
+</script>
+<script>// İstifçi goril (sakin gün): elindeki külçeyi yanındaki yığına koyar, yığın büyür.
+// Bot her kare için window.kare(t) çağırır; çağrılmazsa durağan poz çizilir.
+(function () {
+  const svg = document.getElementById('goril-istif');
+  if (!svg) return;
+  const $ = id => document.getElementById(id);
+  const hepsi = $('gi-hepsi'), govde = $('gi-govde'), bas = $('gi-bas'), gozbebek = $('gi-gozbebek'),
+        kontur = $('gi-kol-kontur'), kol = $('gi-kol-ic'), el = $('gi-el'), tasinan = $('gi-tasinan'), tin = $('gi-tin');
+  const yigin = Array.from($('gi-yigin').children);
+
+  const GIRIS = 0.3, GIRIS_SURE = 0.45, T0 = GIRIS + GIRIS_SURE;
+  const P = 2.0, ILK = 3, EN_COK = yigin.length;           // bir külçe 2 sn; 3 külçeden başlar
+  const TUTUS = 30;                                        // el merkezinden külçenin altına
+  const OMUZ = [170, 186], DINLEN = [230, 240], YIGIN_X = 266, TABAN = 334, KAT = 16;
+  const kenet = x => Math.min(Math.max(x, 0), 1);
+  const yum = x => { x = kenet(x); return x * x * (3 - 2 * x); };
+  const ara = (a, b, u) => a + (b - a) * u;
+  const geriTasma = x => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+
+  function poz(nb, p) {
+    // nb: bu turda koymadan önceki külçe sayısı; p: tur içindeki yer (0–1)
+    const koy = TABAN - KAT * nb - TUTUS, ustu = koy - 22;
+    let x, y, tasiyor = true, olcek = 1, n = nb;
+    if (p < 0.40) { const u = yum(p / 0.40); x = ara(DINLEN[0], YIGIN_X, u); y = ara(DINLEN[1], ustu, u) - 26 * Math.sin(Math.PI * u); }
+    else if (p < 0.52) { const u = yum((p - 0.40) / 0.12); x = YIGIN_X; y = ara(ustu, koy, u); }
+    else if (p < 0.62) { const u = yum((p - 0.52) / 0.10); x = YIGIN_X; y = ara(koy, koy - 14, u); tasiyor = false; n = nb + 1; }
+    else if (p < 0.95) { const u = yum((p - 0.62) / 0.33); x = ara(YIGIN_X, DINLEN[0], u); y = ara(koy - 14, DINLEN[1], u) - 14 * Math.sin(Math.PI * u); tasiyor = false; n = nb + 1; }
+    else { x = DINLEN[0]; y = DINLEN[1]; n = nb + 1; olcek = yum((p - 0.95) / 0.05); }
+    const tinS = p >= 0.52 && p <= 0.80 ? (p - 0.52) / 0.28 : null;
+    return { x, y, tasiyor, olcek, n, tinS, ustY: TABAN - KAT * (nb + 1) };
+  }
+
+  function ciz(t) {
+    let d;
+    if (t === null) d = poz(5, 0.46);                       // durağan görsel
+    else if (t < T0) d = { x: DINLEN[0], y: DINLEN[1], tasiyor: true, olcek: 1, n: ILK, tinS: null };
+    else {
+      const k = Math.floor((t - T0) / P), p = (t - T0) / P - k;
+      d = ILK + k >= EN_COK ? { x: DINLEN[0], y: DINLEN[1], tasiyor: true, olcek: 1, n: EN_COK, tinS: null }
+                            : poz(ILK + k, p);
+    }
+    // giriş
+    const g = t === null ? 1 : kenet((t - GIRIS) / GIRIS_SURE);
+    const s = g === 0 ? 0.0001 : geriTasma(g);
+    hepsi.setAttribute('transform', `translate(160 345) scale(${s}) translate(-160 -345)`);
+    // yığın
+    yigin.forEach((b, i) => b.setAttribute('visibility', i < d.n ? 'visible' : 'hidden'));
+    // kol: omuzdan ele, dirsek dışa/yukarı
+    const dx = d.x - OMUZ[0], dy = d.y - OMUZ[1], L = Math.hypot(dx, dy) || 1;
+    const cx = (OMUZ[0] + d.x) / 2 + 26 * dy / L, cy = (OMUZ[1] + d.y) / 2 - 26 * dx / L;
+    const yol = `M${OMUZ[0]} ${OMUZ[1]} Q${cx.toFixed(1)} ${cy.toFixed(1)} ${d.x.toFixed(1)} ${d.y.toFixed(1)}`;
+    kontur.setAttribute('d', yol); kol.setAttribute('d', yol);
+    el.setAttribute('transform', `translate(${d.x.toFixed(1)} ${d.y.toFixed(1)})`);
+    tasinan.setAttribute('transform', `translate(${d.x.toFixed(1)} ${(d.y + TUTUS).toFixed(1)}) scale(${d.olcek})`);
+    tasinan.setAttribute('visibility', d.tasiyor ? 'visible' : 'hidden');
+    // "tın" parıltısı
+    if (d.tinS !== null) {
+      const o = Math.sin(Math.PI * d.tinS);
+      tin.setAttribute('transform', `translate(${YIGIN_X + 30} ${d.ustY - 14}) scale(${0.3 + 0.9 * o}) rotate(${40 * d.tinS})`);
+      tin.setAttribute('opacity', o.toFixed(3));
+    } else tin.setAttribute('opacity', 0);
+    // gözler eli izler, baş hafifçe sallanır, gövde nefes alır
+    const gx = Math.max(-1, Math.min(3.2, 1 + 2.4 * (d.x - DINLEN[0]) / 40));
+    const gy = Math.max(-2.6, Math.min(1.8, 1 + 2.2 * (d.y - DINLEN[1]) / 50));
+    gozbebek.setAttribute('transform', `translate(${gx.toFixed(2)} ${gy.toFixed(2)})`);
+    const tt = t === null ? 0 : t;
+    bas.setAttribute('transform', `rotate(${(2 + 2.5 * Math.sin(2 * Math.PI * tt / P)).toFixed(2)} 160 178)`);
+    govde.setAttribute('transform', `translate(160 334) scale(1 ${(1 + 0.012 * Math.sin(2 * Math.PI * tt / 2.2)).toFixed(4)}) translate(-160 -334)`);
+  }
+
+  ciz(null);
+  const onceki = window.kare;
+  window.kare = function (t) { if (typeof onceki === 'function') onceki(t); ciz(t); };
+})();
+</script>
+</body>
+</html>
