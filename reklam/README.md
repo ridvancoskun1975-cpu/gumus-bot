@@ -2,7 +2,7 @@
 
 2 Kasım 2026. Rıdvan: "3 boyutlu gümüş etrafında dönen kamera … sloganlar … takip edin"; metin "Gümüş sırtlı goril takipte. Ya siz?", açılış "Gümüş bugün kaç lira?" (Rıdvan "2"); ses Orus (Rıdvan "Ses 1"), hız 1,15, reklam spikeri üslubu; dikey 9:16.
 
-- `kulce.html` — 1. sahne (0–5 sn): Three.js ile parlak gümüş külçe piramidi, dönen kamera, stüdyo ışık çevresi. Külçelerde yazı yok.
+- `kulce.html` — 1. sahne (0–5 sn): Three.js ile gümüş külçe piramidi, 13 Ekim 3B profil resmindeki gibi (döküm biçimi: üst geniş alt dar; canvas ile çizilen "SILVER 999.9 FINE" damgası ve çerçeve, kabartma + pürüz haritası; uzun kenar derinlikte, 3-2-1), soldan dolaşan kamera, stüdyo ışık çevresi (Rıdvan 2 Kasım 15:38: "Böyle bir külçe standardı yok").
 - `sahne2.html` — 2. sahne (5–11 sn): program (~10:00 güncel fiyat, ~20:00 günün özeti, pazar üst düzey yapay zekâ analizi; kısa ve orta vade).
 - `sahne3.html` — 3. sahne (11–16 sn): "Gümüş sırtlı goril takipte. Ya siz?", istifçi goril (templates/goril/istif.svg/js kopyası), Takip edin, @hesap, site, yasal satır + "Seslendirme: yapay zekâ".
 - `render.mjs` — sahneyi 30 fps JPEG kare akışıyla ffmpeg'e çizer (`node render.mjs <html> <sn> <mp4> [fadein] [fadeout]`); `kare.mjs` tek kare.

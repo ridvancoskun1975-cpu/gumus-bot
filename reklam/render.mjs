@@ -17,7 +17,7 @@ const page = await browser.newPage({ viewport: { width: parseInt(process.env.W |
 page.on('pageerror', e => { console.error('sayfa hatası:', e.message); process.exitCode = 1; });
 await page.goto('file://' + path.resolve(html));
 await page.waitForFunction('window.hazir === true', null, { timeout: 60000 });
-await page.evaluate(async () => { await document.fonts.ready; });
+await page.evaluate(async () => { await document.fonts.load('900 100px Archivo'); await document.fonts.load('700 80px "JetBrains Mono"'); await document.fonts.ready; });
 const t0 = Date.now();
 for (let i = 0; i < N; i++) {
   await page.evaluate(tt => window.kare(tt), i / FPS);

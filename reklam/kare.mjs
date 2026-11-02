@@ -8,7 +8,7 @@ page.on('pageerror', e => console.error('sayfa hatası:', e.message));
 page.on('console', m => { if (m.type() === 'error') console.error('konsol:', m.text()); });
 await page.goto('file://' + path.resolve(html));
 await page.waitForFunction('window.hazir === true', null, { timeout: 60000 });
-await page.evaluate(async () => { await document.fonts.ready; });
+await page.evaluate(async () => { await document.fonts.load('900 100px Archivo'); await document.fonts.load('700 80px "JetBrains Mono"'); await document.fonts.ready; });
 const t0 = Date.now();
 await page.evaluate(tt => window.kare(tt), parseFloat(t));
 await page.screenshot({ path: cikti, type: cikti.endsWith('.jpg') ? 'jpeg' : 'png', quality: cikti.endsWith('.jpg') ? 92 : undefined });

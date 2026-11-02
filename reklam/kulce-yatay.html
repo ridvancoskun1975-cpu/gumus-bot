@@ -14,6 +14,7 @@
   #yazi em { font-style: normal; color: #C9D1DA; }
   #alt { position: absolute; left: 112px; top: 650px; color: #9AA3AE; font-family: 'Archivo', sans-serif; font-weight: 500;
     font-size: 28px; letter-spacing: 1px; opacity: 0; }
+@font-face { font-family: 'JetBrains Mono'; font-weight: 100 800; src: url('assets/jetbrains-mono-latin-wght-normal.woff2') format('woff2'); }
 </style>
 </head>
 <body>
@@ -46,15 +47,15 @@ function studyo() {
   // Yumuşak kubbe: üst açık gri, alt siyah (geniş, yumuşak yansıma; külçe kapkara kalmasın)
   const kubbe = new THREE.Mesh(new THREE.SphereGeometry(30, 32, 16), new THREE.ShaderMaterial({ side: THREE.BackSide,
     vertexShader: 'varying vec3 p; void main(){ p = position; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
-    fragmentShader: 'varying vec3 p; void main(){ float u = clamp(p.y/30.0, -1.0, 1.0); float g = mix(0.07, 0.20, smoothstep(-0.6, 0.95, u)); g = mix(0.0, g, smoothstep(-0.98, -0.75, u)); gl_FragColor = vec4(vec3(g), 1.0); }' }));
+    fragmentShader: 'varying vec3 p; void main(){ float u = clamp(p.y/30.0, -1.0, 1.0); float g = u < 0.0 ? mix(0.0, 0.34, smoothstep(-0.55, -0.04, u)) : mix(0.34, 0.42, smoothstep(0.0, 0.95, u)); gl_FragColor = vec4(vec3(g), 1.0); }' }));
   s.add(kubbe);
   const panel = (w, h, x, y, z, rx, ry, rz, c, i) => {
     const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(c).multiplyScalar(i), side: THREE.DoubleSide }));
     m.position.set(x, y, z); m.rotation.set(rx, ry, rz); s.add(m);
   };
-  panel(18, 3.2, 0, 7, -4, Math.PI / 2.6, 0, 0, 0xffffff, 7);      // tepe uzun panel (arka)
+  panel(18, 3.2, 0, 7, -4, Math.PI / 2.6, 0, 0, 0xffffff, 9);      // tepe uzun panel (arka)
   panel(18, 2.2, 0, 7.5, 4, -Math.PI / 2.6, 0, 0, 0xf4f7ff, 3.5);    // tepe uzun panel (ön)
-  panel(5, 10, -9, 3, 0, 0, Math.PI / 2, 0, 0xdde7ff, 3);          // sol dikey soğuk panel
+  panel(5, 10, -9, 3, 0, 0, Math.PI / 2, 0, 0xdde7ff, 5);          // sol dikey soğuk panel
   panel(5, 10, 9, 3, 0, 0, -Math.PI / 2, 0, 0xfff3e4, 3);          // sağ dikey sıcak panel
   panel(10, 2, 0, 2.5, -9, 0, 0, 0, 0xffffff, 1.2);                 // arka alçak panel
   panel(16, 5, 0, -1.2, 9, Math.PI / 2.4, 0, 0, 0xffffff, 2.4);      // ön alçak sektirme kartı (yukarıdan bakınca yüzler kararmasın)
@@ -67,40 +68,73 @@ const env = pmrem.fromScene(studyo(), 0.02).texture;
 scene.environment = env;
 scene.environmentIntensity = 1.0;
 
-const camera = new THREE.PerspectiveCamera(21, W / H, 0.1, 100);
+const camera = new THREE.PerspectiveCamera(22, W / H, 0.1, 100);
 
-// Külçe: yuvarlatılmış kutu, yukarı doğru daralır (gerçek külçe biçimi). Üstünde yazı yok (bozuk yazı riski yok).
-function kulce(w = 2.0, h = 0.62, d = 1.0) {
-  const g = new RoundedBoxGeometry(w, h, d, 6, 0.055);
+// Külçe: döküm biçimi (kalıptan çıkmış: üst geniş, alt dar), yuvarlatılmış kenar. Üstünde çerçeve ve damga yazısı
+// (canvas'ta kendimiz çizeriz; kabartma haritası olarak uygulanır, harfler bozulmaz).
+function kulce(w = 1.0, h = 0.5, d = 2.0) {
+  const g = new RoundedBoxGeometry(w, h, d, 6, 0.03);
   const pos = g.attributes.position;
-  const k = 0.10;                                   // üst kenar %10 dar
+  const k = 0.11;                                   // alt kenar %11 dar (profil resmindeki döküm biçimi)
   for (let i = 0; i < pos.count; i++) {
-    const y = pos.getY(i), s = 1 - k * (y / h + 0.5);
+    const y = pos.getY(i), s = 1 - k * (0.5 - y / h);
     pos.setX(i, pos.getX(i) * s); pos.setZ(i, pos.getZ(i) * s);
   }
   pos.needsUpdate = true;
   g.computeVertexNormals();
   return g;
 }
+// Damga: profil resmindeki gibi "SILVER / 999.9 FINE" ve çerçeve, oyma (koyu = çukur). Harfleri biz çizeriz.
+function damga() {
+  const c = document.createElement('canvas'); c.width = 1024; c.height = 512;
+  const x = c.getContext('2d');
+  x.fillStyle = '#808080'; x.fillRect(0, 0, 1024, 512);
+  x.translate(512, 256); x.rotate(Math.PI); x.translate(-512, -256);   // bu açıdan düz okunsun
+  x.strokeStyle = '#303030'; x.lineWidth = 7; x.strokeRect(40, 46, 944, 420);
+  x.fillStyle = '#202020'; x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.font = '900 190px Archivo, sans-serif';
+  x.save(); x.translate(512, 200); x.scale(1.0, 1.0); x.fillText('SILVER', 0, 0); x.restore();
+  x.font = '700 84px "JetBrains Mono", monospace'; x.fillText('999.9   FINE', 512, 372);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.NoColorSpace; t.anisotropy = 8;
+  return t;
+}
+function puruz() {
+  const c = document.createElement('canvas'); c.width = 1024; c.height = 512;
+  const x = c.getContext('2d');
+  x.fillStyle = '#121212'; x.fillRect(0, 0, 1024, 512);          // ayna yüzey (pürüz ~0,07)
+  x.translate(512, 256); x.rotate(Math.PI); x.translate(-512, -256);
+  x.strokeStyle = '#8a8a8a'; x.lineWidth = 7; x.strokeRect(40, 46, 944, 420);
+  x.fillStyle = '#9a9a9a'; x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.font = '900 190px Archivo, sans-serif'; x.fillText('SILVER', 512, 200);
+  x.font = '700 84px "JetBrains Mono", monospace'; x.fillText('999.9   FINE', 512, 372);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.NoColorSpace; t.anisotropy = 8;
+  return t;
+}
 const metal = new THREE.MeshPhysicalMaterial({
-  color: 0xeef1f4, metalness: 1.0, roughness: 0.12, clearcoat: 0.5, clearcoatRoughness: 0.06,
+  color: 0xf2f4f6, metalness: 1.0, roughness: 0.07, clearcoat: 0.5, clearcoatRoughness: 0.05,
   envMapIntensity: 1.5, reflectivity: 1.0,
 });
+const ustMetal = metal.clone();
+ustMetal.bumpMap = damga(); ustMetal.bumpScale = 1.6; ustMetal.roughnessMap = puruz(); ustMetal.roughness = 1.0;
 const geo = kulce();
 const grup = new THREE.Group();
 scene.add(grup);
-const H1 = 0.62;
-// Piramit: altta 3, ortada 2, üstte 1; hafif rastgele dönüşler (sabit tohum) doğallık için
+const H1 = 0.5, GX = 1.04;
+// Profil resmindeki dizilim: uzun kenar derinlikte; altta 3 yan yana, üstte 2, en üstte 1
 const yerler = [
-  [-1.04, 0, 0.0, 0.010], [0, 0, 0.0, -0.006], [1.04, 0, 0.0, 0.008],
-  [-0.52, H1, 0.0, -0.004], [0.52, H1, 0.0, 0.006],
-  [0, 2 * H1, 0.0, 0.0],
+  [-GX, 0, 0, 0.012], [0, 0, 0, -0.006], [GX, 0, 0, 0.009],
+  [-GX / 2, H1, 0, -0.005], [GX / 2, H1, 0, 0.007],
+  [0, 2 * H1, 0, 0.0],
 ];
 for (const [x, y, z, r] of yerler) {
   const m = new THREE.Mesh(geo, metal);
   m.position.set(x, y + H1 / 2, z);
   m.rotation.y = r;
   m.castShadow = true; m.receiveShadow = true;
+  const ust = new THREE.Mesh(new THREE.PlaneGeometry(2.0 - 0.08, 1.0 - 0.08), ustMetal);
+  ust.rotation.x = -Math.PI / 2; ust.rotation.z = Math.PI / 2;    // yazı uzun kenar boyunca, önden okunur
+  ust.position.y = H1 / 2 + 0.0015;
+  m.add(ust);
   grup.add(m);
 }
 // Zemin: koyu, hafif parlak; külçelerin yansıması için aynalanmış kopya ve üstünde karartma
@@ -112,12 +146,12 @@ zemin.material = new THREE.ShadowMaterial({ color: 0x000000, opacity: 0.55 });  
 // Yansıma: külçelerin aynalanmış soluk kopyası, zeminden uzaklaştıkça siyaha karışır
 const yansima = grup.clone();
 yansima.scale.y = -1;
-yansima.traverse(o => { if (o.isMesh) { o.material = new THREE.MeshPhysicalMaterial({ color: 0xeef1f4, metalness: 1, roughness: 0.3, envMapIntensity: 0.55, transparent: true, opacity: 0.35, depthWrite: false }); o.castShadow = false; o.receiveShadow = false; } });
+yansima.traverse(o => { if (o.isMesh) { o.material = new THREE.MeshPhysicalMaterial({ color: 0xeef1f4, metalness: 1, roughness: 0.2, envMapIntensity: 0.8, transparent: true, opacity: 0.5, depthWrite: false }); o.castShadow = false; o.receiveShadow = false; } });
 scene.add(yansima);
 const solgun = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.ShaderMaterial({
   transparent: true, depthWrite: false,
   vertexShader: 'varying vec3 p; void main(){ p = (modelMatrix * vec4(position,1.0)).xyz; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
-  fragmentShader: 'varying vec3 p; void main(){ float d = max(abs(p.x)-1.6, 0.0); float z = abs(p.z); float a = smoothstep(0.35, 2.4, z) ; a = max(a, smoothstep(0.2, 2.0, d)); gl_FragColor = vec4(0.0,0.0,0.0,a); }',
+  fragmentShader: 'varying vec3 p; void main(){ float d = max(abs(p.x)-1.6, 0.0); float z = abs(p.z); float a = smoothstep(0.3, 3.0, z) ; a = max(a, smoothstep(0.2, 2.0, d)); gl_FragColor = vec4(0.0,0.0,0.0,a); }',
 }));
 solgun.rotation.x = -Math.PI / 2; solgun.position.y = 0.0015; solgun.renderOrder = 2;
 scene.add(solgun);
@@ -140,11 +174,11 @@ const yazi = document.getElementById('yazi'), alt = document.getElementById('alt
 
 window.kare = function (t) {
   const u = kenet(t / SURE);
-  const aci = -0.95 + 1.45 * u;                   // radyan: soldan sağa dolaş
-  const yar = 12.0 - 1.6 * yum(u);                // yaklaş
-  const yuk = 1.6 + 1.7 * yum(u);                 // yüksel
+  const aci = -1.3 + 0.75 * u;                   // soldan, külçeler çapraz dursun (profil resmi gibi)                   // radyan: soldan sağa dolaş
+  const yar = 12.0 - 1.4 * yum(u);                // yaklaş
+  const yuk = 2.0 + 1.4 * yum(u);                 // yüksel
   camera.position.set(Math.sin(aci) * yar, yuk, Math.cos(aci) * yar);
-  camera.lookAt(-1.35, 0.8, 0);   // külçeler sağda, yazı solda
+  camera.lookAt(0, 0.8, -1.6);   // külçeler sağda, yazı solda
   // çevre yansımaları yavaşça kayar (metal canlı görünsün)
   scene.environmentRotation.y = -0.9 * (t / SURE);   // kamerayla birlikte, yansımalar hep önde kalsın
   // gezen parıltı: 1,0–2,6 sn arasında üstten geçer
