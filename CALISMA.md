@@ -6,3 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
+| 2 Kas 2026 12:25 | Site reklam videosu için erkek spiker ses örnekleri (ses-ornek iş akışına metin/hız girdisi) | bot/ses.py, .github/workflows/ses-ornek.yml | reklam-ses / örnek bekleniyor |

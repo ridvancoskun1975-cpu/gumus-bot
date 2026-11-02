@@ -562,7 +562,7 @@ def rehber_seslendir(metinler, klasor, ad, ses=SES, anahtar_=None, deneme=False,
 
 # ---------------------------------------------------------------- komut satırı
 
-def ornek_sesler(sesler, klasor, metin=ORNEK_METIN, uslup=USLUP_ERKEK, anahtar_=None):
+def ornek_sesler(sesler, klasor, metin=ORNEK_METIN, uslup=USLUP_ERKEK, anahtar_=None, hiz=None):
     """Ses seçimi için örnek: her ses aynı metni bir kez okur (ses başına 1 okuma, yalnızca yedek model; ana
     modelin kotası paylaşıma kalır). Her biri telefonda açılsın diye siyah ekranlı mp4 olur: ses-1.mp4, ses-2.mp4…
     Dönüş: [(dosya adı, ses, süre sn)]. Günlük kota dolarsa kalanlar atlanır, hata yazılır."""
@@ -578,7 +578,7 @@ def ornek_sesler(sesler, klasor, metin=ORNEK_METIN, uslup=USLUP_ERKEK, anahtar_=
     sonuc = []
     for i, ad in enumerate(sesler, 1):
         try:
-            o = hizlandir(kirp(seslendir(okunur(metin), ses=ad, uslup=uslup, anahtar_=anahtar_, model=YEDEK_MODEL)))
+            o = hizlandir(kirp(seslendir(okunur(metin), ses=ad, uslup=uslup, anahtar_=anahtar_, model=YEDEK_MODEL)), hiz)
         except SesHatasi as e:
             print(f"Uyarı: {ad} okunamadı ({e})", file=sys.stderr)
             if "per day" in str(e) or "günlük" in str(e):
@@ -614,6 +614,8 @@ def main():
     ap.add_argument("--cinsiyet", default="female", choices=["female", "male"])
     ap.add_argument("--sesler", default="", help="ornek: virgülle ses adları, ör. Charon,Orus,Sadaltager")
     ap.add_argument("--uslup", default="", help="ornek: boşsa erkek anlatıcı üslubu (USLUP_ERKEK)")
+    ap.add_argument("--metin", default="", help="ornek: okunacak metin (boşsa ORNEK_METIN)")
+    ap.add_argument("--hiz", type=float, default=None, help="ornek: hız oranı (boşsa ses.HIZ)")
     ap.add_argument("--konu", type=int, default=3)
     ap.add_argument("--ses", default=SES)
     ap.add_argument("--dil", default="tr-TR")
@@ -629,7 +631,8 @@ def main():
         sesler = [x.strip() for x in a.sesler.split(",") if x.strip()]
         if not sesler:
             raise SystemExit("--sesler gerekli")
-        if not ornek_sesler(sesler, a.cikti, uslup=a.uslup.strip() or USLUP_ERKEK):
+        if not ornek_sesler(sesler, a.cikti, metin=a.metin.strip() or ORNEK_METIN, uslup=a.uslup.strip() or USLUP_ERKEK,
+                            hiz=a.hiz):
             raise SystemExit("Hiçbir ses örneği üretilemedi")
         return
     b = bilgi.BOLUMLER[a.konu - 1]

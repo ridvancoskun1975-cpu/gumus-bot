@@ -25,6 +25,14 @@ on:
         description: "ornek: okuma üslubu (İngilizce); boşsa erkek anlatıcı (ses.USLUP_ERKEK)"
         type: string
         default: ""
+      metin:
+        description: "ornek: okunacak metin; boşsa ses.ORNEK_METIN (pazar analizi örneği)"
+        type: string
+        default: ""
+      hiz:
+        description: "ornek: hız oranı, ör. 1.2; boşsa ses.HIZ (1.5)"
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -74,11 +82,13 @@ jobs:
           SESLER: ${{ inputs.sesler }}
           CINSIYET: ${{ inputs.cinsiyet }}
           USLUP: ${{ inputs.uslup }}
+          METIN: ${{ inputs.metin }}
+          HIZ: ${{ inputs.hiz }}
         run: |
           if [ "$KOMUT" = "sesler" ]; then
             python bot/ses.py sesler --cinsiyet "$CINSIYET"
           else
-            python bot/ses.py ornek --sesler "$SESLER" --uslup "$USLUP" --cikti ses-ornek
+            python bot/ses.py ornek --sesler "$SESLER" --uslup "$USLUP" --metin "$METIN" ${HIZ:+--hiz "$HIZ"} --cikti ses-ornek
           fi
 
       - name: Örnekleri sakla
