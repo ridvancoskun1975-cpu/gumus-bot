@@ -476,6 +476,7 @@ def sayfalar(v, gecmis, euro=None, arsiv=None):
         bas = onceki_yil_son if onceki_yil_son is not None else degerler[0]
         yil_ozet.append({
             "yil": y, "yol": f"gecmis/{y}/", "ilk": _tarih(kk[0][1]), "son_tarih": _tarih(kk[-1][1]),
+            "aralik": f"{_kisa(kk[0][1])} – {_kisa(kk[-1][1])}",
             "kismi_bas": onceki_yil_son is None, "devam": y == gun.year,
             "acilis": bot.tr_sayi(degerler[0]), "kapanis": bot.tr_sayi(degerler[-1]),
             "ortalama": bot.tr_sayi(sum(degerler) / len(degerler)),
@@ -494,6 +495,8 @@ def sayfalar(v, gecmis, euro=None, arsiv=None):
                        "kur_m": bot.tr_sayi(r["kur"]), "yol": yil_yol.get(r["yil"]),
                        "deg": bot.degisim(r["gram"], r["deg_once"]) if r["deg_once"] else None,
                        "ons_deg": bot.degisim(r["ons"], r["ons_once"]) if r["ons_once"] else None})
+    for a in yil_ozet:   # yıl sayfasında o yılın tablodaki ortalaması (kısmi yılda günlük ortalamayla karışmasın)
+        a["yillik"] = next((r for r in yillik if r["yil"] == a["yil"]), None)
     yillik_ilk, yillik_son = (yillik[0]["yil"], yillik[-1]["yil"]) if yillik else (None, None)
     yillik_ozet = {"ilk": yillik_ilk, "son": yillik_son,
                    "grafik_tl": _cubuk([(r["yil"], r["gram"]) for r in yillik], bot.tr_sayi),
