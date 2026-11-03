@@ -51,11 +51,16 @@ kontrol(not arsiv.gunluk_kayitlar(metal, {date(2025, 1, 1): 40.0}), "7 günden e
 
 # ---- Birleştirme: botun kayıtları üstün, arşiv yalnız ilk kayıttan önce
 kendi = {"2026-01-05": {"gumus": 99.0, "dolar": 43.0, "gram": 137.0}, "2026-01-06": {"gumus": 75, "dolar": 43, "gram": 103}}
+arsiv.AY_EN_AZ_GUN, _eski_az = 1, arsiv.AY_EN_AZ_GUN   # bu küçük örnekte ilk ay kırpması kapalı
 b = arsiv.birlesik(kendi, g)
+arsiv.AY_EN_AZ_GUN = _eski_az
 kontrol(list(b) == ["2026-01-01", "2026-01-02", "2026-01-05", "2026-01-06"], "birleşik sıralı")
 kontrol(b["2026-01-05"]["gumus"] == 99.0 and "kaynak" not in b["2026-01-05"], "aynı günde botun kaydı kalır")
 kontrol(b["2026-01-01"]["kaynak"] == arsiv.KAYNAK, "arşiv günü işaretli")
 kontrol(arsiv.birlesik(kendi, {}) == kendi, "arşiv yoksa yalnız botun kayıtları")
+tek = {"2025-10-31": g["2026-01-02"], **{f"2025-11-{d:02d}": g["2026-01-02"] for d in (3, 4, 5, 6, 7, 10)}}
+kontrol(min(arsiv.birlesik({"2026-10-13": kendi["2026-01-06"]}, tek)) == "2025-11-03",
+        "arşivin birkaç günlük ilk ayı (31 Ekim 2025) atılır")
 
 # ---- Okuma: kapalıyken ve bozuk dosyada boş
 with tempfile.TemporaryDirectory() as d:

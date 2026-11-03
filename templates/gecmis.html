@@ -96,7 +96,7 @@ Yıllık ortalama. Ons: ABD Jeolojik Araştırma Kurumu (<a href="{{ y.usgs_url 
     <p class="soluk ozet-satir">Açılış {{ s.ay.acilis }} ₺ · kapanış {{ s.ay.kapanis }} ₺ {{ deg(s.ay.deg) }} · en yüksek {{ s.ay.yuksek }} ₺ ({{ s.ay.yuksek_gun }}) · en düşük {{ s.ay.dusuk }} ₺ ({{ s.ay.dusuk_gun }}) · ortalama {{ s.ay.ortalama }} ₺ · {{ s.ay.gun }} iş günü.{% if s.ay.kismi %} Veriler bu ay başladığı için ay kısmidir; değişim ilk güne göredir.{% endif %}</p>
     {% elif s.tur == 'yil' %}{% set a = s.yil %}
     <p class="soluk ozet-satir">{% if a.devam %}Son ({{ a.son_tarih }}): <b>{{ a.kapanis }} ₺</b> {{ deg(a.deg) }} {{ 'yılbaşından bu yana' if not a.kismi_bas else a.ilk ~ ' gününden bu yana' }}.{% else %}Yıl sonu: <b>{{ a.kapanis }} ₺</b> {{ deg(a.deg) }}{% if a.kismi_bas %} ({{ a.ilk }} gününden bu yana){% endif %}.{% endif %}
-      Ortalama <b>{{ a.ortalama }} ₺</b> · en yüksek {{ a.yuksek }} ₺ ({{ a.yuksek_gun }}) · en düşük {{ a.dusuk }} ₺ ({{ a.dusuk_gun }}) · {{ a.gun }} iş günü.</p>
+      {% if a.kismi_bas %}{{ a.aralik }} ortalaması{% else %}Ortalama{% endif %} <b>{{ a.ortalama }} ₺</b> · en yüksek {{ a.yuksek }} ₺ ({{ a.yuksek_gun }}) · en düşük {{ a.dusuk }} ₺ ({{ a.dusuk_gun }}) · {{ a.gun }} iş günü.{% if a.yillik and a.yillik.kaynak == 'usgs' %} Bütün yılın ortalaması yaklaşık <b>{{ a.yillik.gram_m }} ₺</b> (<a href="{{ kok }}gecmis/yillik/">yıllara göre</a>).{% endif %}</p>
     {% elif s.tur == 'yillik' %}{% set r = s.son_tam %}
     <p class="soluk ozet-satir">{{ r.yil }} ortalaması yaklaşık <b>{{ r.gram_m }} ₺</b> (ons {{ r.ons_m }} $, dolar/TL {{ r.kur_m }}). {{ s.yillar.ilk }}–{{ s.yillar.son }} yıl yıl ortalamalar.</p>
     {% else %}

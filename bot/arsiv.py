@@ -62,6 +62,7 @@ YILLIK_KUR = {
     2023: 23.8197, 2024: 32.8700, 2025: 39.5700,
 }
 YIL_EN_AZ_GUN = 20   # USGS rakamı olmayan yılın satırı için en az günlük veri
+AY_EN_AZ_GUN = 5     # arşivin ilk ayı bundan az günse sayfalara girmez
 USGS_KAYNAK_URL = ("https://www.usgs.gov/centers/national-minerals-information-center/"
                    "silver-statistics-and-information")
 
@@ -96,6 +97,12 @@ def birlesik(gecmis, arsiv):
         return dict(sorted((arsiv or {}).items()))
     ilk = min(gecmis)
     once = {g: {**k, "kaynak": KAYNAK} for g, k in (arsiv or {}).items() if g < ilk}
+    # Arşivin ilk ayı birkaç günse (MetalCharts 1 yıllık geçmişi ayın sonundan başlayabilir; 3 Kasım 2026'da
+    # 31 Ekim 2025'ten başladı) o ay sayfası tek satırlık kalmasın diye atılır.
+    if once:
+        ilk_ay = min(once)[:7]
+        if sum(1 for g in once if g.startswith(ilk_ay)) < AY_EN_AZ_GUN:
+            once = {g: k for g, k in once.items() if not g.startswith(ilk_ay)}
     return dict(sorted({**once, **gecmis}.items()))
 
 
