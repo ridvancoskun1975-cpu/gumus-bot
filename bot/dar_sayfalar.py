@@ -23,6 +23,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import main as bot  # noqa: E402
 import bilgi  # noqa: E402
+import arsiv as arsiv_mod  # noqa: E402
 
 SON_GUN = 10          # sayfalardaki "son günler" tablosu
 PARITE_HAFTA = 8      # altın–gümüş oranı sayfasındaki haftalık kapanışlar
@@ -107,6 +108,63 @@ def _seyir(kayitlar, deger, bicim):
     return satirlar
 
 
+def _cizgi(noktalar, gen=400, yuk=170):
+    """[(gün, gram)] → çizgi grafiği verisi (bot/sayfa.py → _grafik ile aynı alanlar; şablon makrosu cizgi_grafik).
+    En az 3 nokta; yoksa None."""
+    if len(noktalar) < 3:
+        return None
+    ust, alt, yan = 24, 30, 6
+    degerler = [d for _, d in noktalar]
+    en_az, en_cok = min(degerler), max(degerler)
+    aralik = (en_cok - en_az) or 1
+    adim = (gen - 2 * yan) / (len(noktalar) - 1)
+
+    def y(d):
+        return round(ust + (en_cok - d) / aralik * (yuk - ust - alt), 1)
+
+    xy = [(round(yan + i * adim, 1), y(d)) for i, (_, d) in enumerate(noktalar)]
+    cizgi = " ".join(f"{a},{b}" for a, b in xy)
+    i_cok, i_az = degerler.index(en_cok), degerler.index(en_az)
+    return {
+        "gen": gen, "yuk": yuk, "cizgi": cizgi, "alan": f"{xy[0][0]},{yuk - alt} {cizgi} {xy[-1][0]},{yuk - alt}",
+        "taban": yuk - alt, "son": xy[-1],
+        "en_cok": {"x": xy[i_cok][0], "y": xy[i_cok][1], "deger": bot.tr_sayi(en_cok)},
+        "en_az": {"x": xy[i_az][0], "y": xy[i_az][1], "deger": bot.tr_sayi(en_az)},
+        "ilk_gun": _kisa(noktalar[0][0]), "son_gun": _kisa(noktalar[-1][0]), "gun_sayisi": len(noktalar),
+        "yon": "artis" if degerler[-1] >= degerler[0] else "dusus",
+        "aciklama": (f"{_kisa(noktalar[0][0])} – {_kisa(noktalar[-1][0])} gram gümüş: en yüksek {bot.tr_sayi(en_cok)} ₺, "
+                     f"en düşük {bot.tr_sayi(en_az)} ₺, son {bot.tr_sayi(degerler[-1])} ₺"),
+    }
+
+
+def _cubuk(degerler, bicim, gen=400, yuk=170):
+    """[(yıl, değer)] → çubuk grafiği: her yıl bir çubuk, ilk/son ve en yüksek çubuğun değeri yazılır."""
+    if len(degerler) < 2:
+        return None
+    ust, alt, yan = 22, 26, 2
+    en_cok = max(d for _, d in degerler) or 1
+    adim = (gen - 2 * yan) / len(degerler)
+    gen_c = max(adim * 0.68, 2)
+    cubuklar = []
+    i_cok = max(range(len(degerler)), key=lambda i: degerler[i][1])
+    son_i = len(degerler) - 1
+    yillar = [y for y, _ in degerler]
+    for i, (yil, d) in enumerate(degerler):
+        h = max((d / en_cok) * (yuk - ust - alt), 1.5)
+        x = yan + i * adim + (adim - gen_c) / 2
+        # Eksende ilk ve son yıl, arada 5'in katları; ilk/son yıla 2 yıldan yakın olan katlar yazılmaz (üst üste binmesin)
+        etiket = i in (0, son_i) or (yil % 5 == 0 and yil - yillar[0] > 2 and yillar[-1] - yil > 2)
+        cubuklar.append({"x": round(x, 1), "y": round(yuk - alt - h, 1), "g": round(gen_c, 1), "h": round(h, 1),
+                         "orta": round(x + gen_c / 2, 1), "yil": yil, "etiket": etiket, "deger": None})
+    # Değer yazıları: ilk, en yüksek ve son çubuk; yazı komşu çubukların da üstünde durur
+    for i in sorted({0, i_cok, son_i}):
+        komsu = [cubuklar[j]["y"] for j in range(max(0, i - 2), min(son_i, i + 2) + 1)]
+        cubuklar[i]["deger"] = bicim(degerler[i][1])
+        cubuklar[i]["yazi_y"] = round(max(min(komsu) - 6, 14), 1)
+    return {"gen": gen, "yuk": yuk, "taban": yuk - alt, "cubuklar": cubuklar,
+            "aciklama": "; ".join(f"{c['yil']}: {bicim(d)}" for c, (_, d) in zip(cubuklar, degerler))}
+
+
 # Sitenin güncelleme saatleri (sayfa.veri_hazirla → site_guncelleme; ör. "Hafta içi ~10:00, ~12:35, ~16:35 ve
 # ~20:00"). sayfalar() her üretimde doldurur; saatler elle yazılmaz (Rıdvan, 14 Ekim 2026). Yasal inceleme 17
 # (25 Ekim 2026): eski "günde iki kez" metni site 20 Ekim'den beri günde 4 kez güncellendiği için yanlıştı.
@@ -129,9 +187,10 @@ def _ortak_notlar(ek=None):
     return n
 
 
-def sayfalar(v, gecmis, euro=None):
+def sayfalar(v, gecmis, euro=None, arsiv=None):
     """Bütün dar arama sayfalarının verisi: [{yol, sablon, ...}]. v = sayfa.veri_hazirla() çıktısı;
-    euro = {ECB tarihi: EUR/TRY} (euro_kurlari(); yoksa euro sayfası üretilmez)."""
+    euro = {ECB tarihi: EUR/TRY} (euro_kurlari(); yoksa euro sayfası üretilmez); arsiv = bot/arsiv.py → oku()
+    (yalnız geçmiş sayfaları kullanır)."""
     _SITE_SAATLERI[0] = v.get("site_guncelleme")
     kayitlar = sorted((date.fromisoformat(g), k) for g, k in gecmis.items())
     gun, son = kayitlar[-1]
@@ -372,51 +431,121 @@ def sayfalar(v, gecmis, euro=None):
                + rehber_bag(4, "Altın/gümüş paritesi ne anlatır?"),
     )
 
-    # ---- Geçmiş fiyatlar
+    # ---- Geçmiş fiyatlar: yıl yıl, ay ay, gün gün (Rıdvan, 3 Kasım 2026: "Kullanıcılar geçmiş bilgilerle erişmek
+    # istiyor. Ay ay yıl yil" → "1 ve 2"). Günler: botun kayıtları + ondan önceki ~12 ay MetalCharts günlük kapanışı
+    # (bot/arsiv.py; yalnız bu bölümde kullanılır, öteki sayfalar ve paylaşımlar yalnız botun kayıtlarını okur).
+    # Yıllar: USGS yıllık ortalama × ECB yıllık ortalama kur; içinde bulunulan yıl günlük verilerden.
+    gunluk = arsiv_mod.birlesik(gecmis, arsiv or {})
+    gk = [(date.fromisoformat(g), k) for g, k in gunluk.items()]
+    kendi_ilk = kayitlar[0][0]
+    arsivli = gk[0][0] < kendi_ilk
+
+    def satir(i, g, k):
+        return {"tarih": f"{g.day:02d}.{g.month:02d}.{g.year}", "gun": bot.GUN_KISA[g.weekday()],
+                "saat": k.get("saat", ""), "gram": bot.tr_sayi(k["gram"]), "ons": bot.tr_sayi(k["gumus"]),
+                "dolar": bot.tr_sayi(k["dolar"]), "arsiv": k.get("kaynak") == arsiv_mod.KAYNAK,
+                "deg": bot.degisim(k["gram"], gk[i - 1][1]["gram"]) if i > 0 else None}
+
     aylar = {}
-    for g, k in kayitlar:
-        aylar.setdefault((g.year, g.month), []).append((g, k))
+    for i, (g, k) in enumerate(gk):
+        aylar.setdefault((g.year, g.month), []).append((i, g, k))
     ay_ozet = []
     onceki_son = None
     for (y, m), kk in aylar.items():
-        degerler = [k["gram"] for _, k in kk]
+        degerler = [k["gram"] for _, _, k in kk]
         bas = onceki_son if onceki_son is not None else degerler[0]
-        ay_ozet.append({"ad": f"{bot.AYLAR[m - 1]} {y}", "yol": f"gecmis/{y}-{m:02d}/",
+        i_cok, i_az = degerler.index(max(degerler)), degerler.index(min(degerler))
+        ay_ozet.append({"ad": f"{bot.AYLAR[m - 1]} {y}", "kisa_ad": bot.AYLAR[m - 1], "yol": f"gecmis/{y}-{m:02d}/",
                         "acilis": bot.tr_sayi(degerler[0]), "kapanis": bot.tr_sayi(degerler[-1]),
                         "yuksek": bot.tr_sayi(max(degerler)), "dusuk": bot.tr_sayi(min(degerler)),
+                        "yuksek_gun": _kisa(kk[i_cok][1]), "dusuk_gun": _kisa(kk[i_az][1]),
+                        "ortalama": bot.tr_sayi(sum(degerler) / len(degerler)),
                         "deg": bot.degisim(degerler[-1], bas), "gun": len(kk), "kismi": onceki_son is None,
-                        "kayitlar": kk, "y": y, "m": m, "son": kk[-1][0]})
+                        "arsiv": sum(1 for _, _, k in kk if k.get("kaynak") == arsiv_mod.KAYNAK),
+                        "satirlar": [satir(i, g, k) for i, g, k in reversed(kk)],
+                        "y": y, "m": m, "son": kk[-1][1]})
         onceki_son = degerler[-1]
+
+    # Yıl sayfaları: günlük verisi olan yıllar (ilk yıl kısmi olabilir)
+    yil_ozet = []
+    onceki_yil_son = None
+    for y in sorted({g.year for g, _ in gk}):
+        kk = [(i, g, k) for i, (g, k) in enumerate(gk) if g.year == y]
+        degerler = [k["gram"] for _, _, k in kk]
+        i_cok, i_az = degerler.index(max(degerler)), degerler.index(min(degerler))
+        bas = onceki_yil_son if onceki_yil_son is not None else degerler[0]
+        yil_ozet.append({
+            "yil": y, "yol": f"gecmis/{y}/", "ilk": _tarih(kk[0][1]), "son_tarih": _tarih(kk[-1][1]),
+            "kismi_bas": onceki_yil_son is None, "devam": y == gun.year,
+            "acilis": bot.tr_sayi(degerler[0]), "kapanis": bot.tr_sayi(degerler[-1]),
+            "ortalama": bot.tr_sayi(sum(degerler) / len(degerler)),
+            "yuksek": bot.tr_sayi(max(degerler)), "yuksek_gun": _tarih(kk[i_cok][1]),
+            "dusuk": bot.tr_sayi(min(degerler)), "dusuk_gun": _tarih(kk[i_az][1]),
+            "deg": bot.degisim(degerler[-1], bas), "gun": len(kk),
+            "aylar": [a for a in reversed(ay_ozet) if a["y"] == y],
+            "grafik": _cizgi([(g, k["gram"]) for _, g, k in kk]), "son": kk[-1][1],
+            "arsiv": sum(1 for _, _, k in kk if k.get("kaynak") == arsiv_mod.KAYNAK)})
+        onceki_yil_son = degerler[-1]
+    yil_yol = {a["yil"]: a["yol"] for a in yil_ozet}
+
+    yillik = []
+    for r in arsiv_mod.yillik_satirlar(gunluk, gun):
+        yillik.append({**r, "gram_m": bot.tr_sayi(r["gram"]), "ons_m": bot.tr_sayi(r["ons"]),
+                       "kur_m": bot.tr_sayi(r["kur"]), "yol": yil_yol.get(r["yil"]),
+                       "deg": bot.degisim(r["gram"], r["deg_once"]) if r["deg_once"] else None,
+                       "ons_deg": bot.degisim(r["ons"], r["ons_once"]) if r["ons_once"] else None})
+    yillik_ilk, yillik_son = (yillik[0]["yil"], yillik[-1]["yil"]) if yillik else (None, None)
+    yillik_ozet = {"ilk": yillik_ilk, "son": yillik_son,
+                   "grafik_tl": _cubuk([(r["yil"], r["gram"]) for r in yillik], bot.tr_sayi),
+                   "grafik_usd": _cubuk([(r["yil"], r["ons"]) for r in yillik], bot.tr_sayi),
+                   "satirlar": list(reversed(yillik)), "usgs_url": arsiv_mod.USGS_KAYNAK_URL}
+    kaynak_notu = {"arsivli": arsivli, "kendi_ilk": _tarih(kendi_ilk), "arsiv_ilk": _tarih(gk[0][0]),
+                   "arsiv_son": _tarih(gk[[g for g, _ in gk].index(kendi_ilk) - 1][0]) if arsivli else None}
+    ortak_gecmis = {"yillar": yillik_ozet, "kaynak_notu": kaynak_notu, "ilk": _tarih(gk[0][0])}
+
     dun = kayitlar[-2] if len(kayitlar) > 1 else None
     ekle(
-        sablon="gecmis.html", yol=yollar["gecmis"], kisa="Gümüş fiyatları geçmiş", grup="Geçmiş",
-        title=f"Gram Gümüş Geçmiş Fiyatları: Dün, Haftalık, Aylık · {tarih_kisa}",
-        desc=f"Gram gümüşün geçmiş fiyatları: dün {bot.tr_sayi(dun[1]['gram']) + ' ₺' if dun else '—'}, son "
+        sablon="gecmis.html", yol=yollar["gecmis"], kisa="Gümüş fiyatları geçmiş", grup="Geçmiş", tur="merkez",
+        title=f"Gram Gümüş Geçmiş Fiyatları: Yıllık, Aylık, Günlük · {tarih_kisa}",
+        desc=f"Gram gümüşün geçmiş fiyatları: {yillik_ilk}–{yillik_son} yıl yıl ortalama, ay ay açılış–kapanış ve "
+             f"gün gün tablo. Dün {bot.tr_sayi(dun[1]['gram']) + ' ₺' if dun else '—'}, son {tarih} {bot.tr_sayi(gram)} ₺."
+             if yillik else
+             f"Gram gümüşün geçmiş fiyatları: dün {bot.tr_sayi(dun[1]['gram']) + ' ₺' if dun else '—'}, son "
              f"{tarih} {bot.tr_sayi(gram)} ₺. Gün gün tablo ve aylık özet (açılış, kapanış, en yüksek, en düşük).",
         h1="Gram gümüş geçmiş fiyatları",
         dun=({"tarih": _tarih(dun[0]), "gram": bot.tr_sayi(dun[1]["gram"])} if dun else None),
-        aylar=list(reversed(ay_ozet)),
-        satirlar=[
-            {"tarih": f"{g.day:02d}.{g.month:02d}.{g.year}", "gun": bot.GUN_KISA[g.weekday()], "saat": k.get("saat", ""),
-             "gram": bot.tr_sayi(k["gram"]), "ons": bot.tr_sayi(k["gumus"]), "dolar": bot.tr_sayi(k["dolar"]),
-             "deg": bot.degisim(k["gram"], kayitlar[i - 1][1]["gram"]) if i > 0 else None}
-            for i, (g, k) in reversed(list(enumerate(kayitlar)))][:GECMIS_SATIR],
-        ilk=_tarih(kayitlar[0][0]),
+        aylar=list(reversed(ay_ozet)), yil_listesi=list(reversed(yil_ozet)),
+        satirlar=[satir(i, g, k) for i, (g, k) in reversed(list(enumerate(gk)))][:GECMIS_SATIR],
+        **ortak_gecmis,
     )
+    if yillik:
+        son_tam = next((r for r in reversed(yillik) if not r["kismi"]), yillik[-1])
+        ekle(
+            sablon="gecmis.html", yol="gecmis/yillik/", kisa="Yıllara göre gümüş fiyatı", grup="Geçmiş", tur="yillik",
+            title=f"Yıllara Göre Gram Gümüş Fiyatı ({yillik_ilk}–{yillik_son}): Yıllık Ortalama",
+            desc=f"Gram gümüşün yıllık ortalama fiyatı {yillik_ilk}–{yillik_son}: {son_tam['yil']} ortalaması yaklaşık "
+                 f"{son_tam['gram_m']} ₺ (ons {son_tam['ons_m']} $, dolar/TL {son_tam['kur_m']}). Yıl yıl tablo ve grafik.",
+            h1="Yıllara göre gram gümüş fiyatı", son_tam=son_tam, lastmod=gun,
+            **ortak_gecmis,
+        )
+    for a in reversed(yil_ozet):
+        ekle(
+            sablon="gecmis.html", yol=a["yol"], kisa=f"{a['yil']} gümüş fiyatları", grup="Geçmiş", tur="yil", yil=a,
+            title=f"{a['yil']} Gram Gümüş Fiyatları: Aylık Tablo ve Grafik",
+            desc=f"{a['yil']} gram gümüş fiyatları: ortalama {a['ortalama']} ₺, en yüksek {a['yuksek']} ₺ "
+                 f"({a['yuksek_gun']}), en düşük {a['dusuk']} ₺ ({a['dusuk_gun']}). Ay ay açılış, kapanış ve değişim.",
+            h1=f"{a['yil']} gram gümüş fiyatları", lastmod=a["son"],
+            **ortak_gecmis,
+        )
     for a in ay_ozet:
         ekle(
-            sablon="gecmis.html", yol=a["yol"], kisa=f"{a['ad']} gümüş fiyatları", grup="Geçmiş", ay=a,
+            sablon="gecmis.html", yol=a["yol"], kisa=f"{a['ad']} gümüş fiyatları", grup="Geçmiş", tur="ay", ay=a,
             title=f"{a['ad']} Gram Gümüş Fiyatları: Gün Gün Tablo",
             desc=f"{a['ad']} gram gümüş fiyatları: açılış {a['acilis']} ₺, kapanış {a['kapanis']} ₺, en yüksek "
                  f"{a['yuksek']} ₺, en düşük {a['dusuk']} ₺. Gün gün tablo.",
             h1=f"{a['ad']} gram gümüş fiyatları",
-            lastmod=a["son"],
-            satirlar=[{"tarih": f"{g.day:02d}.{g.month:02d}.{g.year}", "gun": bot.GUN_KISA[g.weekday()],
-                       "saat": k.get("saat", ""), "gram": bot.tr_sayi(k["gram"]), "ons": bot.tr_sayi(k["gumus"]),
-                       "dolar": bot.tr_sayi(k["dolar"]),
-                       "deg": bot.degisim(k["gram"], a["kayitlar"][i - 1][1]["gram"]) if i > 0 else None}
-                      for i, (g, k) in reversed(list(enumerate(a["kayitlar"])))],
-            ilk=_tarih(kayitlar[0][0]),
+            lastmod=a["son"], satirlar=a["satirlar"], yil_yol=yil_yol.get(a["y"]),
+            **ortak_gecmis,
         )
 
     # ---- Rehber bölümleri: her biri kendi adresinde
@@ -470,9 +599,9 @@ def euro_kurlari(gecmis):
         return {}
 
 
-def uret(cikti, env, v, gecmis, euro=None):
+def uret(cikti, env, v, gecmis, euro=None, arsiv=None):
     """Sayfaları yazar; site haritası için [(adres, son değişiklik)] döndürür. euro verilmezse ECB'den alınır."""
-    liste = sayfalar(v, gecmis, euro_kurlari(gecmis) if euro is None else euro)
+    liste = sayfalar(v, gecmis, euro_kurlari(gecmis) if euro is None else euro, arsiv)
     son = max(date.fromisoformat(g) for g in gecmis)
     harita = []
     for s in liste:
