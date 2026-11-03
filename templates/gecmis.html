@@ -1,5 +1,7 @@
-{#- Geçmiş fiyatlar (bot/dar_sayfalar.py → site/gecmis/ ve site/gecmis/YYYY-AA/): botun günlük kayıtları.
-    s.ay varsa tek ayın sayfası, yoksa genel sayfa (dün, aylık özet, son günler). -#}
+{#- Geçmiş fiyatlar (bot/dar_sayfalar.py → site/gecmis/, gecmis/yillik/, gecmis/YYYY/, gecmis/YYYY-AA/).
+    s.tur: merkez (genel sayfa) | yillik (yıllara göre) | yil (tek yıl, ay ay) | ay (tek ay, gün gün).
+    Günler botun kayıtları + ondan önceki ~12 ay MetalCharts günlük kapanışı (bot/arsiv.py); yıllar USGS yıllık
+    ortalaması × ECB yıllık ortalama kur (Rıdvan, 3 Kasım 2026: "Ay ay yıl yil", "1 ve 2"). -#}
 {% extends "taban.html" %}
 {% block bas %}
 <title>{{ s.title }}</title>
@@ -19,44 +21,154 @@
 .yol a { color: var(--soluk); }
 .tablo-kap { overflow-x: auto; }
 .tablo-kap td, .tablo-kap th { white-space: nowrap; }
+.isaret { color: var(--soluk); font-size: 0.8em; margin-left: 2px; }
+.ozet-satir { margin: 8px 0 0; }
+.ozet-satir b { color: var(--yazi); }
+.grafik .cubuk { fill: #8C96A3; }
+.grafik .cubuk.son { fill: var(--vurgu); }
+.yillar-kisa { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 0; padding: 0; list-style: none; }
+.yillar-kisa a { display: inline-block; padding: 6px 12px; border: 1px solid var(--cizgi); border-radius: 999px;
+  text-decoration: none; color: var(--yazi); }
 {% endblock %}
 {% block icerik %}
 {% from "tanitim.html" import kart with context %}
 {%- macro deg(d) -%}
 {%- if d -%}<span class="deg {{ d.yon }}"><span aria-hidden="true">{{ d.isaret }}</span> {{ d.metin }}</span>{%- endif -%}
 {%- endmacro -%}
-  <nav class="yol" aria-label="Konum"><a href="{{ kok }}">Gram gümüş fiyatı</a> › {% if s.ay %}<a href="{{ kok }}gecmis/">Geçmiş fiyatlar</a> › {{ s.ay.ad }}{% else %}Geçmiş fiyatlar{% endif %}</nav>
+{%- macro cizgi_grafik(g, kimlik) -%}
+<svg class="grafik" viewBox="0 0 {{ g.gen }} {{ g.yuk }}" role="img" aria-label="{{ g.aciklama }}">
+  <defs><linearGradient id="{{ kimlik }}" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="{{ '#5BC98C' if g.yon == 'artis' else '#F07A6A' }}" stop-opacity=".22"/>
+    <stop offset="1" stop-color="{{ '#5BC98C' if g.yon == 'artis' else '#F07A6A' }}" stop-opacity="0"/></linearGradient></defs>
+  <line x1="0" x2="{{ g.gen }}" y1="{{ g.taban }}" y2="{{ g.taban }}" stroke="#2C313A"/>
+  <polygon points="{{ g.alan }}" fill="url(#{{ kimlik }})"/>
+  <polyline points="{{ g.cizgi }}" fill="none" stroke="{{ '#5BC98C' if g.yon == 'artis' else '#F07A6A' }}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="{{ g.son[0] }}" cy="{{ g.son[1] }}" r="4.5" fill="#EDEFF2"/>
+  <text x="{{ [[g.en_cok.x, 34]|max, g.gen - 34]|min }}" y="{{ [g.en_cok.y - 9, 15]|max }}" text-anchor="middle">{{ g.en_cok.deger }}</text>
+  <text x="{{ [[g.en_az.x, 34]|max, g.gen - 34]|min }}" y="{{ [g.en_az.y + 20, g.taban - 5]|min }}" text-anchor="middle">{{ g.en_az.deger }}</text>
+  <text class="ek" x="0" y="{{ g.yuk - 8 }}">{{ g.ilk_gun }}</text>
+  <text class="ek" x="{{ g.gen }}" y="{{ g.yuk - 8 }}" text-anchor="end">{{ g.son_gun }}</text>
+</svg>
+{%- endmacro -%}
+{%- macro cubuk_grafik(g) -%}
+<svg class="grafik" viewBox="0 0 {{ g.gen }} {{ g.yuk }}" role="img" aria-label="{{ g.aciklama }}">
+  <line x1="0" x2="{{ g.gen }}" y1="{{ g.taban }}" y2="{{ g.taban }}" stroke="#2C313A"/>
+  {% for c in g.cubuklar %}<rect class="cubuk{{ ' son' if loop.last }}" x="{{ c.x }}" y="{{ c.y }}" width="{{ c.g }}" height="{{ c.h }}" rx="1.5"/>
+  {% if c.deger %}<text x="{{ [[c.orta, 26]|max, g.gen - 26]|min }}" y="{{ c.yazi_y }}" text-anchor="middle">{{ c.deger }}</text>{% endif %}
+  {% if c.etiket %}<text class="ek" x="{{ [[c.orta, 16]|max, g.gen - 16]|min }}" y="{{ g.yuk - 7 }}" text-anchor="middle">{{ c.yil }}</text>{% endif %}
+  {% endfor %}
+</svg>
+{%- endmacro -%}
+{%- macro gun_tablosu(satirlar) -%}
+{%- set karisik = (satirlar|selectattr('arsiv')|list|length > 0) and (satirlar|rejectattr('arsiv')|list|length > 0) -%}
+    <div class="tablo-kap"><table>
+      <thead><tr><th>Tarih</th><th class="s">Gram (₺)</th><th class="s">Değişim</th><th class="s">Ons ($)</th><th class="s">Dolar/TL</th></tr></thead>
+      <tbody>{% for r in satirlar %}<tr><td><span class="sayi">{{ r.tarih }}</span> <span class="soluk">{{ r.gun }}</span>{% if karisik and r.arsiv %}<span class="isaret" aria-label="günlük kapanış">†</span>{% endif %}</td><td class="s">{{ r.gram }}</td><td class="s">{{ deg(r.deg) if r.deg else '—' }}</td><td class="s">{{ r.ons }}</td><td class="s">{{ r.dolar }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    <p class="not">{% if karisik %}† Günlük kapanış. {% endif %}{{ gun_notu() }}</p>
+{%- endmacro -%}
+{%- macro gun_notu() -%}
+{%- set k = s.kaynak_notu -%}
+Her iş gününün son değeri: {{ k.kendi_ilk }} gününden beri botun akşam kaydı (genelde ~20:00){% if k.arsivli %}; {{ k.arsiv_ilk }} – {{ k.arsiv_son }} arası günlük kapanış (ons gümüş: MetalCharts geçmiş verisi) ile o günün ECB kuru{% endif %}. Gram = ons × dolar/TL ÷ 31,1035; dolar/TL ECB referans kuru.
+{%- endmacro -%}
+{%- macro yil_tablosu(satirlar, tam) -%}
+    <div class="tablo-kap"><table>
+      <thead><tr><th>Yıl</th><th class="s">Gram (₺) ≈</th><th class="s">Değişim</th>{% if tam %}<th class="s">Ons ($)</th><th class="s">Dolar/TL</th>{% endif %}</tr></thead>
+      <tbody>{% for r in satirlar %}<tr><td>{% if r.yol %}<a href="{{ kok }}{{ r.yol }}">{{ r.yil }}</a>{% else %}{{ r.yil }}{% endif %}{% if r.kismi %} <span class="soluk">*</span>{% endif %}</td><td class="s">{{ r.gram_m }}</td><td class="s">{{ deg(r.deg) if r.deg else '—' }}</td>{% if tam %}<td class="s">{{ r.ons_m }}</td><td class="s">{{ r.kur_m }}</td>{% endif %}</tr>{% endfor %}</tbody>
+    </table></div>
+{%- endmacro -%}
+{%- macro yil_notu() -%}
+{%- set y = s.yillar -%}
+{%- set kismi = y.satirlar|selectattr('kismi')|first -%}
+Yıllık ortalama. Ons: ABD Jeolojik Araştırma Kurumu (<a href="{{ y.usgs_url }}">USGS</a>) yıllık ortalama gümüş fiyatı{% for r in y.satirlar if r.kaynak == 'gunluk' %}{% if loop.first %}; {% endif %}{{ r.yil }}{{ ', ' if not loop.last }}{% if loop.last %}: günlük verilerin ortalaması{% endif %}{% endfor %}. Dolar/TL: ECB referans kurlarının yıllık ortalaması. Gram ≈ ortalama ons × ortalama dolar/TL ÷ 31,1035; ortalamaların çarpımı olduğu için yaklaşıktır.{% if kismi %} * {{ kismi.yil }}: yılbaşından bu yana ({{ kismi.gun }} iş günü).{% endif %}
+{%- endmacro -%}
+
+  <nav class="yol" aria-label="Konum"><a href="{{ kok }}">Gram gümüş fiyatı</a> ›
+    {%- if s.tur == 'merkez' %} Geçmiş fiyatlar
+    {%- else %} <a href="{{ kok }}gecmis/">Geçmiş fiyatlar</a> ›
+      {%- if s.tur == 'yillik' %} Yıllara göre
+      {%- elif s.tur == 'yil' %} {{ s.yil.yil }}
+      {%- else %}{% if s.yil_yol %} <a href="{{ kok }}{{ s.yil_yol }}">{{ s.ay.y }}</a> ›{% endif %} {{ s.ay.kisa_ad }}{% endif %}
+    {%- endif %}</nav>
   <section aria-labelledby="baslik" style="padding-top: 12px">
     <h1 id="baslik" style="font-size: 28px">{{ s.h1 }}</h1>
-    {% if s.ay %}
-    <p class="soluk" style="margin: 8px 0 0">Açılış {{ s.ay.acilis }} ₺ · kapanış {{ s.ay.kapanis }} ₺ {{ deg(s.ay.deg) }} · en yüksek {{ s.ay.yuksek }} ₺ · en düşük {{ s.ay.dusuk }} ₺ · {{ s.ay.gun }} iş günü kaydı.{% if s.ay.kismi %} Kayıtlar bu ay başladığı için ay kısmidir; değişim ilk kayda göredir.{% endif %}</p>
+    {% if s.tur == 'ay' %}
+    <p class="soluk ozet-satir">Açılış {{ s.ay.acilis }} ₺ · kapanış {{ s.ay.kapanis }} ₺ {{ deg(s.ay.deg) }} · en yüksek {{ s.ay.yuksek }} ₺ ({{ s.ay.yuksek_gun }}) · en düşük {{ s.ay.dusuk }} ₺ ({{ s.ay.dusuk_gun }}) · ortalama {{ s.ay.ortalama }} ₺ · {{ s.ay.gun }} iş günü.{% if s.ay.kismi %} Veriler bu ay başladığı için ay kısmidir; değişim ilk güne göredir.{% endif %}</p>
+    {% elif s.tur == 'yil' %}{% set a = s.yil %}
+    <p class="soluk ozet-satir">{% if a.devam %}Son ({{ a.son_tarih }}): <b>{{ a.kapanis }} ₺</b> {{ deg(a.deg) }} {{ 'yılbaşından bu yana' if not a.kismi_bas else a.ilk ~ ' gününden bu yana' }}.{% else %}Yıl sonu: <b>{{ a.kapanis }} ₺</b> {{ deg(a.deg) }}{% if a.kismi_bas %} ({{ a.ilk }} gününden bu yana){% endif %}.{% endif %}
+      Ortalama <b>{{ a.ortalama }} ₺</b> · en yüksek {{ a.yuksek }} ₺ ({{ a.yuksek_gun }}) · en düşük {{ a.dusuk }} ₺ ({{ a.dusuk_gun }}) · {{ a.gun }} iş günü.</p>
+    {% elif s.tur == 'yillik' %}{% set r = s.son_tam %}
+    <p class="soluk ozet-satir">{{ r.yil }} ortalaması yaklaşık <b>{{ r.gram_m }} ₺</b> (ons {{ r.ons_m }} $, dolar/TL {{ r.kur_m }}). {{ s.yillar.ilk }}–{{ s.yillar.son }} yıl yıl ortalamalar.</p>
     {% else %}
-    <p class="soluk" style="margin: 8px 0 0">Son: <b style="color: var(--yazi)">{{ gram }} ₺</b> ({{ s.son_gun }}).{% if s.dun %} Bir önceki iş günü ({{ s.dun.tarih }}): <b style="color: var(--yazi)">{{ s.dun.gram }} ₺</b>.{% endif %}</p>
+    <p class="soluk ozet-satir">Son: <b>{{ gram }} ₺</b> ({{ s.son_gun }}).{% if s.dun %} Bir önceki iş günü ({{ s.dun.tarih }}): <b>{{ s.dun.gram }} ₺</b>.{% endif %}</p>
     {% endif %}
   </section>
   {{ kart() }}
 
-  {% if not s.ay and s.aylar %}
+  {% if s.tur == 'merkez' %}
+  {% if s.yillar.satirlar %}
+  <section aria-labelledby="h-yillar">
+    <h2 id="h-yillar">Yıllara göre</h2>
+    {{ yil_tablosu(s.yillar.satirlar[:6], false) }}
+    {%- set kismi = s.yillar.satirlar|selectattr('kismi')|first %}
+    <p class="not">Yıllık ortalama, yaklaşık (USGS yıllık ortalama ons × ECB yıllık ortalama kur).{% if kismi %} * {{ kismi.yil }}: yılbaşından bu yana.{% endif %}</p>
+    <div class="dugmeler"><a class="dugme ikincil" href="{{ kok }}gecmis/yillik/">Bütün yıllar ve grafik →</a></div>
+  </section>
+  {% endif %}
+  {% if s.aylar %}
   <section aria-labelledby="h-aylar">
-    <h2 id="h-aylar">Aylık özet</h2>
+    <h2 id="h-aylar">Aylara göre</h2>
+    {% if s.yil_listesi|length > 1 %}<ul class="yillar-kisa">{% for a in s.yil_listesi %}<li><a href="{{ kok }}{{ a.yol }}">{{ a.yil }}</a></li>{% endfor %}</ul>{% endif %}
     <div class="tablo-kap"><table>
       <thead><tr><th>Ay</th><th class="s">Kapanış</th><th class="s">Değişim</th><th class="s">En yüksek</th><th class="s">En düşük</th></tr></thead>
       <tbody>{% for a in s.aylar %}<tr><td><a href="{{ kok }}{{ a.yol }}">{{ a.ad }}</a></td><td class="s">{{ a.kapanis }} ₺</td><td class="s">{{ deg(a.deg) }}</td><td class="s">{{ a.yuksek }}</td><td class="s">{{ a.dusuk }}</td></tr>{% endfor %}</tbody>
     </table></div>
+    <p class="not">Ayın son iş gününün değeri ve bir önceki ayın son değerine göre değişim.{% if s.aylar[-1].kismi %} {{ s.aylar[-1].ad }} kısmidir (veriler {{ s.ilk }} günü başlıyor).{% endif %}</p>
+  </section>
+  {% endif %}
+  <section aria-labelledby="h-gun">
+    <h2 id="h-gun">Son günler</h2>
+    {{ gun_tablosu(s.satirlar) }}
+  </section>
+
+  {% elif s.tur == 'yillik' %}
+  <section aria-labelledby="h-tl">
+    <h2 id="h-tl">Gram gümüş, yıllık ortalama (₺)</h2>
+    {% if s.yillar.grafik_tl %}{{ cubuk_grafik(s.yillar.grafik_tl) }}{% endif %}
+    <h2 id="h-usd" style="margin-top: 18px">Ons gümüş, yıllık ortalama ($)</h2>
+    {% if s.yillar.grafik_usd %}{{ cubuk_grafik(s.yillar.grafik_usd) }}{% endif %}
+    <p class="not" style="margin-top: 0">Türk lirasıyla fiyat, gümüşün dolar fiyatı ve dolar/TL kurunun birlikte etkisini gösterir; dolarla ons fiyatı yalnız gümüşün kendi seyrini.</p>
+  </section>
+  <section aria-labelledby="h-tablo">
+    <h2 id="h-tablo">Yıl yıl tablo</h2>
+    {{ yil_tablosu(s.yillar.satirlar, true) }}
+    <p class="not">{{ yil_notu() }}</p>
+  </section>
+
+  {% elif s.tur == 'yil' %}{% set a = s.yil %}
+  <section aria-labelledby="h-seyir">
+    <h2 id="h-seyir">{{ a.yil }} seyri</h2>
+    {% if a.grafik %}{{ cizgi_grafik(a.grafik, 'dolgu-yil') }}
+    <p class="not" style="margin-top: 0">{{ a.gun }} iş günü, gram gümüş (₺).</p>{% endif %}
+  </section>
+  <section aria-labelledby="h-aylar">
+    <h2 id="h-aylar">Ay ay</h2>
+    <div class="tablo-kap"><table>
+      <thead><tr><th>Ay</th><th class="s">Kapanış</th><th class="s">Değişim</th><th class="s">En yüksek</th><th class="s">En düşük</th></tr></thead>
+      <tbody>{% for m in a.aylar %}<tr><td><a href="{{ kok }}{{ m.yol }}">{{ m.kisa_ad }}</a></td><td class="s">{{ m.kapanis }} ₺</td><td class="s">{{ deg(m.deg) }}</td><td class="s">{{ m.yuksek }}</td><td class="s">{{ m.dusuk }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    <p class="not">{{ gun_notu() }} <a href="{{ kok }}gecmis/yillik/">Yıllara göre ortalamalar →</a></p>
+  </section>
+
+  {% else %}
+  <section aria-labelledby="h-gun">
+    <h2 id="h-gun">Gün gün</h2>
+    {{ gun_tablosu(s.satirlar) }}
   </section>
   {% endif %}
 
-  <section aria-labelledby="h-gun">
-    <h2 id="h-gun">{% if s.ay %}Gün gün{% else %}Son günler{% endif %}</h2>
-    <div class="tablo-kap"><table>
-      <thead><tr><th>Tarih</th><th class="s">Gram (₺)</th><th class="s">Değişim</th><th class="s">Ons ($)</th><th class="s">Dolar/TL</th></tr></thead>
-      <tbody>{% for r in s.satirlar %}<tr><td><span class="sayi">{{ r.tarih }}</span> <span class="soluk">{{ r.gun }}</span></td><td class="s">{{ r.gram }}</td><td class="s">{{ deg(r.deg) if r.deg else '—' }}</td><td class="s">{{ r.ons }}</td><td class="s">{{ r.dolar }}</td></tr>{% endfor %}</tbody>
-    </table></div>
-    <p class="not">Her iş gününün son değeri (genelde akşam paylaşımı). Kayıtlar {{ s.ilk }} günü başladı; daha eskisi yok. Gram = ons × dolar/TL ÷ 31,1035; dolar/TL ECB referans kuru.</p>
-  </section>
-
   <section aria-label="Kaynaklar">
-    <p class="not">Kaynak: metal fiyatları <a href="{{ kaynak.metal_url }}">{{ kaynak.metal_ad }}</a>; dolar/TL <a href="{{ kaynak.kur_url }}">{{ kaynak.kur_ad }}</a> (ECB). Bilgi amaçlıdır, yatırım tavsiyesi değildir.</p>
-    <div class="dugmeler"><a class="dugme ikincil" href="{{ kok }}hesap/">Hesap makinesi</a></div>
+    <p class="not">Kaynak: metal fiyatları <a href="{{ kaynak.metal_url }}">{{ kaynak.metal_ad }}</a>{% if s.tur in ('merkez', 'yillik') %}, yıllık ortalamalar <a href="{{ s.yillar.usgs_url }}">USGS</a>{% endif %}; dolar/TL <a href="{{ kaynak.kur_url }}">{{ kaynak.kur_ad }}</a> (ECB, euro çaprazından hesaplandı). Bilgi amaçlıdır, yatırım tavsiyesi değildir.</p>
+    <div class="dugmeler"><a class="dugme ikincil" href="{{ kok }}hesap/">Hesap makinesi</a>{% if s.tur != 'merkez' %} <a class="dugme ikincil" href="{{ kok }}gecmis/">Bütün geçmiş fiyatlar</a>{% endif %}</div>
   </section>
 {% endblock %}

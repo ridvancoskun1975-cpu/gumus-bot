@@ -31,6 +31,7 @@ import ayrintili  # noqa: E402
 import program as prg  # noqa: E402
 import dar_sayfalar  # noqa: E402
 import rehber_pdf  # noqa: E402
+import arsiv as arsiv_mod  # noqa: E402
 
 GRAFIK_GUN = 30        # grafikteki en fazla iş günü
 TABLO_GUN = 10         # tablodaki en fazla iş günü
@@ -350,10 +351,11 @@ def veri_hazirla(gecmis, simdi=None, pazar=None):
     }
 
 
-def uret(cikti, gecmis, simdi=None, euro=None, pazar=None, kati=False):
+def uret(cikti, gecmis, simdi=None, euro=None, pazar=None, kati=False, arsiv=None):
     """kati=True (iş akışı): dar arama sayfaları da hatasız üretilmeli, yoksa hata verir; iş akışı yeniden dener,
     olmazsa sitenin önceki hâlini yayınlar (Rıdvan, 18 Ekim 2026: "2 kere belirli aralıklarda tekrar denesin.
-    başarısız olursa önceki hali kalsın bana haber gelsin")."""
+    başarısız olursa önceki hali kalsın bana haber gelsin").
+    arsiv: geçmiş sayfaları için botun kayıtlarından önceki günler (bot/arsiv.py → oku(); yalnız gecmis/ kullanır)."""
     from jinja2 import Environment, FileSystemLoader
 
     v = veri_hazirla(gecmis, simdi, pazar)
@@ -380,7 +382,7 @@ def uret(cikti, gecmis, simdi=None, euro=None, pazar=None, kati=False):
     # ana sayfa ve rehber yine yayınlanır, yalnızca uyarı çıkar.
     harita = []
     try:
-        harita, dar = dar_sayfalar.uret(cikti, env, v, gecmis, euro)
+        harita, dar = dar_sayfalar.uret(cikti, env, v, gecmis, euro, arsiv)
         v["dar_sayi"] = len(dar)
     except Exception as e:
         if kati:
@@ -426,9 +428,10 @@ def main():
             gecmis = ornek_gecmis()
             pazar = {"url": "https://www.instagram.com/gunlukgumus/", "tarih": "18 Ekim"}   # örnek düğme
             v = uret(cikti, gecmis, euro={k["kur_tarihi"]: k["dolar"] * 1.16 for k in gecmis.values()},
-                     pazar=pazar, kati=a.kati)
+                     pazar=pazar, kati=a.kati, arsiv=arsiv_mod.ornek(gecmis))
         else:
-            v = uret(cikti, gun_ici_ile(bot.gecmis_oku()), pazar=son_pazar_analizi(), kati=a.kati)
+            v = uret(cikti, gun_ici_ile(bot.gecmis_oku()), pazar=son_pazar_analizi(), kati=a.kati,
+                     arsiv=arsiv_mod.oku())
     except bot.VeriYok as e:
         print(f"::warning::{e}")
         if a.kati:

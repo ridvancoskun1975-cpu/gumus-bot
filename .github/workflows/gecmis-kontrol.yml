@@ -3,8 +3,19 @@ name: MetalCharts geçmiş kontrolü
 # Pazar yorumunun orta vadesi için MetalCharts 1 yıllık günlük geçmişi geliyor mu (Starter planı, Rıdvan
 # 17 Ekim 2026; ~13 Ocak 2027'den sonra iptal edilecek, o zaman ücretsiz plana dönüş ve 403 beklenir).
 # Paylaşım yapmaz; gün sayısını ve tarih aralığını yazar (4 hak harcar). Elle: Run workflow.
+#
+# işlem: arsiv (Rıdvan, 3 Kasım 2026 "1 ve 2"): sitenin geçmiş sayfaları için botun kayıtlarından önceki ~12 ayın
+# günlük kapanışını (MetalCharts 1 yıllık geçmiş × ECB kuru) özel gumus-kayit deposuna yazar (bot/arsiv.py doldur;
+# 2 hak). Var olan günler korunur, günlüğe fiyat yazılmaz. Bir kez yeter; abonelik bitince (Ocak 2027) yeniden
+# değerlendirilecek.
 on:
   workflow_dispatch:
+    inputs:
+      islem:
+        description: "kontrol: geçmiş geliyor mu · arsiv: sitenin geçmiş arşivini doldur"
+        type: choice
+        options: [kontrol, arsiv]
+        default: kontrol
 
 permissions:
   contents: read
@@ -24,6 +35,13 @@ jobs:
           python-version: '3.12'
       - run: pip install -q requests jinja2
       - name: Geçmiş
+        if: inputs.islem != 'arsiv'
         env:
           METALCHARTS_KEY: ${{ secrets.METALCHARTS_KEY }}
         run: python bot/main.py gecmis-kontrol
+      - name: Sitenin geçmiş arşivini doldur
+        if: inputs.islem == 'arsiv'
+        env:
+          METALCHARTS_KEY: ${{ secrets.METALCHARTS_KEY }}
+          KAYIT_PAT: ${{ secrets.KAYIT_PAT }}
+        run: python bot/arsiv.py doldur
