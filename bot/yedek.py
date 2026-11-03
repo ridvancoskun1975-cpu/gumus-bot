@@ -147,16 +147,7 @@ def main():
             sys.exit(2)
     except YedekHatasi as e:   # yalnızca uyarı: paylaşım ve sayfa bu yüzden durmaz
         print(f"::warning::Günlük kayıt yedeği ({komut}): {e}")
-    if komut == "birlestir":
-        # Geçmiş fiyat arşivi (bot/arsiv.py; Rıdvan, 3 Kasım 2026 "1 ve 2"): sitenin geçmiş sayfaları için
-        # özel depodaki arşiv veri/arsiv.json'a iner. Hata verirse sayfalar yalnız botun kayıtlarıyla üretilir.
-        try:
-            sys.path.insert(0, str(Path(__file__).resolve().parent))
-            import arsiv
-            arsiv.indir()
-        except Exception as e:
-            print(f"::warning::Geçmiş arşivi indirilemedi ({type(e).__name__}: {e}); sayfalar yalnız botun kayıtlarıyla.")
-
+    # Geçmiş fiyat arşivi ayrı adımda iner (python bot/arsiv.py indir), bu adımın 1 dakikasını paylaşmasın.
 
 if __name__ == "__main__":
     main()

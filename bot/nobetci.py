@@ -6,20 +6,23 @@ başlatmadı (önceki iki haftada her zamanlı çalışma 40–90 dk gecikmeli b
 çalışmaların yoğunlukta gecikebileceğini, yoğunluk çok yüksekse düşebileceğini yazıyor. Kimse haber vermediği için
 Rıdvan rastgele fark etti.
 
-Üç kat güvence:
-  1. Çift paylaşım kilidi (bot/sinir.py → TEKIL): aynı tür bir günde ikinci kez paylaşılmaz; bu yüzden aşağıdaki
-     tekrar tetikler güvenlidir.
-  2. Yedek cron'lar (paylas.yml, satır sonunda "yedek"): her asıl cron'dan ~45 dk sonra ikinci tetik.
-  3. Bu nöbetçi (nobetci.yml): her paylaşım diliminden ~1 saat sonra bakar; o dilimin türü bugün paylaşılmadıysa ve
-     bir çalıştırma sürmüyorsa paylas.yml'yi kendisi başlatır (workflow_dispatch, deneme kapalı) ve iş KIRMIZI
-     biter: GitHub "Run failed" e-postası Rıdvan'a haber olur (zamanlı çalışma gelmedi, nöbetçi başlattı).
-     Paylaşım yerindeyse sessizce biter. Bir çalıştırma sürüyorsa en çok BEKLE_DK dakika bekler.
+Güvencenin bütünü README → "Zamanlı paylaşım güvencesi" (5 katman). Bu dosyanın payı:
+  - Çift paylaşım kilitleri (bot/sinir.py → TEKIL; bot/main.py → instagram_bugun_paylasildi): aynı tür bir günde
+    ikinci kez paylaşılmaz; bu yüzden yedek cron'lar (paylas.yml, asıl cron'dan 27 dk sonra) ve nöbetçi güvenlidir.
+  - Bu nöbetçi: GitHub'da (nobetci.yml) her paylaşım diliminden ~1 saat sonra, Claude'un zamanlanmış görevinde
+    ~20 dk sonra bakar. O dilimin türü bugün paylaşılmadıysa paylas.yml'yi kendisi başlatır (workflow_dispatch,
+    deneme kapalı) ve KIRMIZI biter (çıkış 1): GitHub "Run failed" e-postası Rıdvan'a haber olur. Paylaşım
+    yerindeyse sessizce biter. Bizim türümüzde bir çalıştırma sürüyorsa en çok BEKLE_DK dakika bekler; türü belli
+    olmayan ya da başka bir çalıştırma o sürede bitmezse yine başlatır (sıraya girer, kilit ikinciyi durdurur).
+  - Yalnız dilimin penceresinde başlatır: hedef saatten (program.HEDEF_SAATLERI) SON_SAAT'e kadar. Nöbetçi GitHub'da
+    saatlerce gecikip ertesi güne kalırsa yeni günün paylaşımını erkenden başlatmaz.
 
 Kullanım: python3 bot/nobetci.py "<cron>"   (nobetci.yml github.event.schedule'ı verir; elle: "reels" gibi tür de olur)
 Yalnızca standart kitaplık + botun kendi modülleri; GITHUB_TOKEN (actions: write) ve GITHUB_REPOSITORY gerekir.
 """
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -29,6 +32,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import program  # noqa: E402
 import sinir  # noqa: E402
 
 KOK = Path(__file__).resolve().parent.parent
@@ -43,14 +47,28 @@ DILIMLER = {
 }
 BEKLE_DK = 20       # sürmekte olan çalıştırma için en çok bekleme
 # Nöbetçi de GitHub'ın zamanlayıcısına bağlı, saatlerce gecikebilir. Bu saatten (TR) sonra o dilimin paylaşımını
-# başlatmaz (sabah Reels'i akşam özetinin yanında gitmesin), yalnız kırmızı biterek haber verir.
-SON_SAAT = {"reels": (18, 30), "bilgi": (18, 30), "ay": (18, 30), "kisa": (18, 30), "post": (23, 30),
+# başlatmaz (sabah Reels'i akşam özetinin yanında gitmesin), yalnız kırmızı biterek haber verir. Akşam özeti 22:30:
+# paylaşım işi (Instagram engelinde en çok ~3 saat yeniden dener) gece yarısını geçmesin; geçerse main.yayinla durur.
+SON_SAAT = {"reels": (18, 30), "bilgi": (18, 30), "ay": (18, 30), "kisa": (18, 30), "post": (22, 30),
             "hafta": (21, 0), "yorum": (21, 0)}
 PAZAR_BEKLET = KOK / "bot" / "PAZAR_BEKLET"
 
 
+class TakvimHatasi(RuntimeError):
+    pass
+
+
 def _komut(*args):
-    return subprocess.run([sys.executable, *args], capture_output=True, text=True, cwd=KOK, timeout=60).stdout.strip()
+    s = subprocess.run([sys.executable, *args], capture_output=True, text=True, cwd=KOK, timeout=60)
+    if s.returncode:
+        raise TakvimHatasi(f"{' '.join(args)} hata verdi: {(s.stderr or s.stdout).strip()[-300:]}")
+    return s.stdout.strip()
+
+
+def yorum_duraklatildi():
+    """main.YORUM_DURAKLAT (zamanlı pazar yorumu duraklatıldı). main.py ağır paketler ister; metinden okunur."""
+    return bool(re.search(r"^YORUM_DURAKLAT\s*=\s*True\b", (KOK / "bot" / "main.py").read_text(encoding="utf-8"),
+                          re.M))
 
 
 def gunduz_turu(bolum=None, ay=None, arsiv=None):
@@ -71,8 +89,8 @@ def beklenen(dilim, **gunduz):
     tur = DILIMLER.get(dilim, dilim)   # elle "reels" gibi tür de verilebilir
     if tur == "gunduz":
         tur = gunduz_turu(**gunduz)
-    if tur == "yorum" and PAZAR_BEKLET.exists():
-        return None   # Rıdvan pazar yorumunu bekletiyor (paylas.yml'deki kural); nöbetçi başlatmaz
+    if tur == "yorum" and (PAZAR_BEKLET.exists() or yorum_duraklatildi()):
+        return None   # Rıdvan pazar yorumunu bekletiyor ya da duraklattı (yalnız zamanlıda işler); nöbetçi başlatmaz
     return tur if tur in sinir.TEKIL else None
 
 
@@ -102,6 +120,12 @@ def gec_mi(tur, simdi):
     return (yerel.hour, yerel.minute) >= (s, d)
 
 
+def erken_mi(tur, simdi):
+    """Hedef saatten önce mi (o gün henüz beklenmiyor; gecikip ertesi güne kalan nöbetçi de buraya düşer)."""
+    yerel = simdi.astimezone(sinir.TR)
+    return (yerel.hour, yerel.minute) < program.HEDEF_SAATLERI.get(tur, (0, 0))
+
+
 def baslat(tur):
     """paylas.yml'yi bu türle, deneme kapalı başlatır (Rıdvan'ın onay işareti kullanılmaz)."""
     depo = os.environ["GITHUB_REPOSITORY"]
@@ -126,19 +150,32 @@ def main(dilim, uyu=time.sleep, say=None, baslatici=None, simdi=None, suren=None
     say = say or sinir.say
     baslatici = baslatici or baslat
     suren = suren or suren_calistirma_var
-    simdi = simdi or datetime.now(timezone.utc)
-    tur = beklenen(dilim)
+    # simdi verilirse (sınama) sabit; yoksa her bakışta yeniden okunur (bekleme 20 dk sürebilir)
+    saat_al = (lambda: simdi) if simdi else (lambda: datetime.now(timezone.utc))
+    try:
+        tur = beklenen(dilim)
+    except (TakvimHatasi, OSError, subprocess.SubprocessError) as e:
+        print(f"::error::Nöbetçi bugünün takvimini okuyamadı ({e}); paylaşım denetlenemedi. "
+              "Claude'a 'gumus-bot nöbetçi' yaz.")
+        return 1
     if not tur:
         print(f"Bu dilimde ({dilim}) bugün beklenen paylaşım yok; nöbetçi bitti.")
         return 0
+    if erken_mi(tur, saat_al()):
+        h, d = program.HEDEF_SAATLERI[tur]
+        print(f"::warning::Saat {saat_al().astimezone(sinir.TR):%H:%M} TR, {tur} hedefinden ({h:02d}:{d:02d}) önce: "
+              "bu dilimde şu an beklenen paylaşım yok, nöbetçi başlatmadı (erken ya da ertesi güne kalmış bakış).")
+        return 0
+    bizim = False
     for deneme in range(BEKLE_DK + 1):
         try:
-            sayilan = say(simdi)
+            sayilan = say(saat_al())
         except sinir.SayilamadiHatasi as e:
             print(f"::error::Nöbetçi bugünkü çalıştırmaları okuyamadı ({e}); {tur} paylaşıldı mı bilinmiyor, "
                   "başlatılmadı. Claude'a 'gumus-bot nöbetçi' yaz.")
             return 1
         d = durum(sayilan, tur)
+        bizim = d == "suruyor" and any(x[2] == "sürüyor" and x[3] == tur for x in sayilan)
         if d == "yok":
             try:
                 if suren():
@@ -155,8 +192,14 @@ def main(dilim, uyu=time.sleep, say=None, baslatici=None, simdi=None, suren=None
             print(f"Bir çalıştırma sürüyor; {tur} için bekleniyor ({deneme + 1}/{BEKLE_DK} dk).")
             uyu(60)
     else:
-        print(f"::warning::{BEKLE_DK} dk geçti, çalıştırma hâlâ sürüyor; {tur} ondan bekleniyor, nöbetçi başlatmadı.")
-        return 0
+        if bizim:
+            print(f"::warning::{BEKLE_DK} dk geçti, {tur} çalıştırması hâlâ sürüyor; paylaşım ondan bekleniyor, "
+                  "nöbetçi başlatmadı.")
+            return 0
+        # Süren çalıştırmanın türü belli değil ya da başka bir tür: yine başlat. Yeni çalıştırma sıraya girer;
+        # süren bizimkiyse kilit ikincisini paylaşmadan bitirir.
+        print(f"{BEKLE_DK} dk geçti, süren çalıştırmanın türü {tur} değil ya da belli değil; nöbetçi yine başlatıyor.")
+    simdi = saat_al()
     saat = simdi.astimezone(sinir.TR).strftime("%H:%M")
     if gec_mi(tur, simdi):
         print(f"::error::ZAMANLI PAYLAŞIM GELMEDİ: {tur} bugün {saat} TR'ye kadar paylaşılmadı. Saat geç olduğu için "

@@ -62,6 +62,11 @@ YILLIK_KUR = {
     2023: 23.8197, 2024: 32.8700, 2025: 39.5700,
 }
 YIL_EN_AZ_GUN = 20   # USGS rakamı olmayan yılın satırı için en az günlük veri
+# ...ve o veriler yılı kapsamalı: ilk kayıt en geç 10 Ocak'ta, biten yılda son kayıt en erken 20 Aralık'ta. Arşiv
+# inmezse (ya da ARSIV_ACIK = False) yalnız botun 13 Ekim'den beri kayıtları kalır; o ortalama yılın değil
+# son haftaların ortalaması olurdu, satır hiç çıkmaz.
+YIL_ILK_EN_GEC = "01-10"
+YIL_SON_EN_ERKEN = "12-20"
 AY_EN_AZ_GUN = 5     # arşivin ilk ayı bundan az günse sayfalara girmez
 USGS_KAYNAK_URL = ("https://www.usgs.gov/centers/national-minerals-information-center/"
                    "silver-statistics-and-information")
@@ -119,9 +124,11 @@ def yillik_satirlar(gunluk, bugun):
     son_usgs = max(YILLIK_ONS)
     yillar = sorted({int(g[:4]) for g in gunluk if int(g[:4]) > son_usgs})
     for yil in yillar:
-        kk = [k for g, k in gunluk.items() if g.startswith(f"{yil}-")]
-        if len(kk) < YIL_EN_AZ_GUN:
+        gunler = sorted(g for g in gunluk if g.startswith(f"{yil}-"))
+        if (len(gunler) < YIL_EN_AZ_GUN or gunler[0][5:] > YIL_ILK_EN_GEC
+                or (yil < bugun.year and gunler[-1][5:] < YIL_SON_EN_ERKEN)):
             continue
+        kk = [gunluk[g] for g in gunler]
         n = len(kk)
         satirlar.append({"yil": yil, "ons": sum(k["gumus"] for k in kk) / n, "kur": sum(k["dolar"] for k in kk) / n,
                          "gram": sum(k["gram"] for k in kk) / n, "kaynak": "gunluk",
@@ -289,12 +296,11 @@ def main():
     komut = sys.argv[1] if len(sys.argv) > 1 else ""
     if komut == "doldur":
         doldur()
-    elif komut == "indir":
-        import yedek
+    elif komut == "indir":   # iş akışlarında ayrı adım (paylas.yml, sayfa.yml); hata yalnız uyarı
         try:
             indir()
-        except yedek.YedekHatasi as e:
-            print(f"::warning::Geçmiş arşivi indirilemedi ({e}); sayfalar yalnız botun kayıtlarıyla.")
+        except Exception as e:
+            print(f"::warning::Geçmiş arşivi indirilemedi ({type(e).__name__}: {e}); sayfalar yalnız botun kayıtlarıyla.")
     else:
         print(__doc__)
         sys.exit(2)

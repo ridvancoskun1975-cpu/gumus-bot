@@ -27,6 +27,8 @@ def esit(a, b, ad):
 
 # 3 Kasım 2026 Salı 11:15 TR = 08:15 UTC
 SIMDI = datetime(2026, 11, 3, 8, 15, tzinfo=timezone.utc)
+OGLEN = datetime(2026, 11, 3, 12, 15, tzinfo=timezone.utc)    # 15:15 TR
+AKSAM = datetime(2026, 11, 3, 18, 15, tzinfo=timezone.utc)    # 21:15 TR
 SABAH = (1, SIMDI, "paylaşıldı", "reels", 1)
 
 
@@ -69,7 +71,8 @@ esit(nobetci.beklenen("hikaye"), None, "kilit dışı tür beklenmez")
 # ---- karar
 esit(calistir("12 8 * * 1-5", durumlar=[[SABAH]]), (0, [], 0), "Reels gitmiş: sessiz biter, başlatmaz")
 esit(calistir("12 8 * * 1-5", durumlar=[[]]), (1, ["reels"], 0), "Reels gitmemiş: başlatır, kırmızı biter (haber)")
-esit(calistir("12 18 * * 1-5", durumlar=[[SABAH]]), (1, ["post"], 0), "sabah gitti ama akşam gitmedi: akşamı başlatır")
+esit(calistir("12 18 * * 1-5", durumlar=[[SABAH]], simdi=AKSAM), (1, ["post"], 0),
+     "sabah gitti ama akşam gitmedi: akşamı başlatır")
 suruyor = [(2, SIMDI, "sürüyor", "reels", 1)]
 esit(calistir("12 8 * * 1-5", durumlar=[suruyor, suruyor, [SABAH]]), (0, [], 2),
      "Reels paylaşılıyor: bekler, gidince başlatmadan biter")
@@ -81,11 +84,53 @@ bayrak = iter([True, False])
 esit(calistir("12 8 * * 1-5", durumlar=[[], [SABAH]], suren=lambda: next(bayrak)), (0, [], 1),
      "sırada bekleyen çalıştırma varken başlatmaz, bekler")
 esit(calistir("12 12 * * 1-5", durumlar=[[]], gunduz=None)[0] in (0, 1), True, "gündüz dilimi takvimden okunur")
-esit(calistir("12 12 * * 1-5", durumlar=[[]], gunduz="bilgi"), (1, ["bilgi"], 0), "rehber gitmemiş: başlatır")
+esit(calistir("12 12 * * 1-5", durumlar=[[]], gunduz="bilgi", simdi=OGLEN), (1, ["bilgi"], 0),
+     "rehber gitmemiş: başlatır")
+# Süren çalıştırma 20 dk'da bitmedi ve türü bizim değil / belli değil: yine başlatır (sıraya girer, kilit korur)
+esit(calistir("12 8 * * 1-5", durumlar=[turu_belirsiz]), (1, ["reels"], nobetci.BEKLE_DK),
+     "türü belli olmayan çalıştırma 20 dk'da bitmezse yine başlatır (sessiz kaçırma yok)")
+esit(calistir("12 8 * * 1-5", durumlar=[[]], suren=lambda: True), (1, ["reels"], nobetci.BEKLE_DK),
+     "başka bir çalıştırma 20 dk sürerse yine başlatır")
+esit(calistir("12 8 * * 1-5", durumlar=[[(4, SIMDI, "sürüyor", "post", 2)]], suren=lambda: True),
+     (1, ["reels"], nobetci.BEKLE_DK), "başka türde süren çalıştırma bizimki sayılmaz")
+
+# ---- saat penceresi: hedeften önce başlatmaz (gecikip ertesi güne kalan bakış dahil)
+gece = datetime(2026, 11, 6, 21, 15, tzinfo=timezone.utc)   # cumartesi 00:15 TR (cuma 21:12 bakışı 3 saat gecikti)
+esit(calistir("12 18 * * 1-5", durumlar=[[]], simdi=gece), (0, [], 0),
+     "akşam bakışı gece yarısını geçtiyse yeni günün özetini başlatmaz")
+erken = datetime(2026, 11, 3, 6, 0, tzinfo=timezone.utc)    # 09:00 TR
+esit(calistir("reels", durumlar=[[]], simdi=erken), (0, [], 0), "hedef saatten (09:55) önce başlatmaz")
+esit(calistir("12 18 * * 1-5", durumlar=[[]], simdi=SIMDI), (0, [], 0), "akşam özetini sabah başlatmaz")
+gec_aksam = datetime(2026, 11, 3, 19, 45, tzinfo=timezone.utc)   # 22:45 TR
+esit(calistir("12 18 * * 1-5", durumlar=[[]], simdi=gec_aksam), (1, [], 0),
+     "akşam özeti 22:30'dan sonra başlatılmaz (gece yarısını geçmesin), haber verir")
+for t in nobetci.SON_SAAT:
+    esit(program.HEDEF_SAATLERI[t] < nobetci.SON_SAAT[t] <= (22, 30), True, f"{t}: pencere hedef → son saat")
+
+# ---- pazar yorumu duraklatıldıysa başlatmaz; takvim okunamazsa kırmızı
+esit(nobetci.yorum_duraklatildi(), False, "main.YORUM_DURAKLAT şu an kapalı (metinden okunur)")
+eski_d = nobetci.yorum_duraklatildi
+nobetci.yorum_duraklatildi = lambda: True
+esit(nobetci.beklenen("12 9 * * 0"), None, "YORUM_DURAKLAT açıkken nöbetçi pazar yorumunu beklemez")
+nobetci.yorum_duraklatildi = eski_d
+try:
+    nobetci._komut("-c", "import sys; sys.exit(3)")
+    esit(True, False, "_komut hata vermeliydi")
+except nobetci.TakvimHatasi:
+    esit(True, True, "takvim betiği hata verirse _komut 'paylaşım yok' saymaz, hata fırlatır")
 
 
-class _Yok:
-    pass
+def bozuk(**kw):
+    raise nobetci.TakvimHatasi("bilgi.py bozuk")
+
+
+eski = nobetci.gunduz_turu
+nobetci.gunduz_turu = bozuk
+with contextlib.redirect_stdout(io.StringIO()):
+    kod = nobetci.main("12 12 * * 1-5", say=lambda *a, **k: [], baslatici=lambda t: (_ for _ in ()).throw(AssertionError),
+                       simdi=OGLEN, suren=lambda: False)
+nobetci.gunduz_turu = eski
+esit(kod, 1, "takvim okunamazsa kırmızı biter, başlatmaz")
 
 
 def gunduz_yok(**kw):
@@ -103,7 +148,7 @@ esit(kod, 0, "o gün ~14:00 paylaşımı yoksa sessiz biter")
 aksam = datetime(2026, 11, 3, 16, 0, tzinfo=timezone.utc)   # 19:00 TR
 esit(calistir("12 8 * * 1-5", durumlar=[[]], simdi=aksam), (1, [], 0),
      "nöbetçi çok geç çalıştıysa sabah Reels'ini akşam başlatmaz, yalnız haber verir")
-esit(calistir("12 18 * * 1-5", durumlar=[[]], simdi=aksam), (1, ["post"], 0), "akşam özeti 19:00'da hâlâ başlatılır")
+esit(calistir("12 18 * * 1-5", durumlar=[[]], simdi=aksam), (0, [], 0), "akşam özeti 19:00'da (hedeften önce) başlatılmaz")
 esit(calistir("12 8 * * 1-5", durumlar=[[]], baslat_hata=OSError("ağ yok")), (1, [], 0),
      "başlatılamazsa kırmızı biter")
 
@@ -193,7 +238,7 @@ try:
 except bot.ErisimEngeli:
     esit(True, True, "ikinci kilit: geçici engel yayinla()'ya gider, bekleyip yeniden dener")
 
-# _yayinla: bugünkü Reels Instagram'da varsa hiçbir şey paylaşmaz, sayı 0 kalır
+# _yayinla: bugünkü Reels Instagram'da varsa hiçbir şey paylaşmaz; o gönderiyi hiçbir çalıştırma saymadığı için 1 sayılır
 cagrilar = []
 
 
@@ -214,7 +259,7 @@ with tempfile.TemporaryDirectory() as d:
     with contextlib.redirect_stdout(io.StringIO()) as cikti:
         bot.yayinla(Path(d), "https://ornek.invalid/", bekle_dk=0)
     esit(cagrilar, [("GET", "me/media")], "ikinci kilit: _yayinla yalnız okudu, paylaşmadı")
-    esit(bot._GORUNEN[0], 0, "ikinci kilit: görünen sayı 0 (gün artmaz)")
+    esit(bot._GORUNEN[0], 1, "ikinci kilit: bulunan gönderi (sayılmamıştı) günlük sınırda 1 sayılır")
     esit("zaten var" in cikti.getvalue(), True, "ikinci kilit: günlükte nedeni yazar")
     # onay: true (ONAY_TEKRAR) ikinci kilidi aşar: Instagram'a bakılmadan paylaşıma geçilir
     cagrilar.clear()
@@ -239,6 +284,20 @@ bot._istek = asil_istek
 w = (KOK / ".github/workflows/paylas.yml").read_text(encoding="utf-8")
 esit("ONAY_TEKRAR: ${{ github.event_name == 'workflow_dispatch' && inputs.onay && '1' || '' }}" in w, True,
      "iş akışı: ikinci kilidi yalnız elle onay: true aşar")
-esit("steps.gorunen.outputs.n != '0'" not in w, True, "iş akışı: 0 sayısı da saklanır (atlanan paylaşım günü artırmaz)")
+esit("steps.gorunen.outputs.n != '0'" not in w, True, "iş akışı: 0 sayısı da saklanır (paylaşmayan çalıştırma günü artırmaz)")
+
+# yayinla: Instagram engeli sürerken bir sonraki deneme gece yarısını geçecekse vazgeçer (dünün içeriği yeni günde gitmez)
+asil_y, asil_sn, asil_uyku = bot._yayinla, bot.YENIDEN_DENEME_SN, bot.time.sleep
+bot._yayinla = lambda *a: (_ for _ in ()).throw(bot.ErisimEngeli("API access blocked"))
+bot.YENIDEN_DENEME_SN = 2 * 86400
+bot.time.sleep = lambda sn: (_ for _ in ()).throw(AssertionError("beklememeliydi"))
+try:
+    with contextlib.redirect_stdout(io.StringIO()) as cikti:
+        bot.yayinla(Path("."), "https://ornek.invalid/", bekle_dk=5 * 24 * 60)
+    esit(True, False, "vazgeçmeliydi")
+except bot.ErisimEngeli:
+    esit("gece yarısını geçecek" in cikti.getvalue(), True, "yeniden deneme gece yarısını geçmez, kırmızı biter")
+finally:
+    bot._yayinla, bot.YENIDEN_DENEME_SN, bot.time.sleep = asil_y, asil_sn, asil_uyku
 
 print(f"\ntest_nobetci: {gecen} sınama geçti")

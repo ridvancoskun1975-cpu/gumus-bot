@@ -279,6 +279,16 @@ jobs:
           KAYIT_PAT: ${{ secrets.KAYIT_PAT }}
         run: python bot/yedek.py birlestir
 
+      # Geçmiş fiyat arşivi (bot/arsiv.py; Rıdvan, 3 Kasım 2026 "1 ve 2"): yalnız sitenin geçmiş sayfaları için özel
+      # depodan veri/arsiv.json'a iner. Ayrı adım: kayıt yedeğinin 1 dakikasını paylaşmaz. Hata verirse sayfalar
+      # yalnız botun kayıtlarıyla üretilir (geçmiş yıllar USGS'ten yine çıkar).
+      - name: Geçmiş fiyat arşivini indir
+        continue-on-error: true
+        timeout-minutes: 2
+        env:
+          KAYIT_PAT: ${{ secrets.KAYIT_PAT }}
+        run: python bot/arsiv.py indir
+
       # Gün içi noktalar (akşam özetindeki "Gün içi: en düşük … · en yüksek …" satırı) ayrı dosyada ve ayrı
       # önbellekte: yalnızca fiyat alan çalıştırmalar (Reels, özet, kart) ve kaydet.yml yazar.
       - name: Gün içi kayıtları getir

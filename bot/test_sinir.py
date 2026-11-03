@@ -151,7 +151,7 @@ esit(sinir.bugunun_siniri(datetime(2026, 10, 15).date()), 4, "ertesi gün 4")
 # ---------------------------------------------------------------- çift paylaşım kilidi (Rıdvan, 3 Kasım 2026)
 # "çift paylaşım da olmasın lütfen": bu tür bugün paylaşıldıysa yedek cron, nöbetçi ya da geç gelen zamanlı
 # çalışma paylaşmadan, hata vermeden biter (tekrar=evet). Yalnız onay=true kilidi aşar.
-def tekrar_ciktisi(sayici, yayin, onay, tur):
+def tekrar_ciktisi(sayici, yayin, onay, tur, konu=""):
     import os
     import tempfile
     sinir.say = sayici
@@ -160,7 +160,7 @@ def tekrar_ciktisi(sayici, yayin, onay, tur):
     os.environ["GITHUB_OUTPUT"] = yol
     try:
         with contextlib.redirect_stdout(io.StringIO()):
-            kod = sinir.kontrol(yayin, onay, tur, "", SIMDI)
+            kod = sinir.kontrol(yayin, onay, tur, konu, SIMDI)
         cikti = dict(s.split("=", 1) for s in Path(yol).read_text().split())
     finally:
         os.environ.pop("GITHUB_OUTPUT", None)
@@ -187,6 +187,10 @@ esit(tekrar_ciktisi(bugun(), True, False, "reels"), (0, "hayir", "tam"), "kilit:
 dolu = [(200 + i, SIMDI, "paylaşıldı", "hikaye", 1) for i in range(3)] + [sabah]
 esit(tekrar_ciktisi(bugun(*dolu), True, False, "reels"), (0, "evet", "tam"), "kilit: gün doluyken de sessiz atlar")
 esit(sinir.TEKIL >= {"reels", "post", "hafta", "ay", "yorum", "bilgi", "kisa"}, True, "zamanlı türlerin hepsi kilitli")
+pazar = (104, SIMDI, "paylaşıldı", "yorum", 2)
+esit(tekrar_ciktisi(bugun(pazar), True, False, "yorum"), (0, "evet", "tam"), "kilit: pazar yorumu ikinci kez gitmez")
+esit(tekrar_ciktisi(bugun(pazar), True, False, "yorum", "reels-tekrar"), (0, "hayir", "tam"),
+     "kilit: pazar Reels'ini yeniden gönderme (konu reels-tekrar) onaysız geçer")
 # ikinci kilit (Instagram) paylaşmadan bitirdiyse: eser "gorunen-1-0" → gün artmaz ama tür paylaşılmış sayılır
 atlanan = sinir.paylasim_sayisi(
     [{"id": 301}], {301: [is_("yayinla", "completed", "success", bit="2026-10-14T07:00:00Z")]}, SIMDI, 0,

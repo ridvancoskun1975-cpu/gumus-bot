@@ -5,7 +5,7 @@ name: Paylaşım nöbetçisi
 # "Şans eseri öğrendim", "çift paylaşım da olmasın lütfen". O sabah GitHub 09:10 çalışmasını hiç başlatmadı.
 #
 # Her paylaşım diliminden ~1 saat sonra bakar. O dilimin türü bugün paylaşıldıysa saniyeler içinde sessizce biter.
-# Paylaşılmadıysa ve bir çalıştırma sürmüyorsa Gümüş paylaşımı'nı (paylas.yml) deneme kapalı başlatır ve bu iş
+# Paylaşılmadıysa Gümüş paylaşımı'nı (paylas.yml) deneme kapalı başlatır (yalnız hedef saat ile son saat arasında) ve bu iş
 # KIRMIZI biter: GitHub'ın "Run failed" e-postası Rıdvan'a haber olur. Çift paylaşım kilidi (bot/sinir.py) başlatılan
 # çalıştırmanın ikinci kez paylaşmasını önler. Onay işareti (onay: true) hiçbir zaman kullanılmaz.
 # Dakika 12: saat başı yoğunluğundan uzak. Bu iş de GitHub'ın zamanlayıcısına bağlıdır; gecikebilir.

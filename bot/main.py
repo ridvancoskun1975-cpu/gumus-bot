@@ -1755,6 +1755,7 @@ def yayinla(cikti, taban_url, bekle_dk=0):
     Instagram ~1,5 saat boyunca her isteği "API access blocked" ile reddetmiş, 20:00 özeti elle yeniden
     çalıştırılmıştı; bu bekleme onun için."""
     bitis = time.time() + bekle_dk * 60
+    gun = datetime.now(TR_SAAT).date()
     deneme = 0
     while True:
         deneme += 1
@@ -1762,6 +1763,12 @@ def yayinla(cikti, taban_url, bekle_dk=0):
             return _yayinla(cikti, taban_url)
         except ErisimEngeli as e:
             kalan = bitis - time.time()
+            if datetime.now(TR_SAAT) + timedelta(seconds=min(YENIDEN_DENEME_SN, max(kalan, 0))) >= \
+                    datetime.combine(gun + timedelta(days=1), datetime.min.time(), TR_SAAT):
+                # Dünün içeriği gece yarısından sonra gitmesin (ertesi günün aynı türünü de kilitlerdi)
+                print(f"::error::Instagram geçici engel veriyor ve bir sonraki deneme gece yarısını geçecek; "
+                      f"dünün içeriği yeni günde paylaşılmasın diye vazgeçildi ({deneme} deneme).")
+                raise
             if kalan <= 0:
                 if bekle_dk:
                     print(f"::error::Instagram {bekle_dk} dakikadır geçici engel veriyor, vazgeçildi "
@@ -1831,8 +1838,13 @@ def _yayinla(cikti, taban_url):
     if not os.environ.get("ONAY_TEKRAR"):   # Rıdvan'ın onay: true'su ikinci paylaşıma izin verir
         var = instagram_bugun_paylasildi(meta)
         if var:
+            # Birinci kilit geçtiğine göre bu gönderiyi hiçbir çalıştırma saymadı (bu çalıştırmanın Instagram hata
+            # döndürüp yine de paylaştığı önceki denemesi ya da sayısını yazamadan biten bir çalıştırma): günlük
+            # sınırda en az akıştaki 1 içerik olarak sayılır. Hikâye kopyası gitmiş olabilir de olmayabilir de.
+            _GORUNEN[0] += 1
             print(f"::notice::İkinci çift paylaşım kilidi: {meta['tur']} bugün {var[1]} TR'de Instagram'da zaten var "
-                  f"(medya id {var[0]}). Paylaşılmadı; bu bir hata değil.")
+                  f"(medya id {var[0]}). Yeniden paylaşılmadı; bu bir hata değil. Günlük sayıya 1 yazıldı "
+                  "(hikâye kopyası varsa sayılmadı).")
             return
     if meta["tur"] == "hikaye":
         videolar = meta.get("hikaye_videolari") or []

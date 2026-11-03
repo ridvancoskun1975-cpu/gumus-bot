@@ -90,6 +90,13 @@ kontrol(ys[0]["deg_once"] is None and ys[1]["deg_once"] == ys[0]["gram"], "deği
 kontrol(abs(ys[-2]["gram"] - 40.08 * 39.57 / 31.1035) < 1e-9, "2025 gram ≈ ons × kur ÷ 31,1035")
 az = {k: v for k, v in list(gunluk.items())[-5:]}
 kontrol(arsiv.yillik_satirlar(az, date(2026, 10, 13))[-1]["yil"] == 2025, "az günlük veride içinde bulunulan yıl satırı çıkmaz")
+# Yılı kapsamayan veri yıl ortalaması diye gösterilmez (arşiv inmediyse yalnız botun Ekim'den beri kayıtları kalır)
+bot_kayit = {g: k for g, k in gunluk.items() if g >= "2026-09-01"}
+kontrol(len(bot_kayit) >= arsiv.YIL_EN_AZ_GUN and arsiv.yillik_satirlar(bot_kayit, date(2026, 11, 3))[-1]["yil"] == 2025,
+        "yalnız son haftaların kaydı varsa 2026 satırı çıkmaz (Ocak'tan başlamıyor)")
+ocaktan = {g: k for g, k in gunluk.items() if g >= "2026-01-01"}
+kontrol(arsiv.yillik_satirlar(ocaktan, date(2027, 3, 1))[-1]["yil"] == 2025,
+        "biten yıl Aralık'a kadar sürmüyorsa yıl ortalaması diye gösterilmez")
 
 # ---- Sayfalar
 simdi = datetime(2026, 10, 13, 20, 30, tzinfo=bot.TR_SAAT)

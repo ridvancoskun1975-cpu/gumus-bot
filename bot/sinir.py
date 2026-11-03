@@ -29,7 +29,8 @@ Claude onay işaretini ya da GUN_SINIRI'nı Rıdvan sohbette açıkça onaylamad
 geç başlatması ya da hiç başlatmaması (3 Kasım 2026 sabah Reels'i hiç başlamadı; önceki günler 40–90 dk gecikme)
 yüzünden aynı tür bir günde birden çok kez tetiklenebilir: asıl cron, yedek cron (paylas.yml), nöbetçi (nobetci.yml)
 ve elle başlatma. Bu tür (TEKIL) bugün zaten paylaşıldıysa çalıştırma paylaşmadan, HATA VERMEDEN biter
-(kontrol çıktısı tekrar=evet → uret ve yayinla atlanır). Yalnız onay=true (Rıdvan sohbette açıkça istedi) kilidi aşar.
+(kontrol çıktısı tekrar=evet → uret ve yayinla atlanır). Yalnız onay=true (Rıdvan sohbette açıkça istedi) kilidi aşar;
+pazar Reels'ini yeniden gönderme (tür yorum, konu reels-tekrar) kilide takılmaz.
 Paylaşılmış sayılan: bugün yayinla işi başarıyla bitmiş ya da bir şey paylaşıp hata vermiş ("yarım") aynı tür.
 Sürmekte olan çalıştırma sayılmaz: concurrency grubu yüzünden aynı anda tek çalıştırma yürür, sürüyor görünen
 bizden sonra sıradadır; o kendi sırası gelince bu kilide takılır.
@@ -218,6 +219,11 @@ def kontrol(yayin, onay, tur, konu, simdi=None):
     ne = tur + (f" #{konu}" if konu else "")
     sinir = bugunun_siniri(simdi.astimezone(TR).date())
     plan = TAHMIN.get(tur, 1)
+    # Pazar Reels'ini yeniden gönderme (main.pazar_reels_tekrar; elle, tür: yorum, konu: reels-tekrar): o gün yorum
+    # zaten paylaşılmıştır, yalnız gitmeyen Reels gider. Kilit bunu durdurmaz; sayısı 1.
+    reels_tekrar = tur == "yorum" and konu == "reels-tekrar"
+    if reels_tekrar:
+        plan = 1
     try:
         sayilan = say(simdi)
     except SayilamadiHatasi as e:
@@ -235,7 +241,7 @@ def kontrol(yayin, onay, tur, konu, simdi=None):
     n = toplam(sayilan)
     print(f"Bugün (TR) takipçinin gördüğü içerik: {n} ({_liste(sayilan)}). Günlük sınır {sinir} "
           "(akış + Reels + hikâye birlikte).")
-    onceki = bugun_paylasildi(sayilan, tur) if tur in TEKIL else None
+    onceki = bugun_paylasildi(sayilan, tur) if tur in TEKIL and not reels_tekrar else None
     if onceki and yayin and not onay:
         saat = onceki[1].astimezone(TR).strftime("%H:%M")
         print(f"::notice::Çift paylaşım kilidi: {ne} bugün {saat} TR'de zaten paylaşıldı (çalıştırma {onceki[0]}). "
