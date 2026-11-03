@@ -76,8 +76,9 @@ esit((sinir.TAHMIN["reels"], sinir.TAHMIN["post"], sinir.TAHMIN["bilgi"], sinir.
 
 # ---------------------------------------------------------------- karar (GitHub okuması sahte)
 def sahte(n):
-    """Bugün n içerik gösterilmiş (n tane 1'lik çalıştırma)."""
-    return lambda simdi=None, **kw: [(i, SIMDI, "paylaşıldı", "reels", 1) for i in range(n)]
+    """Bugün n içerik gösterilmiş (n tane 1'lik çalıştırma). Tür "hikaye": çift paylaşım kilidinin dışında, böylece
+    sınır sınamaları kilide takılmaz (kilit aşağıda ayrıca sınanır)."""
+    return lambda simdi=None, **kw: [(i, SIMDI, "paylaşıldı", "hikaye", 1) for i in range(n)]
 
 
 def hata(simdi=None, **kw):
@@ -95,11 +96,11 @@ def karar(sayici, yayin, onay, tur="bilgi"):
     try:
         with contextlib.redirect_stdout(io.StringIO()):
             kod = sinir.kontrol(yayin, onay, tur, "3", simdi=SIMDI)
-        cikti = open(yol, encoding="utf-8").read().strip()
+        cikti = dict(x.split("=", 1) for x in open(yol, encoding="utf-8").read().split())
     finally:
         os.environ.pop("GITHUB_OUTPUT", None)
         os.unlink(yol)
-    return kod, cikti.removeprefix("hikaye=")
+    return kod, cikti.get("hikaye")
 
 
 asil_say, asil_gun = sinir.say, sinir.GUN_SINIRI
@@ -147,6 +148,46 @@ sinir.GUN_SINIRI = {"2026-10-14": 5}
 esit(karar(sahte(4), True, False, "reels"), (0, "tam"), "istisna günü 5. geçer")
 esit(karar(sahte(5), True, False, "reels"), (1, "tam"), "istisna günü 6. durur")
 esit(sinir.bugunun_siniri(datetime(2026, 10, 15).date()), 4, "ertesi gün 4")
+# ---------------------------------------------------------------- çift paylaşım kilidi (Rıdvan, 3 Kasım 2026)
+# "çift paylaşım da olmasın lütfen": bu tür bugün paylaşıldıysa yedek cron, nöbetçi ya da geç gelen zamanlı
+# çalışma paylaşmadan, hata vermeden biter (tekrar=evet). Yalnız onay=true kilidi aşar.
+def tekrar_ciktisi(sayici, yayin, onay, tur):
+    import os
+    import tempfile
+    sinir.say = sayici
+    with tempfile.NamedTemporaryFile("w+", delete=False) as f:
+        yol = f.name
+    os.environ["GITHUB_OUTPUT"] = yol
+    try:
+        with contextlib.redirect_stdout(io.StringIO()):
+            kod = sinir.kontrol(yayin, onay, tur, "", SIMDI)
+        cikti = dict(s.split("=", 1) for s in Path(yol).read_text().split())
+    finally:
+        os.environ.pop("GITHUB_OUTPUT", None)
+    return kod, cikti.get("tekrar", "hayir"), cikti.get("hikaye")
+
+
+def bugun(*kayitlar):
+    return lambda simdi=None, **kw: list(kayitlar)
+
+
+sabah = (101, SIMDI, "paylaşıldı", "reels", 1)
+yarim = (102, SIMDI, "yarım", "post", 1)
+suren = (103, SIMDI, "sürüyor", "reels", 1)
+esit(tekrar_ciktisi(bugun(sabah), True, False, "reels"), (0, "evet", "tam"), "kilit: Reels bugün gitti, ikinci durur")
+esit(tekrar_ciktisi(bugun(sabah), True, False, "post"), (0, "hayir", "tam"), "kilit: başka tür (akşam) etkilenmez")
+esit(tekrar_ciktisi(bugun(sabah), True, True, "reels"), (0, "hayir", "tam"), "kilit: onay=true aşar")
+esit(tekrar_ciktisi(bugun(sabah), False, False, "reels"), (0, "hayir", "tam"), "kilit: deneme etkilenmez")
+esit(tekrar_ciktisi(bugun(yarim), True, False, "post"), (0, "evet", "tam"), "kilit: yarım kalan (bir şey paylaşan) da sayılır")
+esit(tekrar_ciktisi(bugun(suren), True, False, "reels"), (0, "hayir", "tam"), "kilit: süren çalıştırma sayılmaz")
+esit(tekrar_ciktisi(bugun((104, SIMDI, "paylaşıldı", "hikaye", 1)), True, False, "hikaye"), (0, "hayir", "tam"),
+     "kilit: elle rehber hikâyesi kapsam dışı")
+esit(tekrar_ciktisi(bugun(), True, False, "reels"), (0, "hayir", "tam"), "kilit: bugün bir şey yoksa paylaşır")
+# kilit, sınırdan önce gelir: gün dolu olsa bile ikinci Reels hata vermeden (kırmızı olmadan) atlanır
+dolu = [(200 + i, SIMDI, "paylaşıldı", "hikaye", 1) for i in range(3)] + [sabah]
+esit(tekrar_ciktisi(bugun(*dolu), True, False, "reels"), (0, "evet", "tam"), "kilit: gün doluyken de sessiz atlar")
+esit(sinir.TEKIL >= {"reels", "post", "hafta", "ay", "yorum", "bilgi", "kisa"}, True, "zamanlı türlerin hepsi kilitli")
+
 sinir.GUN_SINIRI = asil_gun
 sinir.say = asil_say
 for gun, n in sinir.GUN_SINIRI.items():   # gerçek istisnalar geçerli tarih ve makul sayı olmalı

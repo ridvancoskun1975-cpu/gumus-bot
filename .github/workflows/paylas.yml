@@ -74,6 +74,7 @@ jobs:
       tur: ${{ steps.tur.outputs.tur }}
       calis: ${{ steps.tur.outputs.calis }}
       hikaye: ${{ steps.sinir.outputs.hikaye }}   # tam ya da yok (günlük sınır; bot/sinir.py)
+      tekrar: ${{ steps.sinir.outputs.tekrar }}   # evet: bu tür bugün zaten paylaşıldı, üretme ve paylaşma (çift paylaşım kilidi)
     steps:
       - uses: actions/checkout@v5
         with:
@@ -97,6 +98,7 @@ jobs:
           else
             tur=reels
           fi
+          echo "Tetik: ${{ github.event_name }} ${{ github.event.schedule }} → tür $tur ($(date -u +%H:%M) UTC)"
           calis=true
           if [ "$tur" = "bilgi" ] && [ -z "$KONU" ]; then
             bolum=$(python3 bot/bilgi.py bugun)   # hata verirse adım başarısız olur (bash -e)
@@ -171,7 +173,9 @@ jobs:
 
   uret:
     needs: kontrol
-    if: needs.kontrol.outputs.calis == 'true'
+    # Çift paylaşım kilidi (Rıdvan, 3 Kasım 2026: "çift paylaşım da olmasın lütfen"; bot/sinir.py → TEKIL): bu tür bugün
+    # zaten paylaşıldıysa (ör. GitHub geciken zamanlı çalışmayı elle paylaşımdan sonra başlattı) üretilmez, paylaşılmaz.
+    if: needs.kontrol.outputs.calis == 'true' && needs.kontrol.outputs.tekrar != 'evet'
     runs-on: ubuntu-24.04   # sabit sürüm: ubuntu-latest 19 Ekim 2026 itibarıyla Ubuntu 26e geçiyor
     # Pazar yorumu Opus 5.5 "ekstra yüksek" çabayla yazılır; düşünme dakikalar sürebilir, süre geniş.
     # Zamanlı çalışma hedef saate kadar en çok ~50 dk bekler (aşağıda "Hedef saate kadar bekle"); süreler buna göre +50.

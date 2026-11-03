@@ -25,6 +25,15 @@ Sınır doluysa ve onay yoksa kontrol işi hata verip durur: hiçbir şey üreti
   - bir günün tamamı için: Rıdvan izin verirse Claude GUN_SINIRI'na o günü yazar (aşağıda).
 Claude onay işaretini ya da GUN_SINIRI'nı Rıdvan sohbette açıkça onaylamadan KULLANMAZ.
 
+ÇİFT PAYLAŞIM KİLİDİ (Rıdvan, 3 Kasım 2026: "çift paylaşım da olmasın lütfen"): GitHub'ın zamanlı çalışmayı
+geç başlatması ya da hiç başlatmaması (3 Kasım 2026 sabah Reels'i hiç başlamadı; önceki günler 40–90 dk gecikme)
+yüzünden aynı tür bir günde birden çok kez tetiklenebilir: asıl cron, yedek cron (paylas.yml), nöbetçi (nobetci.yml)
+ve elle başlatma. Bu tür (TEKIL) bugün zaten paylaşıldıysa çalıştırma paylaşmadan, HATA VERMEDEN biter
+(kontrol çıktısı tekrar=evet → uret ve yayinla atlanır). Yalnız onay=true (Rıdvan sohbette açıkça istedi) kilidi aşar.
+Paylaşılmış sayılan: bugün yayinla işi başarıyla bitmiş ya da bir şey paylaşıp hata vermiş ("yarım") aynı tür.
+Sürmekte olan çalıştırma sayılmaz: concurrency grubu yüzünden aynı anda tek çalıştırma yürür, sürüyor görünen
+bizden sonra sıradadır; o kendi sırası gelince bu kilide takılır.
+
 Kullanım (iş akışında): python3 bot/sinir.py --yayin true|false --onay true|false [--tur T] [--konu N]
 Yalnızca standart kitaplık kullanır (kontrol işi Python paketi kurmadan çalışır).
 """
@@ -51,6 +60,8 @@ GUN_SINIRI = {
 # kisa rehber arşivi Reels'i; kart; yasal kaydırmalı; hikaye elle rehber hikâyesi.
 TAHMIN = {"reels": 1, "post": 2, "hafta": 2, "ay": 2, "yorum": 2, "bilgi": 2, "kisa": 1, "kart": 1, "yasal": 1,
           "hikaye": 1, "tanitim": 1}   # tanitim: bilgi sayfasının bir kezlik tanıtım Reels'i (hikâyesiz)
+# Günde bir kez giden türler (çift paylaşım kilidi). hikaye (elle, bölüm no ile) ve tanitim kapsam dışı.
+TEKIL = {"reels", "post", "hafta", "ay", "yorum", "bilgi", "kisa", "kart", "yasal"}
 # Hikâye kopyası düşerse kalan sayı (yalnız bu türlerde hikâye bir kopyadır ve bırakılabilir)
 HIKAYESIZ = {"post": 1, "hafta": 1, "ay": 1, "bilgi": 1}   # yorum: 25 Ekim 2026'dan beri hikâyesiz (2)
 TR = ZoneInfo("Europe/Istanbul")
@@ -119,6 +130,15 @@ def toplam(sayilan):
     return sum(x[4] for x in sayilan)
 
 
+def bugun_paylasildi(sayilan, tur):
+    """Bu tür bugün paylaşıldıysa o kayıt (calistirma_id, zaman, durum, tür, sayı), yoksa None.
+    Yalnız bitmiş çalıştırmalar ("paylaşıldı" ya da "yarım"); sürenler sayılmaz (sıradakiler)."""
+    for kayit in sayilan:
+        if kayit[3] == tur and kayit[2] in ("paylaşıldı", "yarım"):
+            return kayit
+    return None
+
+
 # ---------------------------------------------------------------- GitHub
 
 def _github(yol):
@@ -180,12 +200,13 @@ def _liste(sayilan):
     return ", ".join(f"{z.astimezone(TR):%H:%M} {t or '?'} {n} ({d})" for _, z, d, t, n in sayilan) or "yok"
 
 
-def _cikti(hikaye):
-    """kontrol işinin çıktısı: hikaye=tam ya da yok (yayinla işi buna göre hikâye kopyasını paylaşır)."""
+def _cikti(hikaye, tekrar="hayir"):
+    """kontrol işinin çıktısı: hikaye=tam ya da yok (yayinla işi buna göre hikâye kopyasını paylaşır);
+    tekrar=evet ise bu tür bugün zaten paylaşılmıştır, uret ve yayinla atlanır (çift paylaşım kilidi)."""
     yol = os.environ.get("GITHUB_OUTPUT")
     if yol:
         with open(yol, "a", encoding="utf-8") as f:
-            f.write(f"hikaye={hikaye}\n")
+            f.write(f"hikaye={hikaye}\ntekrar={tekrar}\n")
 
 
 def kontrol(yayin, onay, tur, konu, simdi=None):
@@ -212,6 +233,18 @@ def kontrol(yayin, onay, tur, konu, simdi=None):
     n = toplam(sayilan)
     print(f"Bugün (TR) takipçinin gördüğü içerik: {n} ({_liste(sayilan)}). Günlük sınır {sinir} "
           "(akış + Reels + hikâye birlikte).")
+    onceki = bugun_paylasildi(sayilan, tur) if tur in TEKIL else None
+    if onceki and yayin and not onay:
+        saat = onceki[1].astimezone(TR).strftime("%H:%M")
+        print(f"::notice::Çift paylaşım kilidi: {ne} bugün {saat} TR'de zaten paylaşıldı (çalıştırma {onceki[0]}). "
+              "Bu çalıştırma paylaşmadan bitiyor; bu bir hata değil. Yeniden paylaşılması gerçekten isteniyorsa "
+              "Run workflow → onay: true (yalnız Rıdvan sohbette açıkça isterse).")
+        _ozet(f"Çift paylaşım kilidi: **{ne}** bugün {saat} TR'de zaten paylaşıldı; bu çalıştırma paylaşmadı.")
+        _cikti("tam", "evet")
+        return 0
+    if onceki and yayin and onay:
+        print(f"Dikkat: {ne} bugün {onceki[1].astimezone(TR):%H:%M} TR'de zaten paylaşılmıştı; onay verildiği için "
+              "ikinci kez paylaşılacak.")
     if not yayin:
         print(f"Deneme çalıştırması: paylaşım yok, sınır uygulanmaz (bu tür tam giderse {plan} içerik).")
         _cikti("tam")
