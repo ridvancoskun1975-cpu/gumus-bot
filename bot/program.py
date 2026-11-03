@@ -90,7 +90,10 @@ class ProgramHatasi(Exception):
 def cronlar(yol=None):
     """[(cron, tür)] — iş akışındaki zamanlı çalışmalar, iş akışının seçtiği türle."""
     metin = Path(yol or IS_AKISI).read_text(encoding="utf-8")
-    zamanlar = re.findall(r"^\s*-\s*cron:\s*'([^']+)'", metin, flags=re.M)
+    # Satır sonunda "yedek" yazan cron'lar ikinci tetiktir (GitHub asıl çalışmayı düşürürse; 3 Kasım 2026):
+    # takvime girmez, hedef denetiminde sayılmaz.
+    zamanlar = [c for c, kuyruk in re.findall(r"^\s*-\s*cron:\s*'([^']+)'(.*)$", metin, flags=re.M)
+                if "yedek" not in kuyruk]
     if not zamanlar:
         raise ProgramHatasi(f"{yol} içinde cron satırı bulunamadı")
     esleme = dict(re.findall(r'github\.event\.schedule \}\}" = "([^"]+)" \]; then\s*\n\s*tur=(\w+)', metin))

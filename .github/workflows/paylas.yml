@@ -11,6 +11,17 @@ on:
     - cron: '10 16 * * 1-5'   # 19:10 TR -> Günlük özet (hedef 19:55 → ~20:00)
     - cron: '10 6 * * 6'      # Cumartesi 09:10 TR -> Haftalık özet (hedef 09:55 → ~10:00)
     - cron: '10 7 * * 0'      # Pazar 10:10 TR -> Yapay zekâ yorumu (hedef 10:55 → ~11:00; kısa/orta vade, kaydırmalı 3 görsel)
+    # YEDEK cron'lar (Rıdvan, 3 Kasım 2026: "Bir daha olmaması için ne yapmamız lazım?", "çift paylaşım da olmasın";
+    # o sabah GitHub 09:10 çalışmasını hiç başlatmadı; GitHub belgeleri zamanlı çalışmaların yoğunlukta gecikebileceğini,
+    # yoğunluk çok yüksekse düşebileceğini yazıyor). Her asıl cron'dan 27 dk sonra, hedef saatten 18 dk önce ikinci bir
+    # tetik (dakika 37: saat başı ve :55 yoğun). Asıl çalışma paylaştıysa yedek çift paylaşım kilidi (bot/sinir.py →
+    # TEKIL) yüzünden saniyeler içinde paylaşmadan biter; asıl hiç gelmediyse yedek hedef saatte paylaşır. Satır
+    # sonundaki "yedek" sözcüğü bot/program.py'nin bu cron'ları sitedeki takvime yazmamasını sağlar; silme.
+    # Üçüncü güvence nobetci.yml (yine gitmediyse paylaşımı başlatır ve kırmızı biterek haber verir).
+    - cron: '37 6 * * 1-5'    # yedek: 09:37 TR -> Reels
+    - cron: '37 16 * * 1-5'   # yedek: 19:37 TR -> Günlük özet
+    - cron: '37 6 * * 6'      # yedek: Cumartesi 09:37 TR -> Haftalık özet
+    - cron: '37 7 * * 0'      # yedek: Pazar 10:37 TR -> Yapay zekâ yorumu
     # Hafta içi 13:10 TR (hedef 13:55 → ~14:00) -> Gümüş rehberi (bilgi). Hangi gün hangi bölüm: bot/bilgi.py → takvim()
     # (19–21 Ekim 2026 her gün, 28 Ekim'den itibaren haftada 1, çarşamba; Rıdvan 19 Ekim 2026). Rehber olmayan günlerden ayın ilk iş günü aylık özet
     # gider (bot/aylik.py; ilki 2 Kasım 2026). İkisi de yoksa "kontrol" işi birkaç saniyede biter.
@@ -18,6 +29,7 @@ on:
     # Rehber ve aylık özet yoksa rehber arşivi günü olabilir (bot/bilgi.py → arsiv_takvim(); #3–#5 birer kez,
     # haftalık rehber sırasında, çarşamba): tür kisa, yalnız sesli Reels. Cumartesi kısa Reels'i 16 Ekim 2026'da kaldırıldı (Rıdvan).
     - cron: '10 10 * * 1-5'
+    - cron: '37 10 * * 1-5'   # yedek: 13:37 TR -> rehber / aylık özet / arşiv Reels'i
     # Çarşamba ve cuma 11:50 TR haftalık kartlar (bot/kart.py) 19 Ekim 2026'da kaldırıldı (Rıdvan: takipçiyi
     # bıktırmamak için paylaşım sayısı azaltıldı; kartlar sabah ve akşam verilen fiyatın tekrarıydı). Kod duruyor:
     # elle Run workflow → tür: kart; geri açmak için cron '50 8 * * 3,5' ve aşağıdaki eşleme yeter.
@@ -94,6 +106,14 @@ jobs:
           elif [ "${{ github.event.schedule }}" = "10 7 * * 0" ]; then
             tur=yorum
           elif [ "${{ github.event.schedule }}" = "10 10 * * 1-5" ]; then
+            tur=bilgi
+          elif [ "${{ github.event.schedule }}" = "37 16 * * 1-5" ]; then
+            tur=post
+          elif [ "${{ github.event.schedule }}" = "37 6 * * 6" ]; then
+            tur=hafta
+          elif [ "${{ github.event.schedule }}" = "37 7 * * 0" ]; then
+            tur=yorum
+          elif [ "${{ github.event.schedule }}" = "37 10 * * 1-5" ]; then
             tur=bilgi
           else
             tur=reels

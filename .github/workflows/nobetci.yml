@@ -1,0 +1,48 @@
+name: Paylaşım nöbetçisi
+
+# Zamanlı paylaşım gitmediyse başlatır ve haber verir (bot/nobetci.py).
+# Rıdvan, 3 Kasım 2026: "Sabah paylaşım olmaması nasıl olur anlamıyorum. Bir daha olmaması için ne yapmamız lazım?",
+# "Şans eseri öğrendim", "çift paylaşım da olmasın lütfen". O sabah GitHub 09:10 çalışmasını hiç başlatmadı.
+#
+# Her paylaşım diliminden ~1 saat sonra bakar. O dilimin türü bugün paylaşıldıysa saniyeler içinde sessizce biter.
+# Paylaşılmadıysa ve bir çalıştırma sürmüyorsa Gümüş paylaşımı'nı (paylas.yml) deneme kapalı başlatır ve bu iş
+# KIRMIZI biter: GitHub'ın "Run failed" e-postası Rıdvan'a haber olur. Çift paylaşım kilidi (bot/sinir.py) başlatılan
+# çalıştırmanın ikinci kez paylaşmasını önler. Onay işareti (onay: true) hiçbir zaman kullanılmaz.
+# Dakika 12: saat başı yoğunluğundan uzak. Bu iş de GitHub'ın zamanlayıcısına bağlıdır; gecikebilir.
+on:
+  schedule:
+    - cron: '12 8 * * 1-5'    # 11:12 TR: sabah Reels'i (~10:00)
+    - cron: '12 12 * * 1-5'   # 15:12 TR: rehber / aylık özet / arşiv Reels'i (~14:00; o gün varsa)
+    - cron: '12 18 * * 1-5'   # 21:12 TR: akşam özeti (~20:00)
+    - cron: '12 8 * * 6'      # Cumartesi 11:12 TR: haftalık özet (~10:00)
+    - cron: '12 9 * * 0'      # Pazar 12:12 TR: pazar yorumu (~11:00)
+  workflow_dispatch:
+    inputs:
+      dilim:
+        description: "Elle: hangi tür denetlensin (reels, post, hafta, yorum, gunduz). Gitmediyse başlatılır."
+        type: choice
+        options: [reels, post, gunduz, hafta, yorum]
+        default: reels
+
+permissions:
+  contents: read
+  actions: write   # bugünkü çalıştırmaları okur, gerekirse paylas.yml'yi başlatır
+
+concurrency:
+  group: gumus-nobetci
+  cancel-in-progress: false
+
+jobs:
+  nobet:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: bot
+
+      - name: Paylaşım gitti mi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DILIM: ${{ github.event.schedule || inputs.dilim }}
+        run: python3 bot/nobetci.py "$DILIM"
