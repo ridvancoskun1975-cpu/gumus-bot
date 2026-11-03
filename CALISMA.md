@@ -6,3 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
+| 3 Kasım 2026 12:10 | Güvence kodu denetim düzeltmeleri (nöbetçi saat penceresi, kilitler, arşiv yıllığı) | bot/nobetci.py, bot/sinir.py, bot/main.py (yayinla), bot/arsiv.py, bot/yedek.py, paylas.yml/sayfa.yml (arşiv adımı), README | denetim-duzeltme |
