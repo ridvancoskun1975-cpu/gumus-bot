@@ -6,3 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
+| 3 Kasım 2026 11:45 | Ana sayfa: "Geçmiş fiyatlar: yıl yıl, ay ay" bağlantısı ayrı satır ve biraz büyük (Rıdvan 11:42) | templates/sayfa.html, templates/taban.html | gecmis-baglanti · önizleme |
