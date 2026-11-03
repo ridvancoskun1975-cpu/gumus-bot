@@ -488,6 +488,9 @@ try:
                                                      "kapak_ms": 15000, "aciklama": "x", "hikayeler": ["h1.png"],
                                                      "hikaye_videolari": ["bilgi7-x-hikaye-video-1.mp4"]}), encoding="utf-8")
             main._yayinla(d, "https://ornek/")
+        # ilk istek ikinci çift paylaşım kilidinin okumasıdır (me/media; 3 Kasım 2026), paylaşım değildir
+        dogrula(olaylar[0] == ("istek", "me/media"), f"önce ikinci kilit Instagram'a bakar: {olaylar}")
+        olaylar = olaylar[1:]
         dogrula(olaylar[0] == ("reels", "bilgi7-x.mp4"), f"önce Reels: {olaylar}")
         dogrula(("rehber-hikaye", ("bilgi7-x-hikaye-video-1.mp4",)) in olaylar, "sonra müzikli rehber hikâyesi")
         dogrula(not any(o[0] == "hikaye" for o in olaylar), "Reels'in kendisi hikâyeye gitmez")

@@ -142,4 +142,103 @@ esit(sorted(nb_cron), sorted(nobetci.DILIMLER), "nobetci.yml cron'ları nobetci.
 esit("onay" not in re.sub(r"#.*", "", nb), True, "nöbetçi onay işaretini kullanmaz")
 esit('"onay": False' in (KOK / "bot/nobetci.py").read_text(encoding="utf-8"), True, "nöbetçi onay: false ile başlatır")
 
+# ---- ikinci çift paylaşım kilidi: Instagram'ın kendisine bakar (bot/main.py → instagram_bugun_paylasildi)
+import json  # noqa: E402
+import os  # noqa: E402
+import tempfile  # noqa: E402
+import main as bot  # noqa: E402
+
+BUGUN = datetime(2026, 11, 3, 8, 0, tzinfo=timezone.utc)   # 11:00 TR
+
+
+def ig(*ogeler):
+    """ogeler: (açıklama, Instagram zaman damgası)"""
+    def istek(yontem, yol, **kw):
+        esit((yontem, yol), ("GET", "me/media"), "ikinci kilit yalnız okur")
+        return {"data": [{"id": str(i), "caption": a, "timestamp": z} for i, (a, z) in enumerate(ogeler)]}
+    return istek
+
+
+sabah_ig = ("Gram gümüş fiyatı bugün: 78,92 ₺ (▼ %3,63)\nGüncel gümüş fiyatları · 3 Kasım 2026 Salı 10:48", "2026-11-03T07:49:12+0000")
+aksam_dun = ("Gram gümüş fiyatı bugün: 81,89 ₺\nGünün gümüş özeti · 2 Kasım 2026", "2026-11-02T17:12:00+0000")
+esit(bot.instagram_bugun_paylasildi({"tur": "reels"}, BUGUN, ig(sabah_ig, aksam_dun)), ("0", "10:49"),
+     "ikinci kilit: bugünkü Reels Instagram'da bulunur")
+esit(bot.instagram_bugun_paylasildi({"tur": "post"}, BUGUN, ig(sabah_ig, aksam_dun)), None,
+     "ikinci kilit: dünkü akşam özeti bugünü kilitlemez")
+gece = ("x\nGüncel gümüş fiyatları · 3 Kasım", "2026-11-02T21:30:00+0000")   # 3 Kasım 00:30 TR
+esit(bot.instagram_bugun_paylasildi({"tur": "reels"}, BUGUN, ig(gece)), ("0", "00:30"), "ikinci kilit: gün TR saatine göre")
+rehber14 = ("Gerçek gümüş nasıl anlaşılır? | Gümüş rehberi #14", "2026-11-03T07:00:00+0000")
+esit(bot.instagram_bugun_paylasildi({"tur": "bilgi", "konu": 1}, BUGUN, ig(rehber14)), None, "ikinci kilit: #1 ile #14 karışmaz")
+esit(bot.instagram_bugun_paylasildi({"tur": "bilgi", "konu": 14}, BUGUN, ig(rehber14))[0], "0", "ikinci kilit: rehber #14 bulunur")
+esit(bot.instagram_bugun_paylasildi({"tur": "hikaye", "konu": 3}, BUGUN, ig(rehber14)), None, "ikinci kilit: hikâye kapsam dışı")
+yorum = ("Haftalık gümüş görünümü | Üst düzey yapay zekâ yorumu · 1 Kasım", "2026-11-01T08:01:00+0000")
+esit(bot.instagram_bugun_paylasildi({"tur": "yorum"}, datetime(2026, 11, 1, 9, tzinfo=timezone.utc), ig(yorum))[0], "0",
+     "ikinci kilit: pazar yorumu bulunur")
+
+
+def bozuk(*a, **k):
+    raise RuntimeError("Instagram API hatası (400)")
+
+
+def engel(*a, **k):
+    raise bot.ErisimEngeli("API access blocked")
+
+
+with contextlib.redirect_stdout(io.StringIO()):
+    esit(bot.instagram_bugun_paylasildi({"tur": "reels"}, BUGUN, bozuk), None,
+         "ikinci kilit: Instagram okunamazsa paylaşımı durdurmaz (birinci kilit geçti)")
+try:
+    bot.instagram_bugun_paylasildi({"tur": "reels"}, BUGUN, engel)
+    esit(True, False, "ErisimEngeli yukarı çıkmalı")
+except bot.ErisimEngeli:
+    esit(True, True, "ikinci kilit: geçici engel yayinla()'ya gider, bekleyip yeniden dener")
+
+# _yayinla: bugünkü Reels Instagram'da varsa hiçbir şey paylaşmaz, sayı 0 kalır
+cagrilar = []
+
+
+def sahte_istek(yontem, yol, **kw):
+    cagrilar.append((yontem, yol))
+    if (yontem, yol) == ("GET", "me/media"):
+        return {"data": [{"id": "9", "caption": sabah_ig[0],
+                          "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S+0000")}]}
+    raise AssertionError(f"paylaşım isteği gitmemeli: {yontem} {yol}")
+
+
+asil_istek = bot._istek
+bot._istek = sahte_istek
+bot._GORUNEN[0] = 0
+with tempfile.TemporaryDirectory() as d:
+    Path(d, "meta.json").write_text(json.dumps({"tur": "reels", "dosya": "x.mp4", "aciklama": sabah_ig[0]}))
+    os.environ.pop("ONAY_TEKRAR", None)
+    with contextlib.redirect_stdout(io.StringIO()) as cikti:
+        bot.yayinla(Path(d), "https://ornek.invalid/", bekle_dk=0)
+    esit(cagrilar, [("GET", "me/media")], "ikinci kilit: _yayinla yalnız okudu, paylaşmadı")
+    esit(bot._GORUNEN[0], 0, "ikinci kilit: görünen sayı 0 (gün artmaz)")
+    esit("zaten var" in cikti.getvalue(), True, "ikinci kilit: günlükte nedeni yazar")
+    # onay: true (ONAY_TEKRAR) ikinci kilidi aşar: Instagram'a bakılmadan paylaşıma geçilir
+    cagrilar.clear()
+    os.environ["ONAY_TEKRAR"] = "1"
+    asil_url = bot._url_hazir_mi
+
+    class Dur(Exception):
+        pass
+
+    def dur(*a, **k):
+        raise Dur()
+    bot._url_hazir_mi = dur
+    try:
+        bot.yayinla(Path(d), "https://ornek.invalid/", bekle_dk=0)
+        esit(True, False, "paylaşıma geçmeliydi")
+    except Dur:
+        esit(cagrilar, [], "onay: true iken ikinci kilit Instagram'a bakmadan geçer")
+    finally:
+        bot._url_hazir_mi = asil_url
+        os.environ.pop("ONAY_TEKRAR", None)
+bot._istek = asil_istek
+w = (KOK / ".github/workflows/paylas.yml").read_text(encoding="utf-8")
+esit("ONAY_TEKRAR: ${{ github.event_name == 'workflow_dispatch' && inputs.onay && '1' || '' }}" in w, True,
+     "iş akışı: ikinci kilidi yalnız elle onay: true aşar")
+esit("steps.gorunen.outputs.n != '0'" not in w, True, "iş akışı: 0 sayısı da saklanır (atlanan paylaşım günü artırmaz)")
+
 print(f"\ntest_nobetci: {gecen} sınama geçti")

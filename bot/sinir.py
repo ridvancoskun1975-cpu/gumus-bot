@@ -120,7 +120,9 @@ def paylasim_sayisi(calistirmalar, isler, simdi, bu_calistirma, eserler=None):
                 if not zaman or zaman.astimezone(TR).date() != bugun:
                     continue
                 if i.get("conclusion") == "success":
-                    sayilan.append((c["id"], zaman, "paylaşıldı", tur, gercek or TAHMIN.get(tur, 2)))
+                    # gerçek sayı 0 olabilir (ikinci kilit paylaşmadan bitirdi: tür zaten paylaşılmış, gün artmaz)
+                    sayilan.append((c["id"], zaman, "paylaşıldı", tur,
+                                    gercek if gercek is not None else TAHMIN.get(tur, 2)))
                 elif gercek:
                     sayilan.append((c["id"], zaman, "yarım", tur, gercek))
     return sorted(sayilan, key=lambda x: x[1])

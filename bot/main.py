@@ -24,6 +24,7 @@ import argparse
 import json
 import math
 import os
+import re
 import subprocess
 import sys
 import time
@@ -1773,11 +1774,66 @@ def yayinla(cikti, taban_url, bekle_dk=0):
             time.sleep(ara)
 
 
+# İkinci çift paylaşım kilidi: Instagram'ın kendisine bakar (Rıdvan, 3 Kasım 2026: "çift paylaşım da olmasın lütfen",
+# "dikkat çift paylaşım olmasın!"). Birinci kilit (bot/sinir.py, kontrol işi) GitHub'ın çalıştırma geçmişine bakar; bu
+# ise paylaşmadan hemen önce, her denemede, hesabın bugünkü gönderilerine bakar. Şunları da yakalar: Instagram
+# media_publish'i yapıp hata döndürdüğü için yayinla()'nın baştan denemesi, "Re-run failed jobs", sayısını yazamadan
+# biten bir çalıştırma. İmza açıklamadaki sabit satırdır (bot/rapor.py → aciklamadan_ad ile aynı ifadeler).
+# Instagram'a ulaşılamazsa birinci kilit yeterli sayılır, paylaşım sürer (hafta içi 2 fiyat taahhüdü).
+IG_KILIT_IMZA = {
+    "reels": r"güncel gümüş fiyatları",
+    "post": r"günün gümüş özeti",
+    "hafta": r"haftalık gümüş özeti",
+    "ay": r"aylık gümüş özeti",
+    "yorum": r"haftalık gümüş görünümü",
+    "yasal": r"yasal bilgilendirme",
+}
+
+
+def _ig_imza(meta):
+    tur = meta.get("tur")
+    if tur in ("bilgi", "kisa") and meta.get("konu"):
+        return rf"gümüş rehberi #{int(meta['konu'])}(?!\d)"   # #1, #14'le karışmasın
+    return IG_KILIT_IMZA.get(tur)
+
+
+def instagram_bugun_paylasildi(meta, simdi=None, istek=None):
+    """Bu tür bugün (TR) Instagram'da zaten var mı: (medya id, TR saati) ya da None. ErisimEngeli yukarı çıkar
+    (yayinla() bekleyip yeniden dener); başka hata None döndürür ve uyarı yazar (paylaşım birinci kilitle sürer)."""
+    imza = _ig_imza(meta)
+    if not imza:
+        return None
+    istek = istek or _istek
+    bugun = (simdi or datetime.now(TR_SAAT)).astimezone(TR_SAAT).date()
+    try:
+        veri = istek("GET", "me/media", fields="id,caption,timestamp", limit=15)
+    except ErisimEngeli:
+        raise
+    except Exception as e:
+        print(f"::warning::İkinci çift paylaşım kilidi: Instagram'daki bugünkü gönderiler okunamadı ({e}); "
+              "birinci kilit (çalıştırma geçmişi) geçtiği için paylaşım sürüyor.")
+        return None
+    for m in veri.get("data", []):
+        try:
+            zaman = datetime.strptime(m["timestamp"], "%Y-%m-%dT%H:%M:%S%z").astimezone(TR_SAAT)
+        except (KeyError, ValueError):
+            continue
+        if zaman.date() == bugun and re.search(imza, (m.get("caption") or "").lower()):
+            return m.get("id"), zaman.strftime("%H:%M")
+    return None
+
+
 def _yayinla(cikti, taban_url):
     meta = json.loads((cikti / "meta.json").read_text(encoding="utf-8"))
     if meta.get("reels_tekrar"):   # yalnız pazar Reels'i + hikâyesi (pazar_reels_tekrar)
         yorum_reelsi(hesap_bilgisi()["user_id"], meta["reels"], taban_url)
         return
+    if not os.environ.get("ONAY_TEKRAR"):   # Rıdvan'ın onay: true'su ikinci paylaşıma izin verir
+        var = instagram_bugun_paylasildi(meta)
+        if var:
+            print(f"::notice::İkinci çift paylaşım kilidi: {meta['tur']} bugün {var[1]} TR'de Instagram'da zaten var "
+                  f"(medya id {var[0]}). Paylaşılmadı; bu bir hata değil.")
+            return
     if meta["tur"] == "hikaye":
         videolar = meta.get("hikaye_videolari") or []
         if not videolar:

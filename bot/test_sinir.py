@@ -187,6 +187,15 @@ esit(tekrar_ciktisi(bugun(), True, False, "reels"), (0, "hayir", "tam"), "kilit:
 dolu = [(200 + i, SIMDI, "paylaşıldı", "hikaye", 1) for i in range(3)] + [sabah]
 esit(tekrar_ciktisi(bugun(*dolu), True, False, "reels"), (0, "evet", "tam"), "kilit: gün doluyken de sessiz atlar")
 esit(sinir.TEKIL >= {"reels", "post", "hafta", "ay", "yorum", "bilgi", "kisa"}, True, "zamanlı türlerin hepsi kilitli")
+# ikinci kilit (Instagram) paylaşmadan bitirdiyse: eser "gorunen-1-0" → gün artmaz ama tür paylaşılmış sayılır
+atlanan = sinir.paylasim_sayisi(
+    [{"id": 301}], {301: [is_("yayinla", "completed", "success", bit="2026-10-14T07:00:00Z")]}, SIMDI, 0,
+    {301: ["gorunen-1-0", "onizleme-reels"]})
+esit([(x[2], x[3], x[4]) for x in atlanan], [("paylaşıldı", "reels", 0)], "atlanan çalıştırma 0 sayılır")
+hatali = sinir.paylasim_sayisi(
+    [{"id": 302}], {302: [is_("yayinla", "completed", "failure", bit="2026-10-14T07:00:00Z")]}, SIMDI, 0,
+    {302: ["gorunen-1-0", "onizleme-post"]})
+esit(hatali, [], "hiçbir şey paylaşmadan hata veren çalıştırma sayılmaz (yeniden denenebilir)")
 
 sinir.GUN_SINIRI = asil_gun
 sinir.say = asil_say

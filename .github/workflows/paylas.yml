@@ -499,6 +499,8 @@ jobs:
         env:
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
           HIKAYE: ${{ needs.uret.outputs.hikaye }}             # yok: günlük sınır için hikâye kopyası gitmez
+          # İkinci çift paylaşım kilidi (bot/main.py → instagram_bugun_paylasildi) yalnız Rıdvan'ın onay: true'suyla aşılır
+          ONAY_TEKRAR: ${{ github.event_name == 'workflow_dispatch' && inputs.onay && '1' || '' }}
           GORUNEN_DOSYA: ${{ runner.temp }}/gorunen.txt        # paylaşılan içerik sayısı (günlük sınır)
         run: python bot/main.py yayinla --cikti site --url "${{ steps.yayin.outputs.page_url }}" --bekle-dk 150
 
@@ -510,7 +512,8 @@ jobs:
         run: echo "n=$(tr -dc '0-9' < "$RUNNER_TEMP/gorunen.txt" 2>/dev/null || true)" >> "$GITHUB_OUTPUT"
 
       - name: Görünen içerik sayısını sakla
-        if: always() && steps.gorunen.outputs.n != '' && steps.gorunen.outputs.n != '0'
+        # 0 da saklanır: ikinci kilit paylaşmadan bitirdiyse bu çalıştırma günlük sayıya eklenmesin (bot/sinir.py)
+        if: always() && steps.gorunen.outputs.n != ''
         continue-on-error: true
         uses: actions/upload-artifact@v6
         with:
