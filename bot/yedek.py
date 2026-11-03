@@ -147,7 +147,8 @@ def main():
             sys.exit(2)
     except YedekHatasi as e:   # yalnızca uyarı: paylaşım ve sayfa bu yüzden durmaz
         print(f"::warning::Günlük kayıt yedeği ({komut}): {e}")
-    # Geçmiş fiyat arşivi ayrı adımda iner (python bot/arsiv.py indir), bu adımın 1 dakikasını paylaşmasın.
+    # Geçmiş fiyat arşivi (bot/arsiv.py) ayrı iş akışı adımında iner: python bot/arsiv.py indir
+
 
 if __name__ == "__main__":
     main()

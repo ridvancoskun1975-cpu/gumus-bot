@@ -86,21 +86,24 @@ esit(calistir("12 8 * * 1-5", durumlar=[[], [SABAH]], suren=lambda: next(bayrak)
 esit(calistir("12 12 * * 1-5", durumlar=[[]], gunduz=None)[0] in (0, 1), True, "gündüz dilimi takvimden okunur")
 esit(calistir("12 12 * * 1-5", durumlar=[[]], gunduz="bilgi", simdi=OGLEN), (1, ["bilgi"], 0),
      "rehber gitmemiş: başlatır")
-# Süren çalıştırma 20 dk'da bitmedi ve türü bizim değil / belli değil: yine başlatır (sıraya girer, kilit korur)
+# Süren çalıştırma BEKLE_DK'da bitmedi ve türü bizim değil / belli değil: yine başlatır (sıraya girer, kilit korur)
 esit(calistir("12 8 * * 1-5", durumlar=[turu_belirsiz]), (1, ["reels"], nobetci.BEKLE_DK),
-     "türü belli olmayan çalıştırma 20 dk'da bitmezse yine başlatır (sessiz kaçırma yok)")
+     "türü belli olmayan çalıştırma BEKLE_DK'da bitmezse yine başlatır (sessiz kaçırma yok)")
 esit(calistir("12 8 * * 1-5", durumlar=[[]], suren=lambda: True), (1, ["reels"], nobetci.BEKLE_DK),
-     "başka bir çalıştırma 20 dk sürerse yine başlatır")
+     "başka bir çalıştırma BEKLE_DK sürerse yine başlatır")
 esit(calistir("12 8 * * 1-5", durumlar=[[(4, SIMDI, "sürüyor", "post", 2)]], suren=lambda: True),
      (1, ["reels"], nobetci.BEKLE_DK), "başka türde süren çalıştırma bizimki sayılmaz")
 
 # ---- saat penceresi: hedeften önce başlatmaz (gecikip ertesi güne kalan bakış dahil)
 gece = datetime(2026, 11, 6, 21, 15, tzinfo=timezone.utc)   # cumartesi 00:15 TR (cuma 21:12 bakışı 3 saat gecikti)
-esit(calistir("12 18 * * 1-5", durumlar=[[]], simdi=gece), (0, [], 0),
-     "akşam bakışı gece yarısını geçtiyse yeni günün özetini başlatmaz")
+esit(calistir("12 18 * * 1-5", durumlar=[[]], simdi=gece), (1, [], 0),
+     "akşam bakışı gece yarısını geçti, dünkü özet gitmemiş: yeni günün özetini başlatmaz, haber verir")
+dunku_post = (7, datetime(2026, 11, 6, 17, 5, tzinfo=timezone.utc), "paylaşıldı", "post", 2)
+esit(calistir("12 18 * * 1-5", durumlar=[[dunku_post]], simdi=gece), (0, [], 0),
+     "akşam bakışı gece yarısını geçti, dünkü özet gitmiş: sessiz biter")
 erken = datetime(2026, 11, 3, 6, 0, tzinfo=timezone.utc)    # 09:00 TR
 esit(calistir("reels", durumlar=[[]], simdi=erken), (0, [], 0), "hedef saatten (09:55) önce başlatmaz")
-esit(calistir("12 18 * * 1-5", durumlar=[[]], simdi=SIMDI), (0, [], 0), "akşam özetini sabah başlatmaz")
+esit(calistir("post", durumlar=[[]], simdi=SIMDI), (0, [], 0), "elle/Claude: akşam özetini sabah başlatmaz, sessiz")
 gec_aksam = datetime(2026, 11, 3, 19, 45, tzinfo=timezone.utc)   # 22:45 TR
 esit(calistir("12 18 * * 1-5", durumlar=[[]], simdi=gec_aksam), (1, [], 0),
      "akşam özeti 22:30'dan sonra başlatılmaz (gece yarısını geçmesin), haber verir")
@@ -108,6 +111,10 @@ for t in nobetci.SON_SAAT:
     esit(program.HEDEF_SAATLERI[t] < nobetci.SON_SAAT[t] <= (22, 30), True, f"{t}: pencere hedef → son saat")
 
 # ---- pazar yorumu duraklatıldıysa başlatmaz; takvim okunamazsa kırmızı
+esit(nobetci.BEKLE_DK >= 40, True, "pazar yorumu üretimi (35 dk) beklenir")
+yml_nb = (KOK / ".github/workflows/nobetci.yml").read_text(encoding="utf-8")
+esit(int(re.search(r"timeout-minutes: (\d+)", yml_nb).group(1)) >= nobetci.BEKLE_DK + 10, True,
+     "nobetci.yml işi beklemeden uzun sürer")
 esit(nobetci.yorum_duraklatildi(), False, "main.YORUM_DURAKLAT şu an kapalı (metinden okunur)")
 eski_d = nobetci.yorum_duraklatildi
 nobetci.yorum_duraklatildi = lambda: True
@@ -148,7 +155,7 @@ esit(kod, 0, "o gün ~14:00 paylaşımı yoksa sessiz biter")
 aksam = datetime(2026, 11, 3, 16, 0, tzinfo=timezone.utc)   # 19:00 TR
 esit(calistir("12 8 * * 1-5", durumlar=[[]], simdi=aksam), (1, [], 0),
      "nöbetçi çok geç çalıştıysa sabah Reels'ini akşam başlatmaz, yalnız haber verir")
-esit(calistir("12 18 * * 1-5", durumlar=[[]], simdi=aksam), (0, [], 0), "akşam özeti 19:00'da (hedeften önce) başlatılmaz")
+esit(calistir("post", durumlar=[[]], simdi=aksam), (0, [], 0), "akşam özeti 19:00'da (hedeften önce) başlatılmaz")
 esit(calistir("12 8 * * 1-5", durumlar=[[]], baslat_hata=OSError("ağ yok")), (1, [], 0),
      "başlatılamazsa kırmızı biter")
 

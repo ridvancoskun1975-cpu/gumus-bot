@@ -15,7 +15,7 @@ Güvencenin bütünü README → "Zamanlı paylaşım güvencesi" (5 katman). Bu
     yerindeyse sessizce biter. Bizim türümüzde bir çalıştırma sürüyorsa en çok BEKLE_DK dakika bekler; türü belli
     olmayan ya da başka bir çalıştırma o sürede bitmezse yine başlatır (sıraya girer, kilit ikinciyi durdurur).
   - Yalnız dilimin penceresinde başlatır: hedef saatten (program.HEDEF_SAATLERI) SON_SAAT'e kadar. Nöbetçi GitHub'da
-    saatlerce gecikip ertesi güne kalırsa yeni günün paylaşımını erkenden başlatmaz.
+    saatlerce gecikip ertesi güne kalırsa yeni günün paylaşımını erkenden başlatmaz; dünkü gitmediyse haber verir.
 
 Kullanım: python3 bot/nobetci.py "<cron>"   (nobetci.yml github.event.schedule'ı verir; elle: "reels" gibi tür de olur)
 Yalnızca standart kitaplık + botun kendi modülleri; GITHUB_TOKEN (actions: write) ve GITHUB_REPOSITORY gerekir.
@@ -28,7 +28,7 @@ import sys
 import time
 import urllib.error
 import urllib.request
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -45,7 +45,9 @@ DILIMLER = {
     "12 8 * * 6": "hafta",      # cumartesi 11:12 TR (haftalık özet ~10:00)
     "12 9 * * 0": "yorum",      # pazar 12:12 TR (pazar yorumu ~11:00)
 }
-BEKLE_DK = 20       # sürmekte olan çalıştırma için en çok bekleme
+# Sürmekte olan çalıştırma için en çok bekleme. Türü üretim (uret) bitene kadar belli olmaz; pazar yorumunun üretimi
+# 35 dk'ya kadar sürebildiği için 40 dk. Claude görevi betiği arka planda çalıştırır; nobetci.yml işi 55 dk.
+BEKLE_DK = 40
 # Nöbetçi de GitHub'ın zamanlayıcısına bağlı, saatlerce gecikebilir. Bu saatten (TR) sonra o dilimin paylaşımını
 # başlatmaz (sabah Reels'i akşam özetinin yanında gitmesin), yalnız kırmızı biterek haber verir. Akşam özeti 22:30:
 # paylaşım işi (Instagram engelinde en çok ~3 saat yeniden dener) gece yarısını geçmesin; geçerse main.yayinla durur.
@@ -150,7 +152,7 @@ def main(dilim, uyu=time.sleep, say=None, baslatici=None, simdi=None, suren=None
     say = say or sinir.say
     baslatici = baslatici or baslat
     suren = suren or suren_calistirma_var
-    # simdi verilirse (sınama) sabit; yoksa her bakışta yeniden okunur (bekleme 20 dk sürebilir)
+    # simdi verilirse (sınama) sabit; yoksa her bakışta yeniden okunur (bekleme BEKLE_DK dakika sürebilir)
     saat_al = (lambda: simdi) if simdi else (lambda: datetime.now(timezone.utc))
     try:
         tur = beklenen(dilim)
@@ -163,9 +165,27 @@ def main(dilim, uyu=time.sleep, say=None, baslatici=None, simdi=None, suren=None
         return 0
     if erken_mi(tur, saat_al()):
         h, d = program.HEDEF_SAATLERI[tur]
-        print(f"::warning::Saat {saat_al().astimezone(sinir.TR):%H:%M} TR, {tur} hedefinden ({h:02d}:{d:02d}) önce: "
-              "bu dilimde şu an beklenen paylaşım yok, nöbetçi başlatmadı (erken ya da ertesi güne kalmış bakış).")
-        return 0
+        yerel = saat_al().astimezone(sinir.TR)
+        if dilim not in DILIMLER:   # elle ya da Claude görevi, hedeften önce: henüz beklenmiyor
+            print(f"Saat {yerel:%H:%M} TR, {tur} hedefinden ({h:02d}:{d:02d}) önce: bu dilimde şu an beklenen "
+                  "paylaşım yok, nöbetçi başlatmadı.")
+            return 0
+        # Zamanlı nöbetçi hep hedeften sonra kurulu; hedeften önce çalıştıysa GitHub onu ertesi güne geciktirmiştir.
+        # Yeni günün paylaşımını başlatmaz; dünkü paylaşıma bakar, gitmediyse haber verir.
+        dun = datetime.combine(yerel.date(), datetime.min.time(), sinir.TR) - timedelta(minutes=1)
+        try:
+            dunku = sinir.bugun_paylasildi(say(dun), tur)
+        except sinir.SayilamadiHatasi as e:
+            print(f"::error::Nöbetçi ertesi güne kaldı ({yerel:%H:%M} TR) ve dünkü çalıştırmaları okuyamadı ({e}); "
+                  f"dünkü {tur} paylaşıldı mı bilinmiyor. Claude'a 'gumus-bot nöbetçi' yaz.")
+            return 1
+        if dunku:
+            print(f"Nöbetçi ertesi güne kaldı ({yerel:%H:%M} TR); dünkü {tur} paylaşılmış, beklenen paylaşım yok.")
+            return 0
+        print(f"::error::ZAMANLI PAYLAŞIM GELMEDİ: dünkü {tur} paylaşılmadı. Nöbetçi de GitHub'da ertesi güne "
+              f"({yerel:%H:%M} TR) kaldığı için başlatmadı. Claude'a 'gumus-bot nöbetçi' yaz.")
+        _ozet(f"### ⛔ Dünkü {tur} paylaşılmadı\nNöbetçi {yerel:%H:%M} TR'de (ertesi gün) baktı; başlatmadı.")
+        return 1
     bizim = False
     for deneme in range(BEKLE_DK + 1):
         try:
