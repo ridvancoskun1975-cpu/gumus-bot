@@ -6,3 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
+| 3 Kasım 2026 07:50 | Geçmiş fiyatlar: yıl yıl (USGS + ECB) ve son 12 ay ay ay (MetalCharts geçmişi) | bot/arsiv.py (yeni), bot/dar_sayfalar.py, bot/sayfa.py, templates/gecmis*.html, sayfa.yml, paylas.yml (sayfa adımı), README | gecmis-arsiv · yazılıyor |
