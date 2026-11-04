@@ -151,16 +151,20 @@ a.update({"ons": 60.0, "ons_once": 55.0, "dolar": 50.2, "dolar_once": 49.3})
 ay = main.aciklama_yaz(main.aylik_veri_hazirla(a, "gunlukgumus"), "ay")
 # 1 Kasım 2026'dan beri altında "Son 1 yıl" satırı var (örnek veride de; bot/test_aylik.py)
 kontrol("\nAyın kaynağı: ons gümüş ▲ %9,1 · dolar/TL ▲ %1,8\nSon 1 yıl: " in ay, "aylık: kaynak satırı")
-# Site satırı (Rıdvan, 19 Ekim 2026: web sayfası tanıtımı): haftalık ve aylık özette, uyarının hemen üstünde;
-# günlük fiyat paylaşımlarında yok
+# Site satırı (Rıdvan, 4 Kasım 2026: "Aşağı doğru kaydırmadan okuması lazım", "goril den sonra gelmeli",
+# "Haftalık ve aylık özetlerde de uygula"): sabah, akşam, haftalık ve aylıkta fiyat satırının (Goril varsa onun) altında
 site_ = main.site_satiri()
-kontrol("gunlukgumus.com" in site_, "site satırında alan adı")
-for ad_, metin_ in (("haftalık", hafta), ("aylık", ay)):
-    kontrol(f"\n{site_}\n\nBilgi amaçlıdır, yatırım tavsiyesi değildir." in metin_, f"{ad_}: site satırı uyarının üstünde")
-kontrol("ne yöne gider" not in hafta and "Yorumlara yazın" not in hafta, "haftalık özette soru yok (19 Ekim 2026)")
-kontrol(site_ not in eski_reels and site_ not in sade and "gunlukgumus.com" not in eski_reels + sade,
-        "günlük fiyat paylaşımlarında site satırı yok")
-
+kontrol(site_ == "📊 Grafik ve geçmiş fiyatlar: gunlukgumus.com (link bio'da)", site_)
+for ad_, metin_ in (("sabah", eski_reels), ("akşam", sade), ("haftalık", hafta), ("aylık", ay)):
+    kontrol(metin_.split("\n")[1] == site_, f"{ad_}: site satırı 2. satırda")
+    kontrol(metin_.count("gunlukgumus.com") == 1, f"{ad_}: site satırı bir kez")
+    kontrol("Son 30 günün grafiği" not in metin_, f"{ad_}: eski alttaki site satırı yok")
+    if ad_ in ("haftalık", "aylık"):   # günlükte uyarı zaten "Değişimler …" satırının hemen altında
+        kontrol("\n\nBilgi amaçlıdır, yatırım tavsiyesi değildir." in metin_, f"{ad_}: uyarının üstü boş satır")
+gs = "🦍 Goril bugün sevinçli\n"
+for tur_, vv_ in (("reels", v), ("post", v), ("hafta", vh2), ("ay", main.aylik_veri_hazirla(a, "gunlukgumus"))):
+    sat_ = main.aciklama_yaz(dict(vv_, goril_satiri=gs), tur_).split("\n")
+    kontrol(sat_[1] == gs.strip() and sat_[2] == site_, f"{tur_}: Goril satırından sonra site satırı")
 # --- 5b) Parite cümlesi (Rıdvan, 16 Ekim 2026): görselde paritenin altında; ok renkleri standart kalır
 pc = main.parite_cumlesi
 kontrol(pc(main.degisim(72.41, 72.84), "bugün") == "Gümüş bugün altına karşı değer kazandı", "parite düştü")

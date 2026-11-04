@@ -1274,10 +1274,13 @@ def _ozet_ek(v):
 
 
 def site_satiri():
-    """Haftalık ve aylık özetin açıklamasındaki site satırı (Rıdvan, 19 Ekim 2026: web sayfası tanıtımı, 1. madde;
-    günlük fiyat paylaşımlarına ve pazar analizine eklenmez)."""
+    """Sabah Reels'i, akşam özeti, haftalık ve aylık özetin açıklamasındaki site satırı. Fiyat satırının (Goril satırı
+    varsa onun) hemen altında durur: "devamı"na basan kaydırmadan görür (Rıdvan, 4 Kasım 2026: "Aşağı doğru
+    kaydırmadan okuması lazım", "goril den sonra gelmeli", "Onaylıyorum. Haftalık ve aylık özetlerde de uygula").
+    19 Ekim 2026'dan 4 Kasım 2026'ya kadar yalnız haftalık/aylıkta, uyarının üstünde "Son 30 günün grafiği ve hesap
+    makinesi" diye yazıyordu. Pazar analizine eklenmez."""
     import bilgi
-    return f"Son 30 günün grafiği ve hesap makinesi: {bilgi.SITE} ({bilgi.LINK_BIO})"
+    return f"📊 Grafik ve geçmiş fiyatlar: {bilgi.SITE} ({bilgi.LINK_BIO})"
 
 
 def aciklama_yaz(v, tur):
@@ -1288,6 +1291,7 @@ def aciklama_yaz(v, tur):
         return (
             f"{_ilk_satir(v, 'bu hafta')}\n"
             f"{v.get('goril_satiri', '')}"
+            f"{site_satiri()}\n"
             f"Haftalık gümüş özeti · {v['aralik']}\n"
             f"{v['kaynak_satiri'] + chr(10) if v.get('kaynak_satiri') else ''}\n"
             f"Haftanın en yükseği: {v['en_yuksek']} ₺ · en düşüğü: {v['en_dusuk']} ₺\n"
@@ -1299,7 +1303,6 @@ def aciklama_yaz(v, tur):
             # Haftalık soru kalktı (Rıdvan, 19 Ekim 2026: 'evet zaten anket iptal ettik').
             + (f"{v['pazar_hatirlatma']['kalin']} · {v['pazar_hatirlatma']['metin']}\n" if v.get("pazar_hatirlatma") else "")
             + f"{PAYLASIM_SATIRI + chr(10) if v.get('buyuk_hareket') else ''}\n"
-            + f"{site_satiri()}\n\n"
             "Bilgi amaçlıdır, yatırım tavsiyesi değildir.\n\n"
             f"{_kaynak_satirlari(v)}\n\n"
             f"{hashtag_sec(tur)}"
@@ -1317,6 +1320,7 @@ def aciklama_yaz(v, tur):
         return (
             f"{ilk}\n"
             f"{v.get('goril_satiri', '')}"
+            f"{site_satiri()}\n"
             f"Aylık gümüş özeti · {v['ay_adi']}{' (' + v['aralik'] + ')' if v['kismi'] else ''}\n"
             f"{v['kaynak_satiri'] + chr(10) if v.get('kaynak_satiri') else ''}"
             f"{v['yil_satiri'] + chr(10) if v.get('yil_satiri') else ''}\n"
@@ -1325,7 +1329,6 @@ def aciklama_yaz(v, tur):
             f"Dolar/TL: {v['dolar']} ₺ ({d['isaret']} {d['metin']})\n\n"
             f"{not_}{' ' + v['yil_notu'] if v.get('yil_notu') else ''}\n"
             f"{PAYLASIM_SATIRI + chr(10) if v.get('buyuk_hareket') else ''}\n"
-            f"{site_satiri()}\n\n"
             "Bilgi amaçlıdır, yatırım tavsiyesi değildir.\n\n"
             f"{_kaynak_satirlari(v)}\n\n"
             f"{HASHTAG_AY}"
@@ -1335,6 +1338,7 @@ def aciklama_yaz(v, tur):
     return (
         f"{_ilk_satir(v, 'bugün')}\n"
         f"{v.get('goril_satiri', '') if tur in ('post', 'reels') else ''}"
+        f"{site_satiri() + chr(10) if tur in ('post', 'reels') else ''}"
         f"{baslik} · {v['tarih']} · {v['saat']}\n"
         f"{_ozet_ek(v) if tur == 'post' else ''}\n"
         f"Altın/Gümüş paritesi: {v['parite']} ({p['isaret']} {p['metin']})\n"
