@@ -174,7 +174,7 @@ yml = (KOK / ".github/workflows/paylas.yml").read_text(encoding="utf-8")
 satirlar = re.findall(r"^\s*-\s*cron:\s*'([^']+)'(.*)$", yml, flags=re.M)
 yedekler = [c for c, kuyruk in satirlar if "yedek" in kuyruk]
 esit(len(yedekler), 5, "5 yedek cron (sabah, akşam, cumartesi, pazar, gündüz)")
-esleme = dict(re.findall(r'github\.event\.schedule \}\}" = "([^"]+)" \]; then\s*\n\s*tur=(\w+)', yml))
+esleme = dict(re.findall(r'(?:github\.event\.schedule \}\}|\$DILIM)" = "([^"]+)" \]; then\s*\n\s*tur=(\w+)', yml))
 asil = dict(program.cronlar(KOK / ".github/workflows/paylas.yml"))
 for y in yedekler:
     tur = esleme.get(y, "reels")   # eşlemede olmayan cron "else" kolundan reels

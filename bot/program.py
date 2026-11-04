@@ -96,7 +96,7 @@ def cronlar(yol=None):
                 if "yedek" not in kuyruk]
     if not zamanlar:
         raise ProgramHatasi(f"{yol} içinde cron satırı bulunamadı")
-    esleme = dict(re.findall(r'github\.event\.schedule \}\}" = "([^"]+)" \]; then\s*\n\s*tur=(\w+)', metin))
+    esleme = dict(re.findall(r'(?:github\.event\.schedule \}\}|\$DILIM)" = "([^"]+)" \]; then\s*\n\s*tur=(\w+)', metin))
     return [(c, esleme.get(c, "reels")) for c in zamanlar]
 
 

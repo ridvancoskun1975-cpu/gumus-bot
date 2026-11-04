@@ -65,6 +65,10 @@ on:
         description: "Örnek veriyle önizleme (yalnız deneme açıkken, yorum türünde): Claude API'ye ve MetalCharts'a istek atmaz, ücretsiz"
         type: boolean
         default: false
+      dilim:
+        description: "Dış tetik (dis-tetik/Kod.gs) için: yukarıdaki cron'lardan biri, ör. '10 6 * * 1-5'. Doluysa çalışma o cron'un zamanlı çalışması gibi davranır (tür ondan, hedef saate kadar bekler; tur girdisi yok sayılır). Elle boş bırak."
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -92,41 +96,55 @@ jobs:
         with:
           sparse-checkout: bot
 
+      # Dış tetik (4 Kasım 2026, Rıdvan "A başla"): GitHub'ın zamanlayıcısı 3–4 Kasım'da çalışmaları saatlerce geciktirdi
+      # ya da hiç başlatmadı. Google Apps Script (dis-tetik/Kod.gs) her dilimde workflow_dispatch'i "dilim" girdisiyle
+      # başlatır; o çalışma zamanlı çalışmanın aynısıdır (DILIM = cron, ZAMANLI = true). Kilitler çift paylaşımı önler.
       - name: Türü belirle
         id: tur
         env:
           KONU: ${{ inputs.konu }}
+          DILIM_GIRDI: ${{ inputs.dilim }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          DILIM="${{ github.event.schedule }}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "$DILIM_GIRDI" ]; then
+            DILIM="$DILIM_GIRDI"
+            case "$DILIM" in
+              "10 6 * * 1-5"|"10 16 * * 1-5"|"10 6 * * 6"|"10 7 * * 0"|"10 10 * * 1-5") ;;
+              *) echo "::error::Bilinmeyen dilim: '$DILIM' (dis-tetik/Kod.gs ile paylas.yml cron'ları uyuşmuyor)."; exit 1 ;;
+            esac
+          fi
+          ZAMANLI=false
+          if [ -n "$DILIM" ]; then ZAMANLI=true; fi
+          if [ "$ZAMANLI" = "false" ]; then
             tur="${{ inputs.tur }}"
-          elif [ "${{ github.event.schedule }}" = "10 16 * * 1-5" ]; then
+          elif [ "$DILIM" = "10 16 * * 1-5" ]; then
             tur=post
-          elif [ "${{ github.event.schedule }}" = "10 6 * * 6" ]; then
+          elif [ "$DILIM" = "10 6 * * 6" ]; then
             tur=hafta
-          elif [ "${{ github.event.schedule }}" = "10 7 * * 0" ]; then
+          elif [ "$DILIM" = "10 7 * * 0" ]; then
             tur=yorum
-          elif [ "${{ github.event.schedule }}" = "10 10 * * 1-5" ]; then
+          elif [ "$DILIM" = "10 10 * * 1-5" ]; then
             tur=bilgi
-          elif [ "${{ github.event.schedule }}" = "37 16 * * 1-5" ]; then
+          elif [ "$DILIM" = "37 16 * * 1-5" ]; then
             tur=post
-          elif [ "${{ github.event.schedule }}" = "37 6 * * 6" ]; then
+          elif [ "$DILIM" = "37 6 * * 6" ]; then
             tur=hafta
-          elif [ "${{ github.event.schedule }}" = "37 7 * * 0" ]; then
+          elif [ "$DILIM" = "37 7 * * 0" ]; then
             tur=yorum
-          elif [ "${{ github.event.schedule }}" = "37 10 * * 1-5" ]; then
+          elif [ "$DILIM" = "37 10 * * 1-5" ]; then
             tur=bilgi
           else
             tur=reels
           fi
-          echo "Tetik: ${{ github.event_name }} ${{ github.event.schedule }} → tür $tur ($(date -u +%H:%M) UTC)"
+          echo "Tetik: ${{ github.event_name }} ${DILIM:-elle} → tür $tur ($(date -u +%H:%M) UTC)"
           calis=true
           if [ "$tur" = "bilgi" ] && [ -z "$KONU" ]; then
             bolum=$(python3 bot/bilgi.py bugun)   # hata verirse adım başarısız olur (bash -e)
             if [ -z "$bolum" ]; then
               ay=""
-              if [ "${{ github.event_name }}" = "schedule" ]; then ay=$(python3 bot/aylik.py bugun); fi
+              if [ "$ZAMANLI" = "true" ]; then ay=$(python3 bot/aylik.py bugun); fi
               arsiv=""
-              if [ "${{ github.event_name }}" = "schedule" ]; then arsiv=$(python3 bot/bilgi.py arsiv); fi
+              if [ "$ZAMANLI" = "true" ]; then arsiv=$(python3 bot/bilgi.py arsiv); fi
               if [ "$ay" = "ay" ]; then
                 tur=ay
                 echo "Bugün rehber yok, aylık özet günü."
@@ -167,7 +185,7 @@ jobs:
           # Pazar yorumu bekletme (Rıdvan, 17 Ekim 2026 14:09: "pazar yorumu bizim işimiz bitene kadar beklesin"):
           # bot/PAZAR_BEKLET varken zamanlı pazar çalışması paylaşmadan biter. Elle (Run workflow → tür: yorum) çalışır.
           # İş bitince dosya silinir.
-          if [ "$tur" = "yorum" ] && [ "${{ github.event_name }}" = "schedule" ] && [ -f bot/PAZAR_BEKLET ]; then
+          if [ "$tur" = "yorum" ] && [ "$ZAMANLI" = "true" ] && [ -f bot/PAZAR_BEKLET ]; then
             calis=false
             echo "::warning::Pazar yorumu bekletiliyor (bot/PAZAR_BEKLET). Paylaşılmadı; iş bitince elle gönderilecek."
           fi
@@ -191,7 +209,7 @@ jobs:
           ONAY: ${{ github.event_name == 'workflow_dispatch' && inputs.onay == true }}
           # Gece yarısı kuralı (4 Kasım 2026; bot/sinir.py → gec_kalmis): zamanlı çalışma gün değiştikten ya da türün
           # son saatinden sonra başladıysa paylaşmaz (3 Kasım 19:10 çalışması 00:43'te gelip ikinci özeti atmıştı).
-          CRON: ${{ github.event.schedule }}
+          CRON: ${{ github.event.schedule || inputs.dilim }}
         run: python3 bot/sinir.py --yayin "$YAYIN" --onay "$ONAY" --tur "$TUR" --konu "$KONU" --cron "$CRON"
 
   uret:
@@ -255,10 +273,11 @@ jobs:
       # Hedef saat (Rıdvan, 28 Ekim 2026): GitHub zamanlı işi 20–50 dk geç başlattığı için cron hedeften ~45 dk
       # öncedir; kurulum bitince burada hedef saate kadar beklenir (bot/program.py → HEDEF_SAATLERI: sabah 09:55,
       # rehber 13:55, akşam 19:55, cumartesi 09:55, pazar 10:55), fiyat ve kayıtlar ondan sonra alınır. Hedef
-      # geçmişse beklemez. Yalnız zamanlı çalışmada; elle denemelerde yok. Her hatada beklemeden devam eder
+      # geçmişse beklemez. Zamanlı çalışmada ve dış tetikte (dilim girdisi); elle başlatmada ve denemede yok. Her hatada beklemeden devam eder
       # (continue-on-error + betik hiç hata fırlatmaz): bekleme paylaşımı hiçbir zaman durduramaz.
       - name: Hedef saate kadar bekle
-        if: github.event_name == 'schedule'
+        # dış tetik (dilim dolu) de bekler; dilimli deneme beklemez (paylaşmaz, sınama hızlı bitsin)
+        if: github.event_name == 'schedule' || (inputs.dilim != '' && inputs.deneme == false)
         continue-on-error: true
         timeout-minutes: 50
         env:
