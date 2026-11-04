@@ -6,4 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
-| 5 Kasım 2026 01:10 | Telif notu (Rıdvan: "1 Herkesin görebileceği ve kaçıramayacağı her yere ekle."): LICENSE, README başı, kod dosyalarının başına yorum satırı; çıktı değişmez. Sonra site/Instagram önizlemesi | LICENSE, README.md, CLAUDE.md, bütün .py/.html/.js/.css/.svg/.yml/.gs/.sh başları, bot/test_telif.py | telif-notu |
+| 5 Kasım 2026 01:50 | Telif notu main'de (33e0ebd). Bekliyor: site ve Instagram © önizlemesi (Rıdvan'ın onayı), sonra bu hafta GitHub Pro geçişi (bekleme kısaltma + Kod.gs, depo gizleme) | templates/taban.html, görsel şablonlarının alt satırı, açıklama sonu (bot/main.py, bot/kart.py, bot/yorum.py, bot/bilgi.py); sonra dis-tetik/Kod.gs, bot/program.py | telif-gorunur |
