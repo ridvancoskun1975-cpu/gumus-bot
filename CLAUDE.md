@@ -37,6 +37,10 @@
   küçük © (hesap adının soluna asılı, yerleşimi kaydırmaz); sitenin her sayfasının altında "© <yıl> Günlük Gümüş ·
   Tüm hakları saklıdır." (yıl `telif.yil_metni`); Instagram'a giden her açıklamada etiketlerin üstünde
   `main.ACIKLAMA_TELIF` (paylaşım katmanında `aciklama_telif`; sığmazsa satırsız gider, paylaşım durmaz). Kaldırma.
+  İzleme ve ihlal (Rıdvan, 5 Kasım 2026: "1 ve gerekli olursa 4 hazır olsun"): "Depo ve içerik izleme (telif)"
+  zamanlanmış görevi her pazartesi fork/ziyaret/dış kaynağa, ayın ilk pazartesisi kopyalara bakar (kayıt özel
+  gumus-kayit/izleme/depo-izleme.md). Hazır bildirim metinleri Projedeki claude/telif-ihlal-kiti.md'de. Telif
+  bildirimi Rıdvan adına yeminli beyandır: Rıdvan sohbette onaylamadan gönderme.
 - Bakım güncellemeleri (eylem ve kütüphane sürümleri) ayrı dalda yapılır. Deneme başarılıysa ve paylaşım çıktısı
   değişmiyorsa main'e alınır, sonra bildirilir. Paylaşım içeriğini ya da takvimi değiştiren her şey önce önizleme ve
   onay ister. (Rıdvan'ın 15 Ekim 2026 tarihli açık isteği; metni kendisi verdi.)
