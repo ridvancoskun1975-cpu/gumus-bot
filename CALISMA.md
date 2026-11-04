@@ -6,3 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
+| 5 Kasım 2026 01:10 | Telif notu (Rıdvan: "1 Herkesin görebileceği ve kaçıramayacağı her yere ekle."): LICENSE, README başı, kod dosyalarının başına yorum satırı; çıktı değişmez. Sonra site/Instagram önizlemesi | LICENSE, README.md, CLAUDE.md, bütün .py/.html/.js/.css/.svg/.yml/.gs/.sh başları, bot/test_telif.py | telif-notu |
