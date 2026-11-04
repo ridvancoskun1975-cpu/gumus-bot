@@ -6,3 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
+| 4 Kasım 2026 13:35 | Gece yarısını geçen zamanlı paylaşım (00:44 ikinci akşam özeti) düzeltmesi | bot/sinir.py, bot/nobetci.py, bot/main.py (instagram_bugun_paylasildi), paylas.yml (sınır adımı), test_sinir.py, README | duzelt-2026-11-04 · deneniyor |
