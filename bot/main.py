@@ -1822,14 +1822,14 @@ def _kaydirmali_konteyner(kullanici_id, urller, aciklama):
         _hazir_olmasini_bekle(c["id"])
         cocuklar.append(c["id"])
     return _istek("POST", f"{kullanici_id}/media", media_type="CAROUSEL",
-                  children=",".join(cocuklar), caption=aciklama)
+                  children=",".join(cocuklar), caption=aciklama_telif(aciklama))
 
 
 def _reels_konteyneri(kullanici_id, medya_url, meta, taban_url):
     """Reels konteyneri. Önce tasarlanmış kapakla (cover_url) dener; kapak alınamazsa ya da
     Instagram işleyemezse kapaksız yeniden dener ve videonun son karelerinden birini kullanır
     (hareketli videoda ilk kare sayımın başı olduğu için)."""
-    ortak = {"media_type": "REELS", "video_url": medya_url, "caption": meta["aciklama"], "share_to_feed": "true"}
+    ortak = {"media_type": "REELS", "video_url": medya_url, "caption": aciklama_telif(meta["aciklama"]), "share_to_feed": "true"}
     if meta.get("kapak"):
         kapak_url = taban_url.rstrip("/") + "/" + meta["kapak"]
         try:
@@ -2009,7 +2009,7 @@ def _yayinla(cikti, taban_url):
     if meta["dosya"].endswith(".mp4"):
         k = _reels_konteyneri(kullanici_id, medya_url, meta, taban_url)
     else:
-        k = _istek("POST", f"{kullanici_id}/media", image_url=medya_url, caption=meta["aciklama"])
+        k = _istek("POST", f"{kullanici_id}/media", image_url=medya_url, caption=aciklama_telif(meta["aciklama"]))
         _hazir_olmasini_bekle(k["id"])
     sonuc = _istek("POST", f"{kullanici_id}/media_publish", creation_id=k["id"])
     _GORUNEN[0] += 1   # günlük sınır: takipçinin gördüğü her şey sayılır (bot/sinir.py)
@@ -2887,6 +2887,30 @@ def aciklama_sigdir(metin, sinir=IG_HEDEF):
         alanlar.pop()
         metin = metin[:m.start(1)] + ", ".join(alanlar) + f" ve {fazla + 1} kaynak daha" + metin[m.end(1):]
     return metin
+
+
+# Telif satırı (Rıdvan, 5 Kasım 2026: "Herkesin görebileceği ve kaçıramayacağı her yere ekle." · önizleme "Üçü de
+# uygun"): Instagram'a giden her açıklamada etiketlerin hemen üstünde. Paylaşım katmanında eklenir, böylece bütün
+# türler (ve ileride eklenecekler) kendiliğinden alır. Sınıra sığmazsa önce haber kaynakları kısalır; yine sığmazsa
+# satır eklenmez ve uyarı çıkar (paylaşım hiçbir zaman bu yüzden durmaz).
+ACIKLAMA_TELIF = "© Günlük Gümüş · Tüm hakları saklıdır, izinsiz kullanılamaz."
+
+
+def aciklama_telif(metin):
+    if not metin or ACIKLAMA_TELIF in metin:
+        return metin
+    satirlar = metin.rstrip("\n").split("\n")
+    if satirlar[-1].lstrip().startswith("#"):
+        govde = "\n".join(satirlar[:-1]).rstrip()
+        yeni = (f"{govde}\n\n" if govde else "") + f"{ACIKLAMA_TELIF}\n{satirlar[-1]}"
+    else:
+        yeni = metin.rstrip() + "\n\n" + ACIKLAMA_TELIF
+    if ig_uzunluk(yeni) > IG_HEDEF:
+        yeni = aciklama_sigdir(yeni)
+    if ig_uzunluk(yeni) > IG_SINIR:
+        print(f"::warning::Telif satırı açıklamaya sığmadı ({ig_uzunluk(yeni)} > {IG_SINIR}); satırsız paylaşılıyor.")
+        return metin
+    return yeni
 
 
 def _yorum_sesli_metin(metin):

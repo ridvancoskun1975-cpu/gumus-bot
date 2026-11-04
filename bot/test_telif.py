@@ -47,6 +47,28 @@ ham = "<!DOCTYPE html>\n<p>{{ a }}</p>\n"
 bak(env.from_string(telif.ekle_metne("templates/x.html", ham)).render(a=1) == env.from_string(ham).render(a=1),
     "jinja çıktısı aynı")
 
+# 5. Sitenin alt satırındaki yıl kendiliğinden ilerler
+from datetime import datetime  # noqa: E402
+
+bak(telif.yil_metni(datetime(2026, 11, 5)) == "2026", "yıl 2026")
+bak(telif.yil_metni(datetime(2027, 1, 1)) == "2026–2027", "yıl 2027")
+
+# 6. Instagram açıklaması: telif satırı etiketlerin hemen üstünde, bir kez, sınırı aşmadan
+import main  # noqa: E402
+
+T = main.ACIKLAMA_TELIF
+a = main.aciklama_telif("Gram gümüş 100 ₺\n\nMüzik: x\n\n#gümüş #gramgümüş")
+bak(a == f"Gram gümüş 100 ₺\n\nMüzik: x\n\n{T}\n#gümüş #gramgümüş", "etiketlerin üstünde")
+bak(main.aciklama_telif(a) == a, "ikinci kez eklenmez")
+bak(main.aciklama_telif("Etiketsiz metin") == f"Etiketsiz metin\n\n{T}", "etiketsiz açıklamada sonda")
+kaynakli = ("x" * 1990 + "\nHaber kaynakları (web araması): " + ", ".join(f"site{i}.com" for i in range(12))
+            + "\n\n#gümüş")
+k = main.aciklama_telif(kaynakli)
+bak(T in k and main.ig_uzunluk(k) <= main.IG_SINIR and "kaynak daha" in k, "sınıra sığdırmak için kaynaklar kısalır")
+dolu = "y" * 2190 + "\n#gümüş"
+bak(main.aciklama_telif(dolu) == dolu, "sığmıyorsa satırsız (paylaşım durmaz)")
+bak(main.aciklama_telif("") == "", "boş açıklama")
+
 if hatalar:
     print("BAŞARISIZ:", ", ".join(hatalar))
     sys.exit(1)

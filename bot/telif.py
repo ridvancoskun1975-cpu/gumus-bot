@@ -23,11 +23,23 @@ PDF_EK = " Yayımlanan PDF baskısı: CC BY-NC-ND 4.0."
 BAKILAN_SATIR = 3   # işaret ilk bu kadar satırda aranır
 
 
+BASLANGIC_YILI = 2026
+
+
+def yil_metni(simdi=None):
+    """Sitenin alt satırındaki yıl: 2026'da "2026", sonra "2026–2027" gibi (kendiliğinden ilerler)."""
+    from datetime import datetime
+    yil = (simdi or datetime.now()).year
+    return str(BASLANGIC_YILI) if yil <= BASLANGIC_YILI else f"{BASLANGIC_YILI}–{yil}"
+
+
 def satir(yol):
     """Dosyanın türüne göre telif satırı; başlık konmayacak dosyada None."""
     yol = Path(yol)
     uz = yol.suffix.lower()
     parcalar = yol.as_posix().split("/")
+    if yol.name.startswith("_"):   # üretim sırasında yazılan geçici dosyalar (ör. templates/_hareket_*.html)
+        return None
     if uz in (".py", ".yml", ".yaml", ".sh"):
         return f"# {METIN}"
     if uz in (".js", ".css", ".gs"):

@@ -57,7 +57,7 @@
       {% else %}{{ gun_basligi(gun_baslik, 46, 32) }}{% endif %}
       <div class="alt-satir">
         {{ degisim(gram_deg, 60, 44) }}
-        <span class="hesap">{{ hesap }}</span>
+        <span class="hesap"><span style="position: relative"><span style="position: absolute; right: 100%; top: .3em; margin-right: .2em; font-size: .62em; line-height: 1">©</span>{{ hesap }}</span></span>
       </div>
     </div>
     {% else %}
@@ -73,7 +73,7 @@
       {% else %}
       {{ degisim(gram_deg, 64, 46) }}
       {% endif %}
-      {% if not buyuk_hareket %}<span class="hesap">{{ hesap }}</span>{% endif %}
+      {% if not buyuk_hareket %}<span class="hesap"><span style="position: relative"><span style="position: absolute; right: 100%; top: .3em; margin-right: .2em; font-size: .62em; line-height: 1">©</span>{{ hesap }}</span></span>{% endif %}
     </div>
     {% endif %}
     {#- Goril maskotu (bot/goril.py; Rıdvan 16 Ekim 2026: ızgarada da görünsün): videodaki hâlin durağan pozu, sağda,
@@ -82,7 +82,7 @@
   </div>
 
   <div class="alt-kenar">
-    <span>{% if buyuk_hareket and not ozel %}{{ hesap }}{% endif %}</span>
+    <span>{% if buyuk_hareket and not ozel %}<span style="position: relative"><span style="position: absolute; right: 100%; top: .3em; margin-right: .2em; font-size: .62em; line-height: 1">©</span>{{ hesap }}</span>{% endif %}</span>
     {#- MetalCharts kaynağı (25 Ekim 2026 yasal inceleme 10: ücretsiz planda herkese açık gösterimde görünür bağlantı
         şartı; Starter iptali Ocak 2027). Fiyatsız kapaklarda (rehber) kaynak_metal yok, satır çıkmaz. -#}
     <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px; text-align: right">

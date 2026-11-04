@@ -33,6 +33,10 @@
   (`bot/telif.py`); yeni dosya ekleyince `python bot/telif.py ekle`, main'e almadan önce `python bot/test_telif.py`.
   Satır yalnız yorumdur, çıktıyı değiştirmez (Jinja'da `{#- … -#}`, kitap parçalarında `<!-- -->`); kaldırma.
   İstisnalar LICENSE'ta: yazı tipleri (OFL), müzik (Pixabay), yayımlanan PDF kitap (CC BY-NC-ND 4.0).
+  Görünür yerler (Rıdvan, 5 Kasım 2026 önizleme "Üçü de uygun"): bütün görsel ve kapaklarda hesap adının solunda
+  küçük © (hesap adının soluna asılı, yerleşimi kaydırmaz); sitenin her sayfasının altında "© <yıl> Günlük Gümüş ·
+  Tüm hakları saklıdır." (yıl `telif.yil_metni`); Instagram'a giden her açıklamada etiketlerin üstünde
+  `main.ACIKLAMA_TELIF` (paylaşım katmanında `aciklama_telif`; sığmazsa satırsız gider, paylaşım durmaz). Kaldırma.
 - Bakım güncellemeleri (eylem ve kütüphane sürümleri) ayrı dalda yapılır. Deneme başarılıysa ve paylaşım çıktısı
   değişmiyorsa main'e alınır, sonra bildirilir. Paylaşım içeriğini ya da takvimi değiştiren her şey önce önizleme ve
   onay ister. (Rıdvan'ın 15 Ekim 2026 tarihli açık isteği; metni kendisi verdi.)

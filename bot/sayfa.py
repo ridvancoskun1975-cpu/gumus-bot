@@ -368,6 +368,9 @@ def uret(cikti, gecmis, simdi=None, euro=None, pazar=None, kati=False, arsiv=Non
             print(f"::warning::PDF rehber siteye kopyalanamadı: {type(e).__name__}: {e}")
             v["rehber_pdf"] = None
     env = Environment(loader=FileSystemLoader(str(bot.SABLONLAR)), autoescape=True)
+    # Telif satırı (Rıdvan, 5 Kasım 2026 "Üçü de uygun"): her sayfanın altında; yıl kendiliğinden ilerler
+    import telif
+    env.globals["telif_yili"] = telif.yil_metni(simdi)
     (cikti / "index.html").write_text(env.get_template("sayfa.html").render(**v, kok=""), encoding="utf-8")
     (cikti / "rehber").mkdir(exist_ok=True)
     (cikti / "rehber" / "index.html").write_text(env.get_template("rehber.html").render(**v, kok="../"),
