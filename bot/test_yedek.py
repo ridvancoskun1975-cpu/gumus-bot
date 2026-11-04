@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """bot/yedek.py sınamaları (ağa çıkmaz; GitHub yanıtları taklit edilir). Çalıştır: python bot/test_yedek.py"""
 import base64
 import json

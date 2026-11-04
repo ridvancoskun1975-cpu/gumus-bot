@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """bot/sinir.py sınamaları (ağ yok). Çalıştır: python bot/test_sinir.py"""
 import contextlib
 import io

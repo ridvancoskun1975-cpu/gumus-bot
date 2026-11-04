@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Gümüş rehberi bölümünün 9:16 hikâye kareleri (templates/rehber-hikaye.html) ve hikâye videosu.
 
 Bot rehber gönderisinden (kaydırmalı) hemen sonra aynı bölümü hikâyeye de koyar: kareler tek tek değil,

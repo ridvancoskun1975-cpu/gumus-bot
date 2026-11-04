@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Günlük başlık ve özel gün kuralları.
 
 Hafta içi fiyat paylaşımlarında (Reels ~10:00, günlük özet ~20:00) "GRAM GÜMÜŞ" başlığının yerine

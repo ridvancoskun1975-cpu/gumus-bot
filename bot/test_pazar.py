@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Pazar Reels'i ve cumartesi hatırlatması sınamaları (ağ yok). Çalıştır: python bot/test_pazar.py
 
 - Pazar Reels'inin paylaşımı patlarsa (geçici engel dahil) hata dışarı sızmaz: yayinla() baştan denerse

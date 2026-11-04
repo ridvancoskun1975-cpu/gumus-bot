@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Takipçi kaydı: her paylaşımda takipçi sayısını sana özel gumus-kayit deposuna yazar.
 
 Kullanım (iş akışı çağırır):

@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Pazar yapay zekâ yorumu: gram gümüş için kısa ve orta vadeli görünüm (kaydırmalı: kapak, kısa vade, orta vade ve
 haber taraması yapılabildiyse "Haftanın gelişmeleri"; 30 Ekim 2026'dan beri 4 görsel, tarama yoksa 3).
 Uzun vade 17 Ekim 2026'da kalıcı olarak kaldırıldı (Rıdvan: "Kısa orta uzun yazan her yer artık kısa ve orta olmalı";

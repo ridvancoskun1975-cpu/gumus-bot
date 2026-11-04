@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """bot/rapor.py sınamaları (ağ yok, sahte Instagram). Çalıştır: python bot/test_rapor.py"""
 import sys
 from datetime import date, datetime

@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Bilgi sayfasının bir kezlik tanıtım Reels'i (Rıdvan, 19 Ekim 2026: web sayfası tanıtımı, 2. madde "2 uygula").
 
 Çalıştır: python bot/test_tanitim.py   (HIZLI=1: video çizilmez, yalnızca kapak ve açıklama)

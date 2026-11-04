@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Dar arama sayfalarının sınamaları: python bot/test_dar_sayfalar.py
 
 Örnek kayıtlarla siteyi geçici bir klasöre üretir ve şunları denetler:

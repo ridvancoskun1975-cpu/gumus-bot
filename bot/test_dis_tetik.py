@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Dış tetik (dis-tetik/Kod.gs, Google Apps Script) ile paylas.yml ve hedef saatlerin uyumu. Ağ yok.
 Çalıştır: python bot/test_dis_tetik.py
 

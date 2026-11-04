@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Dolar/TL kurunun yedek yolları (bot/main.py → kurlar, ecb_xml_kurlari, kayitli_kurlar). Ağ yok.
 Çalıştır: python bot/test_kur_yedek.py
 

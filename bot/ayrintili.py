@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Bilgi sayfasındaki "Ayrıntılı rehber": Instagram rehber serisinden daha kapsamlı, kaynaklı başvuru bölümü.
 
 12 Ekim 2026'daki ilk bilgi sayfası taslağından (arşivde) türetildi; 14 Ekim 2026'da bütün rakamlar

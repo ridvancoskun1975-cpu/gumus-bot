@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Günlük paylaşım sınırı (Rıdvan): takipçileri rahatsız etmemek için günde en fazla 4 (14 Ekim 2026 21:23; önce 3).
 5. ve sonrası Rıdvan onaylamadan gitmez.
 

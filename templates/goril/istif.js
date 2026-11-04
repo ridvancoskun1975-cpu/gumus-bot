@@ -1,3 +1,4 @@
+/* © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE */
 // İstifçi goril (sakin gün): elindeki külçeyi yanındaki yığına koyar, yığın büyür.
 // Bot her kare için window.kare(t) çağırır; çağrılmazsa durağan poz çizilir.
 (function () {

@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """PDF Gümüş Rehberi: Instagram rehber bölümlerinin uzun, eksiksiz hâllerini tek PDF kitapta toplar.
 
 Rıdvan, 19 Ekim 2026: "gümüş rehberi pdf kitap yapsak"; "kısa olan bilgiler pdf te eksiksiz doyurucu olmalı";

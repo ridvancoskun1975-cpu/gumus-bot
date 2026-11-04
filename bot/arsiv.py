@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Geçmiş fiyat arşivi: yıl yıl ve botun kayıtlarından önceki aylar (gunlukgumus.com/gecmis/).
 
 Rıdvan, 3 Kasım 2026: "Kullanıcılar geçmiş bilgilerle erişmek istiyor. Ay ay yıl yil" · "Web sayfasından olabilir"

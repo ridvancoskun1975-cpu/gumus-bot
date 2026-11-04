@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Ücretli reklam dönemleri: takipçi ve erişim hesaplarında reklamın etkisi ayrı tutulsun diye (Rıdvan, 17 Ekim 2026:
 "Dün Instagram reklamı başladı. Bunu reklam etki hesaplarında göz önünde bulundur.").
 

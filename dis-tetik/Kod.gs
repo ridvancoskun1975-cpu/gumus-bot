@@ -1,3 +1,4 @@
+/* © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE */
 /**
  * Gümüş paylaşımı dış tetiği (Google Apps Script, Rıdvan'ın Google hesabında).
  *

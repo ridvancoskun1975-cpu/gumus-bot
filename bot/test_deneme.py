@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Deneme çalıştırmaları MetalCharts hakkı harcamaz (Rıdvan, 16 Ekim 2026). Ağ yok.
 Çalıştır: python bot/test_deneme.py
 

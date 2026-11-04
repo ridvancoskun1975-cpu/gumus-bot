@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Goril maskotu: kurallar ve sabitler (Rıdvan, 16 Ekim 2026).
 
 Hafta içi sabah Reels'inde (`reels`, 19 Ekim 2026'dan; Rıdvan 16 Ekim 22:25 "sabaha şimdi koy"), akşam özetinde

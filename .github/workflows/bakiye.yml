@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 name: API bakiye kontrolü
 
 # Pazar yorumunun kullandığı Claude API ön ödemeli kredisini haftada iki kez denetler (bot/bakiye.py).

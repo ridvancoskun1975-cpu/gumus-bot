@@ -1,3 +1,4 @@
+/* © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE */
 // Gezinen goril (sakin gün ya da küçük düşüş): iki ayağı üstünde volta atar. Sağdan girip sola
 // yürür, durup döner, sağa yürür, yine döner, ortada durup izleyiciye bakar. Fiyata değmez:
 // sol sınır SOL_SINIR (sahne birimi), sağ sınır görselin kenarı.

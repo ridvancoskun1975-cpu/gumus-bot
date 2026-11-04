@@ -1,3 +1,4 @@
+/* © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE */
 // Video için hareket (reels, günlük özet ve haftalık özet şablonları bunu içerir).
 // Bot her kare için window.kare(t) çağırır (t saniye). Çağrılmazsa sayfa son hâlinde kalır;
 // PNG ve kapak bu son hâlden alınır. Gösterilen her sayı gerçek veridir: fiyat önceki

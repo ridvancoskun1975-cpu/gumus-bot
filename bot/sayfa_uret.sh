@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 # Bilgi sayfasını üretir ve site klasörüne koyar; iş akışları (paylas.yml, sayfa.yml) çağırır.
 #   bash bot/sayfa_uret.sh <site klasörü>
 #

@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Günlük fiyat kayıtlarının (veri/gecmis.json) yedeği: sana özel gumus-kayit deposunda yedek/gecmis.json.
 
 Rıdvan, 18 Ekim 2026 ("8 önerin uygun"): kayıtlar yalnızca GitHub Actions önbelleğinde duruyordu; önbellek

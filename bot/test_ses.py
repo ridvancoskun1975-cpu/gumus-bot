@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Rehber kısa Reels seslendirmesinin sınamaları (bot/ses.py). Gemini'ye istek atmaz; ses yapay üretilir.
 
   python bot/test_ses.py           (videoyu da üretir, ~2-3 dk)

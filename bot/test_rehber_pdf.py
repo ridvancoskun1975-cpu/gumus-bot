@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """PDF Gümüş Rehberi sınamaları (bot/rehber_pdf.py; Rıdvan, 19 Ekim 2026): baskı takvimi, sitedeki yakında/indirme
 kartı, bölüm metinlerinin denetimi. Ağa çıkmaz, tarayıcı açmaz. Çalıştır: python bot/test_rehber_pdf.py"""
 import re

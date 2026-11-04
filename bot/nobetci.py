@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Nöbetçi: zamanlı paylaşım gitmediyse başlatır ve haber verir (nobetci.yml).
 
 Rıdvan, 3 Kasım 2026: "Sabah paylaşım olmaması nasıl olur anlamıyorum. Bir daha olmaması için ne yapmamız lazım?",

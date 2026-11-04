@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Haftalık Instagram raporu: son haftanın paylaşımlarının istatistiklerini özel gumus-kayit deposuna yazar.
 
 Kullanım (iş akışı çağırır):

@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Goril maskotu sınamaları: python bot/test_goril.py   (yalnız kurallar: python bot/test_goril.py --hizli)
 
 Kurallar (bot/goril.py) paket gerektirmez. Şablon, yerleşim denetimi ve gorilsiz yedek yol için jinja2, Playwright

@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Claude API kredi takibi: pazar yorumunun kullandığı ön ödemeli Console kredisi.
 
 Anthropic ön ödemeli kredi bakiyesini okuyan bir API sunmuyor (Admin API bireysel hesaplarda yok,

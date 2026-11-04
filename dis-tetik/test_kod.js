@@ -1,3 +1,4 @@
+/* © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE */
 // Dış tetiğin (Kod.gs) davranış sınaması: Apps Script hizmetleri sahte, ağ yok. Çalıştır: node dis-tetik/test_kod.js
 // (bot/test_dis_tetik.py de çağırır.) Gözden geçirme, 4 Kasım 2026: gerçek true/false ve pencere sonu denetimi.
 'use strict';

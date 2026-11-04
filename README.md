@@ -1,5 +1,16 @@
 # Gümüş Fiyat Botu
 
+> **© 2026 Günlük Gümüş · TÜM HAKLARI SAKLIDIR / ALL RIGHTS RESERVED**
+>
+> Bu depodaki kod, şablonlar, tasarımlar, metinler (Gümüş rehberi ve kitap metinleri dahil) ve Goril maskotu dahil
+> görseller Günlük Gümüş'e aittir. Yazılı izin olmadan kopyalanamaz, değiştirilemez, dağıtılamaz, başka bir projede
+> ya da yapay zekâ eğitiminde kullanılamaz. Depoyu görebiliyor olmanız kullanma hakkı vermez. Ayrıntı ve istisnalar:
+> [LICENSE](LICENSE) · İzin: Instagram [@gunlukgumus](https://www.instagram.com/gunlukgumus/)
+>
+> Everything in this repository (code, templates, designs, texts, mascot artwork) is the property of Günlük Gümüş.
+> No part may be copied, modified, distributed, reused in another project or used for AI training without written
+> permission. Being able to view this repository grants no right to use it. See [LICENSE](LICENSE).
+
 Instagram'a otomatik paylaşım yapar:
 
 | Saat (TR) | Paylaşım |

@@ -1,3 +1,4 @@
+/* © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE */
 // Özel gün gorili (eşik aşıldı / en az bir aylık en yüksek): külçe kürsüsünün tepesine iner,
 // göğsünü yumruklar, sonra iki yumruğunu havaya kaldırır; arkada havai fişekler patlar.
 // Bot her kare için window.kare(t) çağırır; çağrılmazsa durağan zafer pozu çizilir.

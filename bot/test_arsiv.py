@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Geçmiş fiyat arşivi sınamaları (bot/arsiv.py + bot/dar_sayfalar.py geçmiş bölümü).
 
   python bot/test_arsiv.py

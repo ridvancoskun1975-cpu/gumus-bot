@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Dar aramalar için sayfalar: "100 gram gümüş kaç TL", "1000 TL kaç gram gümüş", "1 ons gümüş kaç TL",
 "gram gümüş kaç euro", "altın gümüş oranı", "gümüş fiyatları geçmiş" gibi.
 

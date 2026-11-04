@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Aylık özetin "Son 1 yıl" satırı (Rıdvan, 1 Kasım 2026: "3 Uygun bence").
 
 Çalıştırma: python bot/test_aylik.py

@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Günlük başlık ve özel gün kurallarının sınaması: python bot/test_baslik.py
 
 Paket gerektirmez. Her durum, bugünden geriye doğru iş günlerine dizilen örnek kayıtlarla kurulur.

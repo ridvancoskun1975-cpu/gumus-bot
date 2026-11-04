@@ -28,6 +28,11 @@
   3. `CALISMA.md`: işe başlamadan önce oku. İşe başlarken konuyu, dokunacağın dosyaları ve dalı bir satır olarak ekle
      (commit + push); iş bitince ya da bırakılınca satırı sil. Aynı dosyalarda ya da aynı paylaşım türünde başka bir iş
      yazılıysa Rıdvan'a sor. Satır 24 saatten eskiyse Rıdvan'a "hâlâ sürüyor mu" diye sor, kendiliğinden silme.
+- **Telif notu** (Rıdvan, 5 Kasım 2026: "Herkesin görebileceği ve kaçıramayacağı her yere ekle."): depo
+  "Tüm hakları saklıdır" (LICENSE, README'nin başı). Her kod ve şablon dosyasının ilk satırında telif yorumu var
+  (`bot/telif.py`); yeni dosya ekleyince `python bot/telif.py ekle`, main'e almadan önce `python bot/test_telif.py`.
+  Satır yalnız yorumdur, çıktıyı değiştirmez (Jinja'da `{#- … -#}`, kitap parçalarında `<!-- -->`); kaldırma.
+  İstisnalar LICENSE'ta: yazı tipleri (OFL), müzik (Pixabay), yayımlanan PDF kitap (CC BY-NC-ND 4.0).
 - Bakım güncellemeleri (eylem ve kütüphane sürümleri) ayrı dalda yapılır. Deneme başarılıysa ve paylaşım çıktısı
   değişmiyorsa main'e alınır, sonra bildirilir. Paylaşım içeriğini ya da takvimi değiştiren her şey önce önizleme ve
   onay ister. (Rıdvan'ın 15 Ekim 2026 tarihli açık isteği; metni kendisi verdi.)

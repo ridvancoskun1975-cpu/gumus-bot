@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Aylık özetin günü: ayın rehber gönderisi olmayan ilk iş günü, ~14:00 (rehberle aynı saat).
 
 Aylık özet hafta içi 13:50 TR çalışmasını (bilgi cron'u) kullanır: o gün takvimde rehber

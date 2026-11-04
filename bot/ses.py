@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Rehber kısa Reels'inin kadın sesiyle seslendirmesi (Rıdvan, 16 Ekim 2026: "rehber reelsler sesli olmalı. bayan sesi").
 
 Ses Google'ın Gemini metinden konuşma servisinden gelir (ücretsiz kota; Google üretilen sesin sahipliğini

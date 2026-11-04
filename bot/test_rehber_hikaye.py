@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """bot/rehber_hikaye.py → kareleri_planla() sınamaları (tarayıcısız; öğe yükseklikleri sahte).
 
 Çalıştırma: python bot/test_rehber_hikaye.py

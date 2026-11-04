@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """bot/nobetci.py ve yedek cron sınamaları (ağ yok). Çalıştır: python bot/test_nobetci.py
 
 Rıdvan, 3 Kasım 2026: "Bir daha olmaması için ne yapmamız lazım?", "çift paylaşım da olmasın lütfen".

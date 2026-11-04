@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Paylaşım programı: "ne zaman ne paylaşılıyor" bilgisini elle yazmak yerine botun gerçek ayarlarından üretir.
 
 Bilgi sayfasının her yeri her zaman güncel kalsın diye (Rıdvan, 14 Ekim 2026: "Bilgi sayfasının her yeri

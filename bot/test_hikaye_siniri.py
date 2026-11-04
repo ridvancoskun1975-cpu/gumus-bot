@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Günlük sınırda hikâye kopyasının düşmesi ve görünen içerik sayımı (bot/main.py → _hikaye_izinli, _GORUNEN).
 Ağ yok. Çalıştır: python bot/test_hikaye_siniri.py
 

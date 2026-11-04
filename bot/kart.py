@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Haftalık kartlar (büyüme planı, Faz 2): hafta içi iki gün ~12:00'de AYRI bir Reels.
 
 19 Ekim 2026'DA TAKVİMDEN KALDIRILDI (Rıdvan: takipçiyi bıktırmamak için paylaşım sayısı azaltıldı; kartlar o gün

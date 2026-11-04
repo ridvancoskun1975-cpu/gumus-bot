@@ -1,3 +1,4 @@
+/* © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE */
 // Somurtan goril (sert düşüş günü): kollarını kavuşturup oturur, başının üstünde yağmur bulutu.
 // Yalnızca duygu gösterir; "al", "fırsat", "tut" gibi bir çağrışım taşımaz.
 // Bot her kare için window.kare(t) çağırır; çağrılmazsa durağan görseldeki hâlinde kalır.

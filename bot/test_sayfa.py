@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Bilgi sayfası sınamaları (18 Ekim 2026 düzeni): son pazar analizi düğmesi, 404 sayfası, kaldırılan tablolar.
 Ağa çıkmaz. Çalıştır: python bot/test_sayfa.py"""
 import os

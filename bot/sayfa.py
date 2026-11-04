@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Bilgi sayfası: Instagram biyografisindeki bağlantının açtığı tek sayfalık site.
 
 Kullanım (iş akışı her paylaşımda çağırır, hazirla'dan sonra):

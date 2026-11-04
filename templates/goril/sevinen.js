@@ -1,3 +1,4 @@
+/* © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE */
 // Gümüş sırtlı goril maskotu: videoda hareket (bot her kare için window.kare(t) çağırır).
 // Çağrılmazsa goril durağan görseldeki hâlinde kalır.
 (function () {

@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Profilde sabitlenecek yasal bilgilendirme gönderisinin içeriği (kaydırmalı, 6 görsel).
 
 Metni değiştirince "Son güncelleme" tarihini de güncelle, sonra

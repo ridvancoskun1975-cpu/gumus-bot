@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """bot/kart.py sınamaları (ağ yok, tarayıcı yok). Çalıştır: python bot/test_kart.py"""
 import re
 import sys

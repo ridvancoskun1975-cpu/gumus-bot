@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Gün içi kayıt, akşam özeti ek satırları ve haftalık/aylık "kaynağı" satırı sınamaları (ağ yok).
 Çalıştır: python bot/test_gun_ici.py
 
