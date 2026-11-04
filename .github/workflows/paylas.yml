@@ -110,7 +110,7 @@ jobs:
             DILIM="$DILIM_GIRDI"
             case "$DILIM" in
               "10 6 * * 1-5"|"10 16 * * 1-5"|"10 6 * * 6"|"10 7 * * 0"|"10 10 * * 1-5") ;;
-              *) echo "::error::Bilinmeyen dilim: '$DILIM' (dis-tetik/Kod.gs ile paylas.yml cron'ları uyuşmuyor)."; exit 1 ;;
+              *) echo "::error::Bilinmeyen dilim (dis-tetik/Kod.gs ile paylas.yml cron'ları uyuşmuyor)."; exit 1 ;;
             esac
           fi
           ZAMANLI=false
@@ -367,6 +367,8 @@ jobs:
           # yoktu); takılırsa nerede takıldığı görünsün. Çıktıyı değiştirmez.
           PYTHONUNBUFFERED: "1"
           PYTHONFAULTHANDLER: "1"
+          # Dış tetik de zamanlı çalışma sayılır (main.YORUM_DURAKLAT pazar yorumunu ikisinde de durdurur)
+          ZAMANLI: ${{ (github.event_name == 'schedule' || (inputs.dilim != '' && inputs.deneme == false)) && 'true' || '' }}
         run: |
           ek=()
           case "${{ needs.kontrol.outputs.tur }}" in

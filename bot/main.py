@@ -3093,7 +3093,9 @@ def hazirla(tur, cikti, ornek, konu=None):
         if os.environ.get("KONU", "").strip() == "reels-tekrar":
             pazar_reels_tekrar(cikti)
             return
-        if YORUM_DURAKLAT and os.environ.get("GITHUB_EVENT_NAME") == "schedule":
+        # Dış tetik (dilim girdisi; dis-tetik/Kod.gs) zamanlı çalışma sayılır: paylas.yml ZAMANLI=true verir.
+        if YORUM_DURAKLAT and (os.environ.get("GITHUB_EVENT_NAME") == "schedule"
+                               or os.environ.get("ZAMANLI") == "true"):
             print("::warning::Paylaşım atlandı: zamanlı pazar yorumu duraklatıldı (main.YORUM_DURAKLAT; Rıdvan, "
                   "25 Ekim 2026). Elle Run workflow → tür: yorum yine çalışır.")
             return

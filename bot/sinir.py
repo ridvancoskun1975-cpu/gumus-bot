@@ -84,8 +84,6 @@ YAYIN_ISI = "yayinla"
 SURUYOR = {"queued", "in_progress", "waiting", "pending", "requested"}
 # Kilit bu saatten (TR) önce giden paylaşımı o günün paylaşımı saymaz (gece yarısı kuralı, yukarıda).
 GECE_SONU = (5, 0)
-# Dış tetik cron dakikasından en çok bu kadar önce gelebilir (gec_kalmis o dilimi bugünün dilimi sayar).
-ERKEN_TETIK = timedelta(minutes=60)
 # Bir türün o gün başlatılabileceği son saat (TR). Zamanlı çalışma (gec_kalmis) ve nöbetçi (bot/nobetci.py) aynı
 # pencereyi kullanır: sabah Reels'i akşam özetinin yanında gitmesin; akşam özeti 22:30 (paylaşım işi Instagram
 # engelinde ~3 saate kadar yeniden dener, gece yarısını geçmesin; geçerse main.yayinla durur).
@@ -190,7 +188,7 @@ def _alan(metin, en_az, en_cok):
     return degerler
 
 
-def son_tetik(cron, simdi, geri_saat=72):
+def son_tetik(cron, simdi, geri_saat=8 * 24):
     """cron'un (UTC, GitHub gibi) simdi'den önceki ya da ona eşit son tetik anı; bulunamaz ya da okunamazsa None."""
     try:
         dk, sa, gun, ay, hg = cron.split()
@@ -215,9 +213,9 @@ def gec_kalmis(cron, tur, simdi):
     """Zamanlı çalışma paylaşmamalı mı: neden metni ya da None. cron boşsa (elle/nöbetçi) ya da okunamazsa None."""
     if not cron:
         return None
-    # Dış tetik (dis-tetik/Kod.gs, Google Apps Script) cron dakikasından biraz önce de gelebilir: asıl tetik anı,
-    # şu andan en çok ERKEN_TETIK sonrasına kadarki son tetiktir (GitHub hiç erken başlatmaz, ona etkisi yok).
-    tetik = son_tetik(cron, simdi + ERKEN_TETIK)
+    # Dış tetik (dis-tetik/Kod.gs) penceresi cron dakikasından SONRA başlar (test_dis_tetik denetler), bu yüzden
+    # erken gelme payı yok: pay, 23 saat geciken çalışmayı ertesi gün hedeften önce paylaştırırdı (denetim, 4 Kasım).
+    tetik = son_tetik(cron, simdi)
     if tetik is None:
         return None
     yerel, asil = simdi.astimezone(TR), tetik.astimezone(TR)

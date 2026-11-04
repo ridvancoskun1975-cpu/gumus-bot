@@ -64,7 +64,6 @@ for d in DILIMLER:
     bas, son = dk(d["bas"]), dk(d["son"])
     ad = d["ad"]
     esit(bas >= cron_tr, True, f"{ad}: pencere cron saatinden sonra başlar (gec_kalmis onu bugünün dilimi sayar)")
-    esit(bas - cron_tr <= sinir.ERKEN_TETIK.total_seconds() / 60, True, f"{ad}: erken tetik sınırı içinde")
     esit(son <= hedef - 10, True, f"{ad}: pencere hedeften en az 10 dk önce biter")
     esit(hedef - bas <= 45, True, f"{ad}: bekleme en çok 45 dk (bekleme adımı 50 dk'da kesilir)")
     esit(hedef - bas < program.EN_COK_BEKLEME_SN / 60, True, f"{ad}: bekleme EN_COK_BEKLEME_SN içinde")
@@ -74,13 +73,25 @@ for d in DILIMLER:
     esit(sorted(d["gunler"]), sorted(sum((TR_GUN[g] for g in cron_gunleri), [])), f"{ad}: günler cron'la aynı")
     # Pencerenin herhangi bir anında başlayan dış tetik gec_kalmis'e takılmaz (aynı gün, son saatten önce)
     ornek_gun = {1: 2, 2: 3, 3: 4, 4: 5, 5: 6, 6: 7, 7: 8}[d["gunler"][0]]   # Kasım 2026: 2 Kasım pazartesi
-    for an in (bas - 5, bas, son - 1):
+    for an in (bas, son - 1):
         simdi = datetime(2026, 11, ornek_gun, an // 60, an % 60, tzinfo=sinir.TR).astimezone(timezone.utc)
         esit(sinir.gec_kalmis(d["dilim"], tur, simdi), None, f"{ad}: {an // 60:02d}:{an % 60:02d} TR'de paylaşır")
     # Ertesi güne kalan dış tetik paylaşmaz
     simdi = datetime(2026, 11, ornek_gun, 0, 30, tzinfo=sinir.TR).astimezone(timezone.utc) + timedelta(days=1)
     esit(sinir.gec_kalmis(d["dilim"], tur, simdi) is not None, True, f"{ad}: ertesi gün 00:30'da paylaşmaz")
 
+# Denetim (4 Kasım 2026): 23 saat geciken pazartesi 19:10 çalışması salı 18:20'de gelirse paylaşmaz (erken gider ve
+# akşamki asıl özeti kilitlerdi)
+gec = datetime(2026, 11, 3, 18, 20, tzinfo=sinir.TR).astimezone(timezone.utc)
+esit(sinir.gec_kalmis("10 16 * * 1-5", "post", gec) is not None, True, "23 saat geciken çalışma ertesi gün paylaşmaz")
+# Haftalık cron 3 gün geciktiyse de tetik bulunur ve paylaşmaz
+esit(sinir.gec_kalmis("10 7 * * 0", "yorum", datetime(2026, 11, 4, 9, 0, tzinfo=timezone.utc)) is not None, True,
+     "pazar cron'u çarşamba gelirse paylaşmaz")
+esit("ZAMANLI: ${{ (github.event_name == 'schedule' || (inputs.dilim != '' && inputs.deneme == false))" in YML,
+     True, "üretim adımı dış tetiği zamanlı sayar (YORUM_DURAKLAT)")
+esit("Bilinmeyen dilim: '$DILIM'" in YML, False, "bilinmeyen dilim günlüğe yazılmaz")
+MAIN = (KOK / "bot" / "main.py").read_text(encoding="utf-8")
+esit('os.environ.get("ZAMANLI") == "true"' in MAIN, True, "YORUM_DURAKLAT dış tetikte de geçerli")
 # Bekleme adımı dış tetikte de çalışır, dilimli denemede çalışmaz
 esit("if: github.event_name == 'schedule' || (inputs.dilim != '' && inputs.deneme == false)" in YML, True,
      "bekleme adımı: zamanlı + dış tetik")
