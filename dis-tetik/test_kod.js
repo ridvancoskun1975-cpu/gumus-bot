@@ -166,6 +166,22 @@ o = ortam(basari('in_progress'));
 o.dene();
 esit(o.baslatmalar()[0].govde, {ref: 'main', inputs: {dilim: AKSAM, deneme: true, onay: false}}, 'dene(): deneme=true');
 
+// 8b) GitHub gerçek true/false'u 422 ile reddederse bir kez yazı değerleriyle yineler; başka hatada yinelemez
+o = ortam(istek => (istek.yontem === 'post' ? (typeof istek.govde.inputs.deneme === 'boolean'
+  ? [422, '{"message":"For \'additionalProperties\', true is not a string."}'] : [204, '']) : [200, {workflow_runs: []}]));
+o.tik('2026-11-04 19:16');
+esit(o.baslatmalar().map(i => i.govde.inputs), [{dilim: AKSAM, deneme: false, onay: false},
+  {dilim: AKSAM, deneme: 'false', onay: 'false'}], '422: yazı değerleriyle bir kez daha');
+esit(o.ozellik['gonderildi:2026-11-04:' + AKSAM], '19:16', '422 sonrası yazıyla başlarsa kaydedilir');
+o = ortam(istek => (istek.yontem === 'post' ? [500, 'hata'] : [200, {workflow_runs: []}]));
+o.tik('2026-11-04 19:16');
+esit(o.baslatmalar().length, 1, '500: aynı tikte yinelemez (sonraki tikte dener)');
+
+// 8c) Denetim yalnız main dalının çalışmalarına bakar (başka daldaki denemeler sayılmaz)
+o = ortam(basari('in_progress'));
+o.tik('2026-11-04 19:16'); o.tik('2026-11-04 19:46');
+esit(o.okumalar()[0].url.includes('/runs?branch=main&'), true, 'denetim: yalnız main');
+
 // 9) Anahtar yoksa hiçbir şey göndermez
 o = ortam(basari('in_progress'));
 delete o.ozellik.GITHUB_TOKEN;

@@ -237,14 +237,14 @@ def kurlar():
     print(f"::warning::Dolar/TL kuru Frankfurter'dan alınamadı ({son_hata}); ECB'nin kendi dosyası deneniyor.")
     try:
         sonuc = ecb_xml_kurlari()
-        KUR_ARACI[0] = "ECB'nin kendi sitesinden (Frankfurter o an yanıt vermedi)"
+        KUR_ARACI[0] = "doğrudan ECB'nin sitesinden"   # Rıdvan, 4 Kasım 2026: "Doğrudan ECB'den"
         print(f"Dolar/TL kuru ECB dosyasından alındı: {sonuc[0][0]} {sonuc[0][1]:.4f}.")
         return sonuc
     except Exception as e:  # noqa: BLE001 — son yedek: kendi kayıtlarımız
         print(f"::warning::ECB dosyası da okunamadı ({type(e).__name__}: {e}); botun kayıtlarındaki son kur deneniyor.")
     sonuc = kayitli_kurlar(gecmis_oku(), gun_ici_oku())
     if sonuc:
-        KUR_ARACI[0] = "Frankfurter (frankfurter.dev) üzerinden; kaynak o an yanıt vermediği için botun son kaydından"
+        KUR_ARACI[0] = "botun son ECB kaydından"
         print(f"::warning::Dolar/TL kuru botun kaydından: {sonuc[0][0]} {sonuc[0][1]:.4f} (önceki {sonuc[1][0]}).")
         return sonuc
     raise RuntimeError(f"Dolar/TL kuru alınamadı (ECB / Frankfurter, ECB dosyası, kayıtlar): {son_hata}")

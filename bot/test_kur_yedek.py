@@ -93,10 +93,10 @@ def ecb_kotu():
 esit((s, arac), ((date.fromisoformat(d1), 50.2), "Frankfurter (frankfurter.dev) üzerinden"), "olağan yol değişmedi")
 (s, o), arac = calistir(coktu, ecb_iyi, {})
 esit(s, (date.fromisoformat(d1), 50.0), "Frankfurter 522 → ECB dosyası")
-esit("ECB'nin kendi sitesinden" in arac, True, "açıklamadaki kaynak satırı ECB'yi söyler")
+esit(arac, "doğrudan ECB'nin sitesinden", "açıklamadaki kaynak satırı ECB'yi söyler, arıza notu yok")
 (s, o), arac = calistir(coktu, ecb_kotu, kayit)
 esit(s, (date.fromisoformat(d1), 50.0), "ikisi de yoksa botun son kaydı")
-esit("botun son kaydından" in arac, True, "açıklamada son kayıt olduğu yazar")
+esit(arac, "botun son ECB kaydından", "açıklamada son kayıt olduğu yazar")
 try:
     calistir(coktu, ecb_kotu, {})
     esit(True, False, "hiçbir yol yoksa hata")

@@ -99,8 +99,9 @@ esit("CRON: ${{ github.event.schedule || inputs.dilim }}" in YML, True, "sınır
 esit("DILIM_GIRDI: ${{ inputs.dilim }}" in YML, True, "dilim girdisi betiğe ortam değişkeniyle girer (enjeksiyon yok)")
 esit("${{ inputs.dilim }}\"" in YML, False, "dilim girdisi betik metnine doğrudan yazılmaz")
 # Dış tetik deneme kapalı ve onaysız başlatır; true/false yazı değil (gözden geçirme, 4 Kasım 2026)
-esit("inputs: {dilim: dilim, deneme: !!deneme, onay: false}" in GS, True, "onay hep kapalı, gerçek true/false")
-esit("'false'" in GS or "'true'" in GS, False, "Kod.gs'te yazı olarak 'true' / 'false' yok")
+esit("{dilim: dilim, deneme: !!deneme, onay: false}" in GS, True, "onay hep kapalı, gerçek true/false")
+esit("onay: 'false'}" in GS and "onay: 'true'" not in GS and "onay: true" not in GS, True,
+     "422 yedeğinde de onay kapalı; Kod.gs hiçbir yolda onay açmaz")
 # Pencere sonu denetimi: yeniden başlatma da hedef saatin en geç 5 dk sonrasına kadar olur (söz verilen saat)
 DENETIM_DK = int(re.search(r"var DENETIM_DK = (\d+);", GS).group(1))
 for d in DILIMLER:

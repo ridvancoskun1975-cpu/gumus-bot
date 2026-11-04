@@ -17,6 +17,8 @@
  * bakar: pencereden bu yana paylaşım iş akışında süren ya da başarıyla biten bir çalışma yoksa o dilimi bir kez daha
  * başlatır. Paylaşım gittiyse ikinci çalışma iki kilide takılıp paylaşmadan biter.
  * deneme ve onay gerçek true/false olarak gönderilir (yazı olarak "false" değil; GitHub'ın yazıyı nasıl okuduğu belirsiz).
+ * GitHub gerçek true/false'u 422 ile reddederse aynı istek bir kez yazı değerleriyle yinelenir (eski API davranışı).
+ * Denetim yalnız main dalındaki çalışmalara bakar (başka daldaki denemeler sayılmaz).
  * DILIMLER, paylas.yml cron'ları ve bot/program.py → HEDEF_SAATLERI ile uyumlu olmalı: python bot/test_dis_tetik.py.
  */
 
@@ -87,13 +89,13 @@ function denetle_(ozellik, anahtar, gun, saat, d) {
   }
 }
 
-/** Pencere başından 10 dk önceden (dilimin cron'u) bu yana paylas.yml çalışmaları: {var: 'sürüyor' | 'başarıyla bitti'},
+/** Pencere başından 10 dk önceden (dilimin cron dakikasından da önce) bu yana main'deki paylas.yml çalışmaları: {var: 'sürüyor' | 'başarıyla bitti'},
  *  {} (yok) ya da {hata: neden}. Yalnız okur. */
 function calisma_durumu_(gun, bas) {
   var token = PropertiesService.getScriptProperties().getProperty('GITHUB_TOKEN');
   if (!token) return {hata: 'GITHUB_TOKEN özelliği yok'};
   var basla = new Date(Utilities.parseDate(gun + ' ' + bas, SAAT_DILIMI, 'yyyy-MM-dd HH:mm').getTime() - 10 * 60000);
-  var url = 'https://api.github.com/repos/' + DEPO + '/actions/workflows/' + IS_AKISI + '/runs?per_page=30&created=' +
+  var url = 'https://api.github.com/repos/' + DEPO + '/actions/workflows/' + IS_AKISI + '/runs?branch=main&per_page=30&created=' +
     encodeURIComponent('>=' + basla.toISOString().slice(0, 19) + 'Z');
   try {
     var yanit = UrlFetchApp.fetch(url, {
@@ -131,6 +133,16 @@ function uyar_(ozellik, anahtar, gun, saat, d, neden) {
 function baslat_(dilim, deneme) {
   var token = PropertiesService.getScriptProperties().getProperty('GITHUB_TOKEN');
   if (!token) return {ok: false, neden: 'GITHUB_TOKEN özelliği yok'};
+  // deneme ve onay gerçek true/false (yazı değil): paylas.yml'de inputs.deneme == false karşılaştırılır
+  var sonuc = gonder_(token, {dilim: dilim, deneme: !!deneme, onay: false});
+  if (!sonuc.ok && sonuc.kod === 422) {
+    console.warn('GitHub true/false değerini reddetti (422); yazı değerleriyle bir kez daha deneniyor.');
+    sonuc = gonder_(token, {dilim: dilim, deneme: deneme ? 'true' : 'false', onay: 'false'});
+  }
+  return sonuc;
+}
+
+function gonder_(token, girdiler) {
   try {
     var yanit = UrlFetchApp.fetch(
       'https://api.github.com/repos/' + DEPO + '/actions/workflows/' + IS_AKISI + '/dispatches', {
@@ -141,13 +153,12 @@ function baslat_(dilim, deneme) {
           'Accept': 'application/vnd.github+json',
           'X-GitHub-Api-Version': '2022-11-28'
         },
-        // deneme ve onay gerçek true/false (yazı değil): paylas.yml'de inputs.deneme == false karşılaştırılır
-        payload: JSON.stringify({ref: 'main', inputs: {dilim: dilim, deneme: !!deneme, onay: false}}),
+        payload: JSON.stringify({ref: 'main', inputs: girdiler}),
         muteHttpExceptions: true
       });
     var kod = yanit.getResponseCode();
     if (kod === 204 || kod === 200) return {ok: true};
-    return {ok: false, neden: 'HTTP ' + kod + ' ' + yanit.getContentText().slice(0, 200)};
+    return {ok: false, kod: kod, neden: 'HTTP ' + kod + ' ' + yanit.getContentText().slice(0, 200)};
   } catch (e) {
     return {ok: false, neden: String(e).slice(0, 200)};
   }
