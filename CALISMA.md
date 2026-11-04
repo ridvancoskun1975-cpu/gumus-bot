@@ -6,4 +6,3 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
-| 5 Kasım 2026 01:50 | Telif notu main'de (33e0ebd). Bekliyor: site ve Instagram © önizlemesi (Rıdvan'ın onayı), sonra bu hafta GitHub Pro geçişi (bekleme kısaltma + Kod.gs, depo gizleme) | templates/taban.html, görsel şablonlarının alt satırı, açıklama sonu (bot/main.py, bot/kart.py, bot/yorum.py, bot/bilgi.py); sonra dis-tetik/Kod.gs, bot/program.py | telif-gorunur |
