@@ -6,4 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
-
+| 4 Kasım 2026 16:58 | Gözden geçirme düzeltmeleri: dış tetik gerçek true/false + pencere sonu kontrolü, ECB geçmişi yedeği, gece kilidi, takılma kaydı, belgeler | dis-tetik/Kod.gs, bot/main.py, bot/sinir.py, bot/nobetci.py, .github/workflows/paylas.yml, README.md, testler | gozden-gecirme-4-kasim (önce main'e yalnız bu satır) |
