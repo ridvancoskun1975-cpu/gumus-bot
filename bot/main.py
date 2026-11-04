@@ -59,6 +59,11 @@ API = f"{API_HOST}/{API_SURUM}"
 METALCHARTS_URL = "https://api.metalcharts.org/v1/prices"
 # ECB kurları her iş günü ~16:00 CET (≈17:00 TR) yayımlanır; günde bir değer.
 KUR_URL = "https://api.frankfurter.dev/v2/providers/ecb/rates"
+# Yedek kur kaynağı (4 Kasım 2026: Frankfurter 522 verdi, akşam özeti kursuz kalabilirdi): ECB'nin kendi son 90 gün
+# dosyası (EUR bazlı; USD/TRY = TRY ÷ USD, Frankfurter'ın yaptığı EUR çaprazının aynısı). O da olmazsa botun kendi
+# kayıtlarındaki son iki ECB kuru (tarihiyle; görselde "ECB kuru · <tarih>" yine doğru tarihi gösterir).
+ECB_XML_URL = "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist-90d.xml"
+KUR_ARACI = ["Frankfurter (frankfurter.dev) üzerinden"]   # açıklamadaki kaynak satırı; yedek yolda değişir
 TARAYICI = "gumus-bot/1.0 (+https://github.com/ridvancoskun1975-cpu/gumus-bot)"
 GECMIS_DOSYASI = KOK / "veri" / "gecmis.json"
 MUZIK_KUNYE = KOK / "assets" / "muzik-kunye.txt"
@@ -226,7 +231,67 @@ def kurlar():
         except (requests.RequestException, ValueError, KeyError, TypeError) as e:
             son_hata = e
             _bekle(deneme)
-    raise RuntimeError(f"Dolar/TL kuru alınamadı (ECB / Frankfurter): {son_hata}")
+    print(f"::warning::Dolar/TL kuru Frankfurter'dan alınamadı ({son_hata}); ECB'nin kendi dosyası deneniyor.")
+    try:
+        sonuc = ecb_xml_kurlari()
+        KUR_ARACI[0] = "ECB'nin kendi sitesinden (Frankfurter o an yanıt vermedi)"
+        print(f"Dolar/TL kuru ECB dosyasından alındı: {sonuc[0][0]} {sonuc[0][1]:.4f}.")
+        return sonuc
+    except Exception as e:  # noqa: BLE001 — son yedek: kendi kayıtlarımız
+        print(f"::warning::ECB dosyası da okunamadı ({type(e).__name__}: {e}); botun kayıtlarındaki son kur deneniyor.")
+    sonuc = kayitli_kurlar(gecmis_oku(), gun_ici_oku())
+    if sonuc:
+        KUR_ARACI[0] = "Frankfurter (frankfurter.dev) üzerinden; kaynak o an yanıt vermediği için botun son kaydından"
+        print(f"::warning::Dolar/TL kuru botun kaydından: {sonuc[0][0]} {sonuc[0][1]:.4f} (önceki {sonuc[1][0]}).")
+        return sonuc
+    raise RuntimeError(f"Dolar/TL kuru alınamadı (ECB / Frankfurter, ECB dosyası, kayıtlar): {son_hata}")
+
+
+def ecb_xml_kurlari(icerik=None):
+    """ECB'nin son 90 gün dosyasından son iki USD/TRY kuru: ((tarih, kur), (önceki tarih, kur)).
+    USD/TRY = (EUR/TRY) ÷ (EUR/USD). icerik verilirse (sınama) istek atılmaz."""
+    import xml.etree.ElementTree as ET
+    if icerik is None:
+        r = requests.get(ECB_XML_URL, timeout=30, headers={"User-Agent": TARAYICI})
+        r.raise_for_status()
+        icerik = r.content
+    kok = ET.fromstring(icerik)
+    satirlar = []
+    for kup in kok.iter():
+        if not kup.tag.endswith("Cube") or "time" not in kup.attrib:
+            continue
+        oranlar = {c.attrib.get("currency"): c.attrib.get("rate") for c in kup}
+        if oranlar.get("USD") and oranlar.get("TRY"):
+            kur = float(oranlar["TRY"]) / float(oranlar["USD"])
+            satirlar.append((date.fromisoformat(kup.attrib["time"]), round(kur, 5)))
+    satirlar.sort()
+    if len(satirlar) < 2:
+        raise ValueError(f"ECB dosyasında yeterli kur yok ({len(satirlar)})")
+    for _, kur in satirlar[-2:]:
+        if not (math.isfinite(kur) and 1 < kur < 1000):
+            raise ValueError(f"geçersiz kur {kur}")
+    if (datetime.now(TR_SAAT).date() - satirlar[-1][0]).days > 7:
+        raise ValueError(f"ECB dosyasındaki son kur eski ({satirlar[-1][0]})")
+    return satirlar[-1], satirlar[-2]
+
+
+def kayitli_kurlar(gecmis, gun_ici=None):
+    """Botun kayıtlarındaki son iki farklı ECB tarihinin kuru: ((tarih, kur), (önceki tarih, kur)) ya da None.
+    Son kur 7 günden eskiyse None (eski kur sessizce kullanılmasın)."""
+    kurlar_ = {}
+    for k in list((gecmis or {}).values()) + [n for gun in (gun_ici or {}).get("gunler", {}).values() for n in gun]:
+        try:
+            t, d = date.fromisoformat(k["kur_tarihi"]), float(k["dolar"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        if math.isfinite(d) and 1 < d < 1000:
+            kurlar_[t] = d
+    if len(kurlar_) < 2:
+        return None
+    son = sorted(kurlar_.items())[-2:]
+    if (datetime.now(TR_SAAT).date() - son[-1][0]).days > 7:
+        return None
+    return son[-1], son[-2]
 
 
 def ecb_gecmisi(gun_sayisi=400):
@@ -1068,7 +1133,7 @@ def _kaynak_satirlari(v):
     satirlar = [
         "Gram fiyatı ons gümüş × dolar/TL ÷ 31,1035 ile hesaplanmıştır; kuyumcu ve banka fiyatlarından farklı olabilir.",
         "Metal fiyatları: MetalCharts (metalcharts.org)",
-        f"Dolar/TL: Avrupa Merkez Bankası (ECB) referans kurlarından EUR çaprazıyla hesaplanmıştır, Frankfurter (frankfurter.dev) üzerinden ({v['kur_tarihi_tam']} kuru)",
+        f"Dolar/TL: Avrupa Merkez Bankası (ECB) referans kurlarından EUR çaprazıyla hesaplanmıştır, {KUR_ARACI[0]} ({v['kur_tarihi_tam']} kuru)",
     ]
     kunye = muzik_kunyesi()
     if kunye:
