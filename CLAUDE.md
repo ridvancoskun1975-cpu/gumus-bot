@@ -53,6 +53,14 @@
   giden Reels'te çıkmaz.
 - Instagram'a tarayıcıyla bakılmaz.
 - **Paylaşım saati = hedef saat** (Rıdvan, 28 Ekim 2026: "takipçilere 20 00 yazdık … işleme önce başlamalıyız", "söze uymamız gerekiyor"): GitHub zamanlı işi 20–50 dk geç başlattığı için `paylas.yml` cron'ları hedeften ~45 dk öncedir (09:10, 13:10, 19:10; cumartesi 09:10, pazar 10:10 TR) ve bot hedefe kadar bekler (`bot/program.py` → `HEDEF_SAATLERI`, `bekle`; hedefler 09:55 / 13:55 / 19:55 / 09:55 / 10:55, paylaşım ~5 dk sonra). Cron'u geri 09:50/19:50'ye alma; saat değişecekse hedef ve cron birlikte, önizleme ve onayla (`python bot/program.py hedef-denetle`). Hedeften önceki 45 dk içinde elle çalıştırma başlatma (zamanlı çalışma kuyruğu tutar). Bekleme adımı hata verse de paylaşım gider; bu güvenlik kaldırılmaz.
+- **Dış tetik (4 Kasım 2026, Rıdvan "A başla. Kontrollü git"):** paylaşımları GitHub'ın zamanlayıcısı yerine Rıdvan'ın
+  Google hesabındaki Apps Script "Gümüş dış tetik" başlatır (`dis-tetik/Kod.gs`; her 10 dk, dilim penceresinde
+  `paylas.yml`'yi `dilim` girdisiyle). Anahtar Apps Script'in özelliğinde (`GITHUB_TOKEN`, gumus-bot, yalnız Actions
+  yazma; adı gumus-dis-tetik, süresiz). Bir cron ya da hedef saat değişirse `Kod.gs` de değişir (`python
+  bot/test_dis_tetik.py`), önce main'e alınır, sonra Rıdvan'ın projesine yeniden yapıştırılır. GitHub cron'ları ve
+  nöbetçiler yedektir; kaldırma. Anahtarı ya da şifreyi Claude hiçbir alana yazmaz, Rıdvan yapıştırır; kurulum adımlarını
+  ayrıntılı tarif et ve her adımı kontrol edip onay iste (Rıdvan, 4 Kasım 2026: "bana böyle detaylı tarif et ve tam
+  yaptığımı kontrol et. onay iste").
 - Sitede ve açıklamalarda model ya da şirket adı yazılmaz.
   (Bu dört kural: Rıdvan, 16 Ekim 2026 "CLAUDE.md'ye ekle".)
 - Goril maskotu (README → "Goril maskotu", `bot/goril.py`): hafta içi sabah Reels'i (19 Ekim 2026'dan; Rıdvan 16 Ekim

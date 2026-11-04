@@ -7,4 +7,3 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
 
-| 4 Kasım 2026 16:05 | Dış tetik kurulumu (Apps Script, Rıdvan'ın Google hesabı) | dis-tetik/ (yalnız okuma) | main · kuruluyor |
