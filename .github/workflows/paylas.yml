@@ -344,6 +344,10 @@ jobs:
           SES_ADI: ${{ github.event_name == 'workflow_dispatch' && inputs.deneme && inputs.ses || '' }}
           # Pazar yorumunu örnek veriyle önizler (Claude API ve MetalCharts isteği yok); yalnız paylaşmayan elle denemede.
           ORNEK: ${{ github.event_name == 'workflow_dispatch' && inputs.deneme && inputs.ornek && 'true' || '' }}
+          # Günlük anında yazılsın (4 Kasım 2026: rehber #8 üretimi 15 dk'da süre aşımına düştü, günlükte tek satır
+          # yoktu); takılırsa nerede takıldığı görünsün. Çıktıyı değiştirmez.
+          PYTHONUNBUFFERED: "1"
+          PYTHONFAULTHANDLER: "1"
         run: |
           ek=()
           case "${{ needs.kontrol.outputs.tur }}" in
