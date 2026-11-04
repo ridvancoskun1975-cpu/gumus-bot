@@ -367,6 +367,8 @@ jobs:
           # yoktu); takılırsa nerede takıldığı görünsün. Çıktıyı değiştirmez.
           PYTHONUNBUFFERED: "1"
           PYTHONFAULTHANDLER: "1"
+          # Adım süre sınırından 1 dk önce yığın dökümü (main._takilma_dokumu; gözden geçirme, 4 Kasım 2026). Yalnız yazar.
+          TAKILMA_DOKUM_SN: ${{ needs.kontrol.outputs.tur == 'yorum' && 2040 || (needs.kontrol.outputs.tur == 'bilgi' || needs.kontrol.outputs.tur == 'kisa') && 840 || 240 }}
           # Dış tetik de zamanlı çalışma sayılır (main.YORUM_DURAKLAT pazar yorumunu ikisinde de durdurur)
           ZAMANLI: ${{ (github.event_name == 'schedule' || (inputs.dilim != '' && inputs.deneme == false)) && 'true' || '' }}
         run: |
@@ -538,8 +540,10 @@ jobs:
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
           HIKAYE: ${{ needs.uret.outputs.hikaye }}             # yok: günlük sınır için hikâye kopyası gitmez
           # İkinci çift paylaşım kilidi (bot/main.py → instagram_bugun_paylasildi) yalnız Rıdvan'ın onay: true'suyla aşılır
-          ONAY_TEKRAR: ${{ github.event_name == 'workflow_dispatch' && inputs.onay && '1' || '' }}
+          # (== true: yazı olarak gelen "false" kilidi açmasın; gözden geçirme, 4 Kasım 2026)
+          ONAY_TEKRAR: ${{ github.event_name == 'workflow_dispatch' && inputs.onay == true && '1' || '' }}
           GORUNEN_DOSYA: ${{ runner.temp }}/gorunen.txt        # paylaşılan içerik sayısı (günlük sınır)
+          TAKILMA_DOKUM_SN: 9840                               # süre sınırından 1 dk önce yığın dökümü
         run: python bot/main.py yayinla --cikti site --url "${{ steps.yayin.outputs.page_url }}" --bekle-dk 150
 
       # Günlük sınır (bot/sinir.py): bu çalıştırmanın takipçiye gösterdiği gerçek içerik sayısı (akış + Reels +

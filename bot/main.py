@@ -63,6 +63,9 @@ KUR_URL = "https://api.frankfurter.dev/v2/providers/ecb/rates"
 # dosyası (EUR bazlı; USD/TRY = TRY ÷ USD, Frankfurter'ın yaptığı EUR çaprazının aynısı). O da olmazsa botun kendi
 # kayıtlarındaki son iki ECB kuru (tarihiyle; görselde "ECB kuru · <tarih>" yine doğru tarihi gösterir).
 ECB_XML_URL = "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist-90d.xml"
+# Pazar yorumunun kur geçmişi (ecb_gecmisi, ~400 gün) için aynı dosyanın tam hâli (1999'dan bugüne, birkaç MB):
+# Frankfurter yanıt vermezse yorum durmasın (gözden geçirme, 4 Kasım 2026).
+ECB_XML_TAM_URL = "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist.xml"
 KUR_ARACI = ["Frankfurter (frankfurter.dev) üzerinden"]   # açıklamadaki kaynak satırı; yedek yolda değişir
 TARAYICI = "gumus-bot/1.0 (+https://github.com/ridvancoskun1975-cpu/gumus-bot)"
 GECMIS_DOSYASI = KOK / "veri" / "gecmis.json"
@@ -247,24 +250,29 @@ def kurlar():
     raise RuntimeError(f"Dolar/TL kuru alınamadı (ECB / Frankfurter, ECB dosyası, kayıtlar): {son_hata}")
 
 
-def ecb_xml_kurlari(icerik=None):
-    """ECB'nin son 90 gün dosyasından son iki USD/TRY kuru: ((tarih, kur), (önceki tarih, kur)).
-    USD/TRY = (EUR/TRY) ÷ (EUR/USD). icerik verilirse (sınama) istek atılmaz."""
+def _ecb_xml_satirlari(icerik):
+    """ECB kur dosyasındaki (90 gün ya da tam geçmiş; aynı biçim) bütün USD/TRY kurları, tarih sırasıyla:
+    [(tarih, kur)]. USD/TRY = (EUR/TRY) ÷ (EUR/USD); TRY'nin olmadığı eski günler atlanır."""
     import xml.etree.ElementTree as ET
-    if icerik is None:
-        r = requests.get(ECB_XML_URL, timeout=30, headers={"User-Agent": TARAYICI})
-        r.raise_for_status()
-        icerik = r.content
-    kok = ET.fromstring(icerik)
     satirlar = []
-    for kup in kok.iter():
+    for kup in ET.fromstring(icerik).iter():
         if not kup.tag.endswith("Cube") or "time" not in kup.attrib:
             continue
         oranlar = {c.attrib.get("currency"): c.attrib.get("rate") for c in kup}
         if oranlar.get("USD") and oranlar.get("TRY"):
             kur = float(oranlar["TRY"]) / float(oranlar["USD"])
             satirlar.append((date.fromisoformat(kup.attrib["time"]), round(kur, 5)))
-    satirlar.sort()
+    return sorted(satirlar)
+
+
+def ecb_xml_kurlari(icerik=None):
+    """ECB'nin son 90 gün dosyasından son iki USD/TRY kuru: ((tarih, kur), (önceki tarih, kur)).
+    USD/TRY = (EUR/TRY) ÷ (EUR/USD). icerik verilirse (sınama) istek atılmaz."""
+    if icerik is None:
+        r = requests.get(ECB_XML_URL, timeout=30, headers={"User-Agent": TARAYICI})
+        r.raise_for_status()
+        icerik = r.content
+    satirlar = _ecb_xml_satirlari(icerik)
     if len(satirlar) < 2:
         raise ValueError(f"ECB dosyasında yeterli kur yok ({len(satirlar)})")
     for _, kur in satirlar[-2:]:
@@ -310,7 +318,29 @@ def ecb_gecmisi(gun_sayisi=400):
         except (requests.RequestException, ValueError, KeyError, TypeError) as e:
             son_hata = e
             _bekle(deneme)
-    raise RuntimeError(f"Dolar/TL kur geçmişi alınamadı (ECB / Frankfurter): {son_hata}")
+    print(f"::warning::Dolar/TL kur geçmişi Frankfurter'dan alınamadı ({son_hata}); ECB'nin kendi dosyası deneniyor.")
+    try:
+        return ecb_xml_gecmisi(baslangic)
+    except Exception as e:  # noqa: BLE001 — iki kaynak da yoksa eski hata mesajıyla durur
+        raise RuntimeError(f"Dolar/TL kur geçmişi alınamadı (ECB / Frankfurter: {son_hata}; "
+                           f"ECB dosyası: {type(e).__name__}: {e})") from e
+
+
+def ecb_xml_gecmisi(baslangic, icerik=None):
+    """ecb_gecmisi'nin yedeği: ECB'nin tam geçmiş dosyasından baslangic (ISO tarih) ve sonrası USD/TRY: {tarih: kur}.
+    Frankfurter'ın ECB serisiyle aynı kaynak ve aynı EUR çaprazı. icerik verilirse (sınama) istek atılmaz."""
+    if icerik is None:
+        r = requests.get(ECB_XML_TAM_URL, timeout=90, headers={"User-Agent": TARAYICI})
+        r.raise_for_status()
+        icerik = r.content
+    alt = date.fromisoformat(baslangic)
+    kurlar_ = {t: k for t, k in _ecb_xml_satirlari(icerik) if t >= alt}
+    if len(kurlar_) < 100 or not all(1 < k < 1000 for k in kurlar_.values()):
+        raise ValueError(f"beklenmeyen kur serisi ({len(kurlar_)} gün)")
+    if (datetime.now(TR_SAAT).date() - max(kurlar_)).days > 7:
+        raise ValueError(f"ECB dosyasındaki son kur eski ({max(kurlar_)})")
+    print(f"Dolar/TL kur geçmişi ECB dosyasından alındı: {len(kurlar_)} gün, {min(kurlar_)} – {max(kurlar_)}.")
+    return kurlar_
 
 
 def metal_gecmisi():
@@ -1900,7 +1930,8 @@ def instagram_bugun_paylasildi(meta, simdi=None, istek=None):
         except (KeyError, ValueError):
             continue
         # Gece yarısı kuralı (4 Kasım 2026; bot/sinir.py → GECE_SONU): 00:00–05:00 arasında giden gönderi bir önceki
-        # günün gecikmiş işidir, günün asıl paylaşımını durdurmaz.
+        # günün gecikmiş işidir, 05:00'ten sonraki asıl paylaşımı durdurmaz. Gecenin içindeki bir çalıştırma ise
+        # o gece gideni görür ve durur (gunduz yanlış).
         if (zaman.date() == bugun and (not gunduz or (zaman.hour, zaman.minute) >= IG_GECE_SONU)
                 and re.search(imza, (m.get("caption") or "").lower())):
             return m.get("id"), zaman.strftime("%H:%M")
@@ -3186,7 +3217,21 @@ def hazirla(tur, cikti, ornek, konu=None):
     print(f"Üretilen dosya: {cikti / dosya}")
 
 
+def _takilma_dokumu():
+    """Adım süre sınırından ~1 dk önce bütün iş parçacıklarının yığınını günlüğe yazar (gözden geçirme, 4 Kasım 2026:
+    rehber üretimi 15 dk hiç çıktı vermeden takıldı, nerede takıldığı görülemedi). Yalnız yazar; çalışmayı durdurmaz.
+    Süre iş akışındaki TAKILMA_DOKUM_SN'den (saniye); yoksa kapalı."""
+    try:
+        sn = int(os.environ.get("TAKILMA_DOKUM_SN", "0") or 0)
+    except ValueError:
+        return
+    if sn > 0:
+        import faulthandler
+        faulthandler.dump_traceback_later(sn, repeat=False, file=sys.stderr, exit=False)
+
+
 def main():
+    _takilma_dokumu()
     ap = argparse.ArgumentParser()
     alt = ap.add_subparsers(dest="komut", required=True)
     h = alt.add_parser("hazirla")

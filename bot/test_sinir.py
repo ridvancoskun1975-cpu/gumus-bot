@@ -269,6 +269,34 @@ esit((k, t), (0, "evet"), "kontrol: gece elle başlatılan ikinci özet kilide t
 esit(sinir.toplam(sinir.paylasim_sayisi([{"id": 9}], {9: [is_("yayinla", "completed", "success",
      bit="2026-11-03T21:47:45Z")]}, utc(2026, 11, 4, 16, 55), 0, {9: ["gorunen-1-2", "onizleme-post"]})), 2,
      "günlük sınır: gece giden de takipçi gördüğü için sayılır")
+# Gece kilidi (gözden geçirme, 4 Kasım 2026): 00:00–05:00 arasında onaysız günlük tür hiç paylaşılmaz (elle de)
+
+
+def gece_ciktisi(simdi, tur="post", yayin=True, onay=False, konu=""):
+    import os
+    import tempfile
+    sinir.say = bugun()
+    with tempfile.NamedTemporaryFile("w+", delete=False) as f:
+        yol = f.name
+    os.environ["GITHUB_OUTPUT"] = yol
+    try:
+        with contextlib.redirect_stdout(io.StringIO()) as o:
+            kod = sinir.kontrol(yayin, onay, tur, konu, simdi, cron="")
+        cikti = dict(x.split("=", 1) for x in Path(yol).read_text().split())
+    finally:
+        os.environ.pop("GITHUB_OUTPUT", None)
+    return kod, cikti.get("tekrar", "hayir"), o.getvalue()
+
+
+k, t, yazi = gece_ciktisi(utc(2026, 11, 3, 21, 44))   # 00:44 TR, bugün hiç paylaşım yok
+esit((k, t), (0, "evet"), "gece kilidi: 00:44'te elle başlatılan özet paylaşmadan, hata vermeden biter")
+esit("Gece kilidi" in yazi, True, "gece kilidi: nedeni günlüğe yazar")
+esit(gece_ciktisi(utc(2026, 11, 3, 21, 44), onay=True)[:2], (0, "hayir"), "gece kilidi: onay=true aşar")
+esit(gece_ciktisi(utc(2026, 11, 3, 21, 44), yayin=False)[:2], (0, "hayir"), "gece kilidi: deneme etkilenmez")
+esit(gece_ciktisi(utc(2026, 11, 4, 1, 59), tur="reels")[:2], (0, "evet"), "gece kilidi: 04:59 hâlâ gece")
+esit(gece_ciktisi(utc(2026, 11, 4, 2, 0), tur="reels")[:2], (0, "hayir"), "gece kilidi: 05:00'te biter")
+esit(gece_ciktisi(utc(2026, 11, 3, 21, 44), tur="hikaye", konu="8")[:2], (0, "hayir"),
+     "gece kilidi: elle rehber hikâyesi (günde bir tür değil) kapsam dışı")
 sys.path.insert(0, str(Path(__file__).parent))
 import nobetci  # noqa: E402
 esit(nobetci.SON_SAAT is sinir.SON_SAAT, True, "nöbetçi ve zamanlı çalışma aynı son saat penceresi")

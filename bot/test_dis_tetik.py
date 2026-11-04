@@ -98,7 +98,48 @@ esit("if: github.event_name == 'schedule' || (inputs.dilim != '' && inputs.denem
 esit("CRON: ${{ github.event.schedule || inputs.dilim }}" in YML, True, "sınır adımı dilimi gec_kalmis'e verir")
 esit("DILIM_GIRDI: ${{ inputs.dilim }}" in YML, True, "dilim girdisi betiğe ortam değişkeniyle girer (enjeksiyon yok)")
 esit("${{ inputs.dilim }}\"" in YML, False, "dilim girdisi betik metnine doğrudan yazılmaz")
-# Dış tetik deneme kapalı ve onaysız başlatır
-esit("inputs: {dilim: dilim, deneme: deneme ? 'true' : 'false', onay: 'false'}" in GS, True, "onay hep kapalı")
+# Dış tetik deneme kapalı ve onaysız başlatır; true/false yazı değil (gözden geçirme, 4 Kasım 2026)
+esit("inputs: {dilim: dilim, deneme: !!deneme, onay: false}" in GS, True, "onay hep kapalı, gerçek true/false")
+esit("'false'" in GS or "'true'" in GS, False, "Kod.gs'te yazı olarak 'true' / 'false' yok")
+# Pencere sonu denetimi: yeniden başlatma da hedef saatin en geç 5 dk sonrasına kadar olur (söz verilen saat)
+DENETIM_DK = int(re.search(r"var DENETIM_DK = (\d+);", GS).group(1))
+for d in DILIMLER:
+    hs, hd = program.HEDEF_SAATLERI[TUR[d["dilim"]]]
+    esit(dk(d["son"]) + DENETIM_DK <= hs * 60 + hd + 5, True, f"{d['ad']}: denetim hedeften en geç 5 dk sonra biter")
+    esit(DENETIM_DK > 10, True, f"{d['ad']}: denetim penceresine en az bir 10 dk'lık tetik düşer")
+
+# Takılma dökümü (gözden geçirme, 4 Kasım 2026): her adımda süre sınırından tam 1 dk önce
+uret_sure = re.search(r"- name: Görseli / videoyu üret\n.*?timeout-minutes: \$\{\{ .*?'yorum' && (\d+) \|\| .*?&& (\d+) \|\| "
+                      r"(\d+) \}\}", YML, re.S)
+uret_dokum = re.search(r"TAKILMA_DOKUM_SN: \$\{\{ .*?'yorum' && (\d+) \|\| .*?&& (\d+) \|\| (\d+) \}\}", YML)
+esit([int(x) * 60 - 60 for x in uret_sure.groups()], [int(x) for x in uret_dokum.groups()],
+     "üretim adımı: döküm süre sınırından 1 dk önce (yorum, rehber, diğer)")
+paylas_sure = re.search(r"- name: Instagram'a paylaş\n\s+timeout-minutes: (\d+)", YML).group(1)
+esit(f"TAKILMA_DOKUM_SN: {int(paylas_sure) * 60 - 60} " in YML, True, "paylaşım adımı: döküm süre sınırından 1 dk önce")
+esit("inputs.onay == true && '1'" in YML, True, "ONAY_TEKRAR yalnız gerçek true ile açılır")
+import main as bot  # noqa: E402
+import faulthandler  # noqa: E402
+import os  # noqa: E402
+cagri = []
+asil_dokum = faulthandler.dump_traceback_later
+faulthandler.dump_traceback_later = lambda sn, **kw: cagri.append((sn, kw.get("exit"), kw.get("repeat")))
+try:
+    for deger in ("840", "", "bozuk"):
+        os.environ["TAKILMA_DOKUM_SN"] = deger
+        bot._takilma_dokumu()
+finally:
+    faulthandler.dump_traceback_later = asil_dokum
+    os.environ.pop("TAKILMA_DOKUM_SN", None)
+esit(cagri, [(840, False, False)], "takılma dökümü: yalnız süre verilince, çalışmayı durdurmadan")
+
+# Davranış sınaması (Apps Script hizmetleri sahte): node dis-tetik/test_kod.js
+import shutil  # noqa: E402
+import subprocess  # noqa: E402
+if shutil.which("node"):
+    r = subprocess.run(["node", str(KOK / "dis-tetik" / "test_kod.js")], capture_output=True, text=True)
+    print(r.stdout.strip() or r.stderr.strip()[-2000:])
+    esit(r.returncode, 0, "Kod.gs davranış sınaması (node dis-tetik/test_kod.js)")
+else:
+    print("UYARI: node yok; Kod.gs davranış sınaması atlandı (node dis-tetik/test_kod.js).")
 
 print(f"test_dis_tetik: {gecen} sınama geçti.")

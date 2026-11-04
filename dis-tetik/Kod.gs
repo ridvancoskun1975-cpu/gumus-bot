@@ -11,6 +11,12 @@
  * Kurulum (bir kez): Proje ayarları → Komut dosyası özellikleri → GITHUB_TOKEN = yalnız gumus-bot deposunda
  * "Actions: Read and write" yetkili ince GitHub anahtarı. Sonra kur() bir kez çalıştırılır (izin penceresi onaylanır).
  * Deneme: dene() paylaşmayan bir çalıştırma başlatır. Kapatmak: kaldir().
+ *
+ * Pencere sonu denetimi (gözden geçirme, 4 Kasım 2026): GitHub başlatmayı kabul ettikten sonra çalışma iptal olabilir
+ * (aynı gruba yeni bir çalışma girerse) ya da hata verebilir. Pencere bittikten sonraki 15 dakikada betik bir kez
+ * bakar: pencereden bu yana paylaşım iş akışında süren ya da başarıyla biten bir çalışma yoksa o dilimi bir kez daha
+ * başlatır. Paylaşım gittiyse ikinci çalışma iki kilide takılıp paylaşmadan biter.
+ * deneme ve onay gerçek true/false olarak gönderilir (yazı olarak "false" değil; GitHub'ın yazıyı nasıl okuduğu belirsiz).
  * DILIMLER, paylas.yml cron'ları ve bot/program.py → HEDEF_SAATLERI ile uyumlu olmalı: python bot/test_dis_tetik.py.
  */
 
@@ -29,6 +35,7 @@ var DILIMLER = [
   {ad: 'pazar yorumu', gunler: [7], bas: '10:15', son: '10:45', dilim: '10 7 * * 0'}
 ];
 var SON_UYARI_DK = 10;   // pencerenin son 10 dakikasında hâlâ başlatılamadıysa Rıdvan'a e-posta
+var DENETIM_DK = 15;     // pencere bittikten sonraki 15 dakikada bir kez denetim (tetik 10 dakikada bir; en az biri düşer)
 
 function nobet() {
   var simdi = new Date();
@@ -39,24 +46,86 @@ function nobet() {
   temizle_(ozellik, gun);
   for (var i = 0; i < DILIMLER.length; i++) {
     var d = DILIMLER[i];
-    if (d.gunler.indexOf(hg) < 0 || saat < d.bas || saat >= d.son) continue;
+    if (d.gunler.indexOf(hg) < 0) continue;
     var anahtar = 'gonderildi:' + gun + ':' + d.dilim;
-    if (ozellik.getProperty(anahtar)) continue;
-    var sonuc = baslat_(d.dilim, false);
-    if (sonuc.ok) {
-      ozellik.setProperty(anahtar, saat);
-      console.log(d.ad + ' başlatıldı (' + saat + ' TR).');
-    } else {
-      console.warn(d.ad + ' başlatılamadı: ' + sonuc.neden);
-      if (dakika_(d.son) - dakika_(saat) <= SON_UYARI_DK && !ozellik.getProperty('uyari:' + anahtar)) {
-        ozellik.setProperty('uyari:' + anahtar, saat);
-        MailApp.sendEmail(Session.getEffectiveUser().getEmail(),
-          '⚠️ Gümüş dış tetik: ' + d.ad + ' başlatılamadı',
-          gun + ' ' + saat + ' TR: ' + d.ad + ' paylaşımı GitHub\'da başlatılamadı (' + sonuc.neden + ').\n' +
-          'Nöbetçiler yine bakacak. Bir Claude sohbetinde "dış tetik hata verdi" yazman yeter.');
+    if (saat >= d.bas && saat < d.son) {
+      if (ozellik.getProperty(anahtar)) continue;
+      var sonuc = baslat_(d.dilim, false);
+      if (sonuc.ok) {
+        ozellik.setProperty(anahtar, saat);
+        console.log(d.ad + ' başlatıldı (' + saat + ' TR).');
+      } else {
+        console.warn(d.ad + ' başlatılamadı: ' + sonuc.neden);
+        if (dakika_(d.son) - dakika_(saat) <= SON_UYARI_DK) uyar_(ozellik, anahtar, gun, saat, d, sonuc.neden);
       }
+    } else if (dakika_(saat) >= dakika_(d.son) && dakika_(saat) < dakika_(d.son) + DENETIM_DK) {
+      denetle_(ozellik, anahtar, gun, saat, d);
     }
   }
+}
+
+/** Pencere sonu denetimi: bu dilim için süren ya da başarıyla biten çalışma yoksa bir kez daha başlatır. */
+function denetle_(ozellik, anahtar, gun, saat, d) {
+  var dAnahtar = 'denetlendi:' + gun + ':' + d.dilim;
+  if (ozellik.getProperty(dAnahtar)) return;
+  ozellik.setProperty(dAnahtar, saat);
+  var durum = calisma_durumu_(gun, d.bas);
+  if (durum.hata) {
+    console.warn(d.ad + ' denetimi: çalışmalar okunamadı (' + durum.hata + ').');
+    if (ozellik.getProperty(anahtar)) return;   // başlatılmıştı; okunamayınca dokunma, nöbetçiler bakar
+  } else if (durum.var) {
+    console.log(d.ad + ' denetimi: çalışma ' + durum.var + '; ek başlatma yok.');
+    return;
+  }
+  var sonuc = baslat_(d.dilim, false);
+  if (sonuc.ok) {
+    if (!ozellik.getProperty(anahtar)) ozellik.setProperty(anahtar, saat);
+    console.log(d.ad + ' denetimi: süren ya da başarılı çalışma yoktu, bir kez daha başlatıldı (' + saat + ' TR).');
+  } else {
+    console.warn(d.ad + ' denetimi: yeniden başlatılamadı: ' + sonuc.neden);
+    uyar_(ozellik, anahtar, gun, saat, d, sonuc.neden);
+  }
+}
+
+/** Pencere başından 10 dk önceden (dilimin cron'u) bu yana paylas.yml çalışmaları: {var: 'sürüyor' | 'başarıyla bitti'},
+ *  {} (yok) ya da {hata: neden}. Yalnız okur. */
+function calisma_durumu_(gun, bas) {
+  var token = PropertiesService.getScriptProperties().getProperty('GITHUB_TOKEN');
+  if (!token) return {hata: 'GITHUB_TOKEN özelliği yok'};
+  var basla = new Date(Utilities.parseDate(gun + ' ' + bas, SAAT_DILIMI, 'yyyy-MM-dd HH:mm').getTime() - 10 * 60000);
+  var url = 'https://api.github.com/repos/' + DEPO + '/actions/workflows/' + IS_AKISI + '/runs?per_page=30&created=' +
+    encodeURIComponent('>=' + basla.toISOString().slice(0, 19) + 'Z');
+  try {
+    var yanit = UrlFetchApp.fetch(url, {
+      method: 'get',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28'
+      },
+      muteHttpExceptions: true
+    });
+    var kod = yanit.getResponseCode();
+    if (kod !== 200) return {hata: 'HTTP ' + kod + ' ' + yanit.getContentText().slice(0, 200)};
+    var calismalar = JSON.parse(yanit.getContentText()).workflow_runs || [];
+    for (var j = 0; j < calismalar.length; j++) {
+      if (calismalar[j].status !== 'completed') return {var: 'sürüyor'};
+      if (calismalar[j].conclusion === 'success') return {var: 'başarıyla bitti'};
+    }
+    return {};
+  } catch (e) {
+    return {hata: String(e).slice(0, 200)};
+  }
+}
+
+/** Dilim başına en çok bir e-posta. */
+function uyar_(ozellik, anahtar, gun, saat, d, neden) {
+  if (ozellik.getProperty('uyari:' + anahtar)) return;
+  ozellik.setProperty('uyari:' + anahtar, saat);
+  MailApp.sendEmail(Session.getEffectiveUser().getEmail(),
+    '⚠️ Gümüş dış tetik: ' + d.ad + ' başlatılamadı',
+    gun + ' ' + saat + ' TR: ' + d.ad + ' paylaşımı GitHub\'da başlatılamadı (' + neden + ').\n' +
+    'Nöbetçiler yine bakacak. Bir Claude sohbetinde "dış tetik hata verdi" yazman yeter.');
 }
 
 function baslat_(dilim, deneme) {
@@ -72,7 +141,8 @@ function baslat_(dilim, deneme) {
           'Accept': 'application/vnd.github+json',
           'X-GitHub-Api-Version': '2022-11-28'
         },
-        payload: JSON.stringify({ref: 'main', inputs: {dilim: dilim, deneme: deneme ? 'true' : 'false', onay: 'false'}}),
+        // deneme ve onay gerçek true/false (yazı değil): paylas.yml'de inputs.deneme == false karşılaştırılır
+        payload: JSON.stringify({ref: 'main', inputs: {dilim: dilim, deneme: !!deneme, onay: false}}),
         muteHttpExceptions: true
       });
     var kod = yanit.getResponseCode();
@@ -91,7 +161,7 @@ function dakika_(hhmm) {
 function temizle_(ozellik, bugun) {
   var hepsi = ozellik.getProperties();
   for (var k in hepsi) {
-    var m = /^(?:uyari:)?gonderildi:(\d{4}-\d{2}-\d{2}):/.exec(k);
+    var m = /^(?:uyari:)?(?:gonderildi|denetlendi):(\d{4}-\d{2}-\d{2}):/.exec(k);
     if (m && m[1] < bugun) ozellik.deleteProperty(k);
   }
 }

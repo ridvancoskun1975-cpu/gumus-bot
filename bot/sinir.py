@@ -42,8 +42,11 @@ gitti (Rıdvan 3 Kasım'da "çift paylaşım da olmasın lütfen" demişti). İk
     son saati (SON_SAAT; nöbetçiyle aynı pencere) geçtiyse zamanlı çalışma paylaşmadan, hata vermeden biter
     (tekrar=evet). Elle ve nöbetçinin başlattığı çalışmalar (workflow_dispatch) etkilenmez. Paylaşım gitmediyse
     nöbetçi haber verir.
-  - Kilit, gece 00:00–05:00 (GECE_SONU) arasında giden paylaşımı o günün paylaşımı saymaz: o, bir önceki günün
-    gecikmiş işidir ve günün asıl paylaşımını durdurmamalı. Günlük sınır sayımı yine sayar (takipçi onu gördü).
+  - Kilit, gece 00:00–05:00 (GECE_SONU) arasında giden paylaşımı 05:00'ten SONRAKİ çalıştırmalar için o günün
+    paylaşımı saymaz: o, bir önceki günün gecikmiş işidir ve günün asıl paylaşımını durdurmamalı. Gecenin içinde
+    gelen bir çalıştırma ise o gece gideni görür ve durur. Günlük sınır sayımı yine sayar (takipçi onu gördü).
+  - Gece kilidi (gözden geçirme, 4 Kasım 2026): 00:00–05:00 arasında günde bir giden tür (TEKIL) onaysız hiç
+    paylaşılmaz; elle başlatılan da (kontrol çıktısı tekrar=evet). Yalnız onay=true aşar.
 
 Kullanım (iş akışında): python3 bot/sinir.py --yayin true|false --onay true|false [--tur T] [--konu N] [--cron C]
 Yalnızca standart kitaplık kullanır (kontrol işi Python paketi kurmadan çalışır).
@@ -322,6 +325,17 @@ def kontrol(yayin, onay, tur, konu, simdi=None, cron=""):
         print(f"::notice::Geç kalan zamanlı çalışma: {gec}. {ne} paylaşılmadan bitiyor; bu bir hata değil. "
               "Paylaşım o gün gitmediyse nöbetçi haber verir.")
         _ozet(f"Geç kalan zamanlı çalışma: {gec}. **{ne}** paylaşılmadı.")
+        _cikti("tam", "evet")
+        return 0
+    # Gece kilidi (gözden geçirme, 4 Kasım 2026): 00:00–05:00 TR arasında günde bir giden tür onaysız paylaşılmaz.
+    # Bu saatte gelen çalışma ancak dünün gecikmiş işidir; yeni günün paylaşımı sanılıp ikinci kez gitmesin (00:44
+    # olayı). Zamanlı ve dilimli çalışmayı gec_kalmis zaten durdurur; bu, elle başlatılanı da kapsar. Onay aşar.
+    if yayin and not onay and tur in TEKIL and gece_mi(simdi):
+        saat = simdi.astimezone(TR).strftime("%H:%M")
+        print(f"::notice::Gece kilidi: saat {saat} TR (00:00–05:00); {ne} onaysız paylaşılmaz, paylaşmadan bitiyor. "
+              "Bu bir hata değil. Gerçekten şimdi gitmesi isteniyorsa Run workflow → onay: true (yalnız Rıdvan "
+              "sohbette açıkça isterse).")
+        _ozet(f"Gece kilidi: saat {saat} TR; **{ne}** onaysız paylaşılmadı.")
         _cikti("tam", "evet")
         return 0
     try:

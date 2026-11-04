@@ -101,6 +101,11 @@ esit(calistir("12 18 * * 1-5", durumlar=[[]], simdi=gece), (1, [], 0),
 dunku_post = (7, datetime(2026, 11, 6, 17, 5, tzinfo=timezone.utc), "paylaşıldı", "post", 2)
 esit(calistir("12 18 * * 1-5", durumlar=[[dunku_post]], simdi=gece), (0, [], 0),
      "akşam bakışı gece yarısını geçti, dünkü özet gitmiş: sessiz biter")
+# Dünün yalnız gece (00:00–05:00) giden özeti varsa (önceki günün gecikmiş işi), dünün kendi özeti gitmemiştir:
+# nöbetçi dünün gözüyle bakar, gece saatinin gözüyle değil (gözden geçirme, 4 Kasım 2026)
+dunku_gece = (8, datetime(2026, 11, 5, 21, 44, tzinfo=timezone.utc), "paylaşıldı", "post", 2)   # cuma 00:44 TR
+esit(calistir("12 18 * * 1-5", durumlar=[[dunku_gece]], simdi=gece), (1, [], 0),
+     "dünün yalnız gece giden (önceki günün) özeti dünün özeti sayılmaz: haber verir")
 erken = datetime(2026, 11, 3, 6, 0, tzinfo=timezone.utc)    # 09:00 TR
 esit(calistir("reels", durumlar=[[]], simdi=erken), (0, [], 0), "hedef saatten (09:55) önce başlatmaz")
 esit(calistir("post", durumlar=[[]], simdi=SIMDI), (0, [], 0), "elle/Claude: akşam özetini sabah başlatmaz, sessiz")
@@ -312,7 +317,7 @@ with tempfile.TemporaryDirectory() as d:
         os.environ.pop("ONAY_TEKRAR", None)
 bot._istek = asil_istek
 w = (KOK / ".github/workflows/paylas.yml").read_text(encoding="utf-8")
-esit("ONAY_TEKRAR: ${{ github.event_name == 'workflow_dispatch' && inputs.onay && '1' || '' }}" in w, True,
+esit("ONAY_TEKRAR: ${{ github.event_name == 'workflow_dispatch' && inputs.onay == true && '1' || '' }}" in w, True,
      "iş akışı: ikinci kilidi yalnız elle onay: true aşar")
 esit("steps.gorunen.outputs.n != '0'" not in w, True, "iş akışı: 0 sayısı da saklanır (paylaşmayan çalıştırma günü artırmaz)")
 

@@ -173,7 +173,7 @@ def main(dilim, uyu=time.sleep, say=None, baslatici=None, simdi=None, suren=None
         # Yeni günün paylaşımını başlatmaz; dünkü paylaşıma bakar, gitmediyse haber verir.
         dun = datetime.combine(yerel.date(), datetime.min.time(), sinir.TR) - timedelta(minutes=1)
         try:
-            dunku = sinir.bugun_paylasildi(say(dun), tur, saat_al())
+            dunku = sinir.bugun_paylasildi(say(dun), tur, dun)   # dünün gözüyle (gece yarısı kuralı)
         except sinir.SayilamadiHatasi as e:
             print(f"::error::Nöbetçi ertesi güne kaldı ({yerel:%H:%M} TR) ve dünkü çalıştırmaları okuyamadı ({e}); "
                   f"dünkü {tur} paylaşıldı mı bilinmiyor. Claude'a 'gumus-bot nöbetçi' yaz.")

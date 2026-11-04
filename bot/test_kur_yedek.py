@@ -105,4 +105,51 @@ except RuntimeError as e:
 esit(bot.KUR_ARACI[0], "Frankfurter (frankfurter.dev) üzerinden", "sınamalar kaynak satırını geri bırakır")
 esit("{KUR_ARACI[0]}" in Path(bot.__file__).read_text(encoding="utf-8"), True, "kaynak satırı KUR_ARACI'ndan")
 
+# ---------------------------------------------------------------- pazar yorumunun kur geçmişi (ecb_gecmisi)
+# Gözden geçirme (4 Kasım 2026): yorum ~400 günlük kuru yalnız Frankfurter'dan alıyordu; o çökerse yorum dururdu.
+# Yedek: ECB'nin tam geçmiş dosyası (aynı biçim, 1999'dan bugüne).
+gunler = [bugun - timedelta(days=i) for i in range(1, 451) if (bugun - timedelta(days=i)).weekday() < 5]
+TAM = ("""<?xml version="1.0" encoding="UTF-8"?>
+<gesmes:Envelope xmlns:gesmes="http://www.gesmes.org/xml/2002-08-01" xmlns="http://www.ecb.int/vocabulary/2002-08-01/eurofxref">
+<Cube>""" + "".join(f'<Cube time="{g.isoformat()}"><Cube currency="USD" rate="1.1"/><Cube currency="TRY" rate="{44 + i / 100}"/></Cube>'
+                    for i, g in enumerate(gunler))
+       + '<Cube time="2004-12-31"><Cube currency="USD" rate="1.3"/><Cube currency="TRL" rate="1800000"/></Cube>'
+       + "</Cube></gesmes:Envelope>").encode()
+bas = (bugun - timedelta(days=400)).isoformat()
+g = bot.ecb_xml_gecmisi(bas, TAM)
+esit(min(g) >= date.fromisoformat(bas) and max(g) == gunler[0], True, "tam dosya: yalnız başlangıçtan sonrası")
+esit(g[gunler[0]], round(44 / 1.1, 5), "tam dosya: TRY ÷ USD")
+esit(len(g), sum(1 for x in gunler if x >= date.fromisoformat(bas)), "tam dosya: TRY'siz eski gün atlanır")
+try:
+    bot.ecb_xml_gecmisi((bugun - timedelta(days=30)).isoformat(), TAM)
+    esit(True, False, "100 günden az seri reddedilir")
+except ValueError:
+    esit(True, True, "100 günden az seri reddedilir")
+
+
+def gecmis_calistir(frankfurter, tam):
+    def get(url, **kw):
+        if url == bot.KUR_URL:
+            return frankfurter()
+        if url == bot.ECB_XML_TAM_URL:
+            return tam()
+        raise AssertionError(url)
+    asil = (bot.requests.get, bot._bekle)
+    bot.requests.get, bot._bekle = get, lambda d: None
+    try:
+        return bot.ecb_gecmisi()
+    finally:
+        bot.requests.get, bot._bekle = asil
+
+
+uzun = lambda: Yanit(200, [{"date": x.isoformat(), "quote": "TRY", "rate": 41.0} for x in gunler[:300]])
+esit(set(gecmis_calistir(uzun, ecb_kotu).values()), {41.0}, "kur geçmişi: olağan yol Frankfurter")
+esit(len(gecmis_calistir(coktu, lambda: Yanit(200, icerik=TAM))) > 250, True, "kur geçmişi: Frankfurter 522 → ECB tam dosyası")
+try:
+    gecmis_calistir(coktu, ecb_kotu)
+    esit(True, False, "kur geçmişi: iki kaynak da yoksa hata")
+except RuntimeError as e:
+    esit("Dolar/TL kur geçmişi alınamadı" in str(e) and "ECB dosyası" in str(e), True,
+         "kur geçmişi: iki kaynak da yoksa hata (iki neden de yazar)")
+
 print(f"test_kur_yedek: {gecen} sınama geçti.")
