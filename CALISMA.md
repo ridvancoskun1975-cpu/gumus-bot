@@ -6,3 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
+| 4 Kasım 2026 15:50 | Dış tetik (Google Apps Script → workflow_dispatch, dilim girdisi) | paylas.yml (girdiler, kontrol, bekleme), bot/sinir.py (son_tetik penceresi), dis-tetik/, test_dis_tetik.py, README | dis-tetik · yazılıyor |
