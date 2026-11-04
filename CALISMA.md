@@ -6,3 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
+| 4 Kasım 2026 20:15 | Akşam özeti "Gün içi" satırı hep çıksın, gece 00–05 kaydı sayılmasın (önizleme bekliyor) | bot/main.py, bot/test_gun_ici.py, README.md | gun-ici-hep |
