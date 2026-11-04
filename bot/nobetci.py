@@ -95,9 +95,9 @@ def beklenen(dilim, **gunduz):
     return tur if tur in sinir.TEKIL else None
 
 
-def durum(sayilan, tur):
+def durum(sayilan, tur, simdi=None):
     """'paylasildi' | 'suruyor' | 'yok' — bugünkü çalıştırmalara göre."""
-    if sinir.bugun_paylasildi(sayilan, tur):
+    if sinir.bugun_paylasildi(sayilan, tur, simdi):
         return "paylasildi"
     # Türü henüz belli olmayan (uret başlamamış) ya da aynı türde süren bir çalıştırma varsa bekle
     if any(d == "sürüyor" and t in (None, tur) for _, _, d, t, _ in sayilan):
@@ -173,7 +173,7 @@ def main(dilim, uyu=time.sleep, say=None, baslatici=None, simdi=None, suren=None
         # Yeni günün paylaşımını başlatmaz; dünkü paylaşıma bakar, gitmediyse haber verir.
         dun = datetime.combine(yerel.date(), datetime.min.time(), sinir.TR) - timedelta(minutes=1)
         try:
-            dunku = sinir.bugun_paylasildi(say(dun), tur)
+            dunku = sinir.bugun_paylasildi(say(dun), tur, saat_al())
         except sinir.SayilamadiHatasi as e:
             print(f"::error::Nöbetçi ertesi güne kaldı ({yerel:%H:%M} TR) ve dünkü çalıştırmaları okuyamadı ({e}); "
                   f"dünkü {tur} paylaşıldı mı bilinmiyor. Claude'a 'gumus-bot nöbetçi' yaz.")
@@ -193,7 +193,7 @@ def main(dilim, uyu=time.sleep, say=None, baslatici=None, simdi=None, suren=None
             print(f"::error::Nöbetçi bugünkü çalıştırmaları okuyamadı ({e}); {tur} paylaşıldı mı bilinmiyor, "
                   "başlatılmadı. Claude'a 'gumus-bot nöbetçi' yaz.")
             return 1
-        d = durum(sayilan, tur)
+        d = durum(sayilan, tur, saat_al())
         bizim = d == "suruyor" and any(x[2] == "sürüyor" and x[3] == tur for x in sayilan)
         if d == "yok":
             try:
@@ -202,7 +202,7 @@ def main(dilim, uyu=time.sleep, say=None, baslatici=None, simdi=None, suren=None
             except (urllib.error.URLError, OSError, ValueError, KeyError):
                 pass
         if d == "paylasildi":
-            k = sinir.bugun_paylasildi(sayilan, tur)
+            k = sinir.bugun_paylasildi(sayilan, tur, saat_al())
             print(f"{tur} bugün {k[1].astimezone(sinir.TR):%H:%M} TR'de paylaşılmış; nöbetçi sessizce bitti.")
             return 0
         if d != "suruyor":

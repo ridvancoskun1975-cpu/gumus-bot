@@ -226,6 +226,21 @@ esit(bot.instagram_bugun_paylasildi({"tur": "reels"}, BUGUN, ig(sabah_erken)), (
 gece_ozet = ("Gram gümüş fiyatı bugün: 80,06 ₺\nGünün gümüş özeti · 4 Kasım 2026", "2026-11-03T21:47:00+0000")
 esit(bot.instagram_bugun_paylasildi({"tur": "post"}, datetime(2026, 11, 4, 19, 55, tzinfo=sinir.TR), ig(gece_ozet)),
      None, "ikinci kilit: 4 Kasım 00:47'deki özet akşam özetini durdurmaz")
+esit(bot.instagram_bugun_paylasildi({"tur": "post"}, datetime(2026, 11, 4, 1, 30, tzinfo=sinir.TR), ig(gece_ozet)),
+     ("0", "00:47"), "ikinci kilit: gece 01:30'daki çalıştırma 00:47'deki özeti görür (gece çift paylaşım yok)")
+sayac = [0]
+
+
+def bozuk_sonra_iyi(*a, **k):
+    sayac[0] += 1
+    if sayac[0] < 3:
+        raise RuntimeError("geçici")
+    return ig(gece_ozet)(*a, **k)
+
+
+esit(bot.instagram_bugun_paylasildi({"tur": "post"}, datetime(2026, 11, 4, 1, 30, tzinfo=sinir.TR), bozuk_sonra_iyi),
+     ("0", "00:47"), "ikinci kilit: Instagram iki kez okunamazsa üçüncüde yine bakar")
+esit(sayac[0], 3, "ikinci kilit: 3 deneme")
 esit(bot.IG_GECE_SONU, sinir.GECE_SONU, "iki kilidin gece sınırı aynı")
 rehber14 = ("Gerçek gümüş nasıl anlaşılır? | Gümüş rehberi #14", "2026-11-03T07:00:00+0000")
 esit(bot.instagram_bugun_paylasildi({"tur": "bilgi", "konu": 1}, BUGUN, ig(rehber14)), None, "ikinci kilit: #1 ile #14 karışmaz")

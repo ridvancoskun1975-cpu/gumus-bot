@@ -153,11 +153,15 @@ def toplam(sayilan):
     return sum(x[4] for x in sayilan)
 
 
-def bugun_paylasildi(sayilan, tur):
+def bugun_paylasildi(sayilan, tur, simdi=None):
     """Bu tür bugün paylaşıldıysa o kayıt (calistirma_id, zaman, durum, tür, sayı), yoksa None.
-    Yalnız bitmiş çalıştırmalar ("paylaşıldı" ya da "yarım"); sürenler sayılmaz (sıradakiler)."""
+    Yalnız bitmiş çalıştırmalar ("paylaşıldı" ya da "yarım"); sürenler sayılmaz (sıradakiler).
+    Gece yarısı kuralı: 00:00–05:00 arasında giden paylaşım, 05:00'ten SONRAKİ bir çalıştırmayı durdurmaz (dünün
+    gecikmiş işidir). Gecenin içindeki bir çalıştırma ise o gece gidenleri görür (Rıdvan, 4 Kasım 2026 16:22:
+    "dikkat çift paylaşım olmamalı"): gece iki kez gelen aynı tür ikinci kez gitmez."""
+    gunduz = not gece_mi(simdi or datetime.now(timezone.utc))
     for kayit in sayilan:
-        if kayit[3] == tur and kayit[2] in ("paylaşıldı", "yarım") and not gece_mi(kayit[1]):
+        if kayit[3] == tur and kayit[2] in ("paylaşıldı", "yarım") and not (gunduz and gece_mi(kayit[1])):
             return kayit
     return None
 
@@ -337,7 +341,7 @@ def kontrol(yayin, onay, tur, konu, simdi=None, cron=""):
     n = toplam(sayilan)
     print(f"Bugün (TR) takipçinin gördüğü içerik: {n} ({_liste(sayilan)}). Günlük sınır {sinir} "
           "(akış + Reels + hikâye birlikte).")
-    onceki = bugun_paylasildi(sayilan, tur) if tur in TEKIL and not reels_tekrar else None
+    onceki = bugun_paylasildi(sayilan, tur, simdi) if tur in TEKIL and not reels_tekrar else None
     if onceki and yayin and not onay:
         saat = onceki[1].astimezone(TR).strftime("%H:%M")
         print(f"::notice::Çift paylaşım kilidi: {ne} bugün {saat} TR'de zaten paylaşıldı (çalıştırma {onceki[0]}). "

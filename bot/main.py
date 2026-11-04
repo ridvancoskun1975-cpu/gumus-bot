@@ -1877,15 +1877,23 @@ def instagram_bugun_paylasildi(meta, simdi=None, istek=None):
     if not imza:
         return None
     istek = istek or _istek
-    bugun = (simdi or datetime.now(TR_SAAT)).astimezone(TR_SAAT).date()
-    try:
-        veri = istek("GET", "me/media", fields="id,caption,timestamp", limit=15)
-    except ErisimEngeli:
-        raise
-    except Exception as e:
-        print(f"::warning::İkinci çift paylaşım kilidi: Instagram'daki bugünkü gönderiler okunamadı ({e}); "
-              "birinci kilit (çalıştırma geçmişi) geçtiği için paylaşım sürüyor.")
-        return None
+    an = (simdi or datetime.now(TR_SAAT)).astimezone(TR_SAAT)
+    bugun = an.date()
+    gunduz = (an.hour, an.minute) >= IG_GECE_SONU   # gecenin içindeki çalıştırma o gece gidenleri de görür
+    veri = None
+    for deneme in range(3):   # okunamazsa hemen vazgeçme (Rıdvan, 4 Kasım 2026: "dikkat çift paylaşım olmamalı")
+        try:
+            veri = istek("GET", "me/media", fields="id,caption,timestamp", limit=15)
+            break
+        except ErisimEngeli:
+            raise
+        except Exception as e:
+            if deneme == 2:
+                print(f"::warning::İkinci çift paylaşım kilidi: Instagram'daki bugünkü gönderiler 3 denemede "
+                      f"okunamadı ({e}); birinci kilit (çalıştırma geçmişi) geçtiği için paylaşım sürüyor.")
+                return None
+            if simdi is None:   # sınamada beklenmez
+                time.sleep(10 * (deneme + 1))
     for m in veri.get("data", []):
         try:
             zaman = datetime.strptime(m["timestamp"], "%Y-%m-%dT%H:%M:%S%z").astimezone(TR_SAAT)
@@ -1893,7 +1901,7 @@ def instagram_bugun_paylasildi(meta, simdi=None, istek=None):
             continue
         # Gece yarısı kuralı (4 Kasım 2026; bot/sinir.py → GECE_SONU): 00:00–05:00 arasında giden gönderi bir önceki
         # günün gecikmiş işidir, günün asıl paylaşımını durdurmaz.
-        if (zaman.date() == bugun and (zaman.hour, zaman.minute) >= IG_GECE_SONU
+        if (zaman.date() == bugun and (not gunduz or (zaman.hour, zaman.minute) >= IG_GECE_SONU)
                 and re.search(imza, (m.get("caption") or "").lower())):
             return m.get("id"), zaman.strftime("%H:%M")
     return None

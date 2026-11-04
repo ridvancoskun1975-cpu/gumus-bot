@@ -255,11 +255,17 @@ esit(gec_ciktisi("10 16 * * 1-5", utc(2026, 11, 3, 21, 43), yayin=False)[:2], (0
 esit(gec_ciktisi("10 16 * * 1-5", utc(2026, 11, 3, 16, 55))[:2], (0, "hayir"), "zamanında zamanlı çalışma paylaşır")
 # Kilit: 4 Kasım 00:47'de giden (dünün gecikmiş) özet, 4 Kasım akşamki özeti durdurmaz
 gecikmis = (41724390910, utc(2026, 11, 3, 21, 47), "paylaşıldı", "post", 2)
-esit(sinir.bugun_paylasildi([gecikmis], "post"), None, "kilit: 00:47'deki özet o günün özeti sayılmaz")
+esit(sinir.bugun_paylasildi([gecikmis], "post", utc(2026, 11, 4, 16, 55)), None,
+     "kilit: 00:47'deki özet o günün akşam özetini durdurmaz")
+esit(sinir.bugun_paylasildi([gecikmis], "post", utc(2026, 11, 3, 22, 30)) is not None, True,
+     "kilit: gece 01:30'da gelen ikinci özet 00:47'dekini görür ve gitmez (gece çift paylaşım yok)")
 esit(gec_ciktisi("10 16 * * 1-5", utc(2026, 11, 4, 16, 55), kayitlar=[gecikmis])[:2], (0, "hayir"),
      "4 Kasım akşam özeti 00:47'deki yüzünden durmaz")
 sabah_05 = (7, utc(2026, 11, 4, 2, 0), "paylaşıldı", "reels", 1)   # 05:00 TR
-esit(sinir.bugun_paylasildi([sabah_05], "reels") is not None, True, "kilit: 05:00 ve sonrası sayılır")
+esit(sinir.bugun_paylasildi([sabah_05], "reels", utc(2026, 11, 4, 7, 0)) is not None, True,
+     "kilit: 05:00 ve sonrası sayılır")
+k, t, _ = gec_ciktisi("", utc(2026, 11, 3, 22, 30), kayitlar=[gecikmis])
+esit((k, t), (0, "evet"), "kontrol: gece elle başlatılan ikinci özet kilide takılır")
 esit(sinir.toplam(sinir.paylasim_sayisi([{"id": 9}], {9: [is_("yayinla", "completed", "success",
      bit="2026-11-03T21:47:45Z")]}, utc(2026, 11, 4, 16, 55), 0, {9: ["gorunen-1-2", "onizleme-post"]})), 2,
      "günlük sınır: gece giden de takipçi gördüğü için sayılır")
