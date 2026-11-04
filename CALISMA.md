@@ -6,4 +6,3 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
-| 4 Kasım 2026 18:14 | Dış tetik nabzı (run-name + nöbetçi uyarısı) ve haftalık işler dış tetiğe | .github/workflows/paylas.yml (run-name), bot/nobetci.py, dis-tetik/Kod.gs, testler, README, CLAUDE.md | nabiz-haftalik (main'e 20:10'dan sonra) |
