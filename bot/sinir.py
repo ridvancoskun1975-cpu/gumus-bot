@@ -64,6 +64,9 @@ GUN_SINIRI = {
     # 14 Ekim 2026 06:10: gece 2 rehber hikâyesi gitti; 13:50 Rehber #3 ve 19:50 akşam özetine (4. ve 5.) onay verdi.
     # (O günün sayısı eski ölçüyle, çalıştırma başınaydı.)
     "2026-10-14": 5,
+    # 4 Kasım 2026 ~13:35: gece 00:44'te GitHub gecikmesiyle ikinci akşam özeti (gönderi + hikâye) gitti, güne 2 sayıldı.
+    # Rıdvan "Bugün 6'ya izin ver" dedi: rehber #8 hikâye videosuyla (öne çıkana eklensin), akşam özeti hikâyesiz.
+    "2026-11-04": 6,
 }
 # Bir çalıştırmanın takipçiye gösterdiği içerik sayısı (gerçek sayı eserde yoksa ve bu çalıştırma için):
 # reels sabah Reels'i (hikâyesiz); post akşam özeti + hikâyesi; hafta / ay özet + hikâyesi; yorum kaydırmalı +
