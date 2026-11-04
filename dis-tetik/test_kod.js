@@ -202,7 +202,7 @@ o.tik('2026-11-04 14:38'); o.tik('2026-11-04 16:41'); o.tik('2026-11-04 18:52');
 esit(isler(o).length, 4, 'kayıt: günde dört pencere (12:35, 14:35, 16:35, 18:35)');
 esit(o.okumalar().length, 0, 'kayıt: çalışma listesi okunmaz (yinelenen kayıt main.py\'de atlanır)');
 o = ortam(basari('in_progress'));
-o.tik('2026-11-07 12:36'); o.tik('2026-11-08 16:40');
+o.tik('2026-11-07 14:36'); o.tik('2026-11-08 16:40');
 esit(o.kayit.istekler.length, 0, 'kayıt: hafta sonu yok');
 let kayitHata = true;
 o = ortam(istek => (istek.yontem === 'post' ? (kayitHata ? [500, 'hata'] : [204, '']) : [200, {workflow_runs: []}]));
@@ -220,5 +220,51 @@ esit(o.baslatmalar()[0].govde, {ref: 'main'}, 'site yenilemesi: main, girdisiz')
 o = ortam(basari('in_progress'));
 o.tik('2026-11-04 18:40'); o.tik('2026-11-04 19:20');
 esit(isler(o), ['kaydet.yml', 'paylas.yml'], '18:40 kayıt, 19:20 akşam paylaşımı; birbirine karışmaz');
+
+// 11) Haftalık işler (Rıdvan, 4 Kasım 2026 "evet dış tetiğe al"): GitHub zamanında başlattıysa ikinci kez başlatılmaz
+const haftalik = (gelmis, okumaHata) => istek => {
+  if (istek.yontem === 'post') return [204, ''];
+  if (okumaHata) return [500, 'hata'];
+  const is = istek.url.split('/workflows/')[1].split('/')[0];
+  return [200, {workflow_runs: gelmis.indexOf(is) >= 0 ? [{status: 'completed', conclusion: 'success'}] : []}];
+};
+o = ortam(haftalik([]));
+o.tik('2026-11-09 08:20');   // pazartesi
+esit(isler(o), ['token-yenile.yml'], 'pazartesi 08:20: Instagram anahtarı yenileme başlatılır');
+esit(decodeURIComponent(o.okumalar()[0].url.split('created=')[1]), '>=2026-11-09T05:07:00Z',
+  'haftalık iş: cron saatinden 10 dk önceden beri bakılır');
+esit(o.okumalar()[0].url.includes('/workflows/token-yenile.yml/runs?branch=main&'), true, 'haftalık iş: kendi iş akışına bakılır');
+o.tik('2026-11-09 08:30');
+esit(isler(o).length, 1, 'haftalık iş: aynı pencerede bir kez');
+o.tik('2026-11-09 09:08');
+esit(isler(o), ['token-yenile.yml', 'rapor.yml'], 'pazartesi 09:08: haftalık rapor');
+esit(o.baslatmalar()[1].govde, {ref: 'main'}, 'haftalık rapor: girdisiz (deneme kapalı varsayılan)');
+o.tik('2026-11-09 12:25');
+esit(isler(o).slice(2), ['bakiye.yml'], 'pazartesi 12:25: kredi bakiyesi');
+o.tik('2026-11-09 12:36');
+esit(isler(o).slice(3), ['kaydet.yml'], 'pazartesi 12:36: gün içi kayıt da gider');
+o = ortam(haftalik(['token-yenile.yml', 'bakiye.yml']));
+o.tik('2026-11-09 08:20'); o.tik('2026-11-09 08:30'); o.tik('2026-11-14 12:25');
+esit([isler(o).length, o.okumalar().length], [0, 2], 'GitHub zamanında başlattıysa haftalık iş ikinci kez başlatılmaz');
+o.tik('2026-11-14 12:35');
+esit(o.okumalar().length, 2, 'zaten başlamış iş aynı pencerede yeniden okunmaz');
+o = ortam(haftalik([], true));
+o.tik('2026-11-14 12:25');   // cumartesi
+esit(isler(o), ['bakiye.yml'], 'okunamazsa yine başlatır (ikinci çalışma zararsız)');
+o = ortam(haftalik([]));
+o.tik('2026-11-10 08:20'); o.tik('2026-11-10 09:08'); o.tik('2026-11-11 12:25'); o.tik('2026-11-08 12:25');
+esit(o.kayit.istekler.length, 0, 'haftalık işler yalnız kendi günlerinde');
+
+// 12) Pencere sonu denetimi deneme çalışmalarını saymaz (paylas.yml → run-name "· deneme")
+o = ortam(istek => (istek.yontem === 'post' ? [204, ''] : [200, {workflow_runs: [
+  {status: 'in_progress', display_title: 'Gümüş paylaşımı · deneme'},
+  {status: 'completed', conclusion: 'success', display_title: 'Gümüş paylaşımı · dış tetik 10 16 * * 1-5 · deneme'},
+  {status: 'completed', conclusion: 'cancelled', display_title: 'Gümüş paylaşımı · dış tetik 10 16 * * 1-5'}]}]));
+o.tik('2026-11-04 19:16'); o.tik('2026-11-04 19:47');
+esit(o.baslatmalar().length, 2, 'denetim: yalnız denemeler süren/başarılıysa yine başlatır');
+o = ortam(istek => (istek.yontem === 'post' ? [204, ''] : [200, {workflow_runs: [
+  {status: 'completed', conclusion: 'success', display_title: 'Gümüş paylaşımı'}]}]));
+o.tik('2026-11-04 19:16'); o.tik('2026-11-04 19:47');
+esit(o.baslatmalar().length, 1, 'denetim: adı eski biçimde (deneme işaretsiz) başarılı çalışma sayılır');
 
 console.log('test_kod.js: ' + gecen + ' sınama geçti.');

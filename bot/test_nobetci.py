@@ -51,7 +51,7 @@ def calistir(dilim, *, durumlar, suren=lambda: False, baslat_hata=None, simdi=SI
     try:
         with contextlib.redirect_stdout(io.StringIO()):
             kod = nobetci.main(dilim, uyu=lambda sn: uyku.append(sn), say=say, baslatici=baslatici, simdi=simdi,
-                               suren=suren)
+                               suren=suren, nabiz=lambda *a: None)
     finally:
         nobetci.gunduz_turu = eski
     return kod, baslatilan, len(uyku)
@@ -93,6 +93,46 @@ esit(calistir("12 8 * * 1-5", durumlar=[[]], suren=lambda: True), (1, ["reels"],
      "başka bir çalıştırma BEKLE_DK sürerse yine başlatır")
 esit(calistir("12 8 * * 1-5", durumlar=[[(4, SIMDI, "sürüyor", "post", 2)]], suren=lambda: True),
      (1, ["reels"], nobetci.BEKLE_DK), "başka türde süren çalıştırma bizimki sayılmaz")
+
+# ---- dış tetik nabzı (Rıdvan, 4 Kasım 2026 "çözümü uygula"): Apps Script durursa haber; karar değişmez
+def nabiz(dilim, simdi, adlar=None, hata=None):
+    def okuyucu(_simdi):
+        if hata:
+            raise hata
+        return adlar or []
+    with contextlib.redirect_stdout(io.StringIO()) as o:
+        sonuc = nobetci.dis_tetik_nabzi(dilim, simdi, okuyucu)
+    return sonuc, o.getvalue()
+
+
+AKSAM_ADI = "Gümüş paylaşımı · dış tetik 10 16 * * 1-5"
+esit(nabiz("12 18 * * 1-5", AKSAM, [AKSAM_ADI])[0], True, "nabız: akşam dış tetik çalışması var")
+s_, yazi = nabiz("12 18 * * 1-5", AKSAM, ["Gümüş paylaşımı", AKSAM_ADI + " · deneme"])
+esit((s_, "DIŞ TETİK ÇALIŞMADI" in yazi), (False, True), "nabız: yalnız deneme ya da elle varsa uyarı yazar")
+esit(nabiz("post", AKSAM, [AKSAM_ADI])[0], True, "nabız: Claude görevi tür adıyla da bakar")
+esit(nabiz("12 8 * * 1-5", AKSAM, ["Gümüş paylaşımı · dış tetik 10 6 * * 1-5"])[0], True, "nabız: sabah dilimi")
+esit(nabiz("gunduz", OGLEN, ["Gümüş paylaşımı · dış tetik 10 10 * * 1-5"])[0], True, "nabız: gündüz dilimi (her iş günü)")
+esit(nabiz("bilgi", OGLEN, [])[0], False, "nabız: rehber adıyla da gündüz dilimine bakar")
+esit(nabiz("post", datetime(2026, 11, 3, 16, 50, tzinfo=timezone.utc), [])[0], None,
+     "nabız: hedef saatten (19:55) önce bakmaz")
+esit(nabiz("12 8 * * 6", datetime(2026, 11, 3, 8, 15, tzinfo=timezone.utc), [])[0], None,
+     "nabız: o gün olmayan dilim (salı günü cumartesi dilimi) bakılmaz")
+esit(nabiz("12 18 * * 1-5", datetime(2026, 11, 6, 21, 15, tzinfo=timezone.utc), [])[0], None,
+     "nabız: ertesi güne kalan nöbetçi bakmaz")
+s_, yazi = nabiz("12 18 * * 1-5", AKSAM, hata=OSError("ağ yok"))
+esit((s_, "nabzı okunamadı" in yazi), (None, True), "nabız: okunamazsa yalnız uyarı")
+esit(nabiz("12 9 * * 0", datetime(2026, 11, 8, 9, 15, tzinfo=timezone.utc),
+           ["Gümüş paylaşımı · dış tetik 10 7 * * 0"])[0], True, "nabız: pazar dilimi")
+
+
+def bozuk_nabiz(*a):
+    raise RuntimeError("beklenmeyen")
+
+
+with contextlib.redirect_stdout(io.StringIO()):
+    kod = nobetci.main("12 8 * * 1-5", uyu=lambda sn: None, say=lambda *a, **k: [SABAH], baslatici=lambda t: None,
+                       simdi=SIMDI, suren=lambda: False, nabiz=bozuk_nabiz)
+esit(kod, 0, "nabız hata verse de nöbetçinin kararı değişmez")
 
 # ---- saat penceresi: hedeften önce başlatmaz (gecikip ertesi güne kalan bakış dahil)
 gece = datetime(2026, 11, 6, 21, 15, tzinfo=timezone.utc)   # cumartesi 00:15 TR (cuma 21:12 bakışı 3 saat gecikti)

@@ -26,6 +26,11 @@
  * 00:07'de sayfa.yml'yi (PDF rehberin baskı günü) birer kez başlatır. GitHub'ın kendi cron'u da gelirse kayıt son
  * noktadan 60 dk geçmediyse istek harcamadan atlanır (main.GUN_ICI_YAKIN_DK). KAYITLAR, kaydet.yml ve sayfa.yml
  * cron'larıyla uyumlu olmalı (test_dis_tetik.py denetler).
+ * Haftalık işler (4 Kasım 2026, Rıdvan "evet dış tetiğe al"): pazartesi 08:17 Instagram anahtarı yenileme
+ * (token-yenile.yml), pazartesi 09:05 haftalık rapor (rapor.yml), pazartesi ve cumartesi 12:20 kredi bakiyesi kontrolü
+ * (bakiye.yml). tekil: başlatmadan önce o iş akışının o saatten beri bir çalışması var mı bakılır (GitHub'ın kendi
+ * cron'u zamanında geldiyse ikinci kez başlatılmaz).
+ * Pencere sonu denetimi deneme çalışmalarını saymaz (çalışma adında "deneme"; paylas.yml → run-name).
  */
 
 var DEPO = 'ridvancoskun1975-cpu/gumus-bot';
@@ -48,7 +53,10 @@ var KAYITLAR = [
   {ad: 'gün içi kayıt 14:35', is: 'kaydet.yml', gunler: [1, 2, 3, 4, 5], bas: '14:35', son: '14:55'},
   {ad: 'gün içi kayıt 16:35', is: 'kaydet.yml', gunler: [1, 2, 3, 4, 5], bas: '16:35', son: '16:55'},
   {ad: 'gün içi kayıt 18:35', is: 'kaydet.yml', gunler: [1, 2, 3, 4, 5], bas: '18:35', son: '18:55'},
-  {ad: 'site yenilemesi (PDF baskı günü)', is: 'sayfa.yml', tarih: '01-01', bas: '00:07', son: '00:37'}
+  {ad: 'site yenilemesi (PDF baskı günü)', is: 'sayfa.yml', tarih: '01-01', bas: '00:07', son: '00:37'},
+  {ad: 'Instagram anahtarı yenileme', is: 'token-yenile.yml', gunler: [1], bas: '08:17', son: '08:37', tekil: true},
+  {ad: 'haftalık rapor', is: 'rapor.yml', gunler: [1], bas: '09:05', son: '09:25', tekil: true},
+  {ad: 'kredi bakiyesi kontrolü', is: 'bakiye.yml', gunler: [1, 6], bas: '12:20', son: '12:40', tekil: true}
 ];
 var SON_UYARI_DK = 10;   // pencerenin son 10 dakikasında hâlâ başlatılamadıysa Rıdvan'a e-posta
 var DENETIM_DK = 15;     // pencere bittikten sonraki 15 dakikada bir kez denetim (tetik 10 dakikada bir; en az biri düşer)
@@ -86,6 +94,15 @@ function nobet() {
     var rAnahtar = 'gonderildi:' + gun + ':' + r.is + ':' + r.bas;
     if (ozellik.getProperty(rAnahtar)) continue;
     var token = ozellik.getProperty('GITHUB_TOKEN');
+    if (token && r.tekil) {
+      var onceki = calismalar_(token, r.is, gun, r.bas);
+      if (onceki.liste && onceki.liste.length) {
+        ozellik.setProperty(rAnahtar, saat + ' (zaten başlamış)');
+        console.log(r.ad + ': GitHub zaten başlatmış, ek başlatma yok.');
+        continue;
+      }
+      if (onceki.hata) console.warn(r.ad + ': çalışmalar okunamadı (' + onceki.hata + '); yine başlatılıyor.');
+    }
     var rSonuc = token ? gonder_(token, r.is, null) : {ok: false, neden: 'GITHUB_TOKEN özelliği yok'};
     if (rSonuc.ok) {
       ozellik.setProperty(rAnahtar, saat);
@@ -119,13 +136,26 @@ function denetle_(ozellik, anahtar, gun, saat, d) {
   }
 }
 
-/** Pencere başından 10 dk önceden (dilimin cron dakikasından da önce) bu yana main'deki paylas.yml çalışmaları: {var: 'sürüyor' | 'başarıyla bitti'},
- *  {} (yok) ya da {hata: neden}. Yalnız okur. */
+/** Pencere başından 10 dk önceden (dilimin cron dakikasından da önce) bu yana main'deki paylas.yml çalışmaları
+ *  (denemeler hariç): {var: 'sürüyor' | 'başarıyla bitti'}, {} (yok) ya da {hata: neden}. Yalnız okur. */
 function calisma_durumu_(gun, bas) {
   var token = PropertiesService.getScriptProperties().getProperty('GITHUB_TOKEN');
   if (!token) return {hata: 'GITHUB_TOKEN özelliği yok'};
+  var okunan = calismalar_(token, IS_AKISI, gun, bas);
+  if (okunan.hata) return {hata: okunan.hata};
+  var calismalar = okunan.liste;
+  for (var j = 0; j < calismalar.length; j++) {
+    if ((calismalar[j].display_title || '').indexOf('deneme') >= 0) continue;   // deneme paylaşmaz, sayılmaz
+    if (calismalar[j].status !== 'completed') return {var: 'sürüyor'};
+    if (calismalar[j].conclusion === 'success') return {var: 'başarıyla bitti'};
+  }
+  return {};
+}
+
+/** isAkisi'nin main'de, gun bas'tan 10 dk önceden bu yana başlamış çalışmaları: {liste: [...]} ya da {hata: neden}. */
+function calismalar_(token, isAkisi, gun, bas) {
   var basla = new Date(Utilities.parseDate(gun + ' ' + bas, SAAT_DILIMI, 'yyyy-MM-dd HH:mm').getTime() - 10 * 60000);
-  var url = 'https://api.github.com/repos/' + DEPO + '/actions/workflows/' + IS_AKISI + '/runs?branch=main&per_page=30&created=' +
+  var url = 'https://api.github.com/repos/' + DEPO + '/actions/workflows/' + isAkisi + '/runs?branch=main&per_page=30&created=' +
     encodeURIComponent('>=' + basla.toISOString().slice(0, 19) + 'Z');
   try {
     var yanit = UrlFetchApp.fetch(url, {
@@ -139,12 +169,7 @@ function calisma_durumu_(gun, bas) {
     });
     var kod = yanit.getResponseCode();
     if (kod !== 200) return {hata: 'HTTP ' + kod + ' ' + yanit.getContentText().slice(0, 200)};
-    var calismalar = JSON.parse(yanit.getContentText()).workflow_runs || [];
-    for (var j = 0; j < calismalar.length; j++) {
-      if (calismalar[j].status !== 'completed') return {var: 'sürüyor'};
-      if (calismalar[j].conclusion === 'success') return {var: 'başarıyla bitti'};
-    }
-    return {};
+    return {liste: JSON.parse(yanit.getContentText()).workflow_runs || []};
   } catch (e) {
     return {hata: String(e).slice(0, 200)};
   }

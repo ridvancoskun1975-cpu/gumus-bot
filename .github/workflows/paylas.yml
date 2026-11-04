@@ -1,4 +1,8 @@
 name: Gümüş paylaşımı
+# Çalışmanın adı: dış tetik (dis-tetik/Kod.gs) "· dış tetik <dilim>", deneme "· deneme" ekler. Nöbetçinin dış tetik nabzı
+# (bot/nobetci.py → dis_tetik_nabzi) ve Kod.gs'in pencere sonu denetimi (denemeleri saymaz) bu adı okur.
+# Zamanlı çalışmada inputs boştur (null == '' → ad "Gümüş paylaşımı").
+run-name: ${{ inputs.dilim != '' && format('Gümüş paylaşımı · dış tetik {0}{1}', inputs.dilim, inputs.deneme && ' · deneme' || '') || (inputs.deneme && 'Gümüş paylaşımı · deneme' || 'Gümüş paylaşımı') }}
 
 on:
   schedule:

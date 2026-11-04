@@ -113,8 +113,8 @@ for d in DILIMLER:
 import main as bot  # noqa: E402
 KAYITLAR = [m.groupdict() for m in re.finditer(
     r"\{ad: '(?P<ad>[^']+)', is: '(?P<is_>[^']+)', (?:gunler: \[(?P<gunler>[\d, ]+)\]|tarih: '(?P<tarih>[\d-]+)'), "
-    r"bas: '(?P<bas>\d\d:\d\d)', son: '(?P<son>\d\d:\d\d)'\}", GS)]
-esit(len(KAYITLAR), 5, "Kod.gs'te 5 paylaşmayan iş okunur")
+    r"bas: '(?P<bas>\d\d:\d\d)', son: '(?P<son>\d\d:\d\d)'(?P<tekil>, tekil: true)?\}", GS)]
+esit(len(KAYITLAR), 8, "Kod.gs'te 8 paylaşmayan iş okunur")
 KAYDET = (KOK / ".github" / "workflows" / "kaydet.yml").read_text(encoding="utf-8")
 k_cron = re.search(r"- cron: '([^']+)'", KAYDET).group(1)
 k_dk, k_saat, _, _, k_gun = k_cron.split()
@@ -143,6 +143,30 @@ site = next(x for x in KAYITLAR if x["is_"] == "sayfa.yml")
 esit((site["tarih"], site["bas"]), (yil_sonu.strftime("%m-%d"), yil_sonu.strftime("%H:%M")),
      "site yenilemesi sayfa.yml cron'uyla aynı an (1 Ocak 00:07 TR)")
 esit("workflow_dispatch:" in KAYDET and "workflow_dispatch:" in SAYFA, True, "kaydet.yml ve sayfa.yml dışarıdan başlatılabilir")
+# Haftalık işler (Rıdvan, 4 Kasım 2026 "evet dış tetiğe al"): cron'larla aynı gün ve saat, tekil (çift başlatma yok)
+GUN_ADI = {"0": 7, "1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7}
+for is_ in ("token-yenile.yml", "rapor.yml", "bakiye.yml"):
+    yml = (KOK / ".github" / "workflows" / is_).read_text(encoding="utf-8")
+    esit("workflow_dispatch:" in yml, True, f"{is_} dışarıdan başlatılabilir")
+    c_dk, c_saat, _, _, c_gun = re.search(r"- cron: '([^']+)'", yml).group(1).split()
+    k = next(x for x in KAYITLAR if x["is_"] == is_)
+    esit(k["bas"], f"{int(c_saat) + 3:02d}:{int(c_dk):02d}", f"{is_}: saat cron'la aynı (TR)")
+    esit(sorted(int(g) for g in k["gunler"].split(",")), sorted(GUN_ADI[g] for g in c_gun.split(",")),
+         f"{is_}: günler cron'la aynı")
+    esit(k["tekil"] is not None, True, f"{is_}: tekil (GitHub zamanında başlattıysa ikinci kez başlatılmaz)")
+    for d in DILIMLER:   # paylaşım anının (hedef −10 … +50 dk) dışında biter
+        if not set(int(g) for g in k["gunler"].split(",")) & set(d["gunler"]):
+            continue
+        hs, hd = program.HEDEF_SAATLERI[TUR[d["dilim"]]]
+        hedef = hs * 60 + hd
+        esit(dk(k["son"]) + 10 <= hedef - 10 or dk(k["bas"]) >= hedef + 50, True, f"{k['ad']} paylaşım anına denk gelmez")
+esit("tekil: true" in GS.split("var KAYITLAR")[1].split("];")[0].split("kaydet.yml")[0], False,
+     "gün içi kayıt tekil değil (yineleme main.py'de atlanır)")
+# paylas.yml run-name: nöbetçinin nabzı ve Kod.gs denetimi bu adı okur
+import nobetci  # noqa: E402
+esit(f"format('Gümüş paylaşımı · {nobetci.DIS_TETIK_IMI} {{0}}{{1}}', inputs.dilim, inputs.deneme && ' · deneme' || '')" in YML,
+     True, "paylas.yml run-name dış tetik ve deneme işaretini taşır")
+esit({d["dilim"] for d in DILIMLER}, set(nobetci.DIS_TETIK.values()), "nöbetçinin nabız dilimleri Kod.gs ile aynı")
 
 # Takılma dökümü (gözden geçirme, 4 Kasım 2026): her adımda süre sınırından tam 1 dk önce
 uret_sure = re.search(r"- name: Görseli / videoyu üret\n.*?timeout-minutes: \$\{\{ .*?'yorum' && (\d+) \|\| .*?&& (\d+) \|\| "

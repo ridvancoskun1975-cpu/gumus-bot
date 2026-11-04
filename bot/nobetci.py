@@ -53,6 +53,15 @@ BEKLE_DK = 40
 # zamanlı paylaşım çalışmasıyla ortak: bot/sinir.py → SON_SAAT (4 Kasım 2026, gece yarısı kuralı).
 SON_SAAT = sinir.SON_SAAT
 PAZAR_BEKLET = KOK / "bot" / "PAZAR_BEKLET"
+# Dış tetik nabzı (Rıdvan, 4 Kasım 2026: "çözümü uygula"): Apps Script'teki dış tetik (dis-tetik/Kod.gs) bir gün
+# sessizce durursa (izin geri alınır, tetik silinir) kendisi haber veremez. Nöbetçi, hedef saatten sonra o dilimin dış
+# tetik çalışmasının bugün başlayıp başlamadığına bakar; başlamadıysa "DIŞ TETİK ÇALIŞMADI" uyarısı yazar (Claude nöbet
+# görevi bunu Rıdvan'a iletir). Yalnız bilgi verir: çıkış kodunu ve paylaşım kararını değiştirmez. Çalışmanın adı
+# paylas.yml → run-name: "Gümüş paylaşımı · dış tetik <dilim>" (denemede sonuna " · deneme").
+DIS_TETIK = {"reels": "10 6 * * 1-5", "gunduz": "10 10 * * 1-5", "post": "10 16 * * 1-5", "hafta": "10 6 * * 6",
+             "yorum": "10 7 * * 0"}
+DIS_TETIK_HEDEF = {"reels": "reels", "gunduz": "bilgi", "post": "post", "hafta": "hafta", "yorum": "yorum"}
+DIS_TETIK_IMI = "dış tetik"
 
 
 class TakvimHatasi(RuntimeError):
@@ -140,6 +149,44 @@ def baslat(tur):
         return r.status
 
 
+def dis_tetik_calismalari(simdi):
+    """Bugün (TR) main'de dışarıdan başlatılmış paylas.yml çalışmalarının adları."""
+    depo = os.environ["GITHUB_REPOSITORY"]
+    bas = (datetime.combine(simdi.astimezone(sinir.TR).date(), datetime.min.time(), sinir.TR)
+           .astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"))
+    v = sinir._github(f"repos/{depo}/actions/workflows/{sinir.IS_AKISI}/runs?branch=main&event=workflow_dispatch"
+                      f"&created=%3E%3D{bas}&per_page=100")
+    return [c.get("display_title") or "" for c in v.get("workflow_runs", [])]
+
+
+def dis_tetik_nabzi(dilim, simdi, okuyucu=None):
+    """True: dış tetik bu dilimi bugün başlattı; False: başlatmadı (uyarı yazar); None: bakılmadı / okunamadı."""
+    dilim_adi = DILIMLER.get(dilim, dilim)
+    dilim_adi = {"bilgi": "gunduz", "ay": "gunduz", "kisa": "gunduz"}.get(dilim_adi, dilim_adi)
+    dis = DIS_TETIK.get(dilim_adi)
+    if not dis:
+        return None
+    tetik = sinir.son_tetik(dis, simdi)
+    if tetik is None or tetik.astimezone(sinir.TR).date() != simdi.astimezone(sinir.TR).date():
+        return None   # bu dilim bugün yok (ya da nöbetçi ertesi güne kaldı)
+    if erken_mi(DIS_TETIK_HEDEF[dilim_adi], simdi):
+        return None   # hedef saatten önce: dış tetik penceresi henüz bitmemiş olabilir
+    try:
+        adlar = (okuyucu or dis_tetik_calismalari)(simdi)
+    except Exception as e:  # noqa: BLE001 — yalnız bilgi; nöbetçinin asıl işini durdurmaz
+        print(f"::warning::Dış tetik nabzı okunamadı ({type(e).__name__}: {e}).")
+        return None
+    if any(f"{DIS_TETIK_IMI} {dis}" in a and "deneme" not in a for a in adlar):
+        print(f"Dış tetik bugün {dis} dilimini başlatmış.")
+        return True
+    yerel = simdi.astimezone(sinir.TR)
+    print(f"::warning::DIŞ TETİK ÇALIŞMADI: bugün ({yerel:%d.%m}) {dis} dilimi için dış tetik çalışması yok. Google Apps "
+          "Script'teki 'Gümüş dış tetik' tetiği durmuş olabilir; paylaşımı nöbetçiler ve GitHub üstlenir. Claude'a "
+          "'dış tetik çalışmadı' yaz.")
+    _ozet(f"### ⚠️ Dış tetik çalışmadı ({dis})\nApps Script tetiği durmuş olabilir.")
+    return False
+
+
 def _ozet(metin):
     yol = os.environ.get("GITHUB_STEP_SUMMARY")
     if yol:
@@ -147,12 +194,16 @@ def _ozet(metin):
             f.write(metin + "\n")
 
 
-def main(dilim, uyu=time.sleep, say=None, baslatici=None, simdi=None, suren=None):
+def main(dilim, uyu=time.sleep, say=None, baslatici=None, simdi=None, suren=None, nabiz=None):
     say = say or sinir.say
     baslatici = baslatici or baslat
     suren = suren or suren_calistirma_var
     # simdi verilirse (sınama) sabit; yoksa her bakışta yeniden okunur (bekleme BEKLE_DK dakika sürebilir)
     saat_al = (lambda: simdi) if simdi else (lambda: datetime.now(timezone.utc))
+    try:   # dış tetik nabzı: yalnız uyarı yazar, aşağıdaki kararları etkilemez
+        (nabiz or dis_tetik_nabzi)(dilim, saat_al())
+    except Exception as e:  # noqa: BLE001
+        print(f"::warning::Dış tetik nabzı denetlenemedi ({type(e).__name__}: {e}).")
     try:
         tur = beklenen(dilim)
     except (TakvimHatasi, OSError, subprocess.SubprocessError) as e:

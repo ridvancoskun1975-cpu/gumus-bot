@@ -56,8 +56,9 @@
 - **Dış tetik (4 Kasım 2026, Rıdvan "A başla. Kontrollü git"):** paylaşımları GitHub'ın zamanlayıcısı yerine Rıdvan'ın
   Google hesabındaki Apps Script "Gümüş dış tetik" başlatır (`dis-tetik/Kod.gs`; her 10 dk, dilim penceresinde
   `paylas.yml`'yi `dilim` girdisiyle; Rıdvan 4 Kasım 2026 "yap ekle": gün içi kayıt `kaydet.yml` ve 1 Ocak site
-  yenilemesi `sayfa.yml` de). Anahtar Apps Script'in özelliğinde (`GITHUB_TOKEN`, gumus-bot, yalnız Actions
-  yazma; adı gumus-dis-tetik, süresiz). Bir cron (paylas, kaydet ya da sayfa) ya da hedef saat değişirse `Kod.gs` de değişir (`python
+  yenilemesi `sayfa.yml` de; "evet dış tetiğe al": haftalık `token-yenile.yml`, `rapor.yml`, `bakiye.yml` de).
+  Nöbetçi dış tetiğin her dilimde çalıştığını denetler (`nobetci.dis_tetik_nabzi`, `paylas.yml` → `run-name`). Anahtar Apps Script'in özelliğinde (`GITHUB_TOKEN`, gumus-bot, yalnız Actions
+  yazma; adı gumus-dis-tetik, süresiz). Bir cron (paylas, kaydet, sayfa, token-yenile, rapor ya da bakiye) ya da hedef saat değişirse `Kod.gs` de değişir (`python
   bot/test_dis_tetik.py`), önce main'e alınır, sonra Rıdvan'ın projesine yeniden yapıştırılır. GitHub cron'ları ve
   nöbetçiler yedektir; kaldırma. Anahtarı ya da şifreyi Claude hiçbir alana yazmaz, Rıdvan yapıştırır; kurulum adımlarını
   ayrıntılı tarif et ve her adımı kontrol edip onay iste (Rıdvan, 4 Kasım 2026: "bana böyle detaylı tarif et ve tam
