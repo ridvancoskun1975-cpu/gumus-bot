@@ -28,7 +28,23 @@ main.GUN_ICI_DOSYASI = gecici / "gun_ici.json"
 main.GUN_ICI_DEGISTI = gecici / "gun_ici_degisti.txt"
 
 # --- 1) Gün içi satırı -------------------------------------------------------------------------------
-kontrol(main.gun_ici_satiri([("10:22", 91.8), ("20:04", 92.0)]) is None, "2 noktayla satır yok")
+# Rıdvan, 4 Kasım 2026 (seçenek 1): satır hep çıkar; 2 noktayla aralık, tek noktayla yalnız akşam fiyatı
+s = main.gun_ici_satiri([("10:22", 91.8), ("20:04", 92.0)])
+kontrol(s == "Gün içi: en düşük 91,80 ₺ (10:22) · en yüksek 92,00 ₺ (20:04)", f"2 noktayla (sabah + akşam) satır: {s}")
+s = main.gun_ici_satiri([("19:55", 83.987)])
+kontrol(s == "Gün içi: 83,99 ₺ (19:55)", f"tek noktayla (yalnız akşam) satır: {s}")
+kontrol(main.gun_ici_satiri([]) is None, "hiç nokta yoksa satır yok")
+# Gece 00:00–05:00 noktası (önceki günün gecikmiş işi) o günün gün içine girmez (4 Kasım 2026: 00:44 en düşük göründü)
+import json as _json
+from datetime import date as _date
+main.GUN_ICI_DOSYASI.write_text(_json.dumps({"gunler": {"2026-11-04": [
+    {"saat": "00:44", "gram": 80.06}, {"saat": "04:59", "gram": 80.5}, {"saat": "05:00", "gram": 82.0},
+    {"saat": "17:59", "gram": 83.5}]}}), encoding="utf-8")
+n = main.gun_ici_noktalari(_date(2026, 11, 4), {"saat": "10:20", "gram": 83.18}, ("19:55", 83.99))
+kontrol([x[0] for x in n] == ["05:00", "10:20", "17:59", "19:55"], f"gece noktaları sayılmaz: {n}")
+kontrol(main.gun_ici_satiri(n) == "Gün içi: en düşük 82,00 ₺ (05:00) · en yüksek 83,99 ₺ (19:55)",
+        f"gece hariç satır: {main.gun_ici_satiri(n)}")
+main.GUN_ICI_DOSYASI.unlink()
 s = main.gun_ici_satiri([("10:22", 91.80), ("12:35", 90.921), ("16:35", 92.104), ("20:04", 91.5)])
 kontrol(s == "Gün içi: en düşük 90,92 ₺ (12:35) · en yüksek 92,10 ₺ (16:35)", f"biçim: {s}")
 s = main.gun_ici_satiri([("10:22", 91.801), ("12:35", 91.799), ("20:04", 91.80)])
@@ -37,7 +53,9 @@ s = main.gun_ici_satiri([("10:22", 92.0), ("12:35", 91.0), ("14:35", 92.0), ("20
 kontrol(s == "Gün içi: en düşük 91,00 ₺ (12:35) · en yüksek 92,00 ₺ (10:22)", f"eşitlikte ilk saat: {s}")
 
 # --- 1b) Görseldeki gün içi en düşük / en yüksek (Rıdvan, 21 Ekim 2026): açıklamayla aynı değerler -----
-kontrol(main.gun_ici_gorsel([("10:22", 91.8), ("20:04", 92.0)]) is None, "2 noktayla görselde satır yok")
+kontrol(main.gun_ici_gorsel([("10:22", 91.8), ("20:04", 92.0)]) == {"dusuk": "91,80", "yuksek": "92,00", "esit": False},
+        "2 noktayla görselde de en düşük / en yüksek")
+kontrol(main.gun_ici_gorsel([("19:55", 92.0)]) is None, "tek noktayla görsel eskisi gibi (aralık yok)")
 g = main.gun_ici_gorsel([("10:22", 91.80), ("12:35", 90.921), ("16:35", 92.104), ("20:04", 91.5)])
 kontrol(g == {"dusuk": "90,92", "yuksek": "92,10", "esit": False}, f"görsel değerler: {g}")
 g = main.gun_ici_gorsel([("10:22", 91.801), ("12:35", 91.799), ("20:04", 91.80)])
@@ -102,6 +120,9 @@ kontrol(satirlar[i + 1].startswith("Gün içi:") and satirlar[i + 2].startswith(
 kontrol(main.GUN_ICI_NOTU in post, "gün içi notu (2 saatte bir) yazıyor")
 sade = main.aciklama_yaz(dict(v, gun_ici_satiri=None, donem_satirlari=[]), "post")
 kontrol(main.GUN_ICI_NOTU not in sade and "Gün içi" not in sade, "veri yokken akşam açıklaması eskisi gibi")
+tek = main.aciklama_yaz(dict(v, gun_ici_satiri="Gün içi: 83,99 ₺ (19:55)", donem_satirlari=[]), "post")
+kontrol("Gün içi: 83,99 ₺ (19:55)" in tek and main.GUN_ICI_NOTU not in tek,
+        "tek noktalı satırda (yalnız akşam fiyatı) '2 saatte bir' notu yok")
 kontrol("\n\nAltın/Gümüş paritesi" in sade and "özeti · " in sade.split("\n\n")[0], "veri yokken boşluklar eskisi gibi")
 uzun = main.aciklama_yaz(dict(v, goril_satiri="🦍 Goril bugün sevinçli\n",
                               gun_ici_satiri="Gün içi: en düşük 100,00 ₺ (12:35) · en yüksek 110,00 ₺ (16:35)",

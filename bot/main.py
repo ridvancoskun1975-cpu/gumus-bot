@@ -405,7 +405,12 @@ def gecmis_yaz(gecmis, gun, kayit):
 GUN_ICI_DOSYASI = KOK / "veri" / "gun_ici.json"
 GUN_ICI_DEGISTI = KOK / "veri" / "gun_ici_degisti.txt"   # iş akışı yalnızca bu varsa önbelleğe yazar
 GUN_ICI_TUT = 10          # gün; dosyada en çok bu kadar günün noktaları durur
-GUN_ICI_EN_AZ = 3         # akşam satırı için en az nokta (akşamki dahil)
+# Rıdvan, 4 Kasım 2026 ("Akşam özeti bilgi olmadan çıkmaması gerekiyor. En kötü ihtimalle akşam fiyatı çıkar.",
+# seçenek 1): satır her akşam çıkar. En az 2 noktada en düşük / en yüksek (önce 3'tü); tek nokta (yalnız akşam)
+# varsa "Gün içi: <fiyat> ₺ (<saat>)". 00:00–05:00 arası noktalar sayılmaz (GUN_ICI_GECE_SONU): o saatte giden
+# önceki günün gecikmiş işidir, gün içi aralığını abartır (4 Kasım'da 00:44 kaydı en düşük göründü).
+GUN_ICI_EN_AZ = 2         # en düşük / en yüksek için en az nokta (akşamki dahil); görsel de buna bağlı
+GUN_ICI_GECE_SONU = "05:00"   # bu saatten önceki noktalar o günün gün içine girmez (bot/sinir.py → GECE_SONU)
 GUN_ICI_YAKIN_DK = 60     # gün içi kayıt: son noktadan bu kadar dakika geçmediyse istek harcanmaz (kart günü)
 GUN_ICI_PENCERE = ("11:00", "19:30")   # gün içi kayıt işi yalnızca bu saatler arasında çalışır (TR)
 
@@ -454,7 +459,7 @@ def gun_ici_noktalari(gun, gecmis_kaydi=None, simdiki=None):
         noktalar.setdefault(gecmis_kaydi["saat"], float(gecmis_kaydi["gram"]))
     if simdiki:
         noktalar[simdiki[0]] = float(simdiki[1])
-    return sorted(noktalar.items())
+    return sorted((s, g) for s, g in noktalar.items() if s >= GUN_ICI_GECE_SONU)
 
 
 def gun_ici_uclari(noktalar):
@@ -481,9 +486,13 @@ def gun_ici_gorsel(noktalar):
 
 def gun_ici_satiri(noktalar):
     """Akşam özeti açıklaması: 'Gün içi: en düşük 90,92 ₺ (12:35) · en yüksek 92,10 ₺ (16:35)'.
-    Görselde yazan 2 ondalıklı değerlerle; en az GUN_ICI_EN_AZ nokta yoksa None."""
+    Görselde yazan 2 ondalıklı değerlerle. Tek nokta (yalnız akşam fiyatı) varsa 'Gün içi: 92,10 ₺ (19:55)';
+    hiç nokta yoksa None."""
     uclar = gun_ici_uclari(noktalar)
     if not uclar:
+        if len(noktalar) == 1:
+            saat, gram = noktalar[0]
+            return f"Gün içi: {tr_sayi(round(gram, 2), 2)} ₺ ({saat})"
         return None
     en_az, en_cok = uclar
     if en_az[1] == en_cok[1]:
@@ -1252,6 +1261,12 @@ def _ozel_satiri(v):
 GUN_ICI_NOTU = "Gün içi aralık, gün boyunca yaklaşık 2 saatte bir alınan fiyatlara göredir."
 
 
+def _gun_ici_aralik_mi(satir):
+    """Gün içi satırı bir aralık mı (en düşük / en yüksek ya da değişmedi)? Tek noktalı satırda (yalnız akşam fiyatı,
+    Rıdvan 4 Kasım 2026) "2 saatte bir alınan fiyatlara göre" notu yazılmaz."""
+    return bool(satir) and ("en yüksek" in satir or "değişmedi" in satir)
+
+
 def _ozet_ek(v):
     """Akşam özeti: başlık satırının altına gün içi aralık ve son 1 hafta / 1 ay (veri varsa)."""
     satirlar = ([v["gun_ici_satiri"]] if v.get("gun_ici_satiri") else []) + list(v.get("donem_satirlari") or [])
@@ -1326,7 +1341,7 @@ def aciklama_yaz(v, tur):
         f"Dolar/TL: {v['dolar']} ₺ ({d['isaret']} {d['metin']})\n\n"
         f"{_ozel_satiri(v)}"
         f"Değişimler önceki iş gününe göredir."
-        f"{' ' + GUN_ICI_NOTU if tur == 'post' and v.get('gun_ici_satiri') else ''}"
+        f"{' ' + GUN_ICI_NOTU if tur == 'post' and _gun_ici_aralik_mi(v.get('gun_ici_satiri')) else ''}"
         f"{' ' + v['baslik_notu'] if v.get('baslik_notu') else ''}\n"
         f"{_cagri_satirlari(v, tur)}"
         "Bilgi amaçlıdır, yatırım tavsiyesi değildir.\n\n"
