@@ -6,4 +6,3 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
-| 4 Kasım 2026 17:58 | Dış tetiğe gün içi kayıt (kaydet.yml) ve 1 Ocak site yenilemesi (sayfa.yml) | dis-tetik/Kod.gs, dis-tetik/test_kod.js, bot/test_dis_tetik.py, README.md, CLAUDE.md | dis-tetik-kayit |
