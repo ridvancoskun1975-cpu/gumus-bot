@@ -109,6 +109,41 @@ for d in DILIMLER:
     esit(dk(d["son"]) + DENETIM_DK <= hs * 60 + hd + 5, True, f"{d['ad']}: denetim hedeften en geç 5 dk sonra biter")
     esit(DENETIM_DK > 10, True, f"{d['ad']}: denetim penceresine en az bir 10 dk'lık tetik düşer")
 
+# Paylaşmayan işler (Rıdvan, 4 Kasım 2026 "yap ekle"): Kod.gs → KAYITLAR, kaydet.yml ve sayfa.yml cron'larıyla aynı
+import main as bot  # noqa: E402
+KAYITLAR = [m.groupdict() for m in re.finditer(
+    r"\{ad: '(?P<ad>[^']+)', is: '(?P<is_>[^']+)', (?:gunler: \[(?P<gunler>[\d, ]+)\]|tarih: '(?P<tarih>[\d-]+)'), "
+    r"bas: '(?P<bas>\d\d:\d\d)', son: '(?P<son>\d\d:\d\d)'\}", GS)]
+esit(len(KAYITLAR), 5, "Kod.gs'te 5 paylaşmayan iş okunur")
+KAYDET = (KOK / ".github" / "workflows" / "kaydet.yml").read_text(encoding="utf-8")
+k_cron = re.search(r"- cron: '([^']+)'", KAYDET).group(1)
+k_dk, k_saat, _, _, k_gun = k_cron.split()
+esit(k_gun, "1-5", "kaydet.yml hafta içi")
+k_saatler = sorted(f"{int(h) + 3:02d}:{int(k_dk):02d}" for h in k_saat.split(","))
+kayit = [k for k in KAYITLAR if k["is_"] == "kaydet.yml"]
+esit(sorted(k["bas"] for k in kayit), k_saatler, "dış tetik kayıt saatleri kaydet.yml cron'uyla aynı (TR)")
+for k in kayit:
+    esit(k["gunler"].replace(" ", ""), "1,2,3,4,5", f"{k['ad']}: hafta içi")
+    esit(dk(k["son"]) - dk(k["bas"]) >= 20, True, f"{k['ad']}: pencerede en az iki 10 dk'lık deneme")
+    esit(bot.GUN_ICI_PENCERE[0] <= k["bas"] and dk(k["son"]) + 5 <= dk(bot.GUN_ICI_PENCERE[1]), True,
+         f"{k['ad']}: main.GUN_ICI_PENCERE içinde (kayıt atlanmaz)")
+    for d in DILIMLER:   # paylaşım penceresiyle çakışmaz (önbellek sırası)
+        esit(dk(k["son"]) + 5 <= dk(d["bas"]) or dk(k["bas"]) >= dk(d["son"]) + DENETIM_DK, True,
+             f"{k['ad']} ile {d['ad']} penceresi çakışmaz")
+# 12:35 ve 16:35 kaydı siteyi de yeniler: kaydet.yml'deki saat aralıkları dış tetik penceresini (+5 dk iş) kapsar
+araliklar = [(int(a[:2]) * 60 + int(a[2:]), int(b[:2]) * 60 + int(b[2:])) for a, b in re.findall(
+    r'"\$saat" -ge (\d{4}) \] && \[ "\$saat" -le (\d{4})', KAYDET)]
+for bas in ("12:35", "16:35"):
+    k = next(x for x in kayit if x["bas"] == bas)
+    esit(any(a <= dk(k["bas"]) and dk(k["son"]) + 5 <= b for a, b in araliklar), True, f"{bas} kaydı siteyi yeniler")
+SAYFA = (KOK / ".github" / "workflows" / "sayfa.yml").read_text(encoding="utf-8")
+s_dk, s_saat, s_gun, s_ay, _ = re.search(r"- cron: '([^']+)'", SAYFA).group(1).split()
+yil_sonu = datetime(2026, int(s_ay), int(s_gun), int(s_saat), int(s_dk), tzinfo=timezone.utc).astimezone(sinir.TR)
+site = next(x for x in KAYITLAR if x["is_"] == "sayfa.yml")
+esit((site["tarih"], site["bas"]), (yil_sonu.strftime("%m-%d"), yil_sonu.strftime("%H:%M")),
+     "site yenilemesi sayfa.yml cron'uyla aynı an (1 Ocak 00:07 TR)")
+esit("workflow_dispatch:" in KAYDET and "workflow_dispatch:" in SAYFA, True, "kaydet.yml ve sayfa.yml dışarıdan başlatılabilir")
+
 # Takılma dökümü (gözden geçirme, 4 Kasım 2026): her adımda süre sınırından tam 1 dk önce
 uret_sure = re.search(r"- name: Görseli / videoyu üret\n.*?timeout-minutes: \$\{\{ .*?'yorum' && (\d+) \|\| .*?&& (\d+) \|\| "
                       r"(\d+) \}\}", YML, re.S)
@@ -118,7 +153,6 @@ esit([int(x) * 60 - 60 for x in uret_sure.groups()], [int(x) for x in uret_dokum
 paylas_sure = re.search(r"- name: Instagram'a paylaş\n\s+timeout-minutes: (\d+)", YML).group(1)
 esit(f"TAKILMA_DOKUM_SN: {int(paylas_sure) * 60 - 60} " in YML, True, "paylaşım adımı: döküm süre sınırından 1 dk önce")
 esit("inputs.onay == true && '1'" in YML, True, "ONAY_TEKRAR yalnız gerçek true ile açılır")
-import main as bot  # noqa: E402
 import faulthandler  # noqa: E402
 import os  # noqa: E402
 cagri = []

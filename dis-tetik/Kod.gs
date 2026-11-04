@@ -20,6 +20,12 @@
  * GitHub gerçek true/false'u 422 ile reddederse aynı istek bir kez yazı değerleriyle yinelenir (eski API davranışı).
  * Denetim yalnız main dalındaki çalışmalara bakar (başka daldaki denemeler sayılmaz).
  * DILIMLER, paylas.yml cron'ları ve bot/program.py → HEDEF_SAATLERI ile uyumlu olmalı: python bot/test_dis_tetik.py.
+ *
+ * Paylaşmayan işler (4 Kasım 2026, Rıdvan "yap ekle"): GitHub'ın zamanlayıcısı gün içi fiyat kaydını da başlatmadı.
+ * Betik hafta içi 12:35, 14:35, 16:35, 18:35'te kaydet.yml'yi (12:35 ve 16:35 kaydı siteyi de yeniler) ve 1 Ocak
+ * 00:07'de sayfa.yml'yi (PDF rehberin baskı günü) birer kez başlatır. GitHub'ın kendi cron'u da gelirse kayıt son
+ * noktadan 60 dk geçmediyse istek harcamadan atlanır (main.GUN_ICI_YAKIN_DK). KAYITLAR, kaydet.yml ve sayfa.yml
+ * cron'larıyla uyumlu olmalı (test_dis_tetik.py denetler).
  */
 
 var DEPO = 'ridvancoskun1975-cpu/gumus-bot';
@@ -35,6 +41,14 @@ var DILIMLER = [
   {ad: 'akşam özeti', gunler: [1, 2, 3, 4, 5], bas: '19:15', son: '19:45', dilim: '10 16 * * 1-5'},
   {ad: 'haftalık özet', gunler: [6], bas: '09:15', son: '09:45', dilim: '10 6 * * 6'},
   {ad: 'pazar yorumu', gunler: [7], bas: '10:15', son: '10:45', dilim: '10 7 * * 0'}
+];
+// Paylaşmayan işler: hafta içi gün içi kayıt (kaydet.yml) ve yılda bir site yenilemesi (sayfa.yml). tarih: 'AA-GG'.
+var KAYITLAR = [
+  {ad: 'gün içi kayıt 12:35', is: 'kaydet.yml', gunler: [1, 2, 3, 4, 5], bas: '12:35', son: '12:55'},
+  {ad: 'gün içi kayıt 14:35', is: 'kaydet.yml', gunler: [1, 2, 3, 4, 5], bas: '14:35', son: '14:55'},
+  {ad: 'gün içi kayıt 16:35', is: 'kaydet.yml', gunler: [1, 2, 3, 4, 5], bas: '16:35', son: '16:55'},
+  {ad: 'gün içi kayıt 18:35', is: 'kaydet.yml', gunler: [1, 2, 3, 4, 5], bas: '18:35', son: '18:55'},
+  {ad: 'site yenilemesi (PDF baskı günü)', is: 'sayfa.yml', tarih: '01-01', bas: '00:07', son: '00:37'}
 ];
 var SON_UYARI_DK = 10;   // pencerenin son 10 dakikasında hâlâ başlatılamadıysa Rıdvan'a e-posta
 var DENETIM_DK = 15;     // pencere bittikten sonraki 15 dakikada bir kez denetim (tetik 10 dakikada bir; en az biri düşer)
@@ -62,6 +76,22 @@ function nobet() {
       }
     } else if (dakika_(saat) >= dakika_(d.son) && dakika_(saat) < dakika_(d.son) + DENETIM_DK) {
       denetle_(ozellik, anahtar, gun, saat, d);
+    }
+  }
+  for (var k = 0; k < KAYITLAR.length; k++) {
+    var r = KAYITLAR[k];
+    if (r.gunler && r.gunler.indexOf(hg) < 0) continue;
+    if (r.tarih && gun.slice(5) !== r.tarih) continue;
+    if (saat < r.bas || saat >= r.son) continue;
+    var rAnahtar = 'gonderildi:' + gun + ':' + r.is + ':' + r.bas;
+    if (ozellik.getProperty(rAnahtar)) continue;
+    var token = ozellik.getProperty('GITHUB_TOKEN');
+    var rSonuc = token ? gonder_(token, r.is, null) : {ok: false, neden: 'GITHUB_TOKEN özelliği yok'};
+    if (rSonuc.ok) {
+      ozellik.setProperty(rAnahtar, saat);
+      console.log(r.ad + ' başlatıldı (' + saat + ' TR).');
+    } else {
+      console.warn(r.ad + ' başlatılamadı (sonraki 10 dakikada yeniden denenir): ' + rSonuc.neden);
     }
   }
 }
@@ -134,18 +164,21 @@ function baslat_(dilim, deneme) {
   var token = PropertiesService.getScriptProperties().getProperty('GITHUB_TOKEN');
   if (!token) return {ok: false, neden: 'GITHUB_TOKEN özelliği yok'};
   // deneme ve onay gerçek true/false (yazı değil): paylas.yml'de inputs.deneme == false karşılaştırılır
-  var sonuc = gonder_(token, {dilim: dilim, deneme: !!deneme, onay: false});
+  var sonuc = gonder_(token, IS_AKISI, {dilim: dilim, deneme: !!deneme, onay: false});
   if (!sonuc.ok && sonuc.kod === 422) {
     console.warn('GitHub true/false değerini reddetti (422); yazı değerleriyle bir kez daha deneniyor.');
-    sonuc = gonder_(token, {dilim: dilim, deneme: deneme ? 'true' : 'false', onay: 'false'});
+    sonuc = gonder_(token, IS_AKISI, {dilim: dilim, deneme: deneme ? 'true' : 'false', onay: 'false'});
   }
   return sonuc;
 }
 
-function gonder_(token, girdiler) {
+/** isAkisi'ni main'de başlatır; girdiler null ise girdisiz (kaydet.yml, sayfa.yml). */
+function gonder_(token, isAkisi, girdiler) {
+  var govde = {ref: 'main'};
+  if (girdiler) govde.inputs = girdiler;
   try {
     var yanit = UrlFetchApp.fetch(
-      'https://api.github.com/repos/' + DEPO + '/actions/workflows/' + IS_AKISI + '/dispatches', {
+      'https://api.github.com/repos/' + DEPO + '/actions/workflows/' + isAkisi + '/dispatches', {
         method: 'post',
         contentType: 'application/json',
         headers: {
@@ -153,7 +186,7 @@ function gonder_(token, girdiler) {
           'Accept': 'application/vnd.github+json',
           'X-GitHub-Api-Version': '2022-11-28'
         },
-        payload: JSON.stringify({ref: 'main', inputs: girdiler}),
+        payload: JSON.stringify(govde),
         muteHttpExceptions: true
       });
     var kod = yanit.getResponseCode();

@@ -188,4 +188,37 @@ delete o.ozellik.GITHUB_TOKEN;
 o.tik('2026-11-04 19:16'); o.tik('2026-11-04 19:46');
 esit(o.kayit.istekler.length, 0, 'anahtar yoksa istek yok');
 
+// 10) Paylaşmayan işler (Rıdvan, 4 Kasım 2026 "yap ekle"): hafta içi gün içi kayıt, 1 Ocak site yenilemesi
+const isler = o => o.baslatmalar().map(i => i.url.split('/workflows/')[1].split('/')[0]);
+o = ortam(basari('in_progress'));
+o.tik('2026-11-04 12:30');
+esit(o.kayit.istekler.length, 0, 'kayıt: 12:35 penceresinden önce istek yok');
+o.tik('2026-11-04 12:36');
+esit(isler(o), ['kaydet.yml'], 'kayıt: 12:36 kaydet.yml başlatılır');
+esit(o.baslatmalar()[0].govde, {ref: 'main'}, 'kayıt: main, girdisiz');
+o.tik('2026-11-04 12:46'); o.tik('2026-11-04 12:56');
+esit(isler(o), ['kaydet.yml'], 'kayıt: aynı pencerede bir kez');
+o.tik('2026-11-04 14:38'); o.tik('2026-11-04 16:41'); o.tik('2026-11-04 18:52');
+esit(isler(o).length, 4, 'kayıt: günde dört pencere (12:35, 14:35, 16:35, 18:35)');
+esit(o.okumalar().length, 0, 'kayıt: çalışma listesi okunmaz (yinelenen kayıt main.py\'de atlanır)');
+o = ortam(basari('in_progress'));
+o.tik('2026-11-07 12:36'); o.tik('2026-11-08 16:40');
+esit(o.kayit.istekler.length, 0, 'kayıt: hafta sonu yok');
+let kayitHata = true;
+o = ortam(istek => (istek.yontem === 'post' ? (kayitHata ? [500, 'hata'] : [204, '']) : [200, {workflow_runs: []}]));
+o.tik('2026-11-04 14:36');
+kayitHata = false;
+o.tik('2026-11-04 14:46'); o.tik('2026-11-04 14:56');
+esit([isler(o).length, o.kayit.epostalar.length], [2, 0], 'kayıt: başlatılamazsa sonraki tikte yeniden dener, e-posta yok');
+o = ortam(basari('in_progress'));
+o.tik('2026-12-31 00:10'); o.tik('2027-01-01 00:06');
+esit(o.kayit.istekler.length, 0, 'site yenilemesi: yalnız 1 Ocak 00:07 sonrası');
+o.tik('2027-01-01 00:10'); o.tik('2027-01-01 00:20'); o.tik('2027-01-01 00:40');
+esit(isler(o), ['sayfa.yml'], '1 Ocak 00:10: sayfa.yml bir kez başlatılır');
+esit(o.baslatmalar()[0].govde, {ref: 'main'}, 'site yenilemesi: main, girdisiz');
+// Paylaşım dilimleriyle karışmaz: akşam penceresinde kayıt yok, kayıt penceresinde paylaşım yok
+o = ortam(basari('in_progress'));
+o.tik('2026-11-04 18:40'); o.tik('2026-11-04 19:20');
+esit(isler(o), ['kaydet.yml', 'paylas.yml'], '18:40 kayıt, 19:20 akşam paylaşımı; birbirine karışmaz');
+
 console.log('test_kod.js: ' + gecen + ' sınama geçti.');
