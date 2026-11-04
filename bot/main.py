@@ -1787,6 +1787,7 @@ def yayinla(cikti, taban_url, bekle_dk=0):
 # media_publish'i yapıp hata döndürdüğü için yayinla()'nın baştan denemesi, "Re-run failed jobs", sayısını yazamadan
 # biten bir çalıştırma. İmza açıklamadaki sabit satırdır (bot/rapor.py → aciklamadan_ad ile aynı ifadeler).
 # Instagram'a ulaşılamazsa birinci kilit yeterli sayılır, paylaşım sürer (hafta içi 2 fiyat taahhüdü).
+IG_GECE_SONU = (5, 0)   # bot/sinir.py → GECE_SONU ile aynı (test_sinir.py denetler)
 IG_KILIT_IMZA = {
     "reels": r"güncel gümüş fiyatları",
     "post": r"günün gümüş özeti",
@@ -1825,7 +1826,10 @@ def instagram_bugun_paylasildi(meta, simdi=None, istek=None):
             zaman = datetime.strptime(m["timestamp"], "%Y-%m-%dT%H:%M:%S%z").astimezone(TR_SAAT)
         except (KeyError, ValueError):
             continue
-        if zaman.date() == bugun and re.search(imza, (m.get("caption") or "").lower()):
+        # Gece yarısı kuralı (4 Kasım 2026; bot/sinir.py → GECE_SONU): 00:00–05:00 arasında giden gönderi bir önceki
+        # günün gecikmiş işidir, günün asıl paylaşımını durdurmaz.
+        if (zaman.date() == bugun and (zaman.hour, zaman.minute) >= IG_GECE_SONU
+                and re.search(imza, (m.get("caption") or "").lower())):
             return m.get("id"), zaman.strftime("%H:%M")
     return None
 

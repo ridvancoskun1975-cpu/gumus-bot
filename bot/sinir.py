@@ -35,7 +35,17 @@ Paylaşılmış sayılan: bugün yayinla işi başarıyla bitmiş ya da bir şey
 Sürmekte olan çalıştırma sayılmaz: concurrency grubu yüzünden aynı anda tek çalıştırma yürür, sürüyor görünen
 bizden sonra sıradadır; o kendi sırası gelince bu kilide takılır.
 
-Kullanım (iş akışında): python3 bot/sinir.py --yayin true|false --onay true|false [--tur T] [--konu N]
+GECE YARISI KURALI (4 Kasım 2026): GitHub 3 Kasım 19:10 TR zamanlı çalışmasını 5,5 saat geç, 4 Kasım 00:43'te
+başlattı; gün değiştiği için kilit onu "4 Kasım'ın akşam özeti" saydı ve 00:44'te ikinci bir özet (gönderi + hikâye)
+gitti (Rıdvan 3 Kasım'da "çift paylaşım da olmasın lütfen" demişti). İki önlem:
+  - Geç kalan zamanlı çalışma (gec_kalmis): cron'un asıl tetik anı (son_tetik) başka bir TR gününe aitse ya da o türün
+    son saati (SON_SAAT; nöbetçiyle aynı pencere) geçtiyse zamanlı çalışma paylaşmadan, hata vermeden biter
+    (tekrar=evet). Elle ve nöbetçinin başlattığı çalışmalar (workflow_dispatch) etkilenmez. Paylaşım gitmediyse
+    nöbetçi haber verir.
+  - Kilit, gece 00:00–05:00 (GECE_SONU) arasında giden paylaşımı o günün paylaşımı saymaz: o, bir önceki günün
+    gecikmiş işidir ve günün asıl paylaşımını durdurmamalı. Günlük sınır sayımı yine sayar (takipçi onu gördü).
+
+Kullanım (iş akışında): python3 bot/sinir.py --yayin true|false --onay true|false [--tur T] [--konu N] [--cron C]
 Yalnızca standart kitaplık kullanır (kontrol işi Python paketi kurmadan çalışır).
 """
 import argparse
@@ -69,6 +79,13 @@ TR = ZoneInfo("Europe/Istanbul")
 IS_AKISI = "paylas.yml"
 YAYIN_ISI = "yayinla"
 SURUYOR = {"queued", "in_progress", "waiting", "pending", "requested"}
+# Kilit bu saatten (TR) önce giden paylaşımı o günün paylaşımı saymaz (gece yarısı kuralı, yukarıda).
+GECE_SONU = (5, 0)
+# Bir türün o gün başlatılabileceği son saat (TR). Zamanlı çalışma (gec_kalmis) ve nöbetçi (bot/nobetci.py) aynı
+# pencereyi kullanır: sabah Reels'i akşam özetinin yanında gitmesin; akşam özeti 22:30 (paylaşım işi Instagram
+# engelinde ~3 saate kadar yeniden dener, gece yarısını geçmesin; geçerse main.yayinla durur).
+SON_SAAT = {"reels": (18, 30), "bilgi": (18, 30), "ay": (18, 30), "kisa": (18, 30), "post": (22, 30),
+            "hafta": (21, 0), "yorum": (21, 0)}
 
 
 class SayilamadiHatasi(RuntimeError):
@@ -137,8 +154,74 @@ def bugun_paylasildi(sayilan, tur):
     """Bu tür bugün paylaşıldıysa o kayıt (calistirma_id, zaman, durum, tür, sayı), yoksa None.
     Yalnız bitmiş çalıştırmalar ("paylaşıldı" ya da "yarım"); sürenler sayılmaz (sıradakiler)."""
     for kayit in sayilan:
-        if kayit[3] == tur and kayit[2] in ("paylaşıldı", "yarım"):
+        if kayit[3] == tur and kayit[2] in ("paylaşıldı", "yarım") and not gece_mi(kayit[1]):
             return kayit
+    return None
+
+
+def gece_mi(zaman):
+    """00:00–05:00 TR arası mı (gece yarısı kuralı: bu saatte giden paylaşım bir önceki günün gecikmiş işidir)."""
+    yerel = zaman.astimezone(TR)
+    return (yerel.hour, yerel.minute) < GECE_SONU
+
+
+# ---------------------------------------------------------------- geç kalan zamanlı çalışma
+
+def _alan(metin, en_az, en_cok):
+    """Cron alanı → izin verilen değerler kümesi ('*', 'n', 'a-b', 'a,b', '*/k', 'a-b/k')."""
+    degerler = set()
+    for parca in metin.split(","):
+        adim = 1
+        if "/" in parca:
+            parca, a = parca.split("/", 1)
+            adim = int(a)
+        if parca == "*":
+            bas, son = en_az, en_cok
+        elif "-" in parca:
+            bas, son = (int(x) for x in parca.split("-", 1))
+        else:
+            bas = son = int(parca)
+        degerler.update(range(bas, son + 1, adim))
+    return degerler
+
+
+def son_tetik(cron, simdi, geri_saat=72):
+    """cron'un (UTC, GitHub gibi) simdi'den önceki ya da ona eşit son tetik anı; bulunamaz ya da okunamazsa None."""
+    try:
+        dk, sa, gun, ay, hg = cron.split()
+        dakikalar, saatler = _alan(dk, 0, 59), _alan(sa, 0, 23)
+        gunler, aylar = _alan(gun, 1, 31), _alan(ay, 1, 12)
+        haftagunleri = {g % 7 for g in _alan(hg, 0, 7)}   # 0 ve 7 pazar
+    except ValueError:
+        return None
+    gun_serbest, hg_serbest = gun == "*", hg == "*"
+    t = simdi.astimezone(timezone.utc).replace(second=0, microsecond=0)
+    for _ in range(geri_saat * 60 + 1):
+        if t.minute in dakikalar and t.hour in saatler and t.month in aylar:
+            g_ok, h_ok = t.day in gunler, (t.isoweekday() % 7) in haftagunleri
+            # Cron kuralı: gün ve haftagünü ikisi de kısıtlıysa biri yeter
+            if (g_ok and h_ok) if (gun_serbest or hg_serbest) else (g_ok or h_ok):
+                return t
+        t -= timedelta(minutes=1)
+    return None
+
+
+def gec_kalmis(cron, tur, simdi):
+    """Zamanlı çalışma paylaşmamalı mı: neden metni ya da None. cron boşsa (elle/nöbetçi) ya da okunamazsa None."""
+    if not cron:
+        return None
+    tetik = son_tetik(cron, simdi)
+    if tetik is None:
+        return None
+    yerel, asil = simdi.astimezone(TR), tetik.astimezone(TR)
+    gecikme = int((simdi - tetik).total_seconds() // 60)
+    if asil.date() != yerel.date():
+        return (f"{asil:%d.%m %H:%M} TR zamanlı çalışması {gecikme // 60} sa {gecikme % 60} dk geç başladı "
+                f"(ertesi gün, {yerel:%H:%M}); gece yarısı kuralı")
+    s, d = SON_SAAT.get(tur, (23, 59))
+    if (yerel.hour, yerel.minute) >= (s, d):
+        return (f"{asil:%H:%M} TR zamanlı çalışması {gecikme // 60} sa {gecikme % 60} dk geç başladı "
+                f"({yerel:%H:%M}); {tur} için son saat {s:02d}:{d:02d}")
     return None
 
 
@@ -212,7 +295,7 @@ def _cikti(hikaye, tekrar="hayir"):
             f.write(f"hikaye={hikaye}\ntekrar={tekrar}\n")
 
 
-def kontrol(yayin, onay, tur, konu, simdi=None):
+def kontrol(yayin, onay, tur, konu, simdi=None, cron=""):
     """0: devam, 1: dur (paylaşılmaz). Sınır doluysa önce hikâye kopyası düşer; o da yetmezse onay olmadan durur;
     sayılamazsa da durur. GITHUB_OUTPUT'a hikaye=tam|yok yazar."""
     simdi = simdi or datetime.now(timezone.utc)
@@ -224,6 +307,14 @@ def kontrol(yayin, onay, tur, konu, simdi=None):
     reels_tekrar = tur == "yorum" and konu == "reels-tekrar"
     if reels_tekrar:
         plan = 1
+    # Geç kalan zamanlı çalışma (gece yarısı kuralı): onay işareti zamanlı çalışmada yoktur; deneme etkilenmez.
+    gec = gec_kalmis(cron, tur, simdi) if yayin else None
+    if gec:
+        print(f"::notice::Geç kalan zamanlı çalışma: {gec}. {ne} paylaşılmadan bitiyor; bu bir hata değil. "
+              "Paylaşım o gün gitmediyse nöbetçi haber verir.")
+        _ozet(f"Geç kalan zamanlı çalışma: {gec}. **{ne}** paylaşılmadı.")
+        _cikti("tam", "evet")
+        return 0
     try:
         sayilan = say(simdi)
     except SayilamadiHatasi as e:
@@ -290,8 +381,9 @@ def main():
     ap.add_argument("--onay", choices=["true", "false"], default="false")
     ap.add_argument("--tur", default="")
     ap.add_argument("--konu", default="")
+    ap.add_argument("--cron", default="", help="zamanlı çalışmanın cron'u (github.event.schedule); elle boş")
     a = ap.parse_args()
-    return kontrol(a.yayin == "true", a.onay == "true", a.tur, a.konu)
+    return kontrol(a.yayin == "true", a.onay == "true", a.tur, a.konu, cron=a.cron.strip())
 
 
 if __name__ == "__main__":

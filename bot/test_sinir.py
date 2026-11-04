@@ -201,6 +201,72 @@ hatali = sinir.paylasim_sayisi(
     {302: ["gorunen-1-0", "onizleme-post"]})
 esit(hatali, [], "hiçbir şey paylaşmadan hata veren çalıştırma sayılmaz (yeniden denenebilir)")
 
+# ---------------------------------------------------------------- gece yarısı kuralı (4 Kasım 2026)
+# GitHub 3 Kasım 19:10 TR zamanlı çalışmasını 4 Kasım 00:43'te başlattı; kilit onu 4 Kasım'ın özeti sanıp 00:44'te
+# ikinci özeti attı. (1) Geç kalan zamanlı çalışma paylaşmaz; (2) kilit 00:00–05:00 arası paylaşımı o güne saymaz.
+def utc(*a):
+    return datetime(*a, tzinfo=timezone.utc)
+
+
+# son_tetik: cron'un asıl tetik anı
+esit(sinir.son_tetik("10 16 * * 1-5", utc(2026, 11, 3, 21, 43)), utc(2026, 11, 3, 16, 10), "son tetik: 3 Kasım akşamı")
+esit(sinir.son_tetik("37 16 * * 1-5", utc(2026, 11, 3, 21, 54)), utc(2026, 11, 3, 16, 37), "son tetik: yedek cron")
+esit(sinir.son_tetik("10 6 * * 1-5", utc(2026, 11, 2, 5, 0)), utc(2026, 10, 30, 6, 10), "son tetik: pazartesi sabahı → cuma")
+esit(sinir.son_tetik("10 7 * * 0", utc(2026, 11, 1, 7, 40)), utc(2026, 11, 1, 7, 10), "son tetik: pazar (0)")
+esit(sinir.son_tetik("10 6 * * 6", utc(2026, 10, 31, 6, 10)), utc(2026, 10, 31, 6, 10), "son tetik: tam anında")
+esit(sinir.son_tetik("bozuk", utc(2026, 11, 3, 21, 43)), None, "okunamayan cron → None")
+esit(sinir.son_tetik("", utc(2026, 11, 3, 21, 43)), None, "boş cron → None")
+# gec_kalmis
+esit(sinir.gec_kalmis("10 16 * * 1-5", "post", utc(2026, 11, 3, 21, 43)) is not None, True,
+     "3 Kasım 19:10 çalışması 00:43'te: paylaşmaz (gün değişti)")
+esit(sinir.gec_kalmis("10 16 * * 1-5", "post", utc(2026, 11, 3, 16, 55)), None, "45 dk gecikme: paylaşır")
+esit(sinir.gec_kalmis("10 16 * * 1-5", "post", utc(2026, 11, 3, 19, 29)), None, "akşam 22:29: paylaşır")
+esit(sinir.gec_kalmis("10 16 * * 1-5", "post", utc(2026, 11, 3, 19, 30)) is not None, True, "akşam 22:30: paylaşmaz")
+esit(sinir.gec_kalmis("10 6 * * 1-5", "reels", utc(2026, 11, 3, 15, 30)) is not None, True,
+     "sabah Reels'i 18:30'da gelirse paylaşmaz")
+esit(sinir.gec_kalmis("10 6 * * 1-5", "reels", utc(2026, 11, 3, 8, 0)), None, "sabah Reels'i 11:00'de: paylaşır")
+esit(sinir.gec_kalmis("10 10 * * 1-5", "bilgi", utc(2026, 11, 3, 17, 47)) is not None, True,
+     "13:10 rehber çalışması 20:47'de: paylaşmaz (son saat 18:30)")
+esit(sinir.gec_kalmis("", "post", utc(2026, 11, 3, 21, 43)), None, "elle / nöbetçi (cron yok): etkilenmez")
+for t in sinir.SON_SAAT:
+    esit(t in sinir.TEKIL, True, f"son saat türü kilitli: {t}")
+
+
+def gec_ciktisi(cron, simdi, tur="post", yayin=True, kayitlar=()):
+    import os
+    import tempfile
+    sinir.say = bugun(*kayitlar)
+    with tempfile.NamedTemporaryFile("w+", delete=False) as f:
+        yol = f.name
+    os.environ["GITHUB_OUTPUT"] = yol
+    try:
+        with contextlib.redirect_stdout(io.StringIO()) as o:
+            kod = sinir.kontrol(yayin, False, tur, "", simdi, cron=cron)
+        cikti = dict(x.split("=", 1) for x in Path(yol).read_text().split())
+    finally:
+        os.environ.pop("GITHUB_OUTPUT", None)
+    return kod, cikti.get("tekrar", "hayir"), o.getvalue()
+
+
+k, t, yazi = gec_ciktisi("10 16 * * 1-5", utc(2026, 11, 3, 21, 43))
+esit((k, t), (0, "evet"), "kontrol: 00:43'teki geç zamanlı çalışma hata vermeden paylaşmadan biter")
+esit("Geç kalan zamanlı çalışma" in yazi, True, "kontrol: nedeni günlüğe yazar")
+esit(gec_ciktisi("10 16 * * 1-5", utc(2026, 11, 3, 21, 43), yayin=False)[:2], (0, "hayir"), "deneme etkilenmez")
+esit(gec_ciktisi("10 16 * * 1-5", utc(2026, 11, 3, 16, 55))[:2], (0, "hayir"), "zamanında zamanlı çalışma paylaşır")
+# Kilit: 4 Kasım 00:47'de giden (dünün gecikmiş) özet, 4 Kasım akşamki özeti durdurmaz
+gecikmis = (41724390910, utc(2026, 11, 3, 21, 47), "paylaşıldı", "post", 2)
+esit(sinir.bugun_paylasildi([gecikmis], "post"), None, "kilit: 00:47'deki özet o günün özeti sayılmaz")
+esit(gec_ciktisi("10 16 * * 1-5", utc(2026, 11, 4, 16, 55), kayitlar=[gecikmis])[:2], (0, "hayir"),
+     "4 Kasım akşam özeti 00:47'deki yüzünden durmaz")
+sabah_05 = (7, utc(2026, 11, 4, 2, 0), "paylaşıldı", "reels", 1)   # 05:00 TR
+esit(sinir.bugun_paylasildi([sabah_05], "reels") is not None, True, "kilit: 05:00 ve sonrası sayılır")
+esit(sinir.toplam(sinir.paylasim_sayisi([{"id": 9}], {9: [is_("yayinla", "completed", "success",
+     bit="2026-11-03T21:47:45Z")]}, utc(2026, 11, 4, 16, 55), 0, {9: ["gorunen-1-2", "onizleme-post"]})), 2,
+     "günlük sınır: gece giden de takipçi gördüğü için sayılır")
+sys.path.insert(0, str(Path(__file__).parent))
+import nobetci  # noqa: E402
+esit(nobetci.SON_SAAT is sinir.SON_SAAT, True, "nöbetçi ve zamanlı çalışma aynı son saat penceresi")
+
 sinir.GUN_SINIRI = asil_gun
 sinir.say = asil_say
 for gun, n in sinir.GUN_SINIRI.items():   # gerçek istisnalar geçerli tarih ve makul sayı olmalı

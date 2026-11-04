@@ -189,7 +189,10 @@ jobs:
           KONU: ${{ inputs.konu }}
           YAYIN: ${{ github.event_name == 'schedule' || inputs.deneme == false }}
           ONAY: ${{ github.event_name == 'workflow_dispatch' && inputs.onay == true }}
-        run: python3 bot/sinir.py --yayin "$YAYIN" --onay "$ONAY" --tur "$TUR" --konu "$KONU"
+          # Gece yarısı kuralı (4 Kasım 2026; bot/sinir.py → gec_kalmis): zamanlı çalışma gün değiştikten ya da türün
+          # son saatinden sonra başladıysa paylaşmaz (3 Kasım 19:10 çalışması 00:43'te gelip ikinci özeti atmıştı).
+          CRON: ${{ github.event.schedule }}
+        run: python3 bot/sinir.py --yayin "$YAYIN" --onay "$ONAY" --tur "$TUR" --konu "$KONU" --cron "$CRON"
 
   uret:
     needs: kontrol

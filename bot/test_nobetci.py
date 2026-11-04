@@ -218,7 +218,15 @@ esit(bot.instagram_bugun_paylasildi({"tur": "reels"}, BUGUN, ig(sabah_ig, aksam_
 esit(bot.instagram_bugun_paylasildi({"tur": "post"}, BUGUN, ig(sabah_ig, aksam_dun)), None,
      "ikinci kilit: dünkü akşam özeti bugünü kilitlemez")
 gece = ("x\nGüncel gümüş fiyatları · 3 Kasım", "2026-11-02T21:30:00+0000")   # 3 Kasım 00:30 TR
-esit(bot.instagram_bugun_paylasildi({"tur": "reels"}, BUGUN, ig(gece)), ("0", "00:30"), "ikinci kilit: gün TR saatine göre")
+# Gece yarısı kuralı (4 Kasım 2026): 00:00–05:00 TR arasında giden gönderi o günü kilitlemez (dünün gecikmiş işi)
+esit(bot.instagram_bugun_paylasildi({"tur": "reels"}, BUGUN, ig(gece)), None, "ikinci kilit: 00:30'daki gönderi günü kilitlemez")
+sabah_erken = ("x\nGüncel gümüş fiyatları · 3 Kasım", "2026-11-03T02:10:00+0000")   # 3 Kasım 05:10 TR
+esit(bot.instagram_bugun_paylasildi({"tur": "reels"}, BUGUN, ig(sabah_erken)), ("0", "05:10"),
+     "ikinci kilit: gün TR saatine göre, 05:00'ten sonrası sayılır")
+gece_ozet = ("Gram gümüş fiyatı bugün: 80,06 ₺\nGünün gümüş özeti · 4 Kasım 2026", "2026-11-03T21:47:00+0000")
+esit(bot.instagram_bugun_paylasildi({"tur": "post"}, datetime(2026, 11, 4, 19, 55, tzinfo=sinir.TR), ig(gece_ozet)),
+     None, "ikinci kilit: 4 Kasım 00:47'deki özet akşam özetini durdurmaz")
+esit(bot.IG_GECE_SONU, sinir.GECE_SONU, "iki kilidin gece sınırı aynı")
 rehber14 = ("Gerçek gümüş nasıl anlaşılır? | Gümüş rehberi #14", "2026-11-03T07:00:00+0000")
 esit(bot.instagram_bugun_paylasildi({"tur": "bilgi", "konu": 1}, BUGUN, ig(rehber14)), None, "ikinci kilit: #1 ile #14 karışmaz")
 esit(bot.instagram_bugun_paylasildi({"tur": "bilgi", "konu": 14}, BUGUN, ig(rehber14))[0], "0", "ikinci kilit: rehber #14 bulunur")

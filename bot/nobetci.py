@@ -49,10 +49,9 @@ DILIMLER = {
 # 35 dk'ya kadar sürebildiği için 40 dk. Claude görevi betiği arka planda çalıştırır; nobetci.yml işi 55 dk.
 BEKLE_DK = 40
 # Nöbetçi de GitHub'ın zamanlayıcısına bağlı, saatlerce gecikebilir. Bu saatten (TR) sonra o dilimin paylaşımını
-# başlatmaz (sabah Reels'i akşam özetinin yanında gitmesin), yalnız kırmızı biterek haber verir. Akşam özeti 22:30:
-# paylaşım işi (Instagram engelinde en çok ~3 saat yeniden dener) gece yarısını geçmesin; geçerse main.yayinla durur.
-SON_SAAT = {"reels": (18, 30), "bilgi": (18, 30), "ay": (18, 30), "kisa": (18, 30), "post": (22, 30),
-            "hafta": (21, 0), "yorum": (21, 0)}
+# başlatmaz (sabah Reels'i akşam özetinin yanında gitmesin), yalnız kırmızı biterek haber verir. Pencere geç kalan
+# zamanlı paylaşım çalışmasıyla ortak: bot/sinir.py → SON_SAAT (4 Kasım 2026, gece yarısı kuralı).
+SON_SAAT = sinir.SON_SAAT
 PAZAR_BEKLET = KOK / "bot" / "PAZAR_BEKLET"
 
 
