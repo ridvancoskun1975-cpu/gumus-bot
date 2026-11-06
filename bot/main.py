@@ -2774,7 +2774,7 @@ def yorum_hazirla(cikti, ornek):
         gorsel_uret("yorum", {**veri, "sayfa": sayfa, "toplam": veri["sayfa_sayisi"]}, jpg)
         dosyalar.append(jpg.name)
     kaynaklar = _kaynak_satirlari(veri).replace(f"\nMüzik: {muzik_kunyesi()}", "")
-    metin = yorum.aciklama(veri, yz, kaynaklar, gelismeler)
+    metin = yorum.aciklama(veri, yz, kaynaklar, gelismeler, oy_gunu=yorum.oy_gunu_mu(bugun, gelismeler))
     reels = yorum_reels_uret(cikti, veri, metin, damga) if YORUM_REELS else None
     (cikti / "meta.json").write_text(json.dumps({"tur": "yorum", "dosyalar": dosyalar, "aciklama": metin,
                                                  "reels": reels,
