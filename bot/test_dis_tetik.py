@@ -175,8 +175,10 @@ uret_sure = re.search(r"- name: Görseli / videoyu üret\n.*?timeout-minutes: \$
 uret_dokum = re.search(r"TAKILMA_DOKUM_SN: \$\{\{ .*?'yorum' && (\d+) \|\| .*?&& (\d+) \|\| (\d+) \}\}", YML)
 esit([int(x) * 60 - 60 for x in uret_sure.groups()], [int(x) for x in uret_dokum.groups()],
      "üretim adımı: döküm süre sınırından 1 dk önce (yorum, rehber, diğer)")
-paylas_sure = re.search(r"- name: Instagram'a paylaş\n\s+timeout-minutes: (\d+)", YML).group(1)
-esit(f"TAKILMA_DOKUM_SN: {int(paylas_sure) * 60 - 60} " in YML, True, "paylaşım adımı: döküm süre sınırından 1 dk önce")
+for adim in ("Instagram'a paylaş", "Instagram'a paylaş (yeniden deneme)"):
+    blok = re.search(r"- name: " + re.escape(adim) + r"\n(.*?)\n      - ", YML, re.S).group(1)
+    paylas_sure = re.search(r"timeout-minutes: (\d+)", blok).group(1)
+    esit(f"TAKILMA_DOKUM_SN: {int(paylas_sure) * 60 - 60}" in blok, True, f"{adim}: döküm süre sınırından 1 dk önce")
 esit("inputs.onay == true && '1'" in YML, True, "ONAY_TEKRAR yalnız gerçek true ile açılır")
 import faulthandler  # noqa: E402
 import os  # noqa: E402

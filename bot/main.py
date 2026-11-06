@@ -1746,6 +1746,11 @@ def goril_ile_uret(sablon, veri, png, mp4, sure):
 
 # ---------------------------------------------------------------- instagram
 
+class DosyaYok(RuntimeError):
+    """Site dosyası (GitHub Pages) beklenen sürede yayına çıkmadı (_url_hazir_mi). Hiçbir şey paylaşılmadan
+    düştüyse iş akışı siteyi yeniden kurup paylaşımı bir kez daha dener (paylas.yml → "yeniden deneme")."""
+
+
 class ErisimEngeli(RuntimeError):
     """Instagram'ın geçici olarak reddettiği istek: hesap/uygulama engeli ("API access blocked"), istek sınırı
     ya da Meta tarafında geçici arıza. Paylaşım (media_publish) henüz yapılmadıysa bir süre sonra yeniden
@@ -1802,16 +1807,38 @@ def _hazir_olmasini_bekle(konteyner_id, sure_sn=300):
     raise RuntimeError("Instagram medyayı zamanında işleyemedi")
 
 
-def _url_hazir_mi(url, sure_sn=180):
-    bitis = time.time() + sure_sn
-    while time.time() < bitis:
+# Site dosyasının yayına çıkmasını en çok bu kadar bekle (6 Kasım 2026'ya kadar 180 sn). Rıdvan, 6 Kasım 2026
+# 20:36: "sen yap ve diğer paylaşımlarda böyle bir sorun olmaması için gerekenleri yap"; 150 dk "çok uzun".
+URL_BEKLEME_SN = 900
+URL_BAKIS_ARA_SN = 10
+
+
+def _url_hazir_mi(url, sure_sn=URL_BEKLEME_SN):
+    """Site dosyası (GitHub Pages) yayına çıkana kadar bekler; çıktığı an döner.
+
+    Her bakışta adrese benzersiz bir ?v=… eklenir. Sitenin önbelleği "dosya yok" (404) cevabını da saklıyor:
+    dosya yayına çıkmadan bir kez bakılınca sonraki bakışlar da önbellekten 404 alıyor, dosya gelse bile
+    süre doluyordu (6 Kasım 2026 akşam özeti iki kez "Dosya yayına çıkmadı" ile düştü). Instagram'a
+    sorgusuz adres gider; o adrese daha önce kimse bakmadığı için önbellekte 404'ü olmaz. Bütün paylaşım
+    türleri (Reels, gönderi, kaydırmalı, hikâye, pazar Reels'i, kapak) bu işlevden geçer."""
+    basla = time.time()
+    bitis = basla + sure_sn
+    ayrac = "&" if "?" in url else "?"
+    while True:
         try:
-            if requests.head(url, timeout=15, allow_redirects=True).status_code == 200:
+            r = requests.head(f"{url}{ayrac}v={time.time_ns()}", timeout=15, allow_redirects=True,
+                              headers={"Cache-Control": "no-cache"})
+            if r.status_code == 200:
+                gecen = time.time() - basla
+                if gecen >= 60:
+                    print(f"::notice::Site dosyası {gecen:.0f} sn sonra yayına çıktı: {url}")
                 return
         except requests.RequestException:
             pass
-        time.sleep(10)
-    raise RuntimeError(f"Dosya yayına çıkmadı: {url}")
+        if time.time() + URL_BAKIS_ARA_SN > bitis:
+            break
+        time.sleep(URL_BAKIS_ARA_SN)
+    raise DosyaYok(f"Dosya yayına çıkmadı ({sure_sn // 60} dk beklendi): {url}")
 
 
 def _kaydirmali_konteyner(kullanici_id, urller, aciklama):
@@ -3308,6 +3335,12 @@ def main():
     elif a.komut == "yayinla":
         try:
             yayinla(KOK / a.cikti if not os.path.isabs(a.cikti) else Path(a.cikti), a.url, a.bekle_dk)
+        except DosyaYok:
+            # Takipçiye hiçbir şey gitmediyse iş akışına "siteyi yeniden kur, bir kez daha dene" işareti bırak
+            # (paylas.yml; Rıdvan, 6 Kasım 2026: "1 saat içerisinde mutlaka post çıkmalı. en geç!").
+            if _GORUNEN[0] == 0 and os.environ.get("DOSYA_YOK_ISARETI"):
+                Path(os.environ["DOSYA_YOK_ISARETI"]).write_text("1", encoding="utf-8")
+            raise
         finally:
             # Günlük sınır için gerçek sayı (bot/sinir.py): iş akışı bunu "gorunen-…" eseri olarak saklar
             print(f"Bu çalıştırmada takipçiye gösterilen içerik (akış + Reels + hikâye): {_GORUNEN[0]}")

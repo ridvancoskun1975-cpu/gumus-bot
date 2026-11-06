@@ -539,7 +539,14 @@ jobs:
           name: onizleme-${{ needs.uret.outputs.tur }}
           path: site
 
+      # Site dosyası 15 dk içinde yayına çıkmazsa (bot/main.py → DosyaYok) ve takipçiye hiçbir şey gitmediyse
+      # site bir kez daha kurulur ve paylaşım bir kez daha denenir: en kötü durumda ~35 dk içinde gider.
+      # Rıdvan, 6 Kasım 2026 20:38: "1 saat içerisinde mutlaka post çıkmalı. en geç!" (o akşam özet iki kez
+      # "Dosya yayına çıkmadı" ile düşmüş, elle "Re-run failed jobs" ile 20:33'te gitmişti). Çift paylaşım
+      # olmaz: işaret yalnız hiçbir şey paylaşılmadan düşünce bırakılır, ikinci kilit de ayrıca bakar.
       - name: Instagram'a paylaş
+        id: paylas
+        continue-on-error: true
         timeout-minutes: 165
         env:
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
@@ -548,8 +555,41 @@ jobs:
           # (== true: yazı olarak gelen "false" kilidi açmasın; gözden geçirme, 4 Kasım 2026)
           ONAY_TEKRAR: ${{ github.event_name == 'workflow_dispatch' && inputs.onay == true && '1' || '' }}
           GORUNEN_DOSYA: ${{ runner.temp }}/gorunen.txt        # paylaşılan içerik sayısı (günlük sınır)
+          DOSYA_YOK_ISARETI: ${{ runner.temp }}/dosya-yok.txt  # site dosyası çıkmadı, hiçbir şey paylaşılmadı
           TAKILMA_DOKUM_SN: 9840                               # süre sınırından 1 dk önce yığın dökümü
         run: python bot/main.py yayinla --cikti site --url "${{ steps.yayin.outputs.page_url }}" --bekle-dk 150
+
+      - name: Site dosyası çıkmadı mı
+        id: dosya_yok
+        if: steps.paylas.outcome == 'failure'
+        run: |
+          if [ -f "$RUNNER_TEMP/dosya-yok.txt" ]; then
+            echo "var=1" >> "$GITHUB_OUTPUT"
+            echo "::warning::Site dosyası yayına çıkmadı, hiçbir şey paylaşılmadı: site yeniden kurulup bir kez daha denenecek."
+          fi
+
+      - name: Dosyayı yeniden internete koy (yedek)
+        if: steps.dosya_yok.outputs.var == '1'
+        continue-on-error: true   # kurulamasa da paylaşım yine denenir (dosya bu arada çıkmış olabilir)
+        uses: actions/deploy-pages@v5
+
+      - name: Instagram'a paylaş (yeniden deneme)
+        id: paylas2
+        if: steps.dosya_yok.outputs.var == '1'
+        timeout-minutes: 150
+        env:
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+          HIKAYE: ${{ needs.uret.outputs.hikaye }}
+          ONAY_TEKRAR: ${{ github.event_name == 'workflow_dispatch' && inputs.onay == true && '1' || '' }}
+          GORUNEN_DOSYA: ${{ runner.temp }}/gorunen.txt
+          TAKILMA_DOKUM_SN: 8940
+        run: python bot/main.py yayinla --cikti site --url "${{ steps.yayin.outputs.page_url }}" --bekle-dk 120
+
+      - name: Paylaşım sonucu
+        if: steps.paylas.outcome == 'failure' && steps.paylas2.outcome != 'success'
+        run: |
+          echo "::error::Paylaşım yapılamadı (yukarıdaki \"Instagram'a paylaş\" adımlarına bak)."
+          exit 1
 
       # Günlük sınır (bot/sinir.py): bu çalıştırmanın takipçiye gösterdiği gerçek içerik sayısı (akış + Reels +
       # hikâye) "gorunen-<deneme>-<sayı>" adlı küçük eser olarak saklanır; sonraki çalıştırmaların kontrol işi okur.
