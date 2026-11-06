@@ -6,3 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
+| 6 Kas 2026 20:45 | Acil: site dosyası önbellekte 404 kalınca paylaşım düşüyor (#27; Rıdvan 20:36 "sen yap ve diğer paylaşımlarda böyle bir sorun olmaması için gerekenleri yap") | bot/main.py (_url_hazir_mi), bot/test_url_hazir.py, README.md | url-onbellek · önizlemede |
