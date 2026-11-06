@@ -258,4 +258,30 @@ kontrol("<h2>Haftanın gelişmeleri</h2>" not in env.get_template("yorum.html").
 kontrol(main.hafta_araligi(date(2026, 11, 1)) == "26–30 Ekim" and main.hafta_araligi(date(2026, 10, 4)) == "28 Eylül – 2 Ekim",
         "hafta aralığı")
 
+
+# 6) Siyasi gelişmeler (Rıdvan, 6 Kasım 2026; Projede claude/pazar-siyaset.md): kurum adı serbest, kişi/parti adı yok;
+#    Türkiye'de oy günü seçimle ilgili hiçbir şey yazılmaz ve açıklamada nedeni yazılır.
+GS = {**yorum.ORNEK_GELISMELER, "metin": yorum.ORNEK_GELISMELER["metin"]
+      + "\n## 5. Siyaset\nABD yönetimi yeni gümrük vergilerini açıkladı (05.11). (kaynak: ornek-ajans.com)"}
+siy = copy.deepcopy(yorum.ORNEK_HABERLER)
+siy[3] = {"konu": "Siyaset", "metin": "ABD yönetimi yeni gümrük vergilerini açıkladı.", "kaynak": "ornek-ajans.com"}
+h, g = yorum.haberler_ayikla(siy, GS)
+kontrol(h == [] and g[3]["baslik"] == "SİYASET", "Siyaset maddesi kurum adıyla kabul")
+siy[3]["metin"] = "Trump yeni gümrük vergilerini açıkladı."
+kontrol("kişi ya da parti adı" in " ".join(yorum.haberler_ayikla(siy, GS)[0]), "kişi adı reddedilir")
+yz = copy.deepcopy(yorum.ORNEK_YORUM)
+yz["kisa"]["durum"] = "Erdoğan'ın açıklaması sonrası kur yükseldi, gram fiyat destek buldu."
+kontrol(any("kişi ya da parti adı" in x for x in yorum.denetle(yz, GS)), "yorumda kişi adı reddedilir")
+yz = copy.deepcopy(yorum.ORNEK_YORUM)
+yz["kisa"]["izlenecek"] = "Seçim sonuçları, ons, kur"
+kontrol(not any("oy verme" in x for x in yorum.denetle(yz, {**GS, "metin": GS["metin"] + " seçim"})),
+        "oy günü değilse seçim sözü (özette varsa) serbest")
+kontrol(any("oy verme" in x for x in yorum.denetle(yz, {**GS, "metin": GS["metin"] + " seçim"}, oy_gunu=True)),
+        "oy günü seçim sözü reddedilir")
+kontrol(yorum.oy_gunu_mu(date(2026, 11, 8), {"oy_gunu": True}) and not yorum.oy_gunu_mu(date(2026, 11, 8), None),
+        "oy günü bayraktan")
+yorum.SECIM_GUNLERI.add(date(2026, 11, 8))
+kontrol(yorum.oy_gunu_mu(date(2026, 11, 8), None), "oy günü listeden")
+yorum.SECIM_GUNLERI.discard(date(2026, 11, 8))
+
 print(f"test_pazar: {gecen} sınama geçti")

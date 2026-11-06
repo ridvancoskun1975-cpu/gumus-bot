@@ -5,8 +5,9 @@ Uzun vade 17 Ekim 2026'da kalıcı olarak kaldırıldı (Rıdvan: "Kısa orta uz
 11:47: "geleceği de etkilemeli. Kısa, orta, uzun yerine sadece kısa ve orta kalacak").
 
 Yorum pazar sabahı, o anki bütün verilerle şekillenir. İki adımda üretilir:
-  1. Haftanın gelişmeleri: Claude, web aramasıyla haftanın gümüş, dolar, faiz, sanayi talebi ve
-     Türkiye (dolar/TL, TCMB) haberlerini ve daha uzun dönem bağlamını kaynaklı olarak özetler.
+  1. Haftanın gelişmeleri: Claude, web aramasıyla haftanın gümüş, dolar, faiz, sanayi talebi,
+     Türkiye (dolar/TL, TCMB) ve siyaset (ABD, uluslararası, Türkiye) haberlerini ve daha uzun dönem bağlamını
+     kaynaklı olarak özetler.
      Bu adım yorum yazmaz; yalnızca kaynaklarda yazanları derler. Başarısız olursa yorum yalnızca
      fiyat ve kur verileriyle yazılır, açıklamada da öyle belirtilir.
   2. Yorum: botun günlük kayıtları, pazar günü alınan haftalık kapanış fiyatı, 13 aylık dolar/TL
@@ -22,6 +23,16 @@ Yasal çerçeve — SPK III-37.1 Tebliğ'in medya ve elektronik ortamdaki yoruml
 Rakamları görsel kod tarafından yazılır, yorum metninde rakam bulunmasına izin verilmez (uydurma
 seviye/hedef çıkmasın). Kurum ve olay adları (Fed, TCMB, seçim, gümrük vergisi…) yalnızca haftanın
 gelişmeleri özetinde geçiyorsa kullanılabilir; özet yoksa hiç kullanılamaz.
+
+Siyasi gelişmeler (Rıdvan, 6 Kasım 2026: "pazar yorumlarında siyasi gelişmelerin de göz önünde bulundurulmasını
+istiyorum. Kanunlara uyacak şekilde."; "Uluslararası siyaset dahil, Amerika"; Türkiye iç siyaseti kur etkisi üzerinden,
+"Onaylıyorum"; isimler "Kurum adıyla"; "Reels'te de olsun"; karar notu Projede claude/pazar-siyaset.md):
+  - Yalnız gümüşe, dolara ya da dolar/TL'ye olası etkisiyle, temkinli dille ve haber özetindeki kaynağa dayanarak
+    (TCK 217/A: kaynaksız olay yok).
+  - Kişi ve parti adı yok, kurum adı var (SIYASI_ADLAR denetimi); hükümet, parti ya da kişi hakkında görüş yok.
+  - Türkiye'de oy verme günü pazara denk gelirse (298 sayılı Kanun md. 80: o gün 18:00'e kadar seçimle ilgili haber,
+    tahmin ve yorum yasak) seçimle ilgili hiçbir şey yazılmaz, açıklamada nedeni yazılır (Rıdvan: "1 ama nedeni
+    yazmalı"; SECIM_NOTU). Oy günü haber taramasının bayrağından ya da SECIM_GUNLERI listesinden anlaşılır.
 
 Yapay zekâ: Anthropic Claude API (ANTHROPIC_API_KEY), Claude Opus 5.5, "ekstra yüksek" (xhigh) çaba
 (14 Ekim 2026, Rıdvan'ın isteği). Haftada 2 çağrı + birkaç web araması. Yanıtlar akışla (streaming)
@@ -106,11 +117,28 @@ YASAK = [
 # geçiyorsa kullanılabilir. Özet yoksa hiçbiri kullanılamaz (model bunları bilemez, uydurmasın).
 # (Faiz beklentisi, enflasyon, istihdam, sanayi talebi gibi genel etkenler serbest; bunlar olay değil.)
 OLAY_GRUPLARI = {
-    "merkez bankası": [r"\bfed\b", r"powell", r"federal rezerv", r"merkez bankas", r"\btcmb\b", r"\becb\b"],
+    "merkez bankası": [r"\bfed\b", r"federal rezerv", r"merkez bankas", r"\btcmb\b", r"\becb\b"],
     "seçim": [r"seçim"],
     "savaş / çatışma": [r"savaş", r"ateşkes", r"çatışma", r"saldırı"],
     "ticaret / yaptırım": [r"gümrük", r"tarife", r"yaptırım"],
+    "siyaset": [r"abd yönetim", r"beyaz saray", r"kongre", r"hükümet", r"meclis", r"\btbmm\b", r"cumhurbaşkan",
+                r"başkanlık", r"siyasi", r"jeopolitik", r"referandum"],
 }
+
+# Kişi ve parti adları hiçbir alanda yazılmaz, haber özetinde geçse de (Rıdvan, 6 Kasım 2026: "Kurum adıyla").
+# Yazılırsa yorum yeniden istenir; haber maddesi atılır. Liste bir güvence; asıl kural modelin talimatında.
+SIYASI_ADLAR = [
+    r"trump", r"biden", r"harris", r"\bvance", r"powell", r"warsh", r"hassett", r"bessent", r"lagarde",
+    r"erdoğan", r"şimşek", r"karahan", r"bahçeli", r"imamoğlu", r"kılıçdaroğlu", r"putin", r"zelensk", r"netanyahu",
+    r"xi jinping", r"\bxi\b", r"cumhuriyetçi", r"demokratlar", r"demokrat parti", r"\bakp\b", r"ak parti",
+    r"\bchp\b", r"\bmhp\b", r"iyi parti", r"dem parti", r"yeniden refah",
+]
+
+# Türkiye'de oy verme günleri (seçim ve halk oylaması). Haber taraması da bayrak verir (TURKIYE_OY_GUNU satırı);
+# biri yeterli. Yeni seçim tarihi YSK'ca ilan edilince buraya eklenir.
+SECIM_GUNLERI = set()   # ör. {date(2028, 5, 14)}
+SECIM_NOTU = ("Bugün Türkiye'de oy verme günü olduğu için seçim yasakları gereği (298 sayılı Kanun md. 80) "
+              "seçimle ilgili gelişmelere bu yorumda yer verilmemiştir.")
 
 SISTEM = """Sen bir Instagram hesabı için her pazar gram gümüşün kısa ve orta vadeli görünümünü yazan bir yapay zekâsın. Yazdıkların görselde büyük puntoyla gösterilecek ve "yapay zekâ yorumudur, yatırım tavsiyesi değildir" uyarısıyla yayımlanacak.
 
@@ -128,6 +156,8 @@ Kurallar (hepsine uy):
 7. Abartılı, heyecanlı dil yok (patlama, uçuş, çöküş, roket gibi). Sakin, sade, günlük Türkçe; Türkçe karakterleri doğru kullan.
 8. Gram gümüşün TL fiyatı ons gümüş (dolar) ile dolar/TL'nin çarpımından gelir; hareketin onstan mı kurdan mı geldiğini ayırt etmeye çalış.
 9. Vadelere göre ağırlık: kısa vadede bu haftanın fiyat hareketi, haftanın gelişmeleri ve önümüzdeki haftanın takvimi; orta vadede son aylardaki eğilim, faiz beklentileri, kur ve arz-talep gibi yapısal etkenler.
+9a. Siyasi gelişmeler (ABD ve uluslararası siyaset, Türkiye'deki siyasi gelişmeler) özette geçiyorsa yorumda dikkate al: yalnız ons gümüşe, dolara ya da dolar/TL'ye olası etkisiyle, temkinli an. Türkiye'deki siyasi gelişmeleri yalnızca dolar/TL üzerinden gram fiyata olası etkisiyle yaz. Kişi ve parti adı yazma; kurum adı kullan ("ABD yönetimi", "hükümet", "Fed", "TCMB"). Hükümet, parti, siyasetçi ya da ülke hakkında görüş, övgü ya da eleştiri yazma; seçim sonucu tahmin etme; taraf tutma, olgusal ve tarafsız kal.
+9b. Girdide "turkiye_oy_gunu": true ise bugün Türkiye'de oy verme günüdür: seçim, aday, parti, oy ya da sandıkla ilgili hiçbir şey yazma (yasal yayın yasağı); haberlerde de seçim maddesi seçme.
 10. Bir vade için fiyat kaydı yetersizse (veri_yeterli: false) bu, görselde ayrıca not olarak yazılır; "durum" alanında kayıtların kısa olduğunu tekrarlama. O vadeyi özetteki uzun dönem bağlam ve kur verisiyle, daha temkinli yaz.
 11. Her vade için ağır basan yönü seç: "yükseliş" ya da "düşüş". Yatay, nötr ya da belirsiz seçeneği yok; okur net bir değerlendirme görmeli. Yönü dayanaklardaki ağırlığa göre seç, keyfi seçme. Etkenler karışıksa biraz daha ağır basan tarafı seç ve gücünü "zayıf" yaz; gücü dürüstçe belirle ("zayıf", "orta", "belirgin"). Ağır basan yön bir değerlendirmedir: kesinlik, hedef ya da al-sat önerisi değildir.
 12. "ozet" ve "seyir" ağır basan yönle uyumlu olsun, ikisini dengeleyip nötr bir sonuca bağlama. "seyir"de önce ağır basan yönü ve nedenini koşullu yaz, sonra karşı yönü kısa bir risk olarak an.
@@ -144,15 +174,15 @@ Her vade için alanlar:
 
 Ayrıca "haberler" listesi (kaydırmalı gönderinin son sayfası "Haftanın gelişmeleri"):
 14. "haftanin_gelismeleri" özetinden bu haftanın gümüş için en önemli 3 ya da 4 gelişmesini seç. Her madde yalnızca olanı anlatır: yorum, tahmin, fiyata etki ya da değerlendirme yazma (onlar vade sayfalarında). Özette geçmeyen hiçbir şeyi yazma. Kurallar 3–7 burada da geçerli: kendi cümlelerin, alıntı yok, rakam ve tarih yok (gerekirse "beklentinin üzerinde", "geriledi" gibi yön bildir), emir ve abartı yok. Aynı konuyu iki kez yazma.
-15. Her madde: konu ("Gümüş", "Dolar ve faiz", "Talep ve arz", "Türkiye", "Önümüzdeki hafta"), metin (tek cümle, en fazla 14 kelime) ve kaynak (özette o bilginin yanında "(kaynak: …)" içinde yazan alan adlarından biri, ör. "kitco.com"; yalnızca alan adı).
+15. Her madde: konu ("Gümüş", "Dolar ve faiz", "Talep ve arz", "Türkiye", "Siyaset", "Önümüzdeki hafta"; "Siyaset" ABD ve uluslararası siyasi gelişmeler içindir, Türkiye'deki gelişmeler "Türkiye" konusuna), metin (tek cümle, en fazla 14 kelime) ve kaynak (özette o bilginin yanında "(kaynak: …)" içinde yazan alan adlarından biri, ör. "kitco.com"; yalnızca alan adı).
 16. Özet yoksa ("YOK — …") "haberler" boş liste olsun."""
 
 # "Haftanın gelişmeleri" sayfası (Rıdvan, 30 Ekim 2026: pazar yorumunu uzatmak yerine kaydırmalıya 4. sayfa, "1").
 # Haber taramasının özetinden 3–4 kısa madde; yorum katılmaz, her maddede kaynak alan adı görünür. Model aynı çağrıda
 # yazar (ek istek yok). Maddeler denetimden geçmezse sayfa düşer, yorum yine yayımlanır (haberler_ayikla).
-HABER_KONULARI = ("Gümüş", "Dolar ve faiz", "Talep ve arz", "Türkiye", "Önümüzdeki hafta")
+HABER_KONULARI = ("Gümüş", "Dolar ve faiz", "Talep ve arz", "Türkiye", "Siyaset", "Önümüzdeki hafta")
 HABER_KONU_BASLIK = {"Gümüş": "GÜMÜŞ", "Dolar ve faiz": "DOLAR VE FAİZ", "Talep ve arz": "TALEP VE ARZ",
-                     "Türkiye": "TÜRKİYE", "Önümüzdeki hafta": "ÖNÜMÜZDEKİ HAFTA"}
+                     "Türkiye": "TÜRKİYE", "Siyaset": "SİYASET", "Önümüzdeki hafta": "ÖNÜMÜZDEKİ HAFTA"}
 HABER_SINIRI = 14
 HABER_PAY = 3
 HABER_EN_AZ, HABER_EN_COK = 3, 4
@@ -195,7 +225,7 @@ SEMA = sema()
 
 # ---------------------------------------------------------------- haftanın gelişmeleri (web araması)
 
-ARAMA_SINIRI = 6   # haftada en fazla 6 arama (~6 sent)
+ARAMA_SINIRI = 8   # haftada en fazla 8 arama (~8 sent; 6 Kasım 2026 siyaset başlığıyla 6'dan)
 # Forum ve sosyal medya sonuçları dışarıda kalsın; kalan sonuçlarda model haber ajanslarını ve
 # resmi kurumları tercih eder.
 ENGELLI_SITELER = ["reddit.com", "x.com", "twitter.com", "facebook.com", "instagram.com", "tiktok.com",
@@ -225,7 +255,8 @@ Kurallar:
 - Haber ajanslarını, resmi kurumların sitelerini ve tanınmış ekonomi basınını tercih et. Forum, sosyal medya, reklam ve "al-sat sinyali" sitelerini kullanma.
 - Her madde tek cümle olsun ve olayın tarihini gün.ay olarak içersin. Rakamları kaynakta yazdığı gibi verebilirsin.
 - Emin olamadığın ya da kaynağını bulamadığın hiçbir şeyi yazma; bir başlıkta bir şey bulamazsan "bulunamadı" yaz.
-- Toplam en fazla 300 kelime. Türkçe yaz."""
+- Siyasi gelişmelerde tarafsız ol: kişi ve parti adı yerine kurum adı yaz ("ABD yönetimi", "hükümet", "Fed", "TCMB"); hükümet, parti ya da kişi hakkında değerlendirme yapma; yalnız olanı ve haberlerde anılan piyasa etkisini yaz. Söylenti ve doğrulanmamış iddia yazma.
+- Toplam en fazla 380 kelime. Türkçe yaz."""
 
 
 def _arastirma_istegi(bugun):
@@ -245,13 +276,17 @@ ABD doları, Fed ve faiz beklentileri, bu hafta açıklanan önemli ABD verileri
 ## 3. Talep ve arz
 Sanayi talebi (güneş paneli, elektronik, elektrikli araç), madencilik arzı, ETF ve stok hareketleri, Çin.
 ## 4. Türkiye
-Dolar/TL'nin bu haftaki seyri; TCMB kararı ya da açıklaması, enflasyon verisi gibi kuru etkileyen gelişmeler.
-## 5. Daha uzun dönem
+Dolar/TL'nin bu haftaki seyri; TCMB kararı ya da açıklaması, enflasyon verisi ve kuru etkileyebilecek siyasi gelişmeler (haberlerde kurla ilişkilendirilenler).
+## 5. Siyaset
+ABD yönetiminin ve Kongre'nin piyasayı etkileyen kararları (gümrük vergisi, ticaret anlaşmazlıkları, bütçe, merkez bankası bağımsızlığı) ve uluslararası siyasi gelişmeler (savaş, ateşkes, yaptırım, seçim sonuçları); yalnız haberlerde gümüş, altın, dolar ya da emtia piyasalarıyla ilişkilendirilenler.
+## 6. Daha uzun dönem
 Gümüşün son üç ay ve son bir yıldaki genel eğilimi; kurumların (ör. The Silver Institute) arz-talep görünümü.
-## 6. Önümüzdeki hafta
-Gümüşü ve doları etkileyebilecek, takvimde olan veri açıklamaları ve toplantılar.
+## 7. Önümüzdeki hafta
+Gümüşü ve doları etkileyebilecek, takvimde olan veri açıklamaları, toplantılar ve siyasi takvim.
 
-1–4. başlıklarda yalnızca bu haftaya ait, 5. başlıkta son üç ay içinde yayımlanmış kaynakları kullan."""
+1–5. başlıklarda yalnızca bu haftaya ait, 6. başlıkta son üç ay içinde yayımlanmış kaynakları kullan.
+
+En sona, ayrı bir satıra, başka hiçbir şey eklemeden şunu yaz: bugün ({bugun:%d.%m.%Y}) Türkiye'de bir seçim ya da halk oylaması için oy veriliyorsa "TURKIYE_OY_GUNU: evet", verilmiyorsa "TURKIYE_OY_GUNU: hayır"."""
 
 
 def _alan_adi(url):
@@ -314,6 +349,9 @@ def haftanin_gelismeleri(bugun, anahtar=None):
                 metin = metin.rstrip() + f" (kaynak: {', '.join(alanlar)})" + metin[len(metin.rstrip()):]
             parcalar.append(metin)
         ozet = "".join(parcalar).strip()
+        bayrak = re.search(r"TURKIYE_OY_GUNU:\s*(evet|hayır|hayir)", ozet, re.IGNORECASE)
+        oy_gunu = bool(bayrak) and bayrak.group(1).lower() == "evet"
+        ozet = re.sub(r"\s*TURKIYE_OY_GUNU:[^\n]*", "", ozet).strip()
         if not kaynaklar:
             # Nedeni görünsün: kaç arama yapıldı, kaç sonuç geldi, arama hata kodu döndü mü.
             aramalar = [b.get("content") for b in bloklar if b.get("type") == "web_search_tool_result"]
@@ -323,10 +361,16 @@ def haftanin_gelismeleri(bugun, anahtar=None):
                                + (f", arama hataları: {', '.join(hatalar)}" if hatalar else "") + ")")
         print(f"Haftanın gelişmeleri derlendi ({arama} arama, {len(kaynaklar)} kaynak, {len(ozet)} karakter, "
               f"{cikti_token} çıktı token)")
-        return {"metin": ozet, "kaynaklar": list(kaynaklar.values()), "arama": arama, "model": MODEL}
+        return {"metin": ozet, "kaynaklar": list(kaynaklar.values()), "arama": arama, "model": MODEL,
+                "oy_gunu": oy_gunu}
     except Exception as e:
         print(f"::warning::Haftanın gelişmeleri alınamadı ({e}); yorum yalnızca fiyat ve kur verileriyle yazılacak")
         return None
+
+
+def oy_gunu_mu(bugun, gelismeler=None):
+    """Bugün Türkiye'de oy verme günü mü: SECIM_GUNLERI listesi ya da haber taramasının bayrağı."""
+    return bugun in SECIM_GUNLERI or bool((gelismeler or {}).get("oy_gunu"))
 
 
 def kaynak_alanlari(gelismeler, en_fazla=None):
@@ -461,6 +505,7 @@ def model_girdisi(seri, ecb, ist, bugun, kaynak_notu, gelismeler=None, kapanis=F
                                  "YOK — bu hafta haber taraması yapılamadı. Güncel olaylardan, kurum adlarından "
                                  "söz etme; yalnızca fiyat ve kur verilerine dayan."),
         **({"onceki_yorum": onceki_girdisi(onceki)} if onceki else {}),
+        **({"turkiye_oy_gunu": True} if oy_gunu_mu(bugun, gelismeler) else {}),
     }
 
 
@@ -485,7 +530,17 @@ def _kucuk(s):
     return s.replace("I", "ı").replace("İ", "i").lower()
 
 
-def denetle(yorum, gelismeler=None, vadeler=None, onceki=None):
+def _siyasi_sorun(kucuk, oy_gunu=False):
+    """Kişi/parti adı ya da oy gününde seçim sözü: sorun metni, yoksa None."""
+    ad = next((m.group(0) for d in SIYASI_ADLAR for m in [re.search(d, kucuk)] if m), None)
+    if ad:
+        return f"kişi ya da parti adı ({ad!r}) — kurum adı kullan"
+    if oy_gunu and re.search(r"seçim|sandık|\boy\b|aday|referandum|halk oylama", kucuk):
+        return "bugün Türkiye'de oy verme günü: seçimle ilgili hiçbir şey yazılmaz"
+    return None
+
+
+def denetle(yorum, gelismeler=None, vadeler=None, onceki=None, oy_gunu=False):
     """Kurallara uymayan alanların listesi (boşsa yorum yayımlanabilir).
 
     gelismeler: haftanın gelişmeleri özeti; yorumdaki kurum/olay adları bu metinde geçmeli.
@@ -519,6 +574,9 @@ def denetle(yorum, gelismeler=None, vadeler=None, onceki=None):
                 if re.search(desen, kucuk):
                     hatalar.append(f"{yer}: yasak ifade ({ad}): {metin!r}")
                     break
+            siyasi = _siyasi_sorun(kucuk, oy_gunu)
+            if siyasi:
+                hatalar.append(f"{yer}: {siyasi}: {metin!r}")
             for grup, desenler in OLAY_GRUPLARI.items():
                 bulunan = next((m.group(0) for d in desenler for m in [re.search(d, kucuk)] if m), None)
                 if bulunan and not any(re.search(d, ozet) for d in desenler):
@@ -527,7 +585,7 @@ def denetle(yorum, gelismeler=None, vadeler=None, onceki=None):
     return hatalar
 
 
-def haberler_ayikla(haberler, gelismeler=None):
+def haberler_ayikla(haberler, gelismeler=None, oy_gunu=False):
     """"Haftanın gelişmeleri" maddelerini denetler: (hatalar, geçerli maddeler).
 
     Her madde: konu listede, metin 1–14 kelime (küçük pay), yasak ifade yok, kurum/olay adı özette geçiyor, kaynak
@@ -557,6 +615,7 @@ def haberler_ayikla(haberler, gelismeler=None):
             ad = next((ad for desen, ad in YASAK if re.search(desen, kucuk)), None)
             if ad:
                 sorun = f"yasak ifade ({ad}): {metin!r}"
+            sorun = sorun or _siyasi_sorun(kucuk, oy_gunu)
             for grup, desenler in OLAY_GRUPLARI.items():
                 bulunan = next((m.group(0) for d in desenler for m in [re.search(d, kucuk)] if m), None)
                 if not sorun and bulunan and not any(re.search(d, ozet) for d in desenler):
@@ -644,6 +703,7 @@ def yz_yorum(girdi, gelismeler=None, vadeler=None, onceki=None):
     mesajlar = [{"role": "user", "content":
                  "Bu haftanın gram gümüş verileri ve haftanın gelişmeleri aşağıda (JSON). "
                  f"{vade_basligi(vadeler or VADELER)} için yorumu yaz.\n\n" + json.dumps(girdi, ensure_ascii=False, indent=1)}]
+    oy_gunu = bool(girdi.get("turkiye_oy_gunu"))
     son_saglam = None                       # vadeleri kurallara uyan son yanıt (haberler sorunlu olsa da)
     for tur in range(3):
         metin, cevap = _cagir(anahtar, mesajlar, vadeler)
@@ -652,8 +712,8 @@ def yz_yorum(girdi, gelismeler=None, vadeler=None, onceki=None):
         except ValueError:
             hatalar = ["yanıt geçerli JSON değil"]
         else:
-            hatalar = denetle(yorum, gelismeler, vadeler, onceki)
-            haber_hatalari, haberler = haberler_ayikla(yorum.get("haberler"), gelismeler)
+            hatalar = denetle(yorum, gelismeler, vadeler, onceki, oy_gunu)
+            haber_hatalari, haberler = haberler_ayikla(yorum.get("haberler"), gelismeler, oy_gunu)
             # Haber sayfası için en az 3 geçerli madde yeter: fazlası kırpılır, kuralsız madde atılır (yeniden istek
             # yok; her istek kredi harcar). 3'ten az geçerli madde varsa yorum yeniden istenir.
             haber_tamam = not gelismeler or len(haberler) >= HABER_EN_AZ
@@ -856,7 +916,7 @@ def yon_metni(vade):
     return f"{ok} {vade['yon'].capitalize()} ağır basıyor ({GUC_ADI[vade['guc']]})"
 
 
-def aciklama(v, yorum, kaynak_satirlari, gelismeler=None):
+def aciklama(v, yorum, kaynak_satirlari, gelismeler=None, oy_gunu=False):
     vade_satirlari = [f"{x['ad']} ({x['ufuk']}): {yon_metni(yorum[x['anahtar']])} · {yorum[x['anahtar']]['ozet']}"
                       for x in v["vadeler"]]
     # SPK III-37.1 md. 78/2-c: yön değiştiyse değişiklik, gerekçesi ve önceki yorumun tarihi (25 Ekim 2026 denetimi)
@@ -878,6 +938,7 @@ def aciklama(v, yorum, kaynak_satirlari, gelismeler=None):
             f"Gram gümüş: {v['gram']} ₺ (haftalık {v['gram_deg']['isaret']} {v['gram_deg']['metin']}) · {v['veri_ani']}",
             "\n".join(vade_satirlari) + "\nAyrıntılar görsellerde, kaydırın →",
             "\n".join(degisim_satirlari) if degisim_satirlari else None,
+            SECIM_NOTU if oy_gunu else None,   # Rıdvan, 6 Kasım 2026: "1 ama nedeni yazmalı"
             # Yorum sorusu kaldırıldı (Rıdvan, 25 Ekim 2026 09:19: "Soruyu kaldır").
             _nasil_hazirlandi(gelismeler),
             "Uyarı: " + UYARI,
