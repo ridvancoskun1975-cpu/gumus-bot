@@ -152,3 +152,11 @@
   müzikli video, Reels, kaydırmalı gönderi, cumartesi hatırlatması, bilgi sayfası hep kısa ve orta. Uzun vadeyi geri
   getiren tarih ya da koşul ekleme; yalnızca Rıdvan açıkça isterse. (Uzun vade için kurulan tek hatırlatma
   20 Ekim 2026 kota tasarrufuyla kapatıldı; yerine başka hatırlatma kurma.)
+- **Pazar yorumunda siyaset** (Rıdvan, 6 Kasım 2026: "Kanunlara uyacak şekilde"; "Uluslararası siyaset dahil, Amerika";
+  Türkiye iç siyaseti kur etkisi üzerinden; "Kurum adıyla"; "Reels'te de olsun"; önizleme sonrası 12:17 "Uygun"): siyasi
+  gelişme yalnız ons, dolar ya da dolar/TL'ye olası etkisiyle ve haber özetindeki kaynağa dayanarak yazılır; kişi ve parti
+  adı yok (`yorum.SIYASI_ADLAR`), görüş/övgü/eleştiri ve seçim tahmini yok. Türkiye'de oy günü pazara denk gelirse seçimle
+  ilgili hiçbir şey yazılmaz, açıklamada nedeni (`yorum.SECIM_NOTU`; 298 sayılı Kanun md. 80); YSK yeni oy günü ilan
+  edince `yorum.SECIM_GUNLERI`'ne ekle. "Yön değişti" notu gönderide 32 px, Reels'te 36 px. Karar notu Projede
+  claude/pazar-siyaset.md. Haftalık raporda pazar Reels'inin takip etmeyenlere erişimini izle (Instagram siyasi içeriği
+  önermiyor); düşerse Rıdvan'a söyle.

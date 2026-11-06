@@ -6,4 +6,3 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
-| 6 Kasım 2026 11:25 | Pazar yorumu: siyasi gelişmeler (önizleme) | bot/yorum.py, bot/test_pazar.py | pazar-siyaset · önizleme |
