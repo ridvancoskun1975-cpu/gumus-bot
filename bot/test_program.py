@@ -185,13 +185,17 @@ kontrol("main'deki ayar okunuyor", prg.program(datetime(2026, 10, 14, 9, tzinfo=
         == bot.REHBER_HIKAYE_OTOMATIK)
 
 # Pazar yorumu 15 Ekim 2026'dan beri Reels ve hikâye olarak da gider; sayfa bunu botun ayarından yazar
-y_acik = satir(prg.program(datetime(2026, 10, 16, 9, tzinfo=TR), [], HIKAYE, yorum_reels=True, pazar_hikaye=True), "Kısa ve orta vade")
-y_hikayesiz = satir(prg.program(datetime(2026, 10, 16, 9, tzinfo=TR), [], HIKAYE, yorum_reels=True, pazar_hikaye=False), "Kısa ve orta vade")
+y_acik = satir(prg.program(datetime(2026, 10, 16, 9, tzinfo=TR), [], HIKAYE, yorum_reels=True, pazar_hikaye=True, yorum_sesli=False), "Kısa ve orta vade")
+y_hikayesiz = satir(prg.program(datetime(2026, 10, 16, 9, tzinfo=TR), [], HIKAYE, yorum_reels=True, pazar_hikaye=False, yorum_sesli=False), "Kısa ve orta vade")
 kontrol("pazar hikâyesi kapalıyken 'kaydırmalı gönderi ve Reels'", y_hikayesiz["ne"].endswith("(kaydırmalı gönderi ve Reels)"), y_hikayesiz)
 y_kapali = satir(prg.program(datetime(2026, 10, 16, 9, tzinfo=TR), [], HIKAYE, yorum_reels=False), "Kısa ve orta vade")
 kontrol("pazar yorumu Reels açıkken 'kaydırmalı gönderi, Reels ve hikâye'",
         y_acik["ne"].endswith("(kaydırmalı gönderi, Reels ve hikâye)"), y_acik)
 kontrol("pazar yorumu Reels kapalıyken yalnızca 'kaydırmalı gönderi'", y_kapali["ne"].endswith("(kaydırmalı gönderi)"), y_kapali)
+y_sesli = satir(prg.program(datetime(2026, 10, 16, 9, tzinfo=TR), [], HIKAYE, yorum_reels=True, pazar_hikaye=False,
+                            yorum_sesli=True), "Kısa ve orta vade")
+kontrol("pazar sesliyse 'kaydırmalı gönderi ve sesli Reels' (7 Kasım 2026)",
+        y_sesli["ne"].endswith("(kaydırmalı gönderi ve sesli Reels)"), y_sesli)
 kontrol("main'deki YORUM_REELS ve PAZAR_HIKAYE okunuyor", ("Reels" in satir(prg.program(datetime(2026, 10, 16, 9, tzinfo=TR), [],
         HIKAYE), "Kısa ve orta vade")["ne"]) == bool(bot.YORUM_REELS)
         and ("hikâye" in satir(prg.program(datetime(2026, 10, 16, 9, tzinfo=TR), [], HIKAYE), "Kısa ve orta vade")["ne"])
