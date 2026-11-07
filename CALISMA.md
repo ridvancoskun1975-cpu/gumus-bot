@@ -6,3 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
+| 7 Kas 2026 09:40 | Sitede pazar satırı "sesli Reels" | bot/program.py, bot/test_program.py | main (küçük değişiklik) |
