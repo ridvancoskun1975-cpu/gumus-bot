@@ -6,6 +6,3 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
-| 9 Kas 2026 13:00 | #31 Pazar yorumunda siyaset zorunlu (haber özetinde varsa) | bot/yorum.py, bot/test_yorum*.py, bot/test_pazar.py, README.md, CLAUDE.md (pazar siyaset satırı) | dal siyaset-zorunlu-2026-11-09 (önizleme 9 Kas 14:03 Rıdvan'a gitti, onay bekliyor; onayla main'e alınır) |
-| 9 Kas 13:00 | Pazar Reels'i 4 sayfa: "Haftanın gelişmeleri" sahnesi sesli okunur (Rıdvan 12:54; 13:05 iş bölümü: siyasi madde kuralı #31 diğer sohbette, ben yalnız Reels). yorum.py'de YALNIZ seslendirme_parcalari ve ORNEK_HABERLER'e dokunurum, istem ve denetimlere dokunmam | bot/main.py, bot/ses.py, templates/yorum-reels.html, bot/yorum.py (seslendirme_parcalari), bot/test_pazar.py, bot/test_ses.py, README.md, CLAUDE.md | pazar-4-sayfa-siyaset / sürüyor |
-| 9 Kas 19:15 | Pazar yorumu birleşik iş: #31 siyaset zorunlu + Reels 4 sayfa + haber başlığı SİYASET→GÜNDEM (Rıdvan 19:12 "gündem"). Üstteki iki satırın dallarını birleştirir; onaylanınca üç satır birlikte silinir | bot/yorum.py, bot/main.py, bot/ses.py, templates/yorum-reels.html, templates/_hareket_yorum-reels.html, bot/test_pazar.py, bot/test_ses.py, README.md, CLAUDE.md | dal pazar-gundem-2026-11-09 / sürüyor (önizleme akşam özetinden sonra) |
