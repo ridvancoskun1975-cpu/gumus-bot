@@ -1895,11 +1895,53 @@ def _kaydirmali_konteyner(kullanici_id, urller, aciklama):
                   children=",".join(cocuklar), caption=aciklama_telif(aciklama))
 
 
+# Meta'nın "AI info" etiketi (Instagram önlemleri #29, 9 Kasım 2026; Rıdvan 18:05 "hepsini sıra ile yapalım"): Meta,
+# gerçekçi yapay zekâ sesiyle seslendirilmiş Reels için etiketi zorunlu tutuyor (Instagram Yardım örneği: "a reel narrated
+# with a realistic AI-generated voiceover"; etiketsiz paylaşıma ceza olabilir). Açıklamadaki not ve ekrandaki
+# "Seslendirme: yapay zekâ" satırı bunun yerine geçmez, ikisi de kalır. API'de 22 Haziran 2026'dan beri: kap oluşturulurken
+# is_ai_generated=true (sonradan eklenemez). Yalnız sesli Reels (meta["seslendirme"] dolu: rehber, rehber arşivi, pazar);
+# yalnız müzikli Reels, fiyat videoları ve goril (çizim) etiket gerektirmez. Instagram etiketi kabul etmezse Reels etiketsiz
+# yeniden denenir, paylaşım durmaz; günlüğe uyarı düşer. False: etiket hiç gönderilmez.
+AI_ETIKETI = True
+
+
+def _ai_etiketli_mi(meta):
+    return bool(AI_ETIKETI and meta.get("seslendirme"))
+
+
 def _reels_konteyneri(kullanici_id, medya_url, meta, taban_url):
     """Reels konteyneri. Önce tasarlanmış kapakla (cover_url) dener; kapak alınamazsa ya da
     Instagram işleyemezse kapaksız yeniden dener ve videonun son karelerinden birini kullanır
-    (hareketli videoda ilk kare sayımın başı olduğu için)."""
+    (hareketli videoda ilk kare sayımın başı olduğu için). Sesli Reels yapay zekâ etiketiyle (AI_ETIKETI) gider;
+    etiketli kap kurulamazsa etiketsiz yeniden denenir (paylaşım durmasın)."""
     ortak = {"media_type": "REELS", "video_url": medya_url, "caption": aciklama_telif(meta["aciklama"]), "share_to_feed": "true"}
+    if _ai_etiketli_mi(meta):
+        try:
+            return _reels_kabi(kullanici_id, dict(ortak, is_ai_generated="true"), meta, taban_url)
+        except ErisimEngeli:
+            raise   # geçici engel: etiketsiz denemek işe yaramaz, yayinla() bir süre sonra baştan dener
+        except RuntimeError as e:
+            print(f"::warning::Reels yapay zekâ etiketiyle (is_ai_generated) kurulamadı ({e}); etiketsiz yeniden "
+                  "deneniyor. Bu Reels AI etiketi olmadan gidebilir; Claude'a bildir.")
+    return _reels_kabi(kullanici_id, ortak, meta, taban_url)
+
+
+def _ai_etiketi_bildir(medya_id, meta):
+    """Sesli Reels paylaşıldıktan sonra etiketin gerçekten konduğunu günlüğe yazar (GET is_ai_generated). Hata vermez."""
+    if not _ai_etiketli_mi(meta):
+        return
+    try:
+        var = _istek("GET", medya_id, fields="is_ai_generated").get("is_ai_generated")
+    except Exception as e:
+        print(f"Uyarı: yapay zekâ etiketi okunamadı ({type(e).__name__}: {str(e)[:200]})", file=sys.stderr)
+        return
+    if var:
+        print("Yapay zekâ etiketi (AI info): var")
+    else:
+        print("::warning::Yapay zekâ etiketi (AI info) bu Reels'te YOK (etiketsiz gitti); Claude'a bildir.")
+
+
+def _reels_kabi(kullanici_id, ortak, meta, taban_url):
     if meta.get("kapak"):
         kapak_url = taban_url.rstrip("/") + "/" + meta["kapak"]
         try:
@@ -2084,6 +2126,8 @@ def _yayinla(cikti, taban_url):
     sonuc = _istek("POST", f"{kullanici_id}/media_publish", creation_id=k["id"])
     _GORUNEN[0] += 1   # günlük sınır: takipçinin gördüğü her şey sayılır (bot/sinir.py)
     print(f"Paylaşıldı: {meta['tur']} (medya id {sonuc.get('id')})")
+    if meta["dosya"].endswith(".mp4"):
+        _ai_etiketi_bildir(sonuc.get("id"), meta)
     if meta["tur"] in HIKAYE_TURLERI and meta["dosya"].endswith(".mp4") and _hikaye_izinli(meta["tur"]):
         hikaye_paylas(kullanici_id, medya_url)
     _rehber_hikayesi_sonra(kullanici_id, meta, taban_url)   # rehber Reels'inden sonra müzikli rehber hikâyesi
@@ -2161,6 +2205,7 @@ def yorum_reelsi(kullanici_id, reels, taban_url):
         sonuc = _istek("POST", f"{kullanici_id}/media_publish", creation_id=k["id"])
         _GORUNEN[0] += 1   # günlük sınır: takipçinin gördüğü her şey sayılır (bot/sinir.py)
         print(f"Pazar Reels'i paylaşıldı (medya id {sonuc.get('id')})")
+        _ai_etiketi_bildir(sonuc.get("id"), reels)
     except Exception as e:
         print(f"::warning::Pazar Reels'i paylaşılamadı ({type(e).__name__}: {e}); kaydırmalı gönderi paylaşıldı. "
               "Reels'i sonradan göndermek için Claude'a yaz.")
