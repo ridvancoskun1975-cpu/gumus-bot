@@ -287,6 +287,15 @@ yorum.SECIM_GUNLERI.discard(date(2026, 11, 8))
 # 7) Siyasi gelişme zorunluluğu (Rıdvan, 8–9 Kasım 2026: 8 Kasım yorumunda özette siyaset vardı, yorumda yoktu; "Başla"):
 #    özette gerçek siyasi madde varsa modele bayrak gider, haber sayfasında SİYASET maddesi korunur, vade metninde iz
 #    aranır; eksikse yalnız uyarı (paylaşım durmaz, yeniden istek yok). Oy gününde zorunluluk yok.
+#    HB: siyasetsiz 4 madde (ORNEK_HABERLER başka bir işte değişebilir; bu bölüm ona bağlı kalmasın)
+HB = [{"konu": "Gümüş", "metin": "Ons gümüş hafta başında geriledi, cuma günü altınla birlikte toparlanarak haftayı kapattı.",
+       "kaynak": "ornek-haber.com"},
+      {"konu": "Dolar ve faiz", "metin": "Fed yetkilileri faiz indirimlerinde acele edilmeyeceğini söyledi; dolar haftayı yatay kapattı.",
+       "kaynak": "ornek-ajans.com"},
+      {"konu": "Talep ve arz", "metin": "Güneş paneli üreticilerinden gelen gümüş talebinin güçlü kaldığı bildirildi.",
+       "kaynak": "ornek-haber.com"},
+      {"konu": "Önümüzdeki hafta", "metin": "ABD enflasyon verisi ve TCMB faiz kararı takvimde.", "kaynak": "ornek-ajans.com"}]
+kontrol(yorum.haberler_ayikla(HB, GS)[0] == [], "HB maddeleri denetimden geçer")
 kontrol(yorum.siyasi_maddeler(yorum.ORNEK_GELISMELER) == [] and yorum.siyasi_maddeler(None) == [],
         "örnek özette ve özet yokken siyasi madde yok")
 m = yorum.siyasi_maddeler(GS)
@@ -312,26 +321,26 @@ kontrol("siyasi_gelisme_var" not in _mg({**GS, "oy_gunu": True}) and _mg({**GS, 
 kontrol('"siyasi_gelisme_var": true' in yorum.SISTEM and "9c." in yorum.SISTEM and "kural 9c" in yorum.SISTEM,
         "istemde zorunluluk kuralı (9c) ve haber maddesi bağı (14)")
 # eksikler ve iz
-kontrol(yorum.siyaset_eksikleri(yorum.ORNEK_YORUM, yorum.ORNEK_HABERLER, GS)
+kontrol(yorum.siyaset_eksikleri(yorum.ORNEK_YORUM, HB, GS)
         == ["haberler: Siyaset konulu madde yok", "vadeler: siyasi gelişmenin etkisi hiçbir vadede anılmadı"],
         "siyaset varken yorumda yoksa iki eksik")
-kontrol(yorum.siyaset_eksikleri(yorum.ORNEK_YORUM, yorum.ORNEK_HABERLER, GS, oy_gunu=True) == []
-        and yorum.siyaset_eksikleri(yorum.ORNEK_YORUM, yorum.ORNEK_HABERLER, yorum.ORNEK_GELISMELER) == [],
+kontrol(yorum.siyaset_eksikleri(yorum.ORNEK_YORUM, HB, GS, oy_gunu=True) == []
+        and yorum.siyaset_eksikleri(yorum.ORNEK_YORUM, HB, yorum.ORNEK_GELISMELER) == [],
         "oy gününde ve siyasi madde yokken eksik aranmaz")
-siy_ok = copy.deepcopy(yorum.ORNEK_HABERLER)
+siy_ok = copy.deepcopy(HB)
 siy_ok[3] = {"konu": "Siyaset", "metin": "ABD yönetimi yeni gümrük vergilerini açıkladı.", "kaynak": "ornek-ajans.com"}
 yz = copy.deepcopy(yorum.ORNEK_YORUM)
 yz["kisa"]["seyir"] = "ABD yönetiminin gümrük kararı doları güçlendirirse ons baskı görebilir; ılımlı veri toparlanmayı destekleyebilir."
 kontrol(yorum.siyaset_eksikleri(yz, siy_ok, GS) == [] and yorum.denetle(yz, GS) == [], "siyaset hem haberde hem vadede: tamam")
-kontrol(yorum.siyaset_eksikleri(yz, yorum.ORNEK_HABERLER, GS) == ["haberler: Siyaset konulu madde yok"], "yalnız haber maddesi eksik")
-tr_h = copy.deepcopy(yorum.ORNEK_HABERLER)
+kontrol(yorum.siyaset_eksikleri(yz, HB, GS) == ["haberler: Siyaset konulu madde yok"], "yalnız haber maddesi eksik")
+tr_h = copy.deepcopy(HB)
 tr_h[3] = {"konu": "Türkiye", "metin": "Hükümetin bütçe açıklaması sonrası dolar/TL haftayı yükselişle kapattı.", "kaynak": "ornek-ajans.com"}
 yz_tr = copy.deepcopy(yorum.ORNEK_YORUM)
 yz_tr["kisa"]["durum"] = "Hükümetin bütçe açıklaması sonrası kur yükseldi, gram fiyat destek buldu."
 kontrol(yorum.siyaset_eksikleri(yz_tr, tr_h, G_tr) == [] and "Türkiye'deki siyasi" in
-        " ".join(yorum.siyaset_eksikleri(yz_tr, yorum.ORNEK_HABERLER, G_tr)), "Türkiye siyaseti: Türkiye konulu siyasi madde yeter")
+        " ".join(yorum.siyaset_eksikleri(yz_tr, HB, G_tr)), "Türkiye siyaseti: Türkiye konulu siyasi madde yeter")
 # kırpma: 5 madde gelirse Siyaset korunur
-bes = yorum.ORNEK_HABERLER + [siy_ok[3]]
+bes = HB + [siy_ok[3]]
 kontrol([h["konu"] for h in yorum.haber_kirp(bes, "Siyaset")] == ["Gümüş", "Dolar ve faiz", "Talep ve arz", "Siyaset"]
         and [h["konu"] for h in yorum.haber_kirp(bes)][-1] == "Önümüzdeki hafta" and yorum.haber_kirp(bes[:4], "Siyaset") == bes[:4],
         "kırpmada Siyaset maddesi korunur, yoksa ilk 4")
@@ -340,7 +349,7 @@ os.environ["ANTHROPIC_API_KEY"] = "sahte"
 try:
     import io, contextlib
     cagri = []
-    yanit = {**copy.deepcopy(yorum.ORNEK_YORUM), "haberler": copy.deepcopy(yorum.ORNEK_HABERLER)}
+    yanit = {**copy.deepcopy(yorum.ORNEK_YORUM), "haberler": copy.deepcopy(HB)}
     yorum._cagir = lambda *a, **k: (cagri.append(1), (_json.dumps(yanit, ensure_ascii=False), {"usage": {}}))[1]
     cikti = io.StringIO()
     with contextlib.redirect_stdout(cikti):
@@ -355,7 +364,7 @@ try:
     kontrol(len(cagri) == 1 and "::warning::Siyasi" not in cikti.getvalue() and "yer aldı" in cikti.getvalue()
             and [h["konu"] for h in sonuc["haberler"]][-1] == "Siyaset", "5. sıradaki Siyaset maddesi kırpmada korunur, uyarı yok")
     cagri.clear()
-    yanit = {**copy.deepcopy(yorum.ORNEK_YORUM), "haberler": copy.deepcopy(yorum.ORNEK_HABERLER)}
+    yanit = {**copy.deepcopy(yorum.ORNEK_YORUM), "haberler": copy.deepcopy(HB)}
     cikti = io.StringIO()
     with contextlib.redirect_stdout(cikti):
         sonuc = yorum.yz_yorum({}, yorum.ORNEK_GELISMELER)
