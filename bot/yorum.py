@@ -33,6 +33,12 @@ istiyorum. Kanunlara uyacak şekilde."; "Uluslararası siyaset dahil, Amerika"; 
   - Türkiye'de oy verme günü pazara denk gelirse (298 sayılı Kanun md. 80: o gün 18:00'e kadar seçimle ilgili haber,
     tahmin ve yorum yasak) seçimle ilgili hiçbir şey yazılmaz, açıklamada nedeni yazılır (Rıdvan: "1 ama nedeni
     yazmalı"; SECIM_NOTU). Oy günü haber taramasının bayrağından ya da SECIM_GUNLERI listesinden anlaşılır.
+  - Zorunluluk (Rıdvan, 8 Kasım 2026: 8 Kasım yorumunda özette iki siyasi madde vardı, model kullanmadı, "Siyasi yorum
+    neden çıkmadı"; 9 Kasım "Başla"): özette gerçek bir siyasi madde varsa (siyasi_maddeler) model girdisine
+    "siyasi_gelisme_var": true yazılır; en az bir vadede etkisi anılmalı ve "Haftanın gelişmeleri" sayfasında bir
+    "Siyaset" konulu (okura GÜNDEM başlığıyla görünür; Türkiye'deki gelişme için siyasi sözlü TÜRKİYE) maddesi olmalı. Sesli Reels vade metnini okuduğu için
+    siyaset Reels'te de duyulur. Yine çıkmazsa yalnız uyarı yazılır, paylaşım durmaz (yeniden istek yok: kredi).
+    Oy gününde zorunluluk uygulanmaz. Siyasi haber bulunamayan hafta siyaset çıkmaz; bu doğru davranış.
 
 Yapay zekâ: Anthropic Claude API (ANTHROPIC_API_KEY), Claude Opus 5.5, "ekstra yüksek" (xhigh) çaba
 (14 Ekim 2026, Rıdvan'ın isteği). Haftada 2 çağrı + birkaç web araması. Yanıtlar akışla (streaming)
@@ -140,6 +146,19 @@ SECIM_GUNLERI = set()   # ör. {date(2028, 5, 14)}
 SECIM_NOTU = ("Bugün Türkiye'de oy verme günü olduğu için seçim yasakları gereği (298 sayılı Kanun md. 80) "
               "seçimle ilgili gelişmelere bu yorumda yer verilmemiştir.")
 
+# Siyasi gelişme zorunluluğu (Rıdvan, 8–9 Kasım 2026; modül açıklaması). Özetin "Siyaset" bölümündeki her gerçek satır ve
+# "Türkiye" bölümünde siyasi söz geçen satırlar siyasi madde sayılır; "bulunamadı" satırları sayılmaz.
+SIYASET_BOLUMU = r"^\d*\.?\s*siyaset"      # başlık metni (# ve * işaretleri atıldıktan sonra): "5. Siyaset", "Siyaset"
+TURKIYE_BOLUMU = r"^\d*\.?\s*türkiye"
+BULUNAMADI = r"bulunamadı|bulunamadi|gelişme yok|haber yok|bilgi yok|yer almadı|rastlanmadı"
+TURKIYE_SIYASI = [r"siyas", r"hükümet", r"seçim", r"cumhurbaşkan", r"meclis", r"\btbmm\b", r"parti", r"kabine",
+                  r"referandum", r"muhalefet", r"anayasa", r"koalisyon"]
+# Yorumun vade alanlarında siyasi gelişmenin izi: bunlardan biri geçmeli (kurum adları ve olay sözleri)
+SIYASET_IZLERI = (OLAY_GRUPLARI["siyaset"] + OLAY_GRUPLARI["seçim"] + OLAY_GRUPLARI["savaş / çatışma"]
+                  + OLAY_GRUPLARI["ticaret / yaptırım"]
+                  + [r"siyas", r"abd yönetimi", r"bütçe", r"jeopolit", r"ticaret anlaşmazl", r"ticaret gerilim",
+                     r"bağımsızlı", r"ara seçim", r"\bkongre"])
+
 SISTEM = """Sen bir Instagram hesabı için her pazar gram gümüşün kısa ve orta vadeli görünümünü yazan bir yapay zekâsın. Yazdıkların görselde büyük puntoyla gösterilecek ve "yapay zekâ yorumudur, yatırım tavsiyesi değildir" uyarısıyla yayımlanacak.
 
 Dayanakların iki tanedir ve ikisini birlikte kullan:
@@ -157,6 +176,7 @@ Kurallar (hepsine uy):
 8. Gram gümüşün TL fiyatı ons gümüş (dolar) ile dolar/TL'nin çarpımından gelir; hareketin onstan mı kurdan mı geldiğini ayırt etmeye çalış.
 9. Vadelere göre ağırlık: kısa vadede bu haftanın fiyat hareketi, haftanın gelişmeleri ve önümüzdeki haftanın takvimi; orta vadede son aylardaki eğilim, faiz beklentileri, kur ve arz-talep gibi yapısal etkenler.
 9a. Siyasi gelişmeler (ABD ve uluslararası siyaset, Türkiye'deki siyasi gelişmeler) özette geçiyorsa yorumda dikkate al: yalnız ons gümüşe, dolara ya da dolar/TL'ye olası etkisiyle, temkinli an. Türkiye'deki siyasi gelişmeleri yalnızca dolar/TL üzerinden gram fiyata olası etkisiyle yaz. Kişi ve parti adı yazma; kurum adı kullan ("ABD yönetimi", "hükümet", "Fed", "TCMB"). Hükümet, parti, siyasetçi ya da ülke hakkında görüş, övgü ya da eleştiri yazma; seçim sonucu tahmin etme; taraf tutma, olgusal ve tarafsız kal.
+9c. Girdide "siyasi_gelisme_var": true ise özette gerçek bir siyasi gelişme var demektir ve bunu yazmak ZORUNLUDUR: en az bir vadenin "durum" ya da "seyir" alanında o gelişmenin ons gümüşe, dolara ya da dolar/TL'ye olası etkisini kurum adıyla ve temkinli dille an (ağır basan yönü değiştirmek zorunda değilsin; etkisi küçükse küçük olduğunu söyle), ve "haberler" listesine o gelişmeyi anlatan bir madde koy ("Siyaset" konusuyla; Türkiye'deki siyasi gelişme "Türkiye" konusuyla). Gerekirse daha az önemli bir haber maddesini çıkar. Diğer bütün kurallar (9a, 3, 4, 5, 6) burada da geçerlidir.
 9b. Girdide "turkiye_oy_gunu": true ise bugün Türkiye'de oy verme günüdür: seçim, aday, parti, oy ya da sandıkla ilgili hiçbir şey yazma (yasal yayın yasağı); haberlerde de seçim maddesi seçme.
 10. Bir vade için fiyat kaydı yetersizse (veri_yeterli: false) bu, görselde ayrıca not olarak yazılır; "durum" alanında kayıtların kısa olduğunu tekrarlama. O vadeyi özetteki uzun dönem bağlam ve kur verisiyle, daha temkinli yaz.
 11. Her vade için ağır basan yönü seç: "yükseliş" ya da "düşüş". Yatay, nötr ya da belirsiz seçeneği yok; okur net bir değerlendirme görmeli. Yönü dayanaklardaki ağırlığa göre seç, keyfi seçme. Etkenler karışıksa biraz daha ağır basan tarafı seç ve gücünü "zayıf" yaz; gücü dürüstçe belirle ("zayıf", "orta", "belirgin"). Ağır basan yön bir değerlendirmedir: kesinlik, hedef ya da al-sat önerisi değildir.
@@ -173,7 +193,7 @@ Her vade için alanlar:
 - degisim: yalnız yön önceki yorumdakinden farklıysa değişikliğin nedeni, en fazla 14 kelime; değilse boş metin.
 
 Ayrıca "haberler" listesi (kaydırmalı gönderinin son sayfası "Haftanın gelişmeleri"):
-14. "haftanin_gelismeleri" özetinden bu haftanın gümüş için en önemli 3 ya da 4 gelişmesini seç. Her madde yalnızca olanı anlatır: yorum, tahmin, fiyata etki ya da değerlendirme yazma (onlar vade sayfalarında). Özette geçmeyen hiçbir şeyi yazma. Kurallar 3–7 burada da geçerli: kendi cümlelerin, alıntı yok, rakam ve tarih yok (gerekirse "beklentinin üzerinde", "geriledi" gibi yön bildir), emir ve abartı yok. Aynı konuyu iki kez yazma.
+14. "haftanin_gelismeleri" özetinden bu haftanın gümüş için en önemli 3 ya da 4 gelişmesini seç; "siyasi_gelisme_var": true ise biri mutlaka siyasi gelişmedir (kural 9c). Her madde yalnızca olanı anlatır: yorum, tahmin, fiyata etki ya da değerlendirme yazma (onlar vade sayfalarında). Özette geçmeyen hiçbir şeyi yazma. Kurallar 3–7 burada da geçerli: kendi cümlelerin, alıntı yok, rakam ve tarih yok (gerekirse "beklentinin üzerinde", "geriledi" gibi yön bildir), emir ve abartı yok. Aynı konuyu iki kez yazma.
 15. Her madde: konu ("Gümüş", "Dolar ve faiz", "Talep ve arz", "Türkiye", "Siyaset", "Önümüzdeki hafta"; "Siyaset" ABD ve uluslararası siyasi gelişmeler içindir, Türkiye'deki gelişmeler "Türkiye" konusuna), metin (tek cümle, en fazla 14 kelime) ve kaynak (özette o bilginin yanında "(kaynak: …)" içinde yazan alan adlarından biri, ör. "kitco.com"; yalnızca alan adı).
 16. Özet yoksa ("YOK — …") "haberler" boş liste olsun."""
 
@@ -182,7 +202,10 @@ Ayrıca "haberler" listesi (kaydırmalı gönderinin son sayfası "Haftanın gel
 # yazar (ek istek yok). Maddeler denetimden geçmezse sayfa düşer, yorum yine yayımlanır (haberler_ayikla).
 HABER_KONULARI = ("Gümüş", "Dolar ve faiz", "Talep ve arz", "Türkiye", "Siyaset", "Önümüzdeki hafta")
 HABER_KONU_BASLIK = {"Gümüş": "GÜMÜŞ", "Dolar ve faiz": "DOLAR VE FAİZ", "Talep ve arz": "TALEP VE ARZ",
-                     "Türkiye": "TÜRKİYE", "Siyaset": "SİYASET", "Önümüzdeki hafta": "ÖNÜMÜZDEKİ HAFTA"}
+                     "Türkiye": "TÜRKİYE", "Siyaset": "GÜNDEM", "Önümüzdeki hafta": "ÖNÜMÜZDEKİ HAFTA"}
+# İç konu adı "Siyaset" (model kuralları ve denetimler bununla çalışır); okura görünen ve okunan ad "Gündem"
+# (Rıdvan, 9 Kasım 2026 19:10: "siyaset kelimesi beni de rahatsız etti. aslında bu sadece bir haber"; 19:12 "gündem").
+HABER_KONU_OKUMA = {"Siyaset": "Gündem"}
 HABER_SINIRI = 14
 HABER_PAY = 3
 HABER_EN_AZ, HABER_EN_COK = 3, 4
@@ -506,6 +529,8 @@ def model_girdisi(seri, ecb, ist, bugun, kaynak_notu, gelismeler=None, kapanis=F
                                  "söz etme; yalnızca fiyat ve kur verilerine dayan."),
         **({"onceki_yorum": onceki_girdisi(onceki)} if onceki else {}),
         **({"turkiye_oy_gunu": True} if oy_gunu_mu(bugun, gelismeler) else {}),
+        # Rıdvan, 8–9 Kasım 2026: özette gerçek siyasi madde varsa model bunu yazmak zorunda (kural 9c); oy gününde değil
+        **({"siyasi_gelisme_var": True} if siyasi_maddeler(gelismeler) and not oy_gunu_mu(bugun, gelismeler) else {}),
     }
 
 
@@ -632,6 +657,67 @@ def haberler_ayikla(haberler, gelismeler=None, oy_gunu=False):
     return hatalar, gecerli
 
 
+def siyasi_maddeler(gelismeler):
+    """Haber özetindeki gerçek siyasi maddeler: [(bölüm, satır)] — "Siyaset" bölümünün "bulunamadı" demeyen satırları
+    ("siyaset") ve "Türkiye" bölümünün siyasi söz içeren satırları ("turkiye"). Boşsa bu hafta siyasi gelişme yok."""
+    metin = (gelismeler or {}).get("metin") or ""
+    bolum, sonuc = None, []
+    for satir in metin.splitlines():
+        s = satir.strip()
+        if not s:
+            continue
+        k = _kucuk(s)
+        if s.startswith("#") or re.match(r"^\*\*[^*]{1,40}\*\*$", s):          # başlık ("## 5. Siyaset", "**Siyaset**")
+            baslik = k.strip("#* ")
+            bolum = "siyaset" if re.match(SIYASET_BOLUMU, baslik) else "turkiye" if re.match(TURKIYE_BOLUMU, baslik) else None
+            continue
+        if bolum is None or re.search(BULUNAMADI, k):
+            continue
+        if bolum == "siyaset" or any(re.search(d, k) for d in TURKIYE_SIYASI):
+            sonuc.append((bolum, s.lstrip("-•* ").strip()))
+    return sonuc
+
+
+def siyaset_izi_var(yorum, vadeler=None):
+    """Vade alanlarından birinde siyasi gelişmenin izi (SIYASET_IZLERI) var mı."""
+    for v in vadeler or VADELER:
+        alanlar = yorum.get(v["anahtar"]) or {}
+        metin = _kucuk(" ".join(str(alanlar.get(a) or "") for a in ("durum", "seyir", "degisim", "izlenecek")))
+        if any(re.search(d, metin) for d in SIYASET_IZLERI):
+            return True
+    return False
+
+
+def siyaset_eksikleri(yorum, haberler, gelismeler=None, oy_gunu=False, vadeler=None):
+    """Zorunlu siyaset kuralının eksikleri (boşsa tamam ya da bu hafta gerekmiyor). Yalnız uyarı içindir; paylaşımı
+    durdurmaz, yeniden istek açmaz (Rıdvan, 8 Kasım 2026: "yine çıkmazsa günlüğe uyarı, paylaşım durmaz")."""
+    maddeler = [] if oy_gunu else siyasi_maddeler(gelismeler)
+    if not maddeler:
+        return []
+    eksik = []
+    if any(b == "siyaset" for b, _ in maddeler):
+        if not any(h.get("konu") == "Siyaset" for h in haberler or []):
+            eksik.append("haberler: Siyaset konulu madde yok")
+    elif not any(h.get("konu") == "Türkiye" and any(re.search(d, _kucuk(h.get("metin") or "")) for d in TURKIYE_SIYASI)
+                 for h in haberler or []):
+        eksik.append("haberler: Türkiye'deki siyasi gelişmeyi anlatan madde yok")
+    if not siyaset_izi_var(yorum, vadeler):
+        eksik.append("vadeler: siyasi gelişmenin etkisi hiçbir vadede anılmadı")
+    return eksik
+
+
+def haber_kirp(haberler, oncelikli=None):
+    """En fazla HABER_EN_COK madde; `oncelikli` konulu bir madde varsa kırpmada korunur (sondaki yerine geçer)."""
+    if len(haberler) <= HABER_EN_COK:
+        return haberler
+    secili = haberler[:HABER_EN_COK]
+    if oncelikli and not any(h["konu"] == oncelikli for h in secili):
+        aday = next((h for h in haberler[HABER_EN_COK:] if h["konu"] == oncelikli), None)
+        if aday:
+            secili = secili[:-1] + [aday]
+    return secili
+
+
 # ---------------------------------------------------------------- yapay zekâ çağrısı
 
 def _api(anahtar, govde, zaman_asimi=ZAMAN_ASIMI):
@@ -718,7 +804,9 @@ def yz_yorum(girdi, gelismeler=None, vadeler=None, onceki=None):
             # yok; her istek kredi harcar). 3'ten az geçerli madde varsa yorum yeniden istenir.
             haber_tamam = not gelismeler or len(haberler) >= HABER_EN_AZ
             if not hatalar:
-                yorum["haberler"] = haberler[:HABER_EN_COK] if len(haberler) >= HABER_EN_AZ else []
+                siyaset_var = not oy_gunu and bool(siyasi_maddeler(gelismeler))
+                yorum["haberler"] = (haber_kirp(haberler, "Siyaset" if siyaset_var else None)
+                                     if len(haberler) >= HABER_EN_AZ else [])
                 son_saglam = yorum
                 if haber_tamam:
                     kullanim = cevap.get("usage", {})
@@ -727,6 +815,13 @@ def yz_yorum(girdi, gelismeler=None, vadeler=None, onceki=None):
                     if haber_hatalari:
                         print(f"::warning::Haftanın gelişmeleri: kurala uymayan maddeler atıldı ({haber_hatalari}); "
                               f"{len(yorum['haberler'])} madde kaldı")
+                    # Rıdvan, 8–9 Kasım 2026: siyasi gelişme varken yorumda yoksa uyarı; paylaşım durmaz
+                    eksik = siyaset_eksikleri(yorum, yorum["haberler"], gelismeler, oy_gunu, vadeler)
+                    if eksik:
+                        print(f"::warning::Siyasi gelişme yorumda eksik ({'; '.join(eksik)}); özetteki siyasi maddeler: "
+                              f"{[m for _, m in siyasi_maddeler(gelismeler)][:3]}")
+                    elif siyaset_var:
+                        print("Siyasi gelişme yorumda yer aldı (haber maddesi ve vade metni).")
                     return degisim_temizle(yorum, onceki, vadeler)
             hatalar += haber_hatalari
         print(f"Uyarı: yorum kurallara uymadı ({tur + 1}. deneme): {hatalar}", file=sys.stderr)
@@ -858,8 +953,27 @@ def _nasil_hazirlandi(gelismeler):
 # ---------------------------------------------------------------- seslendirme (pazar Reels'i)
 # Rıdvan (17 Ekim 2026): pazar analizi sesli olsun, erkek sesiyle, analizin TAMAMI okunsun (kısaltma yok).
 # Metni Claude'un yazdığı analizden kurulur (ayrı bir istek yok): ekranda ne varsa o okunur. Sahneler pazar
-# Reels'iyle aynı: kapak, kısa ve orta vade, kapanış. Her sahne parçalar listesidir: [(öğe, metin)];
+# Reels'iyle aynı: kapak, kısa ve orta vade, "Haftanın gelişmeleri" (9 Kasım 2026'dan beri; Rıdvan: "Sesli olan
+# bölümde 4 sayfa olsun"), kapanış. Her sahne parçalar listesidir: [(öğe, metin)];
 # öğe adları şablondaki (templates/yorum-reels.html) belirme anlarını sese göre ayarlamak için kullanılır.
+
+# Haber sahnesinin okunuşu: başlık, her maddenin konusu ve cümlesi, sonda kaynak notu. Kaynak alan adları
+# ("tr.investing.com") sesli okunmaz; ekranda ve açıklamada yazılıdır, not bunu söyler.
+HABER_OKUMA_BASLIK = "Haftanın gelişmeleri, {hafta}."
+HABER_OKUMA_NOT = "Haberler web aramasıyla derlendi; kaynaklar ekranda ve açıklamada."
+
+
+def haber_okuma(v):
+    """"Haftanın gelişmeleri" sahnesinin okunacak parçaları; haber yoksa boş liste (sahne de yok)."""
+    haberler = v.get("haberler") or []
+    if not haberler:
+        return []
+    sahne = [("baslik", HABER_OKUMA_BASLIK.format(hafta=v.get("hafta_araligi") or "bu hafta"))]
+    for i, h in enumerate(haberler):
+        sahne.append((f"haber-{i}", f"{HABER_KONU_OKUMA.get(h['konu'], h['konu'])}: {h['metin'].rstrip('.')}."))
+    sahne.append(("haber-not", HABER_OKUMA_NOT))
+    return sahne
+
 
 def kapanis_okuma(vadeler=None):
     return ("Bu yorum üst düzey yapay zekâ ile üretilmiştir; bir değerlendirmedir, yatırım tavsiyesi değildir. "
@@ -877,8 +991,9 @@ def _degisim_okuma(ad, deg):
 
 
 def seslendirme_parcalari(v):
-    """Pazar Reels'inde okunacak metin, sahne sahne: [[(öğe, metin), …], …] (kapak, vadeler, kapanış).
-    v: main.yorum_hazirla'daki görsel verisi (vadeler: ad, ufuk, etiket, not, yorum, hucreler)."""
+    """Pazar Reels'inde okunacak metin, sahne sahne: [[(öğe, metin), …], …] (kapak, vadeler, varsa haberler,
+    kapanış). v: main.yorum_hazirla'daki görsel verisi (vadeler: ad, ufuk, etiket, not, yorum, hucreler; haberler:
+    konu, metin, kaynak; hafta_araligi)."""
     deg = v["gram_deg"]
     fiil = "geriledi" if deg["yon"] == "dusus" else "yükseldi"
     kapak = [("baslik", f"Gümüş görünümü: {vade_metni(v['vadeler'])}. {v['tarih']}."),
@@ -906,6 +1021,9 @@ def seslendirme_parcalari(v):
             ("seyir", f"Olası seyir. {y['seyir']}"),
             ("izle", f"İzlenecek: {y['izlenecek']}."),
         ])
+    haber = haber_okuma(v)
+    if haber:
+        sahneler.append(haber)
     sahneler.append([("kapanis", kapanis_okuma(v["vadeler"]))])
     return sahneler
 
