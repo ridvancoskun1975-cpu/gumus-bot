@@ -48,6 +48,13 @@
   bir arayüz gerektiren çözüm önerme.
 - Taahhüt: hafta içi her gün 2 kez gram fiyatı (~10:00 Reels, ~20:00 özet); bu ikisi kaldırılmaz, başka içerikle
   değiştirilmez.
+- **Öncelik kuralı: söz verilen paylaşımlar önce gelir** (Rıdvan, 9 Kasım 2026: "akşam özeti ve günlük söz verdiğimiz
+  paylaşımlar öncelik sahibi. testler ve gelişmeler. bunları tehlikeye atacak ise beklemeleri kuraldır.!"; "bu projeye
+  kural olarak işle lütfen bu önceliği."). Testler, deneme/önizleme çalıştırmaları, main'e alma ve her geliştirme, takvimdeki
+  bir paylaşımı (hafta içi ~10:00 ve ~20:00 fiyat, çarşamba rehber, cumartesi özet, pazar yorumu) tehlikeye atacaksa bekler:
+  bir paylaşım çalışırken ya da hedef saatten önceki 45 dk içinde `paylas.yml`'de elle çalıştırma başlatılmaz, main'e
+  itilmez, paylaşımı etkileyebilecek ayar değiştirilmez. Emin değilsen paylaşımı öne al; önizleme gecikirse Rıdvan'a
+  nedenini söyle.
 - Pazar yorumu 2 sayılır (kaydırmalı + Reels; hikâye 25 Ekim 2026'da kaldırıldı, Rıdvan: "Hikayeyi kaldıralım";
   `main.PAZAR_HIKAYE`; öne çıkan yerine pazar analizi profilde sabitlenir). Pazar Reels'i sesli (Rıdvan, 17 Ekim 2026: Gemini erkek
   sesi, analizin tamamı okunur; okumayı ona sormadan kısaltma). Ses **Orus** (`ses.YORUM_SES`; Rıdvan, 3 örnekten "Ses 2"); 24 sn müzikli sürüm
