@@ -160,3 +160,10 @@
   edince `yorum.SECIM_GUNLERI`'ne ekle. "Yön değişti" notu gönderide 32 px, Reels'te 36 px. Karar notu Projede
   claude/pazar-siyaset.md. Haftalık raporda pazar Reels'inin takip etmeyenlere erişimini izle (Instagram siyasi içeriği
   önermiyor); düşerse Rıdvan'a söyle.
+  **Zorunluluk (Rıdvan, 8 Kasım 2026 "Siyasi yorum neden çıkmadı"; 9 Kasım "Başla"):** haber özetinde gerçek bir siyasi
+  madde varsa (`yorum.siyasi_maddeler`: "Siyaset" bölümünün "bulunamadı" demeyen satırları, "Türkiye" bölümünün siyasi
+  sözlü satırları) modele `siyasi_gelisme_var: true` gider ve yazması zorunludur (istem kuralı 9c): en az bir vadede
+  etkisi (sesli Reels okur) ve "Haftanın gelişmeleri" sayfasında SİYASET maddesi (kırpmada korunur, `haber_kirp`). Yine
+  çıkmazsa yalnız `::warning::` yazılır; paylaşım durmaz, yeniden istek açılmaz (kredi). Oy gününde zorunluluk yok.
+  Siyasi haber bulunamayan hafta siyaset çıkmaz; bu doğru davranıştır, hata değil. Gece kontrolü uyarıyı görürse
+  Rıdvan'a bildirir.
