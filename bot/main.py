@@ -35,6 +35,8 @@ from zoneinfo import ZoneInfo
 
 import requests
 
+import butce   # üretimin süre bütçesi: takılan ffmpeg/seslendirme öldürülür, yedek yola geçilir (bot/butce.py)
+
 
 def ffmpeg_yolu():
     """Sistemde ffmpeg varsa onu, yoksa pip paketiyle gelen hazır ffmpeg'i kullanır."""
@@ -1487,6 +1489,25 @@ def _seslendirme_girdisi(sure, wav):
 SESLI_MUZIK_SEVIYE = 0.45   # seslendirmede müziğin payı (1 = sessiz Reels'teki yükseklik; ~-7 dB)
 
 
+def _boruya_yaz(fd, veri, son_an, ne):
+    """Kareyi ffmpeg'in (bloklamayan) stdin borusuna yazar; boru dolu kalırsa son_an'a kadar bekler, sonra SureAsimi.
+    Bloklayan yazma, ffmpeg okumayı kesince (4 Kasım 2026 türü takılma) Python'u sonsuza dek bekletirdi."""
+    import select
+    gorunum = memoryview(veri)
+    while gorunum:
+        kalan = son_an - time.monotonic()
+        if kalan <= 0:
+            raise butce.SureAsimi(f"{ne}: ffmpeg kareleri okumuyor, süre bütçesi bitti")
+        _, hazir, _ = select.select([], [fd], [], min(kalan, 5.0))
+        if not hazir:
+            continue
+        try:
+            n = os.write(fd, gorunum[:1 << 16])
+        except BlockingIOError:
+            continue
+        gorunum = gorunum[n:]
+
+
 def hareketli_video_uret(tur, veri, mp4_yolu, sure=7, seslendirme=None, muzik=None, muzik_baslangic=0.0):
     """Şablonda window.kare(t) varsa her kareyi tarayıcıda çizip sesli video üretir.
 
@@ -1496,6 +1517,9 @@ def hareketli_video_uret(tur, veri, mp4_yolu, sure=7, seslendirme=None, muzik=No
     from jinja2 import Environment, FileSystemLoader
     from playwright.sync_api import sync_playwright
 
+    # Süre bütçesi (bot/butce.py): kare çizimi ve ffmpeg bu ana kadar bitmeli; bütçe bittiyse hiç başlanmaz, bitmezse
+    # ffmpeg öldürülür; SureAsimi yükselir ve çağıran yer yedek yola geçer (durağan video, müzikli pazar Reels'i).
+    son_an = time.monotonic() + butce.kalan_veya_hata(f"hareketli video ({tur})")
     env = Environment(loader=FileSystemLoader(str(SABLONLAR)), autoescape=True)
     html = env.get_template(f"{tur}.html").render(**veri)
     if "window.kare" not in html:
@@ -1530,14 +1554,25 @@ def hareketli_video_uret(tur, veri, mp4_yolu, sure=7, seslendirme=None, muzik=No
                 return False   # betik veri eksikliği yüzünden hareketi kapattı
             ff = subprocess.Popen(komut, stdin=subprocess.PIPE)
             try:
+                boru = ff.stdin.fileno()
+                os.set_blocking(boru, False)   # takılan ffmpeg okumayı kesince yazma sonsuza dek beklemesin (_boruya_yaz)
                 for i in range(int(sure * VIDEO_FPS)):
+                    if time.monotonic() > son_an:
+                        raise butce.SureAsimi(f"hareketli video ({tur}) süre bütçesinde bitmedi (kare {i})")
                     sayfa.evaluate(f"window.kare({i / VIDEO_FPS:.4f})")
-                    ff.stdin.write(sayfa.screenshot(type="jpeg", quality=95,
-                                                    clip={"x": 0, "y": 0, "width": boyut[0], "height": boyut[1]}))
-            finally:
+                    _boruya_yaz(boru, sayfa.screenshot(type="jpeg", quality=95,
+                                                       clip={"x": 0, "y": 0, "width": boyut[0], "height": boyut[1]}),
+                                son_an, f"hareketli video ({tur})")
                 ff.stdin.close()
-                if ff.wait() != 0:
+                try:
+                    kod = ff.wait(timeout=max(butce.EN_AZ_SN, son_an - time.monotonic()))
+                except subprocess.TimeoutExpired:
+                    raise butce.SureAsimi(f"hareketli video ({tur}): ffmpeg süre bütçesinde bitmedi") from None
+                if kod != 0:
                     raise RuntimeError("ffmpeg hareketli videoyu üretemedi")
+            except BaseException:
+                butce.surec_bitir(ff)   # hata ya da süre aşımında ffmpeg yetim kalmasın
+                raise
             tarayici.close()
     finally:
         gecici.unlink(missing_ok=True)
@@ -1564,7 +1599,8 @@ def video_uret(png_yolu, mp4_yolu, sure=7):
              "-t", str(sure), "-vf", goruntu, *ses_filtre,
              "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-r", "30",
              "-c:a", "aac", "-b:a", "128k", "-shortest", "-movflags", "+faststart", str(mp4_yolu)]
-    subprocess.run(komut, check=True)
+    # Son yedek yol: bütçeden bağımsız sabit pay (asıl yol bütçeyi yemiş olsa da durağan video üretilsin).
+    butce.ffmpeg_calistir(komut, "durağan video", sinir_sn=butce.DURAGAN_FFMPEG_SN)
 
 
 # ---------------------------------------------------------------- goril maskotu (kurallar: bot/goril.py)
@@ -1694,6 +1730,10 @@ def goril_ciz(girdi, sonuc):
                            encoding="utf-8")
 
 
+GORIL_PAY_SN = 45       # sn: goril süre sınırı kısılırken gorilsiz hareketli videoya bırakılan pay (bot/butce.py)
+GORIL_EN_AZ_SN = 30     # sn: gorile her durumda verilen en az süre
+
+
 def goril_ile_uret(sablon, veri, png, mp4, sure):
     """Gorilli görsel ve videoyu ayrı süreçte, süre sınırıyla üretir. Başarılıysa True. Hata, takılma ya da süre
     aşımında False döner ve yarım dosyaları siler; o zaman hazirla() bugünkü gibi gorilsiz üretir. Goril bir yazıyla
@@ -1706,6 +1746,9 @@ def goril_ile_uret(sablon, veri, png, mp4, sure):
         sinir = goril.SURE_SINIRI
     except Exception:
         sinir = 120
+    # Süre bütçesi (bot/butce.py): fiyat kaynakları yavaşsa (4 Kasım 2026: Frankfurter 522, ECB yedeği ~2 dk) gorile
+    # kalan bütçeden en az GORIL_PAY sn gorilsiz yola bırakılarak verilir; olağan günde (goril ~20–40 sn) etkisi yok.
+    sinir = min(sinir, max(GORIL_EN_AZ_SN, butce.kalan() - GORIL_PAY_SN))
     girdi, sonuc = png.with_suffix(".goril.pkl"), png.with_suffix(".goril.json")
     kod = None
     try:
@@ -2293,8 +2336,10 @@ def rehber_tam_seslendirmesi(konu, plan, cikti, site_karti=False):
         b = bilgi.BOLUMLER[konu - 1]
         sonraki = bilgi.BOLUMLER[konu]["baslik"] if konu < len(bilgi.BOLUMLER) else None
         metinler = ses.rehber_metinleri(konu, b, plan, sonraki, site_karti=site_karti)
+        # Süre bütçesi (bot/butce.py): ses en geç kodlama payı kalınca biter; yetişmezse SesHatasi → yalnız müzik.
         return ses.rehber_seslendir(metinler, cikti, f"rehber{konu}",
-                                    ses=os.environ.get("SES_ADI", "").strip() or ses.SES, deneme=_deneme_mi())
+                                    ses=os.environ.get("SES_ADI", "").strip() or ses.SES, deneme=_deneme_mi(),
+                                    son_an=butce.seslendirme_son_ani())
     except Exception as e:
         print(f"::warning::Rehber seslendirmesi yapılamadı ({type(e).__name__}: {str(e)[:200]}); "
               "rehber Reels'i yalnızca müzikle gidiyor.")
@@ -2435,7 +2480,12 @@ def rehber_reels_tam_uret(cikti, konu, damga, hikayeler, plan):
                  "-map", "[v]", "-map", "[a]", "-t", str(sure),
                  "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-r", str(VIDEO_FPS),
                  "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", str(mp4)]
-        subprocess.run(komut, check=True)
+        # Süre bütçesi (bot/butce.py; 4 Kasım 2026'da bu ffmpeg 15 dk takıldı, paylaşım kaçtı): sesli Reels kalan
+        # bütçeyi kullanır; yalnız müzikli (yedek yol) bütçeden bağımsız sabit payını her durumda alır.
+        if sl_:
+            butce.ffmpeg_calistir(komut, "sesli rehber Reels'i")
+        else:
+            butce.ffmpeg_calistir(komut, "müzikli rehber Reels'i", sinir_sn=max(butce.kalan(), butce.YEDEK_FFMPEG_SN))
         return sure
 
     try:
@@ -2500,7 +2550,8 @@ def rehber_hikaye_videosu_uret(cikti, hikayeler, konu, damga):
                  "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-r", str(VIDEO_FPS),
                  "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", str(mp4)]
         try:
-            subprocess.run(komut, check=True)
+            # Süre bütçesi (bot/butce.py): takılırsa SureAsimi; bilgi_hazirla hikâye videosuz devam eder.
+            butce.ffmpeg_calistir(komut, f"rehber hikâye videosu {i}")
         finally:
             liste.unlink(missing_ok=True)
         videolar.append(mp4.name)
@@ -2871,11 +2922,12 @@ def yorum_seslendirmesi(veri, cikti):
     try:
         parcalar = yorum.seslendirme_parcalari(veri)
         metinler = [ses._cumle(ses.okunur(" ".join(m for _, m in sahne))) for sahne in parcalar]
+        # son_an: süre bütçesi (bot/butce.py); ses yetişmezse SesHatasi → 24 sn müzikli Reels.
         sl = ses.rehber_seslendir(metinler, cikti, "yorum", ses=ad,
                                   uslup=ses.USLUP_ERKEK, en_uzun=ses.YORUM_EN_UZUN,
                                   en_az=[ses.YORUM_EN_AZ[0]] + [ses.YORUM_EN_AZ[1]] * len(veri["vadeler"])
                                   + [ses.YORUM_EN_AZ[-1]],
-                                  deneme=_deneme_mi())
+                                  deneme=_deneme_mi(), son_an=butce.seslendirme_son_ani())
         return parcalar, sl
     except Exception as e:
         print(f"::warning::Pazar seslendirmesi yapılamadı ({type(e).__name__}: {str(e)[:200]}); "
@@ -3174,6 +3226,7 @@ def pazar_yorumu_yarin(bugun=None):
 
 
 def hazirla(tur, cikti, ornek, konu=None):
+    butce.baslat(tur)   # süre bütçesi: takılan üretim adım sınırını beklemez, yedek yola geçer (bot/butce.py)
     cikti.mkdir(parents=True, exist_ok=True)
     (cikti / "meta.json").unlink(missing_ok=True)   # eski bir paylaşım yanlışlıkla tekrar gitmesin
     if tur == "yasal":
@@ -3257,6 +3310,10 @@ def hazirla(tur, cikti, ornek, konu=None):
         sure = video_suresi(tur, sablon)
         try:
             hareketli = hareketli_video_uret(sablon, veri, mp4, sure=sure)
+        except butce.SureAsimi as e:
+            # Süre bütçesi bitti (bot/butce.py): fiyat paylaşımı durmaz, durağan video gider (taahhüt: günde 2 fiyat).
+            print(f"::warning::{e}; durağan video kullanılıyor.")
+            hareketli = False
         except Exception as e:
             if sablon != "ozel":
                 raise

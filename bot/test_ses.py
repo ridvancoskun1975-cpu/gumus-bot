@@ -205,7 +205,7 @@ finally:
 kullanilan = []
 
 
-def yarida(metin, ses=None, uslup=None, anahtar_=None, model=None):
+def yarida(metin, ses=None, uslup=None, anahtar_=None, model=None, **k):   # **k: son_an (süre bütçesi; bot/butce.py)
     kullanilan.append(model)
     if model == ses_mod_ana and kullanilan.count(model) == 3:
         raise ses_mod_hata("kota")
@@ -305,7 +305,7 @@ if os.environ.get("HIZLI"):
 
 
 # ---------------------------------------------------------------- uçtan uca (yapay sesle)
-def yapay_ses(metin, ses=None, uslup=None, anahtar_=None, model=None):
+def yapay_ses(metin, ses=None, uslup=None, anahtar_=None, model=None, **k):   # **k: son_an (süre bütçesi; bot/butce.py)
     """Harf sayısına orantılı, konuşma benzeri genlikli ton (Gemini yerine)."""
     n = int(len(metin) * 0.065 * ses_mod.ORNEKLEME)
     return array.array("h", [0] * 2400 + [int(9000 * math.sin(i / 7) * (0.6 + 0.4 * math.sin(i / 900)))
@@ -507,7 +507,7 @@ try:
     eski_yorum_ses = ses.YORUM_SES
     okumalar = []
 
-    def kayitli(metin, ses=None, uslup=None, anahtar_=None, model=None):
+    def kayitli(metin, ses=None, uslup=None, anahtar_=None, model=None, **k):   # **k: son_an (süre bütçesi; bot/butce.py)
         okumalar.append((ses, uslup, metin))
         return yapay_ses(metin)
 
@@ -586,7 +586,7 @@ try:
     # Ses seçimi örnekleri: ses başına 1 okuma, yalnızca yedek model; günlük kota dolunca kalanlar atlanır
     cagri_ = []
 
-    def ornek_ses(metin, ses=None, uslup=None, anahtar_=None, model=None):
+    def ornek_ses(metin, ses=None, uslup=None, anahtar_=None, model=None, **k):   # **k: son_an (süre bütçesi; bot/butce.py)
         cagri_.append((ses, model, uslup))
         if ses == "Dolu":
             raise ses_mod.SesHatasi("429 limit: 10 requests per day")

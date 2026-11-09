@@ -239,7 +239,10 @@ def anahtar():
 
 # ---------------------------------------------------------------- Gemini
 
-def _istek(metin, ses, uslup, model, anahtar_):
+ISTEK_SN = 120   # sn: tek Gemini isteğinin en uzun süresi (bağlanma ve okuma)
+
+
+def _istek(metin, ses, uslup, model, anahtar_, zaman_asimi=ISTEK_SN):
     govde = {
         "model": model,
         "input": [{"type": "user_input",
@@ -249,7 +252,7 @@ def _istek(metin, ses, uslup, model, anahtar_):
         "generation_config": {"speech_config": [{"voice": ses}]},
     }
     try:
-        r = requests.post(URL, json=govde, timeout=120,
+        r = requests.post(URL, json=govde, timeout=zaman_asimi,
                           headers={"x-goog-api-key": anahtar_, "Content-Type": "application/json"})
     except requests.RequestException as e:
         return None, f"bağlantı hatası ({type(e).__name__})", True
@@ -271,13 +274,29 @@ def _istek(metin, ses, uslup, model, anahtar_):
         return None, f"yanıt çözülemedi ({type(e).__name__})", False
 
 
-def seslendir(metin, ses=SES, uslup=USLUP, anahtar_=None, model=MODEL):
+SON_AN_PAYI = 5.0   # sn: son ana bundan az kalmışsa yeni istek atılmaz
+
+
+def _son_ana_kalan(son_an):
+    """Süre bütçesine (bot/butce.py → seslendirme_son_ani) kalan saniye; son_an yoksa None (sınırsız)."""
+    return None if son_an is None else son_an - time.monotonic()
+
+
+def seslendir(metin, ses=SES, uslup=USLUP, anahtar_=None, model=MODEL, son_an=None):
     """Metni tek modelle sese çevirir; 24 kHz mono 16 bit PCM örneklerini (array('h')) döndürür.
-    Geçici hatada (meşgul, dakikalık sınır) iki kez daha dener; günlük kota dolduysa beklemez."""
+    Geçici hatada (meşgul, dakikalık sınır) iki kez daha dener; günlük kota dolduysa beklemez.
+
+    son_an (time.monotonic): üretimin süre bütçesi (bot/butce.py). Bu andan sonra istek atılmaz, bekleme yapılmaz;
+    istek süresi de kalanla sınırlanır. Yetişmeyen seslendirme SesHatasi verir, Reels yalnız müzikle gider
+    (4 Kasım 2026: takılan üretim adım sınırına kadar bekleyip paylaşımı kaçırdı)."""
     anahtar_ = anahtar_ or anahtar()
     son_hata = None
     for deneme in range(4):
-        ham, hata, gecici = _istek(metin, ses, uslup, model, anahtar_)
+        kalan = _son_ana_kalan(son_an)
+        if kalan is not None and kalan < SON_AN_PAYI:
+            raise SesHatasi(f"{son_hata + '; ' if son_hata else ''}seslendirme için süre bütçesi bitti")
+        ham, hata, gecici = _istek(metin, ses, uslup, model, anahtar_,
+                                   zaman_asimi=ISTEK_SN if kalan is None else min(ISTEK_SN, kalan))
         if ham is not None:
             return _pcm(ham)
         son_hata = f"{model}: {hata}"
@@ -287,7 +306,11 @@ def seslendir(metin, ses=SES, uslup=USLUP, anahtar_=None, model=MODEL):
         # dakikalık sınırda (429) Gemini kaç saniye beklenmesini söylüyorsa o kadar (en çok 65 sn)
         import re
         m = re.search(r"retry in (\d+(?:\.\d+)?)s", hata or "")
-        time.sleep(min(65.0, float(m.group(1)) + 1) if m else 5 * (deneme + 1))
+        bekle = min(65.0, float(m.group(1)) + 1) if m else 5 * (deneme + 1)
+        kalan = _son_ana_kalan(son_an)
+        if kalan is not None and bekle > kalan - SON_AN_PAYI:
+            raise SesHatasi(f"{son_hata}; yeniden deneme için süre bütçesi yok")
+        time.sleep(bekle)
     raise SesHatasi(son_hata or "bilinmeyen hata")
 
 
@@ -320,6 +343,7 @@ def kirp(ornek, esik=500, pay=0.05):
 # Okuma hızı (Rıdvan, 17 Ekim 2026: "Sesleri 1,5 hızlandır hepsini"): Gemini'nin okuması perdesi değişmeden
 # (ffmpeg atempo) bu kat hızlandırılır; rehber, arşiv ve pazar Reels'i ile ses örneklerinin hepsinde. 1.0: kapalı.
 HIZ = 1.5
+HIZLANDIRMA_SN = 60   # sn: hızlandırmanın ffmpeg'i en çok bu kadar (≤ 5 dk ses için birkaç sn sürer; bot/butce.py)
 
 
 def hizlandir(ornek, oran=None):
@@ -337,9 +361,13 @@ def hizlandir(ornek, oran=None):
     ham = array.array("h", ornek)
     if sys.byteorder == "big":
         ham.byteswap()
-    r = subprocess.run([ffmpeg, "-loglevel", "error", "-f", "s16le", "-ar", str(ORNEKLEME), "-ac", "1", "-i", "-",
-                        "-filter:a", f"atempo={oran}", "-f", "s16le", "-ar", str(ORNEKLEME), "-ac", "1", "-"],
-                       input=ham.tobytes(), capture_output=True)
+    try:
+        # Süre sınırı (bot/butce.py): takılan ffmpeg öldürülür, seslendirme yapılamadı sayılır (Reels müzikle gider).
+        r = subprocess.run([ffmpeg, "-loglevel", "error", "-f", "s16le", "-ar", str(ORNEKLEME), "-ac", "1", "-i", "-",
+                            "-filter:a", f"atempo={oran}", "-f", "s16le", "-ar", str(ORNEKLEME), "-ac", "1", "-"],
+                           input=ham.tobytes(), capture_output=True, timeout=HIZLANDIRMA_SN)
+    except subprocess.TimeoutExpired:
+        raise SesHatasi(f"hızlandırma {HIZLANDIRMA_SN} sn içinde bitmedi; ffmpeg öldürüldü") from None
     if r.returncode != 0 or not r.stdout:
         raise SesHatasi(f"hızlandırma yapılamadı ({r.stderr.decode(errors='replace')[:120]})")
     cikti = array.array("h")
@@ -400,21 +428,35 @@ def modeller(deneme=False):
     return (YEDEK_MODEL,) if deneme else (MODEL, YEDEK_MODEL)
 
 
-def kisa_seslendir(konu, bolum, klasor, ses=SES, anahtar_=None, deneme=False):
-    """Kısa Reels için ses izi üretir. {"zaman", "sure", "wav", "ses", "metin", "model"} ya da SesHatasi."""
+def _butce_bitti(son_an):
+    kalan = _son_ana_kalan(son_an)
+    return kalan is not None and kalan < SON_AN_PAYI
+
+
+def _son_an_arg(son_an):
+    """seslendir'e son_an yalnız verilmişse geçer (sınamalardaki eski sahte seslendir'ler parametreyi tanımaz)."""
+    return {"son_an": son_an} if son_an is not None else {}
+
+
+def kisa_seslendir(konu, bolum, klasor, ses=SES, anahtar_=None, deneme=False, son_an=None):
+    """Kısa Reels için ses izi üretir. {"zaman", "sure", "wav", "ses", "metin", "model"} ya da SesHatasi.
+    son_an: süre bütçesi (seslendir)."""
     metin = okuma_metni(konu, bolum)
     anahtar_ = anahtar_ or anahtar()
     # Bir Reels'in bütün parçaları aynı modelden: ana model yarıda kalırsa (ör. günlük kota) hepsi yedek
     # modelle baştan okunur, ses tonu parça parça değişmesin. Ücretsiz kota ~10 istek/gün/model; Reels 4 ister.
-    hata = None
+    hata, ornekler = None, None
     for model in modeller(deneme):
+        if hata is not None and _butce_bitti(son_an):   # yedek modele geçmeye süre kalmadı
+            break
         try:
-            ornekler = {ad: hizlandir(kirp(seslendir(metin[ad], ses=ses, anahtar_=anahtar_, model=model)))
+            ornekler = {ad: hizlandir(kirp(seslendir(metin[ad], ses=ses, anahtar_=anahtar_, model=model,
+                                                     **_son_an_arg(son_an))))
                         for ad in ("soru", "cevap", "cumle", "cagri")}
             break
         except SesHatasi as e:
             hata = e
-    else:
+    if ornekler is None:
         raise hata
     sureler = {ad: sure(o) for ad, o in ornekler.items()}
     if sum(sureler.values()) > 40:
@@ -525,21 +567,25 @@ def rehber_metinleri(no, bolum, kareler, sonraki=None, site_karti=False):
 
 
 def rehber_seslendir(metinler, klasor, ad, ses=SES, anahtar_=None, deneme=False, uslup=USLUP, en_az=None,
-                     en_uzun=None):
+                     en_uzun=None, son_an=None):
     """Her karenin (sahnenin) metnini okur, kareleri ses süresine göre zamanlar ve ses izini yazar.
     en_az: her karenin en kısa süresi (liste; yoksa rehber: kapak 3, kare 4 sn). Pazar Reels'i de kullanır
-    (erkek sesi, kendi üslubu ve süreleri).
+    (erkek sesi, kendi üslubu ve süreleri). son_an: süre bütçesi (seslendir; bot/butce.py → seslendirme_son_ani):
+    geçilirse SesHatasi, Reels yalnız müzikle gider.
     Dönüş: {"kare_sn": [her karenin ekranda kalma süresi], "sure", "wav", "ses", "model", "metin", "parca_sn"}."""
     anahtar_ = anahtar_ or anahtar()
-    hata = None
+    hata, ornekler = None, None
     for model in modeller(deneme):      # bütün kareler aynı modelden (ses tonu karışmasın)
+        if hata is not None and _butce_bitti(son_an):   # yedek modele geçmeye süre kalmadı
+            break
         try:
-            ornekler = [hizlandir(kirp(seslendir(m, ses=ses, uslup=uslup, anahtar_=anahtar_, model=model))) if m else None
+            ornekler = [hizlandir(kirp(seslendir(m, ses=ses, uslup=uslup, anahtar_=anahtar_, model=model,
+                                                 **_son_an_arg(son_an)))) if m else None
                         for m in metinler]
             break
         except SesHatasi as e:
             hata = e
-    else:
+    if ornekler is None:
         raise hata
     parca = [sure(o) if o is not None else 0.0 for o in ornekler]
     kare_sn = []
