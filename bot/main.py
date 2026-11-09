@@ -2821,7 +2821,8 @@ def yorum_hazirla(cikti, ornek):
 
 # Pazar yorumunun Reels'i (Rıdvan, 15 Ekim 2026 21:25: "Reels bence şart"; 21:53: "Reels'te düzgün bir pazar
 # analizi videosu olmalı. Zaten 4 sayfa. Süre biraz uzun olabilir"): kaydırmalı gönderinin sayfaları sırayla,
-# 9:16 ekranı dolduran bir video (kapak → kısa → orta vade; uzun vade 17 Ekim 2026'da kaldırıldı). Kaydırmalıyla AYNI çalıştırmada,
+# 9:16 ekranı dolduran bir video (kapak → kısa → orta vade → haftanın gelişmeleri; uzun vade 17 Ekim 2026'da
+# kaldırıldı, haber sayfası 9 Kasım 2026'da eklendi: Rıdvan "Sesli olan bölümde 4 sayfa olsun"). Kaydırmalıyla AYNI çalıştırmada,
 # gönderiden hemen sonra paylaşılır ve aynı video hikâyeye de konur. Reels üretilemez ya da paylaşılamazsa
 # kaydırmalı gönderi yine gider (yalnızca uyarı). Kapatmak için False.
 YORUM_REELS = True
@@ -2835,6 +2836,10 @@ YORUM_DURAKLAT = False
 # Rıdvan 21:59: "3 sn giriş 6 sn sayfalar"; 22:05: "Giriş çok kısa oldu. Hepsi 8 saniye olsun".
 # Müzikli sürümde sahne sayısı vadelere göre: kapak + vade başına YORUM_REELS_SAHNELER[0] sn (kısa ve orta vade: 24 sn).
 YORUM_REELS_SAHNELER = (8, 8, 8)   # sn: kapak, kısa, orta vade (toplam 24 sn)
+# "Haftanın gelişmeleri" sahnesi (Rıdvan, 9 Kasım 2026: "Sesli olan bölümde 4 sayfa olsun"): kaydırmalının 4. sayfası
+# Reels'e de girer ve okunur. Yalnız müzikli (yedek) sürümde 3–5 maddelik sayfa 8 sn'de okunamaz; bu sahne 12 sn.
+# Haber sayfası yoksa (tarama başarısız) sahne de yok: Reels eskisi gibi 3 sayfa.
+YORUM_REELS_HABER_SN = 12
 
 
 # Pazar Reels'i sesli (Rıdvan, 17 Ekim 2026: "Pazar günü analiz sesli olsun"; Gemini erkek sesi, analizin TAMAMI):
@@ -2871,10 +2876,11 @@ def yorum_seslendirmesi(veri, cikti):
     try:
         parcalar = yorum.seslendirme_parcalari(veri)
         metinler = [ses._cumle(ses.okunur(" ".join(m for _, m in sahne))) for sahne in parcalar]
+        # sahneler: kapak, vadeler, varsa haber sayfası (vade gibi en az 10 sn), kapanış
+        orta = len(parcalar) - 2
         sl = ses.rehber_seslendir(metinler, cikti, "yorum", ses=ad,
                                   uslup=ses.USLUP_ERKEK, en_uzun=ses.YORUM_EN_UZUN,
-                                  en_az=[ses.YORUM_EN_AZ[0]] + [ses.YORUM_EN_AZ[1]] * len(veri["vadeler"])
-                                  + [ses.YORUM_EN_AZ[-1]],
+                                  en_az=[ses.YORUM_EN_AZ[0]] + [ses.YORUM_EN_AZ[1]] * orta + [ses.YORUM_EN_AZ[-1]],
                                   deneme=_deneme_mi())
         return parcalar, sl
     except Exception as e:
@@ -2972,8 +2978,11 @@ def pazar_reels_tekrar(cikti):
 
 def yorum_reels_uret(cikti, veri, metin, damga):
     """Pazar Reels'inin videosu, kapağı ve açıklaması. Hata verirse None (kaydırmalı gönderi etkilenmez).
-    Sesliyse Reels uzun sesli video, hikâye 24 sn'lik müzikli video ("hikaye_dosya")."""
-    sahneler_ = [YORUM_REELS_SAHNELER[0]] * (len(veri["vadeler"]) + 1)   # kapak + vadeler, 8'er sn
+    Sesliyse Reels uzun sesli video, hikâye müzikli kısa video ("hikaye_dosya"). Sahneler kaydırmalının
+    sayfalarıyla aynı: kapak, vadeler, varsa "Haftanın gelişmeleri" (9 Kasım 2026), sesli sürümde sonda kapanış."""
+    haberli = bool(veri.get("haberler"))
+    sahneler_ = ([YORUM_REELS_SAHNELER[0]] * (len(veri["vadeler"]) + 1)   # kapak + vadeler, 8'er sn
+                 + ([YORUM_REELS_HABER_SN] if haberli else []))
     sure = sum(sahneler_)
     muzikli = {**veri, "sahne_sureleri": sahneler_}
     try:
@@ -2997,9 +3006,12 @@ def yorum_reels_uret(cikti, veri, metin, damga):
         sureler = sl["kare_sn"]
         zaman = _yorum_zamanlari(parcalar, sl, sureler)
         vadeler = [{**v, "g": z} for v, z in zip(veri["vadeler"], zaman[1:])]
+        # haber sahnesinin öğeleri de kendi cümlesi okunurken belirir (kapak ve vadelerden sonraki sahne)
+        haber_g = zaman[len(veri["vadeler"]) + 1] if haberli else None
         mp4s = cikti / f"yorum-reels-sesli-{damga}.mp4"
         try:
             if not hareketli_video_uret("yorum-reels", {**veri, "vadeler": vadeler, "kapak_g": zaman[0],
+                                                        "haber_g": haber_g,
                                                         "sahne_sureleri": sureler, "sesli": True},
                                         mp4s, sure=sl["sure"], seslendirme=sl["wav"]):
                 raise RuntimeError("şablonda hareket yok")

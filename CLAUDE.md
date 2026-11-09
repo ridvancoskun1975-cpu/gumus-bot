@@ -50,9 +50,11 @@
   değiştirilmez.
 - Pazar yorumu 2 sayılır (kaydırmalı + Reels; hikâye 25 Ekim 2026'da kaldırıldı, Rıdvan: "Hikayeyi kaldıralım";
   `main.PAZAR_HIKAYE`; öne çıkan yerine pazar analizi profilde sabitlenir). Pazar Reels'i sesli (Rıdvan, 17 Ekim 2026: Gemini erkek
-  sesi, analizin tamamı okunur; okumayı ona sormadan kısaltma). Ses **Orus** (`ses.YORUM_SES`; Rıdvan, 3 örnekten "Ses 2"); 24 sn müzikli sürüm
-  yine üretilir; ses alınamazsa Reels 24 sn müzikli gider (yedek yol kaldırılmaz). Ses, üslup ya da okunan metin
-  değişecekse önce önizleme ve onay.
+  sesi, analizin tamamı okunur; okumayı ona sormadan kısaltma). Ses **Orus** (`ses.YORUM_SES`; Rıdvan, 3 örnekten "Ses 2"); müzikli kısa sürüm
+  (sahne başına 8 sn, haber sahnesi 12 sn) yine üretilir; ses alınamazsa Reels onunla gider (yedek yol kaldırılmaz). Ses, üslup ya da okunan metin
+  değişecekse önce önizleme ve onay. **Reels 4 sayfa** (Rıdvan, 9 Kasım 2026: "Pazar yorumları Sesli olan bölümde 4 sayfa
+  olsun"): kaydırmalının "Haftanın gelişmeleri" sayfası Reels'te de sahne olarak var ve tamamı okunur (konu + cümle; kaynak alan
+  adları okunmaz, ekranda yazılı; `yorum.haber_okuma`, `main.YORUM_REELS_HABER_SN`). Haber sayfası yoksa Reels 3 sayfa. Kaldırma.
 - Pazar yorumunun orta vade geçmişini MetalCharts Starter verir (17 Ekim 2026); Ocak 2027'de iptal (11 Ocak
   hatırlatması), sonra kendi kayıtlarımız. Pazar yorumu önizlemesini Rıdvan'a gerçek veriyle üret (deneme, ornek
   işaretsiz): örnek veride orta vade boş görünür. (Yalnız kısa ve orta vade kuralı aşağıda.)

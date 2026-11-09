@@ -858,8 +858,27 @@ def _nasil_hazirlandi(gelismeler):
 # ---------------------------------------------------------------- seslendirme (pazar Reels'i)
 # Rıdvan (17 Ekim 2026): pazar analizi sesli olsun, erkek sesiyle, analizin TAMAMI okunsun (kısaltma yok).
 # Metni Claude'un yazdığı analizden kurulur (ayrı bir istek yok): ekranda ne varsa o okunur. Sahneler pazar
-# Reels'iyle aynı: kapak, kısa ve orta vade, kapanış. Her sahne parçalar listesidir: [(öğe, metin)];
+# Reels'iyle aynı: kapak, kısa ve orta vade, "Haftanın gelişmeleri" (9 Kasım 2026'dan beri; Rıdvan: "Sesli olan
+# bölümde 4 sayfa olsun"), kapanış. Her sahne parçalar listesidir: [(öğe, metin)];
 # öğe adları şablondaki (templates/yorum-reels.html) belirme anlarını sese göre ayarlamak için kullanılır.
+
+# Haber sahnesinin okunuşu: başlık, her maddenin konusu ve cümlesi, sonda kaynak notu. Kaynak alan adları
+# ("tr.investing.com") sesli okunmaz; ekranda ve açıklamada yazılıdır, not bunu söyler.
+HABER_OKUMA_BASLIK = "Haftanın gelişmeleri, {hafta}."
+HABER_OKUMA_NOT = "Haberler web aramasıyla derlendi; kaynaklar ekranda ve açıklamada."
+
+
+def haber_okuma(v):
+    """"Haftanın gelişmeleri" sahnesinin okunacak parçaları; haber yoksa boş liste (sahne de yok)."""
+    haberler = v.get("haberler") or []
+    if not haberler:
+        return []
+    sahne = [("baslik", HABER_OKUMA_BASLIK.format(hafta=v.get("hafta_araligi") or "bu hafta"))]
+    for i, h in enumerate(haberler):
+        sahne.append((f"haber-{i}", f"{h['konu']}: {h['metin'].rstrip('.')}."))
+    sahne.append(("haber-not", HABER_OKUMA_NOT))
+    return sahne
+
 
 def kapanis_okuma(vadeler=None):
     return ("Bu yorum üst düzey yapay zekâ ile üretilmiştir; bir değerlendirmedir, yatırım tavsiyesi değildir. "
@@ -877,8 +896,9 @@ def _degisim_okuma(ad, deg):
 
 
 def seslendirme_parcalari(v):
-    """Pazar Reels'inde okunacak metin, sahne sahne: [[(öğe, metin), …], …] (kapak, vadeler, kapanış).
-    v: main.yorum_hazirla'daki görsel verisi (vadeler: ad, ufuk, etiket, not, yorum, hucreler)."""
+    """Pazar Reels'inde okunacak metin, sahne sahne: [[(öğe, metin), …], …] (kapak, vadeler, varsa haberler,
+    kapanış). v: main.yorum_hazirla'daki görsel verisi (vadeler: ad, ufuk, etiket, not, yorum, hucreler; haberler:
+    konu, metin, kaynak; hafta_araligi)."""
     deg = v["gram_deg"]
     fiil = "geriledi" if deg["yon"] == "dusus" else "yükseldi"
     kapak = [("baslik", f"Gümüş görünümü: {vade_metni(v['vadeler'])}. {v['tarih']}."),
@@ -906,6 +926,9 @@ def seslendirme_parcalari(v):
             ("seyir", f"Olası seyir. {y['seyir']}"),
             ("izle", f"İzlenecek: {y['izlenecek']}."),
         ])
+    haber = haber_okuma(v)
+    if haber:
+        sahneler.append(haber)
     sahneler.append([("kapanis", kapanis_okuma(v["vadeler"]))])
     return sahneler
 

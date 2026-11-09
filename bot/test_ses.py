@@ -500,10 +500,13 @@ try:
             setattr(main, k, v)
 
     # Pazar Reels'i sesli (Rıdvan 17 Ekim 2026): erkek sesi, analizin TAMAMI; hikâyeye müzikli sürüm (sahne başına 8 sn).
-    # Yalnız kısa ve orta vade, kalıcı (Rıdvan 17 Ekim 2026): kapak + 2 vade + kapanış = 4 okuma, 24 sn müzik
+    # Yalnız kısa ve orta vade, kalıcı (Rıdvan 17 Ekim 2026). 9 Kasım 2026'dan beri "Haftanın gelişmeleri" sayfası da
+    # Reels'te (Rıdvan: "Sesli olan bölümde 4 sayfa olsun"): kapak + 2 vade + haberler + kapanış = 5 okuma;
+    # müzikli sürüm 3 × 8 + haber sahnesi (main.YORUM_REELS_HABER_SN) sn. Örnekte haber sayfası var (ORNEK_HABERLER).
     import yorum  # noqa: E402
     AKTIF = ("kisa", "orta")
-    MUZIKLI_SN = 8 * (len(AKTIF) + 1)
+    HABERLI = 1 if yorum.ORNEK_HABERLER else 0
+    MUZIKLI_SN = 8 * (len(AKTIF) + 1) + main.YORUM_REELS_HABER_SN * HABERLI
     eski_yorum_ses = ses.YORUM_SES
     okumalar = []
 
@@ -519,9 +522,15 @@ try:
             main.yorum_hazirla(d, ornek=True)
             r = json.loads((d / "meta.json").read_text(encoding="utf-8"))["reels"]
             dogrula(r["seslendirme"] == "Charon" and r["dosya"].startswith("yorum-reels-sesli-"), f"sesli Reels: {r}")
-            dogrula(len(okumalar) == len(AKTIF) + 2 and all(s_ == "Charon" and u == ses.USLUP_ERKEK
-                                                            for s_, u, _ in okumalar),
-                    f"{len(AKTIF) + 2} sahne, erkek sesi ve üslubu ({len(okumalar)})")
+            dogrula(len(okumalar) == len(AKTIF) + 2 + HABERLI and all(s_ == "Charon" and u == ses.USLUP_ERKEK
+                                                                      for s_, u, _ in okumalar),
+                    f"{len(AKTIF) + 2 + HABERLI} sahne, erkek sesi ve üslubu ({len(okumalar)})")
+            if HABERLI:
+                haber_okuma = okumalar[-2][2]
+                dogrula(haber_okuma.startswith("Haftanın gelişmeleri") and yorum.HABER_OKUMA_NOT in haber_okuma
+                        and all(ses.okunur(h["metin"]).rstrip(".") in haber_okuma for h in yorum.ORNEK_HABERLER)
+                        and not any(h["kaynak"] in haber_okuma for h in yorum.ORNEK_HABERLER),
+                        "haber sahnesi kapanıştan önce okunur: başlık, bütün maddeler, kaynak notu; alan adları okunmaz")
             sn, ses_var = sure_olc(d / r["dosya"])
             dogrula(ses_var and sn > 60 and abs(sn - r["sure"]) < 0.5, f"analizin tamamı okunur ({sn:.0f} sn)")
             hs, h_ses = sure_olc(d / r["hikaye_dosya"])
