@@ -258,6 +258,41 @@ kontrol("<h2>Haftanın gelişmeleri</h2>" not in env.get_template("yorum.html").
 kontrol(main.hafta_araligi(date(2026, 11, 1)) == "26–30 Ekim" and main.hafta_araligi(date(2026, 10, 4)) == "28 Eylül – 2 Ekim",
         "hafta aralığı")
 
+# 5b) Pazar Reels'i 4 sayfa (Rıdvan, 9 Kasım 2026: "Sesli olan bölümde 4 sayfa olsun"): haber sayfası Reels'e girer ve
+#     tamamı okunur (başlık, her maddenin konusu ve cümlesi, kaynak notu); kaynak alan adları okunmaz, ekranda yazılı.
+vh = {**v, "haberler": hb, "hafta_araligi": "26–30 Ekim"}
+p = yorum.seslendirme_parcalari(vh)
+kontrol(len(p) == len(yorum.VADELER) + 3 and p[-2][0][1].startswith("Haftanın gelişmeleri, 26–30 Ekim")
+        and [a for a, _ in p[-2]] == ["baslik"] + [f"haber-{i}" for i in range(len(hb))] + ["haber-not"]
+        and all(h["konu"] + ": " + h["metin"] in m for h, (_, m) in zip(hb, p[-2][1:]))
+        and p[-2][-1][1] == yorum.HABER_OKUMA_NOT and p[-1][0][0] == "kapanis",
+        "haber sahnesi kapanıştan önce okunur: başlık, her madde, kaynak notu")
+kontrol(not any(h["kaynak"] in m for h in hb for _, m in p[-2]), "kaynak alan adları okunmaz (ekranda ve açıklamada)")
+# 5c) Siyaset konulu madde okura "Gündem" olarak görünür ve okunur (Rıdvan, 9 Kasım 2026: "aslında bu sadece bir haber";
+#     "gündem"); "siyaset" kelimesi ne görselde ne seste.
+hs = [{"konu": "Siyaset", "baslik": yorum.HABER_KONU_BASLIK["Siyaset"], "metin": "ABD ara seçimlerinin ardından dolar zayıfladı",
+       "kaynak": "ornek.com"}] + hb[:2]
+ps = yorum.haber_okuma({**v, "haberler": hs, "hafta_araligi": "2–6 Kasım"})
+kontrol(yorum.HABER_KONU_BASLIK["Siyaset"] == "GÜNDEM" and ps[1][1].startswith("Gündem: ABD ara seçimlerinin")
+        and not any("siyaset" in m.lower() for _, m in ps), "Siyaset maddesi GÜNDEM başlığıyla, 'Gündem' diye okunur")
+kontrol(len(yorum.seslendirme_parcalari(v)) == len(yorum.VADELER) + 2 and yorum.haber_okuma({"haberler": []}) == [],
+        "haber sayfası yoksa haber sahnesi yok")
+r4 = env.get_template("yorum-reels.html").render(**{**ortak, "haberler": hb, "hafta_araligi": "26–30 Ekim"},
+                                                sahne_sureleri=[8, 8, 8, 12])
+govde4 = r4.split("</style>", 1)[1]
+kontrol("<h2>Haftanın gelişmeleri</h2>" in govde4 and govde4.count("04 / 04") == 1 and 'haber-sahne" id="s3"' in govde4
+        and all(f"kaynak: {h['kaynak']}" in govde4 for h in hb) and "kapanis" not in govde4,
+        "Reels'te 4. sahne haber sayfası (sayaç 04 / 04, kaynaklar yazılı); müzikli sürümde kapanış yok")
+r5 = env.get_template("yorum-reels.html").render(**{**ortak, "haberler": hb, "hafta_araligi": "26–30 Ekim", "sesli": True,
+                                                   "haber_g": {"baslik": 0, "haber-1": 0.33, "haber-not": 0.9}},
+                                                sahne_sureleri=[8, 8, 8, 12, 5])
+kontrol('kapanis" id="s4"' in r5 and 'data-g="0.33"' in r5 and 'data-g="0.9"' in r5,
+        "sesli Reels'te kapanış 5. sahne; haber öğeleri kendi cümlesi okunurken belirir")
+r3 = env.get_template("yorum-reels.html").render(**{**ortak, "haberler": []}, sahne_sureleri=[8, 8, 8, 5])
+kontrol("<h2>Haftanın gelişmeleri</h2>" not in r3 and "03 / 03" in r3 and 'kapanis" id="s3"' in r3,
+        "haber sayfası yoksa Reels eskisi gibi 3 sayfa + kapanış")
+kontrol(main.YORUM_REELS_HABER_SN >= 10, "müzikli (yedek) sürümde haber sahnesi okunabilecek kadar uzun")
+
 
 # 6) Siyasi gelişmeler (Rıdvan, 6 Kasım 2026; Projede claude/pazar-siyaset.md): kurum adı serbest, kişi/parti adı yok;
 #    Türkiye'de oy günü seçimle ilgili hiçbir şey yazılmaz ve açıklamada nedeni yazılır.
@@ -266,7 +301,7 @@ GS = {**yorum.ORNEK_GELISMELER, "metin": yorum.ORNEK_GELISMELER["metin"]
 siy = copy.deepcopy(yorum.ORNEK_HABERLER)
 siy[3] = {"konu": "Siyaset", "metin": "ABD yönetimi yeni gümrük vergilerini açıkladı.", "kaynak": "ornek-ajans.com"}
 h, g = yorum.haberler_ayikla(siy, GS)
-kontrol(h == [] and g[3]["baslik"] == "SİYASET", "Siyaset maddesi kurum adıyla kabul")
+kontrol(h == [] and g[3]["baslik"] == "GÜNDEM", "Siyaset maddesi kurum adıyla kabul, başlığı GÜNDEM")
 siy[3]["metin"] = "Trump yeni gümrük vergilerini açıkladı."
 kontrol("kişi ya da parti adı" in " ".join(yorum.haberler_ayikla(siy, GS)[0]), "kişi adı reddedilir")
 yz = copy.deepcopy(yorum.ORNEK_YORUM)

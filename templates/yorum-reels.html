@@ -8,9 +8,10 @@
 /* Pazar yorumunun Reels'i (1080×1920): kaydırmalı gönderinin 4 sayfası sırayla, ekranı dolduran bir video
    (Rıdvan, 15 Ekim 2026 21:53: "Reels'te düzgün bir pazar analizi videosu olmalı. Zaten 4 sayfa. Süre biraz
    uzun olabilir"; 21:59: "21 sn olsun, 3 sn giriş 6 sn sayfalar"). Sahneler: kapak → kısa → orta vade (uzun vade 17 Ekim 2026'da kalıcı olarak kaldırıldı)
+   → "Haftanın gelişmeleri" (haber sayfası varsa; 9 Kasım 2026, Rıdvan: "Sesli olan bölümde 4 sayfa olsun")
    (+ isteğe bağlı kapanış). Süreler bot/main.py →
-   YORUM_REELS_SAHNELER (sahne_sureleri olarak gelir); sesli Reels'te (17 Ekim 2026) süreler sesten gelir, kapanış
-   sahnesi eklenir ve öğeler kendi cümlesi okunurken belirir (kapak_g, v.g: sahne süresine oran). Profil ızgarası ortadaki 3:4 alanı (y 240–1680) gösterir;
+   YORUM_REELS_SAHNELER ve YORUM_REELS_HABER_SN (sahne_sureleri olarak gelir); sesli Reels'te (17 Ekim 2026) süreler sesten gelir, kapanış
+   sahnesi eklenir ve öğeler kendi cümlesi okunurken belirir (kapak_g, v.g, haber_g: sahne süresine oran). Profil ızgarası ortadaki 3:4 alanı (y 240–1680) gösterir;
    Reels ekranının güvenli alanı (Rıdvan, 17 Ekim 2026; reels.html ile aynı ölçüler): üst 220 px (Reels yazısı, kamera),
    alt 420 px (hesap adı, açıklama, müzik), sağ 170 px (beğeni/yorum düğmeleri) boş kalır; sol kenar 64 px.
    Çerçeve %10 büyük (Rıdvan, 25 Ekim 2026: "Yazılar çok ufak", "Komple çerçeve büyümeli", "Sağdaki ve alttaki
@@ -90,6 +91,17 @@
 .yr [data-sigdir] .hucreler { margin-top: 8px; }
 .yr [data-sigdir] .hucre > span:not(.degisim) { font-size: 28px; margin-bottom: 2px; }
 .yr [data-sigdir] .veri-not { font-size: 26px; margin-top: 6px; }
+/* "Haftanın gelişmeleri" sahnesi (9 Kasım 2026): kaydırmalının 4. sayfasıyla aynı maddeler, vade sahnesinin
+   çerçevesinde (858×1058 × --k); metin sığan en büyük boyda (sigdir). Kaynak alan adı her maddede, okunmaz. */
+.yr .haberler { margin-top: 18px; display: flex; flex-direction: column; }
+.yr .haber { padding: 14px 0 16px; border-top: 3px solid var(--cizgi); }
+.yr .haber:last-child { border-bottom: 3px solid var(--cizgi); }
+.yr .haber-ust { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; margin-bottom: 6px; }
+.yr .haber-ust .kucuk-baslik { white-space: nowrap; }
+.yr .haber .kaynak { font-size: 22px; color: var(--soluk); text-align: right; overflow-wrap: anywhere; }
+.yr .haber-not { margin-top: 14px; font-size: 24px; line-height: 1.3; color: var(--soluk); text-wrap: pretty; }
+/* haber sahnesinde alt başlık ("2–6 Kasım · web araması") başlığın yanına sığmaz; kendi satırında */
+.yr .haber-sahne [data-sigdir] .ufuk { display: block; margin: 8px 0 0; }
 /* kapanış */
 .yr .kapanis h2 { font-size: 104px; }
 .yr .cagri { display: inline-flex; align-items: center; gap: 18px; font-size: 44px; font-weight: 800;
@@ -98,6 +110,8 @@
 </head>
 <body>
 <div class="yr" id="yr" data-sureler="{{ sahne_sureleri | join(',') }}">
+  {#- sayfa sayısı: kapak + vadeler (+ haber sayfası); kapanış sayılmaz -#}
+  {% set toplam_sayfa = vadeler | length + 1 + (1 if haberler else 0) %}
   <div class="isik" aria-hidden="true"></div>
   {#- Üst şerit ×1,1 (25 Ekim 2026). Yapay zekâ ibaresi küçük (Rıdvan, 15 Ekim 21:38) ama ilk kareden görünür; bütün
       sahnelerde, etiketin altında (altta Instagram'ın hesap adı satırı üstüne biniyordu). -#}
@@ -141,9 +155,9 @@
     {% if kaynak_metal %}<div class="blok kapak-kaynak" data-g="{{ kg.fiyat or 0.1 }}" style="top: 1400px">Metal fiyatları: {{ kaynak_metal }}</div>{% endif %}
   </div>
 
-  {# ---- 2–4) vadeler: kaydırmalı gönderinin vade sayfalarıyla aynı içerik ---- #}
+  {# ---- 2–3) vadeler: kaydırmalı gönderinin vade sayfalarıyla aynı içerik ---- #}
   {% for v in vadeler %}
-  <div class="sahne-k gizli" id="s{{ loop.index }}" data-sayac="{{ '%02d' % (loop.index + 1) }} / {{ '%02d' % (vadeler | length + 1) }}">
+  <div class="sahne-k gizli" id="s{{ loop.index }}" data-sayac="{{ '%02d' % (loop.index + 1) }} / {{ '%02d' % toplam_sayfa }}">
     <div class="blok olcek-dis" style="top: 384px">
     <div class="olcek" data-sigdir>
       <div data-g="0">
@@ -174,9 +188,34 @@
   </div>
   {% endfor %}
 
-  {# ---- 5) kapanış (isteğe bağlı: YORUM_REELS_SAHNELER'de 5. süre varsa) ---- #}
-  {% if sahne_sureleri | length > vadeler | length + 1 %}
-  <div class="sahne-k gizli kapanis" id="s{{ vadeler | length + 1 }}" data-sayac="HER PAZAR">
+  {# ---- 4) "Haftanın gelişmeleri": kaydırmalının son sayfasıyla aynı maddeler (haber sayfası varsa) ---- #}
+  {% if haberler %}
+  {% set hg = haber_g or {} %}
+  <div class="sahne-k gizli haber-sahne" id="s{{ vadeler | length + 1 }}" data-sayac="{{ '%02d' % toplam_sayfa }} / {{ '%02d' % toplam_sayfa }}">
+    <div class="blok olcek-dis" style="top: 384px">
+    <div class="olcek" data-sigdir>
+      <div data-g="{{ hg.baslik or 0 }}">
+        <div class="no mono">{{ '%02d' % (vadeler | length + 1) }}</div>
+        <h2>Haftanın gelişmeleri</h2>
+        <div class="ufuk">{{ hafta_araligi }} · web araması</div>
+      </div>
+      <div class="haberler">
+        {% for h in haberler %}
+        <div class="haber" data-g="{{ hg['haber-' ~ loop.index0] or (0.08 + 0.18 * loop.index0) }}">
+          <div class="haber-ust"><div class="kucuk-baslik">{{ h.baslik }}</div><div class="kaynak mono">kaynak: {{ h.kaynak }}</div></div>
+          <div class="metin">{{ h.metin }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="haber-not" data-g="{{ hg['haber-not'] or 0.9 }}">Haberler pazar sabahı web aramasıyla derlenip yapay zekâ ile özetlenmiştir; ayrıca doğrulanmaz.</div>
+    </div>
+    </div>
+  </div>
+  {% endif %}
+
+  {# ---- 5) kapanış (isteğe bağlı: sahne_sureleri'nde sayfalardan fazla süre varsa; sesli Reels) ---- #}
+  {% if sahne_sureleri | length > toplam_sayfa %}
+  <div class="sahne-k gizli kapanis" id="s{{ toplam_sayfa }}" data-sayac="HER PAZAR">
     <div class="blok" data-g="0" style="top: 480px">
       <h2>Her pazar<br>~11:00</h2>
       <div class="ufuk" style="font-size: 42px; margin-top: 30px">{{ baslik or 'Kısa ve orta vade' }} gümüş görünümü</div>

@@ -50,9 +50,11 @@
   değiştirilmez.
 - Pazar yorumu 2 sayılır (kaydırmalı + Reels; hikâye 25 Ekim 2026'da kaldırıldı, Rıdvan: "Hikayeyi kaldıralım";
   `main.PAZAR_HIKAYE`; öne çıkan yerine pazar analizi profilde sabitlenir). Pazar Reels'i sesli (Rıdvan, 17 Ekim 2026: Gemini erkek
-  sesi, analizin tamamı okunur; okumayı ona sormadan kısaltma). Ses **Orus** (`ses.YORUM_SES`; Rıdvan, 3 örnekten "Ses 2"); 24 sn müzikli sürüm
-  yine üretilir; ses alınamazsa Reels 24 sn müzikli gider (yedek yol kaldırılmaz). Ses, üslup ya da okunan metin
-  değişecekse önce önizleme ve onay.
+  sesi, analizin tamamı okunur; okumayı ona sormadan kısaltma). Ses **Orus** (`ses.YORUM_SES`; Rıdvan, 3 örnekten "Ses 2"); müzikli kısa sürüm
+  (sahne başına 8 sn, haber sahnesi 12 sn) yine üretilir; ses alınamazsa Reels onunla gider (yedek yol kaldırılmaz). Ses, üslup ya da okunan metin
+  değişecekse önce önizleme ve onay. **Reels 4 sayfa** (Rıdvan, 9 Kasım 2026: "Pazar yorumları Sesli olan bölümde 4 sayfa
+  olsun"): kaydırmalının "Haftanın gelişmeleri" sayfası Reels'te de sahne olarak var ve tamamı okunur (konu + cümle; kaynak alan
+  adları okunmaz, ekranda yazılı; `yorum.haber_okuma`, `main.YORUM_REELS_HABER_SN`). Haber sayfası yoksa Reels 3 sayfa. Kaldırma.
 - Pazar yorumunun orta vade geçmişini MetalCharts Starter verir (17 Ekim 2026); Ocak 2027'de iptal (11 Ocak
   hatırlatması), sonra kendi kayıtlarımız. Pazar yorumu önizlemesini Rıdvan'a gerçek veriyle üret (deneme, ornek
   işaretsiz): örnek veride orta vade boş görünür. (Yalnız kısa ve orta vade kuralı aşağıda.)
@@ -167,7 +169,10 @@
   **Zorunluluk (Rıdvan, 8 Kasım 2026 "Siyasi yorum neden çıkmadı"; 9 Kasım "Başla"):** haber özetinde gerçek bir siyasi
   madde varsa (`yorum.siyasi_maddeler`: "Siyaset" bölümünün "bulunamadı" demeyen satırları, "Türkiye" bölümünün siyasi
   sözlü satırları) modele `siyasi_gelisme_var: true` gider ve yazması zorunludur (istem kuralı 9c): en az bir vadede
-  etkisi (sesli Reels okur) ve "Haftanın gelişmeleri" sayfasında SİYASET maddesi (kırpmada korunur, `haber_kirp`). Yine
+  etkisi (sesli Reels okur) ve "Haftanın gelişmeleri" sayfasında bu gelişmenin maddesi (kırpmada korunur, `haber_kirp`).
+  Maddenin iç konu adı "Siyaset", okura görünen başlığı **GÜNDEM**, Reels'te "Gündem" diye okunur (Rıdvan, 9 Kasım 2026
+  19:10: "siyaset kelimesi beni de rahatsız etti. aslında bu sadece bir haber"; 19:12 "gündem"; `yorum.HABER_KONU_BASLIK`,
+  `HABER_KONU_OKUMA`); "siyaset" kelimesini okura gösterme. Yine
   çıkmazsa yalnız `::warning::` yazılır; paylaşım durmaz, yeniden istek açılmaz (kredi). Oy gününde zorunluluk yok.
   Siyasi haber bulunamayan hafta siyaset çıkmaz; bu doğru davranıştır, hata değil. Gece kontrolü uyarıyı görürse
   Rıdvan'a bildirir.
