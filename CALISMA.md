@@ -6,3 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
+| 9 Kas 2026 13:00 | #31 Pazar yorumunda siyaset zorunlu (haber özetinde varsa) | bot/yorum.py, bot/test_yorum*.py, bot/test_pazar.py, README.md, CLAUDE.md (pazar siyaset satırı) | dal siyaset-zorunlu-2026-11-09 (önizleme bekliyor) |
