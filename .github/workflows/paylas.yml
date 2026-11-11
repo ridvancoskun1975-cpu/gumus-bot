@@ -46,7 +46,7 @@ on:
         options: [reels, post, hafta, ay, yasal, bilgi, kisa, yorum, hikaye, kart, tanitim]
         default: reels
       konu:
-        description: "bilgi, kisa, hikaye: rehber bölüm no (boşsa bilgi için bugünün rehberi, kisa için bugünün arşiv Reels'i; hikaye için zorunlu). kart: gram ya da parite (boşsa günün kartı). yorum + ornek: örneğin pazarı (YYYY-AA-GG)."
+        description: "bilgi, kisa, hikaye: rehber bölüm no (boşsa bilgi için bugünün rehberi, kisa için bugünün arşiv Reels'i; hikaye için zorunlu). kart: gram ya da parite (boşsa günün kartı). yorum + ornek: örneğin pazarı (YYYY-AA-GG). reels/post denemesi: insan:hesap, insan:balon ya da insan:neden (bot/insan.py önizlemesi)."
         type: string
         default: ""
       deneme:
@@ -356,7 +356,7 @@ jobs:
         env:
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
           METALCHARTS_KEY: ${{ secrets.METALCHARTS_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}   # yalnızca pazar yorumu kullanır
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}   # pazar yorumu ve akşam özetinin neden kartı (bot/insan.py)
           YZ_MODEL: ${{ vars.YZ_MODEL }}                         # boşsa claude-opus-5-5
           YZ_CABA: ${{ vars.YZ_CABA }}                           # boşsa xhigh (ekstra yüksek)
           API_HARCAMA_DOSYA: ${{ runner.temp }}/api-harcama.jsonl  # pazar yorumunun token/arama sayıları
@@ -452,17 +452,18 @@ jobs:
           DENEME: ${{ github.event_name == 'workflow_dispatch' && inputs.deneme }}
         run: python bot/kayit.py --tur "${{ needs.kontrol.outputs.tur }}"
 
-      # Pazar yorumunun Claude API harcaması (token ve arama; deneme dahil) özel gumus-kayit deposuna
-      # yazılır (api-bakiye.md). Tutar günlüğe yazılmaz. Kredi takibi: bot/bakiye.py ve bakiye.yml.
+      # Pazar yorumunun ve akşam özetinin neden kartının (bot/insan.py) Claude API harcaması (token ve arama; deneme
+      # dahil) özel gumus-kayit deposuna yazılır (api-bakiye.md). Tutar günlüğe yazılmaz. Kredi takibi: bot/bakiye.py ve
+      # bakiye.yml. Akşam özetinde çağrı yoksa (neden kartı yalnız %2+ günlerde) adım hiçbir şey yazmadan biter.
       - name: API harcama kaydı
-        if: always() && needs.kontrol.outputs.tur == 'yorum'
+        if: always() && (needs.kontrol.outputs.tur == 'yorum' || needs.kontrol.outputs.tur == 'post')
         continue-on-error: true
         timeout-minutes: 2
         env:
           KAYIT_PAT: ${{ secrets.KAYIT_PAT }}
           DENEME: ${{ github.event_name == 'workflow_dispatch' && inputs.deneme }}
           API_HARCAMA_DOSYA: ${{ runner.temp }}/api-harcama.jsonl
-        run: python bot/bakiye.py kaydet --tur yorum
+        run: python bot/bakiye.py kaydet --tur "${{ needs.kontrol.outputs.tur }}"
 
       - name: Günlük kayıtları sakla
         if: always() && hashFiles('veri/gecmis.json') != ''
