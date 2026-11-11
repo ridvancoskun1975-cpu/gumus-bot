@@ -75,11 +75,11 @@ window.sesRozeti = function (t) {
 </div>
 {%- endmacro %}
 
-{% macro goril_balonu(b, yazi, sag, alt) -%}
-<div id="goril-balon" aria-hidden="true" style="position: absolute; right: {{ sag }}px; bottom: {{ alt }}px; max-width: 400px;
+{% macro goril_balonu(b, yazi, sag, alt, genislik=400) -%}
+<div id="goril-balon" aria-hidden="true" style="position: absolute; right: {{ sag }}px; bottom: {{ alt if alt is string else alt ~ 'px' }}; max-width: {{ genislik }}px;
      background: var(--yazi); color: var(--zemin); font-size: {{ yazi }}px; font-weight: 700; line-height: 1.2;
      padding: 14px 22px; border-radius: 24px; text-wrap: balance">{{ b }}
-  <span id="goril-balon-kuyruk" style="position: absolute; right: 58px; bottom: -22px; width: 0; height: 0; border-left: 14px solid transparent;
-        border-right: 14px solid transparent; border-top: 24px solid var(--yazi)"></span>
+  <svg id="goril-balon-kuyruk" aria-hidden="true" width="1" height="1" style="position: absolute; left: 0; top: 100%; overflow: visible; display: block">
+    <polygon id="goril-balon-ok" points="0,0 0,0 0,0" style="fill: var(--yazi)"></polygon></svg>
 </div>
 {%- endmacro %}

@@ -36,7 +36,7 @@
     {#- Goril maskotu (bot/goril.py): hafta içi sabah Reels'i ve akşam özeti, cumartesi haftalık özet -#}
     {#- Gün içi satırı varken goril yukarı alınır: ayakları parite / dolar başlığına inmesin -#}
     {% if maskot %}<div class="maskot" aria-hidden="true" style="position: absolute; right: -14px; bottom: {{ '96px' if gun_ici_gorsel else '-20px' }}; width: 226px; height: 247px">{% include maskot %}</div>{% endif %}
-    {% if maskot and goril_balon %}{{ goril_balonu(goril_balon, 30, 40, 238 if not gun_ici_gorsel else 352) }}{% endif %}
+    {% if maskot and goril_balon %}{% if gun_ici_gorsel %}{{ goril_balonu(goril_balon, 28, 32, 'calc(100% - 82px)', 320) }}{% else %}{{ goril_balonu(goril_balon, 30, 32, 'calc(100% - 104px)', 360) }}{% endif %}{% endif %}
     {% if buyuk_hareket %}{{ manset(buyuk_hareket, 46, 35) }}{% elif gun_baslik %}{{ gun_basligi(gun_baslik, 44, 30) }}{% else %}
     <div class="kahraman-baslik" style="font-size: 41px">GRAM GÜMÜŞ</div>
     {% endif %}
