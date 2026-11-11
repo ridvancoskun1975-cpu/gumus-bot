@@ -64,3 +64,22 @@ window.sesRozeti = function (t) {
 };
 </script>
 {%- endmacro %}
+
+{#- İnsan dokunuşu önizlemesi (Rıdvan, 11 Kasım 2026: "1 2 3 görelim. Ama çok sık olmamalı"): not kartı (öneri 1 hesap,
+    öneri 3 neden) ve goril konuşma balonu (öneri 2). Yalnız veri varsa çıkar. -#}
+{% macro not_karti(n, yazi, etiket) -%}
+<div id="not-karti" style="display: flex; flex-direction: column; gap: 4px; margin: 10px 0 6px; padding: 12px 24px 14px;
+     border: 2px solid var(--cizgi); border-radius: 20px; background: rgba(201, 209, 218, 0.06)">
+  <span style="font-size: {{ etiket }}px; font-weight: 700; letter-spacing: 3px; color: var(--soluk)">{{ n.etiket }}</span>
+  <span style="font-size: {{ yazi }}px; line-height: 1.22; text-wrap: balance">{{ n.metin }}</span>
+</div>
+{%- endmacro %}
+
+{% macro goril_balonu(b, yazi, sag, alt) -%}
+<div id="goril-balon" aria-hidden="true" style="position: absolute; right: {{ sag }}px; bottom: {{ alt }}px; max-width: 400px;
+     background: var(--yazi); color: var(--zemin); font-size: {{ yazi }}px; font-weight: 700; line-height: 1.2;
+     padding: 14px 22px; border-radius: 24px; text-wrap: balance">{{ b }}
+  <span style="position: absolute; right: 58px; bottom: -22px; width: 0; height: 0; border-left: 14px solid transparent;
+        border-right: 14px solid transparent; border-top: 24px solid var(--yazi)"></span>
+</div>
+{%- endmacro %}
