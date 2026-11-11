@@ -6,4 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
-| 11 Kas 10:45 | İnsan dokunuşu önizlemesi (#33: hesap kartı, goril balonu, neden kartı); onay bekliyor | templates/post.html, templates/reels.html, templates/makrolar.html | insan-dokunusu-2026-11-11 · önizlemede |
+| 11 Kas 10:45 | İnsan dokunuşu (#33: hesap kartı, neden kartı, goril balonu); kod hazır, gerçek veriyle önizleme Rıdvan'da, onay bekliyor | bot/insan.py, bot/main.py, bot/test_insan.py, templates/post.html, templates/reels.html, templates/makrolar.html, .github/workflows/paylas.yml, README.md, CLAUDE.md | insan-dokunusu-kod-2026-11-11 (bccb1e1) · önizlemede |
