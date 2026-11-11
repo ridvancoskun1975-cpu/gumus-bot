@@ -101,12 +101,19 @@ bekle(insan.onceki_kart_sayisi(iki, PER) == 2, f"kart sayısı: {insan.onceki_ka
 bekle(insan.hesap_karti(veri(), iki, "post", PER) is None, "haftalık 2 kart sınırı")
 tek = seri(PER, [100.0, 100.4, 100.5, 100.0])          # yalnız salı hesap
 bekle(insan.hesap_karti(veri(), tek, "post", PER) is not None, "perşembe hesap (1 kart sonrası)")
-# başlangıçtan önceki günler kart sayılmaz (ilk hafta: 16 Kas pazartesi %2+ olsa da neden kartı yoktu)
-ilk_per = insan.BASLANGIC + timedelta(days=2)                     # 19 Kas perşembe
-once = {(insan.BASLANGIC - timedelta(days=2)).isoformat(): 100.0,  # 15 Kas (pazar değil: sınama için gün)
-        (insan.BASLANGIC - timedelta(days=1)).isoformat(): 103.0,  # 16 Kas pazartesi +%3
-        insan.BASLANGIC.isoformat(): 103.1}                          # 17 Kas salı (hesap)
-bekle(insan.onceki_kart_sayisi(once, ilk_per) == 1, f"başlangıç öncesi sayılmaz: {insan.onceki_kart_sayisi(once, ilk_per)}")
+# başlangıçtan önceki günler kart sayılmaz (sınama BASLANGIC'ı bir salıya koyar, sonra geri alır)
+_eski = insan.BASLANGIC
+insan.BASLANGIC = date(2026, 11, 17)                             # salı
+once = {"2026-11-13": 100.0, "2026-11-16": 103.0,              # 16 Kas pazartesi +%3 (başlangıçtan önce)
+        "2026-11-17": 103.1}                                     # 17 Kas salı (hesap)
+bekle(insan.onceki_kart_sayisi(once, date(2026, 11, 19)) == 1, f"başlangıç öncesi sayılmaz: {insan.onceki_kart_sayisi(once, date(2026, 11, 19))}")
+insan.BASLANGIC = _eski
+# canlı başlangıç: 12 Kas perşembe; aynı hafta pazartesi–çarşamba %2+ olsa da kart sayılmaz, perşembe hesap kartı çıkar
+bekle(insan.BASLANGIC == date(2026, 11, 12), "başlangıç 12 Kasım (Rıdvan: ilk paylaşımda başla)")
+ilk = {"2026-11-06": 80.0, "2026-11-09": 82.0, "2026-11-10": 79.0, "2026-11-11": 84.05}
+bekle(insan.onceki_kart_sayisi(ilk, date(2026, 11, 12)) == 0, "ilk hafta: başlangıç öncesi günler sayılmaz")
+bekle(insan.hesap_karti(veri(), ilk, "post", date(2026, 11, 12)) is not None, "12 Kas perşembe akşamı hesap kartı")
+bekle(insan.goril_balonu(veri(0.3, "istif"), ilk, "reels", date(2026, 11, 12)) is None, "perşembe sabahı balon yok")
 # zorla: gün sınırını aşar
 bekle(insan.hesap_karti(veri(), bos, "post", CAR, zorla="hesap") is not None, "zorla hesap")
 

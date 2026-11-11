@@ -31,8 +31,8 @@ import threading
 from datetime import date, timedelta
 
 ACIK = True
-# Canlıya alma (Claude önerisi: 16 Kasım reklamsız hafta raporundan sonra; Rıdvan'ın onayıyla değişir).
-BASLANGIC = date(2026, 11, 17)
+# Canlıya alma: Rıdvan, 12 Kasım 2026 00:33: "ilk paylaşımda başla" (Claude 16 Kasım raporundan sonrasını önermişti).
+BASLANGIC = date(2026, 11, 12)
 
 YOK = {"gunun_notu": None, "goril_balon": None}
 
