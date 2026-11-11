@@ -6,3 +6,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
+| 11 Kas 10:45 | İnsan dokunuşu önizlemesi (#33: hesap kartı, goril balonu, neden kartı); onay bekliyor | templates/post.html, templates/reels.html, templates/makrolar.html | insan-dokunusu-2026-11-11 · önizlemede |
