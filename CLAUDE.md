@@ -99,6 +99,12 @@
   paylaşım durmaz, goril kalır ve Rıdvan'a bildirilir (gece kontrolü; Rıdvan, 16 Ekim 2026 22:43).
   Sitede yalnız istifçi goril, tanıtım kartında ve 404 sayfasında; fiyattan bağımsız, yön göstermez (Rıdvan, 19 Ekim
   2026 "2 ama istifçi goril", "onaylıyorum uygula"). Fiyatın yanına ya da güne göre değişen hâl koyma; kapatma `bot/sayfa.py` → `SITE_GORIL`.
+- **İnsan dokunuşu (#33; Rıdvan, 11 Kasım 2026; README → "İnsan dokunuşu", `bot/insan.py`):** salı/perşembe akşam hesap kartı,
+  %2+ akşam neden kartı, pazartesi sabah / cuma akşam goril balonu; paylaşım başına en fazla bir kart, haftada en çok 2 kart.
+  Balon cümleleri yalnız Rıdvan'ın onay tablosundan (https://claude.ai/artifact/32r87SxehVXXjYqkxMrHrZ); doğaçlama cümle ya da
+  modelle balon yazma. **Gümüş düştüğü gün balon yok** (Rıdvan, 14:18: "morali bozuk bir insana espiri yapamayız. !!! dalga geçiyor
+  gibi anlaşılabilir"); bu kuralı zorlama ayarları da aşmaz, kaldırma. Neden kartının her hatası kartsız paylaşıma düşer; bu yedek
+  yol kaldırılmaz. Metin, gün ya da sıklık değişecekse önce önizleme ve onay.
 - Rehber hikâyesi kareler tek tek değil, tek müzikli video olarak gider (kapak 3 sn, kare 6 sn), rehber gönderisiyle
   aynı çalıştırmada (`bot/main.py` → `REHBER_HIKAYE_OTOMATIK = True`); hikâye kalabalık olmamalı.
 - Takvimi azaltma kararı (Rıdvan, 19 Ekim 2026: "takipçileri bıktırmamak ve kaçırmamak için … paylaşım sayısını
