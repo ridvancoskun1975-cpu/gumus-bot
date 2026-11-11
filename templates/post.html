@@ -1,5 +1,5 @@
 {#- © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE -#}
-{% from "makrolar.html" import degisim, ag_etiketi, manset, gun_basligi %}<!doctype html>
+{% from "makrolar.html" import degisim, ag_etiketi, manset, gun_basligi, not_karti, goril_balonu %}<!doctype html>
 <html lang="tr">
 <head>
 <meta charset="utf-8">
@@ -33,6 +33,7 @@
     {#- Goril maskotu (bot/goril.py): hafta içi sabah Reels'i ve akşam özeti, cumartesi haftalık özet -#}
     {#- Gün içi satırı varken goril yukarı alınır: ayakları parite / dolar başlığına inmesin -#}
     {% if maskot %}<div class="maskot" aria-hidden="true" style="position: absolute; right: -14px; bottom: {{ '96px' if gun_ici_gorsel else '-20px' }}; width: 226px; height: 247px">{% include maskot %}</div>{% endif %}
+    {% if maskot and goril_balon %}{{ goril_balonu(goril_balon, 30, 40, 238 if not gun_ici_gorsel else 352) }}{% endif %}
     {% if buyuk_hareket %}{{ manset(buyuk_hareket, 46, 35) }}{% elif gun_baslik %}{{ gun_basligi(gun_baslik, 44, 30) }}{% else %}
     <div class="kahraman-baslik" style="font-size: 41px">GRAM GÜMÜŞ</div>
     {% endif %}
@@ -70,7 +71,8 @@
   </div>
 
   <div style="display: flex; flex-direction: column">
-    <div class="satir" style="display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 28px 0; border-top: 2px solid var(--cizgi)">
+    {% if gunun_notu %}{{ not_karti(gunun_notu, 35, 23) }}{% endif %}
+    <div class="satir" style="display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: {{ 18 if gunun_notu else 28 }}px 0; border-top: 2px solid var(--cizgi)">
       <div style="display: flex; flex-direction: column; gap: 7px">
         <b style="font-size: 41px; white-space: nowrap">Altın / Gümüş paritesi</b>
         <span class="soluk" style="font-size: 37px; line-height: 1.2; text-wrap: balance">{{ parite_cumle or "1 ons altın = ? ons gümüş" }}</span>
@@ -80,7 +82,7 @@
         {{ degisim(parite_deg, 39, 28) }}
       </div>
     </div>
-    <div class="satir" style="display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 28px 0; border-top: 2px solid var(--cizgi)">
+    <div class="satir" style="display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: {{ 18 if gunun_notu else 28 }}px 0; border-top: 2px solid var(--cizgi)">
       <div style="display: flex; flex-direction: column; gap: 7px">
         <b style="font-size: 41px; white-space: nowrap">Dolar / TL</b>
         <span class="soluk" style="font-size: 37px; line-height: 1.2">ECB kuru · {{ kur_tarihi }}</span>
@@ -97,6 +99,7 @@
     <b style="font-size: 39px"><span style="position: relative"><span style="position: absolute; right: 100%; top: .3em; margin-right: .2em; font-size: .62em; line-height: 1">©</span>{{ hesap }}</span></b>
     <div class="alt-sag soluk" style="font-size: 22px">
       {% if gun_ici_gorsel %}<span>Gün içi: yaklaşık 2 saatte bir alınan fiyatlara göre.</span>{% endif %}
+      {% if gunun_notu and gunun_notu.alt %}<span>{{ gunun_notu.alt }}</span>{% endif %}
       <span>Bilgi amaçlıdır, yatırım tavsiyesi değildir.</span>
       <span>Metal fiyatları: {{ kaynak_metal }}</span>
     </div>

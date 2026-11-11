@@ -1,5 +1,5 @@
 {#- © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE -#}
-{% from "makrolar.html" import degisim, ag_etiketi, manset, gun_basligi %}<!doctype html>
+{% from "makrolar.html" import degisim, ag_etiketi, manset, gun_basligi, goril_balonu %}<!doctype html>
 <html lang="tr">
 <head>
 <meta charset="utf-8">
@@ -27,6 +27,7 @@
   <div class="kahraman" style="gap: 16px; padding-top: 56px; position: relative">
     {#- Goril maskotu (bot/goril.py): fiyatın sağında, alt satırın üstünde; Reels düğmeleri sağdaki 170 px'te -#}
     {% if maskot %}<div class="maskot" aria-hidden="true" style="position: absolute; right: -12px; bottom: 30px; width: 226px; height: 246px">{% include maskot %}</div>{% endif %}
+    {% if maskot and goril_balon %}{{ goril_balonu(goril_balon, 30, 38, 290) }}{% endif %}
     {% if buyuk_hareket %}{{ manset(buyuk_hareket, 46, 34) }}{% elif gun_baslik %}{{ gun_basligi(gun_baslik, 42, 28) }}{% else %}
     <div class="kahraman-baslik" style="font-size: 40px">GRAM GÜMÜŞ</div>
     {% endif %}
