@@ -53,7 +53,7 @@ NEDEN_BUTCE_PAYI_SN = 120         # sn: üretim bütçesinde bundan az kalacaksa
 NEDEN_ARAMA = 3                   # en çok arama sayısı
 NEDEN_EN_KISA, NEDEN_EN_UZUN = 25, 95   # karakter: kart iki satıra sığsın
 NEDEN_ETIKET = {"artis": "BUGÜN NEDEN YÜKSELDİ?", "dusus": "BUGÜN NEDEN DÜŞTÜ?"}
-NEDEN_NOTU = "Neden satırı: haberlerden yapay zekâ özeti; kaynak açıklamada."
+NEDEN_NOTU = "Neden satırı yapay zekâ özetidir; kaynak açıklamada."   # tek satıra sığsın (≤ 52 harf)
 NEDEN_ACIKLAMA_NOTU = "Neden satırı haber kaynaklarından yapay zekâyla özetlenmiştir."
 # Gelecek zaman ve olasılık: neden geçmişte olmuş bir olaydır, tahmin değil.
 NEDEN_YASAK = [
