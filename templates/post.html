@@ -17,7 +17,10 @@
     Instagram'ın hesap adı satırına hafifçe yaklaşır (Rıdvan önizlemede gördü). -#}
 <div class="sahne" style="position: relative; width: 1080px; height: 1920px; padding: 0">
   <div class="isik" aria-hidden="true"></div>
-  <div class="cerceve" style="position: absolute; left: 96px; top: 220px; width: 814px; height: 1280px; display: flex;
+  {#- Kartlı günde (bot/insan.py: hesap / neden kartı) içerik 1280 px'e sığmayabilir (gün içi satırı varken): çerçeve
+      doğal yüksekliğini alır ve aşağıdaki betik onu bütünüyle küçülterek aynı alana sığdırır (oranlar aynı kalır).
+      Kartsız günde hiçbir şey değişmez. -#}
+  <div class="cerceve" style="position: absolute; left: 96px; top: 220px; width: 814px; {{ 'min-height' if gunun_notu else 'height' }}: 1280px; display: flex;
        flex-direction: column; justify-content: space-between; transform: scale(1.03); transform-origin: 0 0">
   <div class="ust">
     <div class="ust-sol" style="gap: 21px">
@@ -106,6 +109,14 @@
   </div>
   </div>
 </div>
+{% if gunun_notu %}<script>
+(function () {
+  const c = document.querySelector('.cerceve'), H = 1280, S = 1.03;
+  const sigdir = () => { c.style.transform = 'scale(' + Math.min(S, S * H / c.scrollHeight) + ')'; };
+  sigdir();
+  if (document.fonts) document.fonts.ready.then(sigdir);
+})();
+</script>{% endif %}
 <script>{% include "hareket.js" %}</script>
 {% if maskot_js %}<script>{% include maskot_js %}</script>{% endif %}
 </body>

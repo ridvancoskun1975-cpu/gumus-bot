@@ -1276,6 +1276,15 @@ def _ozet_ek(v):
     return "".join(s + "\n" for s in satirlar)
 
 
+def _insan_notu(v):
+    """Neden kartı varsa açıklamadaki not: cümle haberlerden yapay zekâyla özetlenmiştir (model adı yazılmaz)."""
+    k = v.get("gunun_notu") or {}
+    if k.get("tur") != "neden":
+        return ""
+    import insan
+    return insan.NEDEN_ACIKLAMA_NOTU
+
+
 def site_satiri():
     """Sabah Reels'i, akşam özeti, haftalık ve aylık özetin açıklamasındaki site satırı. Fiyat satırının (Goril satırı
     varsa onun) hemen altında durur: "devamı"na basan kaydırmadan görür (Rıdvan, 4 Kasım 2026: "Aşağı doğru
@@ -1343,13 +1352,15 @@ def aciklama_yaz(v, tur):
         f"{v.get('goril_satiri', '') if tur in ('post', 'reels') else ''}"
         f"{site_satiri() + chr(10) if tur in ('post', 'reels') else ''}"
         f"{baslik} · {v['tarih']} · {v['saat']}\n"
-        f"{_ozet_ek(v) if tur == 'post' else ''}\n"
+        f"{_ozet_ek(v) if tur == 'post' else ''}"
+        f"{v['gunun_notu']['aciklama'] + chr(10) if tur == 'post' and (v.get('gunun_notu') or {}).get('aciklama') else ''}\n"
         f"Altın/Gümüş paritesi: {v['parite']} ({p['isaret']} {p['metin']})\n"
         f"Dolar/TL: {v['dolar']} ₺ ({d['isaret']} {d['metin']})\n\n"
         f"{_ozel_satiri(v)}"
         f"Değişimler önceki iş gününe göredir."
         f"{' ' + GUN_ICI_NOTU if tur == 'post' and _gun_ici_aralik_mi(v.get('gun_ici_satiri')) else ''}"
-        f"{' ' + v['baslik_notu'] if v.get('baslik_notu') else ''}\n"
+        f"{' ' + v['baslik_notu'] if v.get('baslik_notu') else ''}"
+        f"{' ' + _insan_notu(v) if tur == 'post' and _insan_notu(v) else ''}\n"
         f"{_cagri_satirlari(v, tur)}"
         "Bilgi amaçlıdır, yatırım tavsiyesi değildir.\n\n"
         f"{_kaynak_satirlari(v)}\n\n"
@@ -1609,14 +1620,14 @@ GORIL_YOK = {"goril": None, "maskot": None, "maskot_js": None, "goril_satiri": "
 # Gorilin üstüne binmemesi gereken öğeler. Metin öğelerinde kutunun değil yazının kendisi ölçülür.
 GORIL_KORUNAN_METIN = ["#fiyat", ".kahraman-birim", ".kahraman-baslik", ".kahraman > .soluk", ".alt", ".etiket",
                        ".tarih", ".ozel-manset", "h1", ".satir", ".gun-ici-oge"]
-GORIL_KORUNAN_KUTU = ["#fiyat-deg", "#manset", "#gun-baslik", ".ag", ".grafik-deger"]
+GORIL_KORUNAN_KUTU = ["#fiyat-deg", "#manset", "#gun-baslik", ".ag", ".grafik-deger", "#not-karti"]
 GORIL_DENETIM_ANLARI = tuple(i / 10 for i in range(131))   # en uzun videonun (13 sn) her 0,1 sn'si
 GORIL_OGE_ADI = {"#fiyat": "fiyat", ".kahraman-birim": "₺ işareti", ".kahraman-baslik": "GRAM GÜMÜŞ başlığı",
                  ".kahraman > .soluk": "fiyatın altındaki satır", ".alt": "en alttaki satır", ".etiket": "üst etiket",
                  ".tarih": "tarih", ".ozel-manset": "özel gün manşeti", "h1": "Gümüş başlığı",
                  ".satir": "parite / dolar satırı", "#fiyat-deg": "yüzde rozeti", "#manset": "manşet",
                  "#gun-baslik": "günün başlığı", ".ag": "Ag rozeti", ".grafik-deger": "grafik değeri",
-                 ".gun-ici-oge": "gün içi en düşük / en yüksek"}
+                 ".gun-ici-oge": "gün içi en düşük / en yüksek", "#not-karti": "hesap / neden kartı"}
 
 
 def goril_alanlari(veri, tur, ornek=False):
@@ -1628,6 +1639,69 @@ def goril_alanlari(veri, tur, ornek=False):
     except Exception as e:
         print(f"::warning::Goril hâli belirlenemedi, gorilsiz devam ediliyor: {type(e).__name__}: {e}")
         return dict(GORIL_YOK)
+
+
+INSAN_YOK = {"gunun_notu": None, "goril_balon": None}
+
+
+def insan_alanlari(veri, fiyat, tur, ornek=False):
+    """İnsan dokunuşu alanları (bot/insan.py): gunun_notu (hesap ya da neden kartı) ve goril_balon. Modülde ya da kuralda
+    herhangi bir hata "ekleme yok" sayılır; fiyat paylaşımı hiç etkilenmez."""
+    try:
+        import insan
+        return insan.sablon_verisi(veri, (fiyat or {}).get("gecmis_gram"), tur, datetime.now(TR_SAAT).date(),
+                                   ornek=ornek, kalan_sn=butce.kalan())
+    except Exception as e:
+        print(f"::warning::İnsan dokunuşu belirlenemedi, eklemesiz devam ediliyor: {type(e).__name__}: {e}")
+        return dict(INSAN_YOK)
+
+
+# Goril balonunun üstüne binmemesi gereken öğeler (bot/insan.py). Binerse balon düşer, paylaşım balonsuz gider.
+BALON_KORUNAN_METIN = ["#fiyat", ".kahraman-birim", ".kahraman-baslik", ".kahraman > .soluk", ".etiket", ".tarih",
+                       "h1", ".satir", ".gun-ici-oge"]
+BALON_KORUNAN_KUTU = ["#fiyat-deg", "#manset", "#gun-baslik", ".ag", "#not-karti"]
+
+
+def balon_yerlesimi_denetle(sablon, veri):
+    """Goril balonu (#goril-balon) bir yazıya ya da kutuya biniyor mu: binenlerin adları (boş liste: binmiyor).
+    Balon ölçülemezse RuntimeError; çağıran yer balonu düşürür."""
+    from jinja2 import Environment, FileSystemLoader
+    from playwright.sync_api import sync_playwright
+
+    html = Environment(loader=FileSystemLoader(str(SABLONLAR)), autoescape=True).get_template(f"{sablon}.html").render(**veri)
+    gecici = SABLONLAR / f"_balon_denetim_{sablon}.html"
+    gecici.write_text(html, encoding="utf-8")
+    olc = """([metinler, kutular]) => {
+      const kes = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+      const balon = document.getElementById('goril-balon');
+      if (!balon) return {hata: 'balon yok'};
+      const g = balon.getBoundingClientRect();
+      if (g.width === 0) return {hata: 'balon görünmüyor'};
+      const carpan = [];
+      metinler.forEach(s => document.querySelectorAll(s).forEach(e => {
+        const r = document.createRange(); r.selectNodeContents(e); const b = r.getBoundingClientRect();
+        if (b.width > 0 && b.height > 0 && kes(g, b)) carpan.push(s); }));
+      kutular.forEach(s => document.querySelectorAll(s).forEach(e => {
+        const b = e.getBoundingClientRect(); if (b.width > 0 && b.height > 0 && kes(g, b)) carpan.push(s); }));
+      const sag = window.innerWidth - 170;   // Reels düğmeleri (sağdaki 170 px)
+      if (g.right > sag) carpan.push('Reels düğmeleri');
+      return {carpan};
+    }"""
+    try:
+        with sync_playwright() as p:
+            kwargs = {"executable_path": os.environ["CHROME_YOLU"]} if os.environ.get("CHROME_YOLU") else {}
+            tarayici = p.chromium.launch(**kwargs)
+            sayfa = tarayici.new_page(viewport={"width": 1080, "height": 1920})
+            sayfa.goto(gecici.as_uri())
+            sayfa.evaluate("document.fonts.ready")
+            sayfa.wait_for_timeout(200)
+            s = sayfa.evaluate(olc, [BALON_KORUNAN_METIN, BALON_KORUNAN_KUTU])
+            tarayici.close()
+    finally:
+        gecici.unlink(missing_ok=True)
+    if s.get("hata"):
+        raise RuntimeError(f"balon denetimi: {s['hata']}")
+    return sorted({GORIL_OGE_ADI.get(o, o) for o in s["carpan"]})
 
 
 def goril_yerlesimi_denetle(sablon, veri, sure=None):
@@ -1721,13 +1795,23 @@ def goril_ciz(girdi, sonuc):
     import pickle
     d = pickle.loads(Path(girdi).read_bytes())
     png, mp4 = Path(d["png"]), Path(d["mp4"])
+    balon_dustu = None
+    if d["veri"].get("goril_balon"):
+        # Balon bir yazıya binerse ya da ölçülemezse düşer; goril ve paylaşım olduğu gibi kalır (bot/insan.py).
+        try:
+            binen = balon_yerlesimi_denetle(d["sablon"], d["veri"])
+        except Exception as e:
+            binen = [f"ölçülemedi: {type(e).__name__}: {e}"]
+        if binen:
+            balon_dustu = ", ".join(binen)
+            d["veri"]["goril_balon"] = None
     cakisma = goril_yerlesimi_denetle(d["sablon"], d["veri"], d["sure"])
     gorsel_uret(d["sablon"], d["veri"], png)
     hareketli = hareketli_video_uret(d["sablon"], d["veri"], mp4, sure=d["sure"])
     if not hareketli:
         video_uret(png, mp4, sure=d["sure"])
-    Path(sonuc).write_text(json.dumps({"hareketli": bool(hareketli), "cakisma": cakisma}, ensure_ascii=False),
-                           encoding="utf-8")
+    Path(sonuc).write_text(json.dumps({"hareketli": bool(hareketli), "cakisma": cakisma, "balon_dustu": balon_dustu},
+                                      ensure_ascii=False), encoding="utf-8")
 
 
 GORIL_PAY_SN = 45       # sn: goril süre sınırı kısılırken gorilsiz hareketli videoya bırakılan pay (bot/butce.py)
@@ -1771,9 +1855,13 @@ def goril_ile_uret(sablon, veri, png, mp4, sure):
     tamam = kod == 0 and sonuc.exists() and png.exists() and mp4.exists()
     if tamam:
         try:
-            cakisma = json.loads(sonuc.read_text(encoding="utf-8")).get("cakisma")
+            sonuc_ = json.loads(sonuc.read_text(encoding="utf-8"))
         except Exception:
-            cakisma = None
+            sonuc_ = {}
+        cakisma = sonuc_.get("cakisma")
+        if sonuc_.get("balon_dustu"):
+            print(f"::warning::Goril balonu düştü ({sonuc_['balon_dustu']}); paylaşım balonsuz gidiyor.")
+            veri["goril_balon"] = None
         if cakisma:
             # Paylaşım gorilli gider; gece kontrolü bu satırı günlükten okuyup Rıdvan'a bildirir.
             print(f"::warning::Goril üst üste biniyor: {cakisma}. Paylaşım gorilli gidiyor (Rıdvan'a bildirilecek).")
@@ -3343,6 +3431,8 @@ def hazirla(tur, cikti, ornek, konu=None):
 
     veri["parite_cumle"] = gorsel_parite_cumlesi(veri, tur)
     veri.update(goril_alanlari(veri, tur, ornek))
+    # İnsan dokunuşu (#33; bot/insan.py): hesap / neden kartı ve goril balonu. Her hatada eklemesiz devam.
+    veri.update(insan_alanlari(veri, fiyat, tur, ornek))
     damga = datetime.now(TR_SAAT).strftime("%Y%m%d-%H%M")
     # Özel günde (eşik aşıldı / en az bir aylık en yüksek) aynı paylaşım özel görselle gider.
     # Özel görsel üretilemezse paylaşım olağan görselle yapılır.
@@ -3356,6 +3446,7 @@ def hazirla(tur, cikti, ornek, konu=None):
     gorilli = bool(veri.get("maskot")) and goril_ile_uret(sablon, veri, png, mp4, sure)
     if not gorilli:
         veri.update(GORIL_YOK)
+        veri["goril_balon"] = None          # balon gorille gelir (bot/insan.py)
         try:
             gorsel_uret(sablon, veri, png)
         except Exception as e:
@@ -3388,6 +3479,8 @@ def hazirla(tur, cikti, ornek, konu=None):
                                                  "baslik": _baslik_ozeti(veri),
                                                  "goril": veri.get("goril"),
                                                  "goril_cakisma": veri.get("goril_cakisma"),
+                                                 "insan": {"kart": (veri.get("gunun_notu") or {}).get("tur"),
+                                                           "balon": veri.get("goril_balon")},
                                                  "fiyatlar": {k: v for k, v in fiyat.items()
                                                               if k not in ("gecmis_gram", "gecmis_parite", "donem_kayit")}},
                                                 ensure_ascii=False, indent=2),
