@@ -2144,7 +2144,7 @@ BOLUMLER = [
                     ],
                     [
                         "İçindekiler",
-                        "8.500'den fazla gümüş parça"
+                        "8.500'ü aşkın parça"
                     ],
                     [
                         "Ağırlık",
