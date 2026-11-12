@@ -14,6 +14,11 @@ name: Bilgi sayfasını yayınla
 # canlı site önceki hâliyle kalır ve günlüğe "BİLGİ SAYFASI YEDEK YOL" yazılır (gece kontrolü bildirir).
 on:
   workflow_dispatch:
+    inputs:
+      ikinci_yayin_dene:
+        description: 'Bakım denemesi: aynı işte siteyi ikinci kez yayınla (#27, paylas.yml yedek yolunun sınaması; paylaşım yapmaz)'
+        type: boolean
+        default: false
   # PDF Gümüş Rehberi baskı günü (bot/rehber_pdf.py → BASKI_AYLARI; Rıdvan, 19 Ekim 2026: yılda bir): 1 Ocak 00:07 TR.
   # Sitedeki PDF kartı o gün "Yakında"dan indirmeye (ya da yeni yılın baskısına) döner; yılbaşı tatilinde paylaşım
   # olmasa da site o gün güncellensin. Paylaşım saatlerine denk gelmez.
@@ -122,4 +127,10 @@ jobs:
     steps:
       - name: Sayfayı internete koy (GitHub Pages)
         id: yayin
+        uses: actions/deploy-pages@v5
+
+      # #27 (12 Kasım 2026): paylas.yml'de site dosyası çıkmazsa aynı işte deploy-pages ikinci kez çağrılır.
+      # Bu adım yalnız elle, ikinci_yayin_dene işaretiyle o çağrının çalıştığını sınar (aynı site, paylaşım yok).
+      - name: İkinci yayın denemesi (yalnız elle)
+        if: github.event_name == 'workflow_dispatch' && inputs.ikinci_yayin_dene == true
         uses: actions/deploy-pages@v5
