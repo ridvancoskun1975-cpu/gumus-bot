@@ -107,7 +107,7 @@
   gibi anlaşılabilir"); bu kuralı zorlama ayarları da aşmaz, kaldırma. Neden kartının her hatası kartsız paylaşıma düşer; bu yedek
   yol kaldırılmaz. Metin, gün ya da sıklık değişecekse önce önizleme ve onay.
   **Küçülme yok** (Rıdvan, 12 Kasım 2026 21:51: "birşeyi kaldırma veya silme. şablonu düzelt."; 21:53 "eğer küçülme varsa
-  bildir. düzelt."): fiyat şablonlarına öğe eklenince ya da değişince `python bot/test_kucukme.py` geçmeden önizleme gösterme,
+  bildir. düzelt."): fiyat ve pazar yorumu şablonlarına öğe eklenince ya da değişince `python bot/test_kucukme.py` geçmeden önizleme gösterme,
   main'e alma. Önizlemeyi gün içi satırıyla (gerçek akşam gibi) de üret; örnek veride gün içi satırı yok, küçülme görünmez.
 - **Deneme Reels'i (vitrin; #40; Rıdvan, 12 Kasım 2026 18:57: "takipçiler görmeyecekse uygula"):** `bot/vitrin.py`,
   `.github/workflows/vitrin.yml` (paylas.yml'den ayrı, aynı concurrency grubu `gumus-paylasim`). Yayımlanmış rehber
