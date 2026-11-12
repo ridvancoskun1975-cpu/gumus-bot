@@ -1,0 +1,23 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
+# Deneme Reels'i (trial reels) uygunluk sınaması (#40, 12 Kasım 2026): hesabın Reels'i önce yalnız takip etmeyenlere
+# gösterme ayarına izinli olup olmadığını PAYLAŞIM YAPMADAN sınar (bot/deneme_reels.py; video yüklenmez, media_publish
+# çağrılmaz). Yalnız elle. Paylaşım saatleriyle çakışmasın (09:45–10:45, 13:45–14:45, 19:45–20:45).
+name: Deneme Reels'i uygunluğu
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  uygunluk:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: pip install -q requests
+      - name: Deneme Reels'i ayarını sına (paylaşmaz)
+        env:
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+        run: python bot/deneme_reels.py uygunluk
