@@ -16,7 +16,7 @@
    alt 420 px (hesap adı, açıklama, müzik), sağ 170 px (beğeni/yorum düğmeleri) boş kalır; sol kenar 64 px.
    Çerçeve %10 büyük (Rıdvan, 25 Ekim 2026: "Yazılar çok ufak", "Komple çerçeve büyümeli", "Sağdaki ve alttaki
    sınırlara biraz taşısa sorun olmaz"; önizlemeye "Uygun, uygula"): üst şerit ve vade sahnesi ×1,1, oranlar aynı
-   (vade sahnesi 858×1058'lik eski düzeninde dizilip --k ile büyütülür). Vade sahnesi sağda düğmelerin, altta profil
+   (vade sahnesi 858×1080'lik düzende dizilip --k ile büyütülür; 12 Kasım 2026'ya kadar 858×1058). Vade sahnesi sağda düğmelerin, altta profil
    fotoğrafının kenarına değer; daha büyüğünde son satır hesap adının arkasında kalır. Hesap + yapay zekâ satırı bu
    yüzden altta değil üst şeritte (altta hesap adı satırı üstüne biniyordu; yapay zekâ beyanı her karede görünmeli).
    Kare çağrılmazsa (kapak görseli) yalnızca kapak sahnesi son hâliyle görünür. */
@@ -31,9 +31,12 @@
 .yr .sahne-k { position: absolute; inset: 0; }
 .yr .sahne-k.gizli { display: none; }
 .yr .blok { position: absolute; left: 52px; right: 170px; }
-/* vade sahnesinin çerçevesi: içerik eski 858×1058 alanda dizilir, bütünüyle --k kat büyür */
-.yr .olcek-dis { right: auto; width: calc(858px * var(--k)); height: calc(1058px * var(--k)); }
-.yr .olcek { position: absolute; left: 0; top: 0; width: 858px; height: 1058px; display: flex; flex-direction: column;
+/* vade sahnesinin çerçevesi: içerik 858×1080 alanda dizilir, bütünüyle --k kat büyür */
+/* 12 Kasım 2026 (Rıdvan 21:51 "birşeyi kaldırma veya silme. şablonu düzelt."; 22:58 pazar "şimdi bakalım"): sahne 22 px
+   yukarıdan başlar (top 384 → 362; üstteki hesap/yapay zekâ satırının altında kalır, sağdaki Ag rozetine değmez) ve
+   1058 → 1080 px yüksekliğe çıkar; alt kenarı aynı yerde (~y 1550). Aralıklar aşağıda biraz daraldı. Yazı küçülmesin diye. */
+.yr .olcek-dis { right: auto; width: calc(858px * var(--k)); height: calc(1080px * var(--k)); }
+.yr .olcek { position: absolute; left: 0; top: 0; width: 858px; height: 1080px; display: flex; flex-direction: column;
   transform: scale(var(--k)); transform-origin: 0 0; }
 .yr h1 { font-size: 104px; letter-spacing: -4px; line-height: 0.95; text-wrap: balance; }
 .yr .tarih { margin-top: 24px; font-size: 40px; }
@@ -84,15 +87,17 @@
 .yr [data-sigdir] .no { font-size: 30px; display: inline; margin-right: 16px; }
 .yr [data-sigdir] h2 { font-size: 72px; letter-spacing: -3px; margin: 0; display: inline; }
 .yr [data-sigdir] .ufuk { font-size: 32px; margin: 0 0 0 16px; display: inline; }
-.yr [data-sigdir] .parca { margin-top: 16px; }
+.yr [data-sigdir] .parca { margin-top: 10px; }
 .yr [data-sigdir] .kucuk-baslik { font-size: 26px; letter-spacing: 3px; }
-.yr [data-sigdir] .parca .kucuk-baslik { margin-bottom: 6px; }
-.yr [data-sigdir] .veri { padding: 16px 0 18px; }
-.yr [data-sigdir] .hucreler { margin-top: 8px; }
+.yr [data-sigdir] .parca .kucuk-baslik { margin-bottom: 2px; }
+.yr [data-sigdir] .veri { padding: 12px 0 14px; }
+.yr [data-sigdir] .hucreler { margin-top: 4px; }
 .yr [data-sigdir] .hucre > span:not(.degisim) { font-size: 28px; margin-bottom: 2px; }
-.yr [data-sigdir] .veri-not { font-size: 26px; margin-top: 6px; }
+.yr [data-sigdir] .veri-not { font-size: 26px; margin-top: 4px; }
+.yr .veri-ust { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; }
+.yr [data-sigdir] .veri-ust .veri-not.kaynak { margin-top: 0; white-space: nowrap; }
 /* "Haftanın gelişmeleri" sahnesi (9 Kasım 2026): kaydırmalının 4. sayfasıyla aynı maddeler, vade sahnesinin
-   çerçevesinde (858×1058 × --k); metin sığan en büyük boyda (sigdir). Kaynak alan adı her maddede, okunmaz. */
+   çerçevesinde (858×1080 × --k); metin sığan en büyük boyda (sigdir). Kaynak alan adı her maddede, okunmaz. */
 .yr .haberler { margin-top: 18px; display: flex; flex-direction: column; }
 .yr .haber { padding: 14px 0 16px; border-top: 3px solid var(--cizgi); }
 .yr .haber:last-child { border-bottom: 3px solid var(--cizgi); }
@@ -158,7 +163,7 @@
   {# ---- 2–3) vadeler: kaydırmalı gönderinin vade sayfalarıyla aynı içerik ---- #}
   {% for v in vadeler %}
   <div class="sahne-k gizli" id="s{{ loop.index }}" data-sayac="{{ '%02d' % (loop.index + 1) }} / {{ '%02d' % toplam_sayfa }}">
-    <div class="blok olcek-dis" style="top: 384px">
+    <div class="blok olcek-dis" style="top: 362px">
     <div class="olcek" data-sigdir>
       <div data-g="0">
         <div class="no mono">{{ '%02d' % loop.index }}</div>
@@ -167,7 +172,8 @@
       </div>
       {% set g = v.g or {} %}
       <div class="veri parca" data-g="{{ g.veri or 0.04 }}">
-        <div class="kucuk-baslik">{{ v.etiket | upper }}</div>
+        {#- MetalCharts satırı dönem başlığıyla aynı satırda, sağda (12 Kasım 2026: ayrı satır metnin yerini alıyordu) -#}
+        <div class="veri-ust"><div class="kucuk-baslik">{{ v.etiket | upper }}</div>{% if kaynak_metal %}<div class="veri-not kaynak">Metal fiyatları: {{ kaynak_metal }}</div>{% endif %}</div>
         <div class="hucreler">
           {% for h in v.hucreler %}
           <div class="hucre"><span>{{ h.ad }}</span>
@@ -176,7 +182,6 @@
           {% endfor %}
         </div>
         {% if v.not %}<div class="veri-not">{{ v.not }}</div>{% endif %}
-        {% if kaynak_metal %}<div class="veri-not kaynak">Metal fiyatları: {{ kaynak_metal }}</div>{% endif %}
       </div>
       <div class="parca" data-g="{{ g.agir or 0.1 }}"><div class="kucuk-baslik">AĞIR BASAN</div>{{ yon_isareti(v.yorum, 40, 30) }}
         {% if v.onceki %}<div class="degisim-not" data-g="{{ g.degisim or g.agir or 0.12 }}"><b>Yön değişti.</b> {{ v.onceki.tarih_metni }} yorumunda {{ v.onceki.yon }} ağır basıyordu. Nedeni: {{ v.yorum.degisim }}</div>{% endif %}</div>
@@ -192,7 +197,7 @@
   {% if haberler %}
   {% set hg = haber_g or {} %}
   <div class="sahne-k gizli haber-sahne" id="s{{ vadeler | length + 1 }}" data-sayac="{{ '%02d' % toplam_sayfa }} / {{ '%02d' % toplam_sayfa }}">
-    <div class="blok olcek-dis" style="top: 384px">
+    <div class="blok olcek-dis" style="top: 362px">
     <div class="olcek" data-sigdir>
       <div data-g="{{ hg.baslik or 0 }}">
         <div class="no mono">{{ '%02d' % (vadeler | length + 1) }}</div>
