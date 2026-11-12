@@ -38,6 +38,10 @@ GUNLER = (1, 3)                         # salı, perşembe (Monday = 0)
 PENCERE = (time(10, 45), time(12, 10))
 DENEME_AYARI = {"graduation_strategy": "MANUAL"}    # takipçilere hiç gösterilmez (yalnız elle paylaşılırsa)
 ACIKLAMA_ISARETI = "Gümüş rehberinden kısa bir bilgi"   # bot/rapor.py bu satırdan tanır
+ROZET_SINIR_SN = 180   # sn: rozet bindirme ffmpeg'i (≤ 20 sn video; olağan ~10 sn) en çok bu kadar
+# Üstteki küçük rozetin yeri: kısa şablonda main.SES_ROZETI_Y (140 px) başlık satırına ve Ag kutusuna biniyor; alt
+# başlık (bölüm 1–6 ölçümü: en alt 617 px) ile büyük rakamın çizgisi (~790 px) arasındaki boşluk. 4:5 akış kırpmasında da (285–1635 px) görünür.
+ROZET_Y = 660
 
 
 def gunler(bas=BASLANGIC, bit=BITIS):
@@ -103,6 +107,46 @@ def _seslendirme(konu, bolum, cikti, deneme):
         return None
 
 
+def rozet_ekle(mp4):
+    """Sesli deneme Reels'ine sesli rehber Reels'iyle aynı rozetleri ekler (CLAUDE.md; Rıdvan 17 ve 19 Ekim 2026,
+    26 Ekim 2026 "Uygun"): üst ortada hareketli "Sesi açın" rozeti ve yanında "Seslendirme: yapay zekâ" satırı
+    (main.SES_NOTU) videonun tamamında (yeri ROZET_Y); ilk main.SES_ROZETI_ORTA_SN saniye zemin kararır, rozet ortada büyük çıkar.
+    Çizilemezse uyarı yazar, video rozetsiz kalır (paylaşım durmaz; açıklamadaki yapay zekâ satırı ve AI etiketi kalır)."""
+    import shutil
+    import tempfile
+    import butce
+    import main
+    mp4 = Path(mp4)
+    klasor = Path(tempfile.mkdtemp(prefix="vitrin-rozet-"))   # yayına çıkmasın diye çıktı klasörü dışında
+    gecici = mp4.with_name("_rozetli-" + mp4.name)
+    try:
+        ust = main._ses_rozeti_kareleri(klasor / "ust", yan=True)
+        orta = main._ses_rozeti_kareleri(klasor / "orta", yazi=main.SES_ROZETI_ORTA_YAZI, opak=True)
+        fps = main.VIDEO_FPS
+        acik = f"enable='lt(t,{main.SES_ROZETI_ORTA_SN})'"
+        filtre = (f"[0:v]scale=1080:1920,fps={fps}[zemin];[1:v]format=rgba[rozet];"
+                  f"[zemin][rozet]overlay=x=(W-w)/2:y={ROZET_Y}:shortest=1[ust];"
+                  f"[ust]drawbox=x=0:y=0:w=iw:h=ih:color=black@{main.SES_ROZETI_KARARTMA}:t=fill:{acik}[kara];"
+                  f"[2:v]format=rgba[orta];[kara][orta]overlay=x=(W-w)/2:y=(H-h)/2-40:{acik}:shortest=1,"
+                  f"format=yuv420p[v]")
+        komut = [main.ffmpeg_yolu(), "-y", "-loglevel", "error", "-i", str(mp4),
+                 "-stream_loop", "-1", "-framerate", str(fps), "-i", ust,
+                 "-stream_loop", "-1", "-framerate", str(fps), "-i", orta,
+                 "-filter_complex", filtre, "-map", "[v]", "-map", "0:a?", "-c:a", "copy",
+                 "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-r", str(fps),
+                 "-movflags", "+faststart", str(gecici)]
+        butce.ffmpeg_calistir(komut, "deneme Reels'i ses rozeti", sinir_sn=ROZET_SINIR_SN)
+        gecici.replace(mp4)
+        print("Ses rozeti eklendi (Sesi açın + Seslendirme: yapay zekâ).")
+        return True
+    except Exception as e:
+        gecici.unlink(missing_ok=True)
+        print(f"::warning::Deneme Reels'ine ses rozeti eklenemedi ({type(e).__name__}: {str(e)[:150]}); rozetsiz.")
+        return False
+    finally:
+        shutil.rmtree(klasor, ignore_errors=True)
+
+
 def aciklama(konu, bolum, sesli):
     import ses
     import main
@@ -161,6 +205,8 @@ def hazirla(cikti, konu, deneme=False):
         (cikti / f"_ses-kisa{konu}.wav").unlink(missing_ok=True)   # ara dosya yayına çıkmasın
     if not tamam:
         raise RuntimeError("Deneme Reels'i üretilemedi (şablonda hareket yok)")
+    if sl:
+        rozet_ekle(mp4)
     kapak = cikti / f"kapak-vitrin{konu}-{damga}.jpg"
     main.gorsel_uret("kisa", dict(veri, zaman=(sl or {}).get("zaman") or ses.VARSAYILAN_ZAMAN), kapak)
     metin = aciklama(konu, b, bool(sl))

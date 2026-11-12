@@ -109,7 +109,8 @@
 - **Deneme Reels'i (vitrin; #40; Rıdvan, 12 Kasım 2026 18:57: "takipçiler görmeyecekse uygula"):** `bot/vitrin.py`,
   `.github/workflows/vitrin.yml` (paylas.yml'den ayrı, aynı concurrency grubu `gumus-paylasim`). Yayımlanmış rehber
   bölümlerinden kısa sesli Reels (templates/kisa.html: soru → kısa cevap → tek cümle → "Rehberin tamamı profilde"; ses Sulafat,
-  `ses.kisa_seslendir`; yapay zekâ etiketiyle), Instagram'ın deneme ayarıyla (`trial_params` graduation_strategy **MANUAL**):
+  `ses.kisa_seslendir`; yapay zekâ etiketiyle; sesliyse "Sesi açın" rozeti + "Seslendirme: yapay zekâ" satırı, ilk 2,5 sn
+  ortada büyük rozet; küçük rozet şablonun başlık satırına bindiği için alt başlığın altında, `vitrin.ROZET_Y`), Instagram'ın deneme ayarıyla (`trial_params` graduation_strategy **MANUAL**):
   yalnız takip etmeyenlere gösterilir, takipçinin akışına, Reels sekmesine ve profile düşmez; bu yüzden günlük 4 sınırına
   sayılmaz. SS_PERFORMANCE (iyi giderse takipçilere kendiliğinden açılır) kullanılmaz; "herkesle paylaş" yalnız Rıdvan'ın
   kararıdır. Deneme dönemi `vitrin.BASLANGIC`–`BITIS` (17 Kasım – 3 Aralık 2026, salı/perşembe, yalnız 10:45–12:10); sonra

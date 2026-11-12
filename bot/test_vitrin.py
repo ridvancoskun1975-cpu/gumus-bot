@@ -40,4 +40,9 @@ for no in range(1, len(bilgi.BOLUMLER) + 1):
     esit(vitrin.ACIKLAMA_ISARETI in a, True, f"#{no}: rapor işareti")
 esit(rapor.aciklamadan_ad({"caption": vitrin.aciklama(7, bilgi.BOLUMLER[6], False)}), "Deneme Reels'i",
      "raporda adıyla görünür")
+# Ses rozeti (CLAUDE.md: sesli Reels'te "Sesi açın" + "Seslendirme: yapay zekâ"): yer alt başlıkla rakam çizgisi
+# arasında; çizilemezse hata yükseltmez, video rozetsiz kalır (paylaşım durmaz).
+esit(617 < vitrin.ROZET_Y < 700, True, "rozet alt başlık ile rakam çizgisi arasında")
+esit(285 < vitrin.ROZET_Y < 1635, True, "rozet 4:5 akış kırpmasında görünür")
+esit(vitrin.rozet_ekle("/tmp/_olmayan-vitrin.mp4"), False, "rozet eklenemezse False, hata yok")
 print(f"test_vitrin: {gecen} sınama geçti")
