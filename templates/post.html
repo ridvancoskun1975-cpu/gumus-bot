@@ -119,7 +119,8 @@
 {% if gunun_notu %}<script>
 (function () {
   const c = document.querySelector('.cerceve'), H = {{ kart_yuk }}, S = 1.03;   // H: kartlı günün en çok yüksekliği (yukarıdaki not)
-  const sigdir = () => { c.style.transform = 'scale(' + Math.min(S, S * H / c.scrollHeight) + ')'; };
+  // data-olcek: üretim (main.gorsel_uret) okur; 1,03'ün altındaysa günlüğe "GÖRSEL KÜÇÜLDÜ" uyarısı yazar
+  const sigdir = () => { const o = Math.min(S, S * H / c.scrollHeight); c.style.transform = 'scale(' + o + ')'; c.dataset.olcek = o.toFixed(3); };
   sigdir();
   if (document.fonts) document.fonts.ready.then(sigdir);
 })();

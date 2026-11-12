@@ -1395,9 +1395,23 @@ def gorsel_uret(tur, veri, png_yolu):
             sayfa.evaluate("document.fonts.ready")
             sayfa.wait_for_timeout(300)
             sayfa.screenshot(path=str(png_yolu), clip={"x": 0, "y": 0, "width": boyut[0], "height": boyut[1]}, **jpeg)
+            kucukme_bildir(tur, sayfa)
             tarayici.close()
     finally:
         gecici.unlink(missing_ok=True)
+
+
+def kucukme_bildir(tur, sayfa):
+    """Kartlı akşam özeti sığmayıp bütünüyle küçüldüyse (templates/post.html → data-olcek < 1,03) günlüğe uyarı yazar.
+    Rıdvan, 12 Kasım 2026 21:53: "tüm paylaşımları kontrol et. eğer küçülme varsa bildir." Paylaşım durmaz.
+    Sınama: python bot/test_kucukme.py"""
+    try:
+        o = sayfa.evaluate("() => { const c = document.querySelector('.cerceve'); return c && c.dataset.olcek || null; }")
+        if o and float(o) < 1.029:
+            print(f"::warning::GÖRSEL KÜÇÜLDÜ: {tur} çerçevesi {float(o):.3f} ölçekte (normal 1,03); "
+                  "kartlı akşam özeti sığmadı, paylaşım küçük gidiyor.")
+    except Exception:
+        pass
 
 
 KAPAK_ETIKET = {"reels": "GÜNCEL FİYAT", "post": "GÜNÜN ÖZETİ", "hafta": "HAFTALIK ÖZET", "ay": "AYLIK ÖZET"}   # kart: bot/kart.py
