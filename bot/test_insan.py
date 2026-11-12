@@ -118,7 +118,9 @@ bekle(insan.hesap_karti(veri(), ilk, "post", date(2026, 11, 12)) is None, "12 Ka
 k = insan.sablon_verisi(veri(gram=84.05), ilk, "post", date(2026, 11, 12), ons=52.05)["gunun_notu"]
 bekle(k and k["tur"] == "gecmis" and k["etiket"] == "5 YIL ÖNCE", f"12 Kas perşembe akşamı 5 yıl önce: {k}")
 bekle(k and k["metin"] == "2021'de 1 gram gümüş ortalama 7,24 ₺'ydi. Bugün 84,05 ₺.", f"geçmiş metni: {k and k['metin']}")
-bekle(k and k["alt"] == "Dolar bazında ons: 25,23 $ → 52,05 $ (USGS, ECB).", f"geçmiş alt satırı: {k and k['alt']}")
+bekle(k and k["alt"] == "Ons gümüş 25,23 $ idi, bugün 52,05 $ (USGS).", f"geçmiş alt satırı: {k and k['alt']}")
+bekle(all(len(insan.gecmis_karti(veri(gram=g), {}, "post", insan.GECMIS_ILK + timedelta(days=7 * i), ons=o)["alt"]) <= 46
+          for i in range(4) for g, o in ((84.05, 52.05), (150.0, 99.99))), "alt satır tek satıra sığar")
 bekle(k and "USGS ons × ECB dolar/TL" in k["aciklama"] and k["aciklama"].endswith(")."), f"geçmiş açıklaması: {k and k['aciklama']}")
 bekle(insan.goril_balonu(veri(0.3, "istif"), ilk, "reels", date(2026, 11, 12)) is None, "perşembe sabahı balon yok")
 # geçmiş kartı (#38): dönem haftadan haftaya döner, bulunma eki, rakamı olmayan yıl atlanır, ons yoksa kaynakla yetinir

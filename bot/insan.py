@@ -248,7 +248,7 @@ def gecmis_karti(v, gecmis_gram, tur, gun, zorla=None, ons=None):
     metin = f"{yil_eki(yil)} 1 gram gümüş ortalama {_tr(eski_gram)} ₺'ydi. Bugün {_tr(gram)} ₺."
     kaynak = f"({yil} yıllık ortalaması: USGS ons × ECB dolar/TL)"
     if ons and ons > 0:
-        alt = f"Dolar bazında ons: {_tr(eski_ons)} $ → {_tr(ons)} $ (USGS, ECB)."
+        alt = f"Ons gümüş {_tr(eski_ons)} $ idi, bugün {_tr(ons)} $ (USGS)."   # tek satır (≤ 46 harf)
         son = f" Dolar bazında ons {_tr(eski_ons)} $ → {_tr(ons)} $ {kaynak}."
     else:
         alt, son = "Yıllık ortalama; kaynak USGS, ECB.", f" {kaynak}."
