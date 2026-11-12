@@ -268,8 +268,11 @@ def kapak_olc(v, tur, gun=None):
         gecici.unlink(missing_ok=True)
 
 
-for tur, senaryo, hafta_, d, gun, en_az in (("post", "goril-istif", None, "istif", None, 280),
-                                            ("reels", "goril-sevinen", None, "sevinen", None, 280),
+# Goril boyu tarih yazısının genişliğine bağlı (kısa ay adında büyük): 280 px beklentisi kısa ay adıyla sabitlenir,
+# yoksa sınama günün ayına göre düşer (ör. Kasım'da 229 px). Uzun ay adı aşağıda 150 px ile ayrıca sınanıyor.
+for tur, senaryo, hafta_, d, gun, en_az in (("post", "goril-istif", None, "istif", "13 Ekim", 280),
+                                            ("reels", "goril-sevinen", None, "sevinen", "13 Ekim", 280),
+                                            ("post", "goril-istif", None, "istif", None, 150),
                                             ("hafta", None, None, "gezinen", None, 150),
                                             ("post", "goril-istif", None, "istif", "29 Temmuz", 150),
                                             ("post", "esik", None, "ozel", None, 150)):
@@ -340,7 +343,9 @@ meta, cikti = hazirla("goril-sevinen", "sevinen")
 esit("uçtan uca gorilli: meta", meta["goril"], "sevinen")
 esit("uçtan uca gorilli: 2. satır", meta["aciklama"].split("\n")[1], goril.SATIR["post"])
 esit("uçtan uca gorilli: uyarı yok", "Goril" in cikti and "gorilsiz" in cikti, False)
-esit("uçtan uca gorilli: çakışma yok", meta.get("goril_cakisma"), None)
+# Karta hafifçe değmesi sorun değil (Rıdvan, 12 Kasım 2026 18:39: "gorili ufaltma . biraz karta değmesi problem değil."):
+# örnek veride gün içi satırı yok ve tarih kartlı güne düşerse sevinen goril karta değebilir; başka yazıya binmemeli.
+esit("uçtan uca gorilli: çakışma yok (kart dışında)", (meta.get("goril_cakisma") or "kart").count("kart") > 0, True)
 meta, cikti = hazirla("goril-buyuk", "sevinen")
 esit("uçtan uca büyük fiyat: goril kalır", meta["goril"], "sevinen")
 esit("uçtan uca büyük fiyat: satır var", meta["aciklama"].split("\n")[1], goril.SATIR["post"])

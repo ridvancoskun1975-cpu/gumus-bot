@@ -56,7 +56,7 @@ def uygunluk():
     if kod >= 400 or "id" not in kap:
         print(f"::warning::DENEME REELS'İ KABUL EDİLMEDİ ({kod}): {_hata_metni(kap)}")
         return 1
-    print("DENEME REELS'İ KABUL EDİLDİ: trial_params ile Reels kabı kuruldu (video yüklenmedi, paylaşılmadı; "
+    print("DENEME REELS'İ KABUL EDİLDİ: trial_params ile Reels kabı kuruldu (video yalnız işlendi, paylaşılmadı; "
           "kap 24 saatte kendiliğinden düşer).")
     for _ in range(18):                     # en çok ~3 dk: Instagram videoyu işledi mi
         kod, durum = _istek("GET", kap["id"], fields="status_code,status")
