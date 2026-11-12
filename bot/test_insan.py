@@ -100,7 +100,9 @@ bekle(insan.buyuk_gunler(iki, PER) == [CAR], f"büyük gün: {insan.buyuk_gunler
 bekle(insan.onceki_kart_sayisi(iki, PER) == 2, f"kart sayısı: {insan.onceki_kart_sayisi(iki, PER)}")
 bekle(insan.hesap_karti(veri(), iki, "post", PER) is None, "haftalık 2 kart sınırı")
 tek = seri(PER, [100.0, 100.4, 100.5, 100.0])          # yalnız salı hesap
-bekle(insan.hesap_karti(veri(), tek, "post", PER) is not None, "perşembe hesap (1 kart sonrası)")
+bekle(insan.hesap_karti(veri(), tek, "post", PER) is None, "perşembe hesap yok (#38: geçmiş kartı)")
+bekle(insan.gecmis_karti(veri(), tek, "post", PER) is not None, "perşembe geçmiş kartı (1 kart sonrası)")
+bekle(insan.gecmis_karti(veri(), iki, "post", PER) is None, "geçmiş kartı da haftalık 2 kart sınırında")
 # başlangıçtan önceki günler kart sayılmaz (sınama BASLANGIC'ı bir salıya koyar, sonra geri alır)
 _eski = insan.BASLANGIC
 insan.BASLANGIC = date(2026, 11, 17)                             # salı
@@ -112,8 +114,27 @@ insan.BASLANGIC = _eski
 bekle(insan.BASLANGIC == date(2026, 11, 12), "başlangıç 12 Kasım (Rıdvan: ilk paylaşımda başla)")
 ilk = {"2026-11-06": 80.0, "2026-11-09": 82.0, "2026-11-10": 79.0, "2026-11-11": 84.05}
 bekle(insan.onceki_kart_sayisi(ilk, date(2026, 11, 12)) == 0, "ilk hafta: başlangıç öncesi günler sayılmaz")
-bekle(insan.hesap_karti(veri(), ilk, "post", date(2026, 11, 12)) is not None, "12 Kas perşembe akşamı hesap kartı")
+bekle(insan.hesap_karti(veri(), ilk, "post", date(2026, 11, 12)) is None, "12 Kas perşembe hesap kartı yok (#38)")
+k = insan.sablon_verisi(veri(gram=84.05), ilk, "post", date(2026, 11, 12), ons=52.05)["gunun_notu"]
+bekle(k and k["tur"] == "gecmis" and k["etiket"] == "5 YIL ÖNCE", f"12 Kas perşembe akşamı 5 yıl önce: {k}")
+bekle(k and k["metin"] == "2021'de 1 gram gümüş ortalama 7,24 ₺'ydi. Bugün 84,05 ₺.", f"geçmiş metni: {k and k['metin']}")
+bekle(k and k["alt"] == "Dolar bazında ons: 25,23 $ → 52,05 $ (USGS, ECB).", f"geçmiş alt satırı: {k and k['alt']}")
+bekle(k and "USGS ons × ECB dolar/TL" in k["aciklama"] and k["aciklama"].endswith(")."), f"geçmiş açıklaması: {k and k['aciklama']}")
 bekle(insan.goril_balonu(veri(0.3, "istif"), ilk, "reels", date(2026, 11, 12)) is None, "perşembe sabahı balon yok")
+# geçmiş kartı (#38): dönem haftadan haftaya döner, bulunma eki, rakamı olmayan yıl atlanır, ons yoksa kaynakla yetinir
+bekle([insan.gecmis_donemi(date(2026, 11, 12) + timedelta(days=7 * i))[0] for i in range(5)] == [5, 10, 15, 1, 5],
+      "dönemler 5, 10, 15, 1")
+bekle([insan.yil_eki(y) for y in (2011, 2016, 2021, 2025, 2010, 2020, 2009, 2013)]
+      == ["2011'de", "2016'da", "2021'de", "2025'te", "2010'da", "2020'de", "2009'da", "2013'te"], "yıl ekleri")
+bekle(insan.gecmis_donemi(date(2027, 1, 28))[:2] == (5, 2022), f"rakamı olmayan 2026 atlanır: {insan.gecmis_donemi(date(2027, 1, 28))}")
+k = insan.gecmis_karti(veri(gram=84.05), bos, "post", PER)
+bekle(k and k["alt"] == "Yıllık ortalama; kaynak USGS, ECB." and "(2021" not in k["aciklama"][:10], f"ons yok: {k}")
+bekle(insan.gecmis_karti(veri(), bos, "post", SAL) is None, "salı geçmiş kartı yok")
+bekle(insan.gecmis_karti(veri(), bos, "reels", PER) is None, "sabah geçmiş kartı yok")
+bekle(insan.gecmis_karti(veri(ozel={"x": 1}), bos, "post", PER) is None, "özel günde geçmiş kartı yok")
+bekle(insan.gecmis_karti(veri(-1.2), bos, "post", PER) is not None, "düşüş gününde de geçmiş kartı (kural balon için)")
+bekle(insan.sablon_verisi(veri(gram=84.05), bos, "post", SAL)["gunun_notu"]["tur"] == "hesap", "salı hesap kartı kalır")
+bekle(insan.gecmis_karti(veri(), bos, "post", CAR, zorla="gecmis") is not None, "zorla geçmiş")
 # zorla: gün sınırını aşar
 bekle(insan.hesap_karti(veri(), bos, "post", CAR, zorla="hesap") is not None, "zorla hesap")
 

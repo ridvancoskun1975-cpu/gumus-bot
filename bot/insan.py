@@ -6,10 +6,16 @@ istiyorum"; 10:23: "1 2 3 görelim. Ama çok sık olmamalı." Karar notu Projede
 
 Üç ekleme var; yeni paylaşım yok, günlük sınır değişmez. Bir paylaşımda en fazla bir kart ve bir balon olur:
 
-1. Hesap kartı (akşam özeti; Rıdvan 10:30 "1 bin liraya kaç gram gümüş alınır … Uygun"): salı ve perşembe akşamı
-   "1.000 ₺ ile bugün X gram gümüş alınır". Hesap kodla yapılır, yapay zekâ yok. Görselin altında ve açıklamada
+1. Hesap kartı (akşam özeti; Rıdvan 10:30 "1 bin liraya kaç gram gümüş alınır … Uygun"): salı akşamı
+   "1.000 ₺ ile bugün X gram gümüş alınır" (12 Kasım 2026'ya kadar perşembe de; perşembe artık 1b). Hesap kodla yapılır, yapay zekâ yok. Görselin altında ve açıklamada
    "piyasa fiyatıyla; işçilik ve makas hariç" notu. Haftada en çok 2 kart (hesap + neden birlikte sayılır): o hafta
    önceden %2+ hareket günü olduysa neden kartı hesap kartının yerine geçmiş sayılır.
+1b. Geçmiş kartı (#38; akşam özeti, perşembe; Rıdvan, 12 Kasım 2026 00:46 "nerede nasıl açıkla örnek göster",
+   00:57 "A (önerilen) bir kere sen kontrol et sonra uygula"): "5 YIL ÖNCE · 2021'de 1 gram gümüş ortalama 7,24 ₺'ydi.
+   Bugün 84,05 ₺." Günü gününe eski fiyat için ücretsiz, izinli kaynak yok; o yılın ortalaması kullanılır (sitenin
+   geçmiş sayfasıyla aynı: USGS yıllık ons × ECB yıllık dolar/TL ÷ 31,1035; bot/arsiv.py). Dönem haftadan haftaya
+   döner (GECMIS_DONEMLER); o yılın rakamı yoksa sıradaki döneme geçilir. Alt satırda dolar bazında ons (artışın ne
+   kadarının kurdan geldiği görünsün). Hesap kartıyla aynı yer ve aynı haftalık sınır; %2+ günde neden kartı önce gelir.
 2. Neden kartı (akşam özeti; Rıdvan 10:30 "3 neden yükseldiğinin detayı Uygun"): gram gümüşün %2 ve üstü oynadığı
    akşam, haberlerden tek cümlelik neden (web araması, güvenilir siteler; kaynak açıklamada). Tavsiye, tahmin,
    rakam, kişi ve parti adı yok; denetimden geçmeyen cümle kullanılmaz. Süre sınırlı: yetişmezse ya da bir hata olursa
@@ -38,12 +44,20 @@ YOK = {"gunun_notu": None, "goril_balon": None}
 
 # ---------------------------------------------------------------- 1. hesap kartı
 
-HESAP_GUNLERI = {1, 3}            # salı, perşembe (akşam özeti)
+HESAP_GUNLERI = {1}               # salı (akşam özeti); perşembe 12 Kasım 2026'dan beri geçmiş kartı (#38)
 HESAP_TL = 1000
 HESAP_ETIKET = "BUGÜNÜN HESABI"
 HESAP_NOTU = "Hesap piyasa fiyatıyla; işçilik ve makas hariç."
-HAFTALIK_KART_SINIRI = 2          # hesap + neden kartı birlikte, haftada en çok
+HAFTALIK_KART_SINIRI = 2          # hesap + geçmiş + neden kartı birlikte, haftada en çok
 BUYUK_ESIK = 2.0                  # % (main.BUYUK_HAREKET_GUNLUK ile aynı: manşet ve neden kartı)
+
+# ---------------------------------------------------------------- 1b. geçmiş kartı (#38)
+
+GECMIS_GUNLERI = {3}              # perşembe (akşam özeti; Rıdvan 00:57 "A": hesap kartının yerine)
+GECMIS_DONEMLER = (5, 10, 15, 1)  # yıl; haftadan haftaya döner, ilk perşembe (GECMIS_ILK) 5 yıl
+GECMIS_ILK = date(2026, 11, 12)
+GECMIS_ETIKET = "{n} YIL ÖNCE"
+KART_GUNLERI = HESAP_GUNLERI | GECMIS_GUNLERI
 
 # ---------------------------------------------------------------- 2. neden kartı
 
@@ -123,7 +137,7 @@ BALON = {
     ],
 }
 BALON_EN_UZUN = 46                # karakter: balon (400 px, 30 px yazı) iki satırı geçmesin
-ZORLA = ("hesap", "balon", "neden")
+ZORLA = ("hesap", "gecmis", "balon", "neden")
 
 
 def _tr(x, basamak=2):
@@ -165,12 +179,13 @@ def buyuk_gunler(gecmis_gram, gun, esik=BUYUK_ESIK):
 
 
 def onceki_kart_sayisi(gecmis_gram, gun):
-    """Bu hafta bugünden önce çıkmış sayılan kart: %2+ günleri (neden kartı) + kaydı olan salı/perşembe (hesap)."""
+    """Bu hafta bugünden önce çıkmış sayılan kart: %2+ günleri (neden kartı) + kaydı olan salı (hesap) ve perşembe
+    (geçmiş)."""
     buyuk = set(buyuk_gunler(gecmis_gram, gun))
     pzt = gun - timedelta(days=gun.weekday())
     kayitli = {d for d, _ in _seri(gecmis_gram) if pzt <= d < gun and d >= BASLANGIC}   # kart başlangıçtan önce yoktu
     buyuk = {d for d in buyuk if d >= BASLANGIC}
-    hesap = {d for d in kayitli if d.weekday() in HESAP_GUNLERI and d not in buyuk}
+    hesap = {d for d in kayitli if d.weekday() in KART_GUNLERI and d not in buyuk}
     return len(buyuk) + len(hesap)
 
 
@@ -191,6 +206,55 @@ def hesap_karti(v, gecmis_gram, tur, gun, zorla=None):
         return None
     return {"tur": "hesap", "etiket": HESAP_ETIKET, "metin": hesap_metni(gram), "alt": HESAP_NOTU,
             "aciklama": f"💡 {hesap_metni(gram)} (piyasa fiyatıyla; işçilik ve makas hariç)"}
+
+
+# ---------------------------------------------------------------- 1b. geçmiş kartı (#38)
+
+# Yılın okunuşuna göre bulunma eki: 2021'de, 2016'da, 2025'te, 2010'da, 2030'da.
+_EK_BIRLER = {1: "de", 2: "de", 3: "te", 4: "te", 5: "te", 6: "da", 7: "de", 8: "de", 9: "da"}
+_EK_ONLAR = {1: "da", 2: "de", 3: "da", 4: "ta", 5: "de", 6: "ta", 7: "te", 8: "de", 9: "da"}
+
+
+def yil_eki(yil):
+    b, o = yil % 10, (yil // 10) % 10
+    return f"{yil}'{_EK_BIRLER[b] if b else _EK_ONLAR.get(o, 'de')}"
+
+
+def gecmis_donemi(gun):
+    """Bu perşembenin dönemi (yıl) ve o yılın rakamları; rakamı olmayan dönem atlanır. Hiçbiri yoksa None."""
+    import arsiv
+    i = ((gun - GECMIS_ILK).days // 7) % len(GECMIS_DONEMLER)
+    for n in GECMIS_DONEMLER[i:] + GECMIS_DONEMLER[:i]:
+        yil = gun.year - n
+        ons, kur = arsiv.YILLIK_ONS.get(yil), arsiv.YILLIK_KUR.get(yil)
+        if ons and kur:
+            return n, yil, ons, ons * kur / arsiv.ONS_GRAM
+    return None
+
+
+def gecmis_karti(v, gecmis_gram, tur, gun, zorla=None, ons=None):
+    if tur != "post" or v.get("ozel"):
+        return None
+    if zorla != "gecmis":
+        if not aktif_mi(gun) or gun.weekday() not in GECMIS_GUNLERI:
+            return None
+        if onceki_kart_sayisi(gecmis_gram, gun) >= HAFTALIK_KART_SINIRI:
+            return None
+    gram = v.get("gram_sayi")
+    d = gecmis_donemi(gun)
+    if not gram or gram <= 0 or not d:
+        return None
+    n, yil, eski_ons, eski_gram = d
+    metin = f"{yil_eki(yil)} 1 gram gümüş ortalama {_tr(eski_gram)} ₺'ydi. Bugün {_tr(gram)} ₺."
+    kaynak = f"({yil} yıllık ortalaması: USGS ons × ECB dolar/TL)"
+    if ons and ons > 0:
+        alt = f"Dolar bazında ons: {_tr(eski_ons)} $ → {_tr(ons)} $ (USGS, ECB)."
+        son = f" Dolar bazında ons {_tr(eski_ons)} $ → {_tr(ons)} $ {kaynak}."
+    else:
+        alt, son = "Yıllık ortalama; kaynak USGS, ECB.", f" {kaynak}."
+    return {"tur": "gecmis", "etiket": GECMIS_ETIKET.format(n=n), "metin": metin, "alt": alt,
+            "aciklama": f"🕰️ {n} yıl önce: {yil_eki(yil)} 1 gram gümüş ortalama {_tr(eski_gram)} ₺'ydi, bugün "
+                        f"{_tr(gram)} ₺.{son}"}
 
 
 # ---------------------------------------------------------------- 2. neden kartı
@@ -368,14 +432,17 @@ def goril_balonu(v, gecmis_gram, tur, gun, zorla=None):
 
 # ---------------------------------------------------------------- hepsi
 
-def sablon_verisi(v, gecmis_gram, tur, gun, ornek=False, kalan_sn=None):
-    """Şablona ve açıklamaya giden alanlar: gunun_notu (kart ya da None), goril_balon (cümle ya da None)."""
+def sablon_verisi(v, gecmis_gram, tur, gun, ornek=False, kalan_sn=None, ons=None):
+    """Şablona ve açıklamaya giden alanlar: gunun_notu (kart ya da None), goril_balon (cümle ya da None).
+    ons: bugünkü ons gümüş ($; geçmiş kartının alt satırı için, yoksa satır kaynakla yetinir)."""
     z = zorlanan(ornek)
     if tur not in ("reels", "post") or (not aktif_mi(gun) and not z) or gun.weekday() >= 5:
         return dict(YOK)
     kart = None
     if tur == "post" and (v.get("buyuk_hareket") or z == "neden"):
         kart = neden_karti(v, tur, gun, ornek=ornek, zorla=z, kalan_sn=kalan_sn)
-    if kart is None and z != "neden":
+    if kart is None and z in (None, "gecmis"):
+        kart = gecmis_karti(v, gecmis_gram, tur, gun, zorla=z, ons=ons)
+    if kart is None and z in (None, "hesap"):
         kart = hesap_karti(v, gecmis_gram, tur, gun, zorla=z)
     return {"gunun_notu": kart, "goril_balon": goril_balonu(v, gecmis_gram, tur, gun, zorla=z)}

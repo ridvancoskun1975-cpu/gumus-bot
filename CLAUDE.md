@@ -99,7 +99,8 @@
   paylaşım durmaz, goril kalır ve Rıdvan'a bildirilir (gece kontrolü; Rıdvan, 16 Ekim 2026 22:43).
   Sitede yalnız istifçi goril, tanıtım kartında ve 404 sayfasında; fiyattan bağımsız, yön göstermez (Rıdvan, 19 Ekim
   2026 "2 ama istifçi goril", "onaylıyorum uygula"). Fiyatın yanına ya da güne göre değişen hâl koyma; kapatma `bot/sayfa.py` → `SITE_GORIL`.
-- **İnsan dokunuşu (#33; Rıdvan, 11 Kasım 2026; README → "İnsan dokunuşu", `bot/insan.py`):** salı/perşembe akşam hesap kartı,
+- **İnsan dokunuşu (#33; Rıdvan, 11 Kasım 2026; README → "İnsan dokunuşu", `bot/insan.py`):** salı akşam hesap kartı, perşembe akşam "N yıl önce" kartı
+  (#38; Rıdvan, 12 Kasım 2026 00:57: "A (önerilen) bir kere sen kontrol et sonra uygula"; yıllık ortalama USGS × ECB, dönem 5/10/15/1 yıl döner),
   %2+ akşam neden kartı, pazartesi sabah / cuma akşam goril balonu; paylaşım başına en fazla bir kart, haftada en çok 2 kart.
   Balon cümleleri yalnız Rıdvan'ın onay tablosundan (https://claude.ai/artifact/32r87SxehVXXjYqkxMrHrZ); doğaçlama cümle ya da
   modelle balon yazma. **Gümüş düştüğü gün balon yok** (Rıdvan, 14:18: "morali bozuk bir insana espiri yapamayız. !!! dalga geçiyor
