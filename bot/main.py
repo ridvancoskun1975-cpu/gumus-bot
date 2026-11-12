@@ -1618,16 +1618,20 @@ def video_uret(png_yolu, mp4_yolu, sure=7):
 
 GORIL_YOK = {"goril": None, "maskot": None, "maskot_js": None, "goril_satiri": ""}
 # Gorilin üstüne binmemesi gereken öğeler. Metin öğelerinde kutunun değil yazının kendisi ölçülür.
+# Kart (bot/insan.py): gorilin kartın kenarına hafifçe değmesi sorun değil (Rıdvan, 12 Kasım 2026 18:39: "gorili ufaltma .
+# biraz karta değmesi problem değil."; 18:57 bildirim için "kapat"). Bu yüzden kartın kutusu değil yalnız yazısı korunur:
+# goril kartın yazısını kapatırsa yine uyarı çıkar.
 GORIL_KORUNAN_METIN = ["#fiyat", ".kahraman-birim", ".kahraman-baslik", ".kahraman > .soluk", ".alt", ".etiket",
-                       ".tarih", ".ozel-manset", "h1", ".satir", ".gun-ici-oge"]
-GORIL_KORUNAN_KUTU = ["#fiyat-deg", "#manset", "#gun-baslik", ".ag", ".grafik-deger", "#not-karti"]
+                       ".tarih", ".ozel-manset", "h1", ".satir", ".gun-ici-oge", "#not-karti > span"]
+GORIL_KORUNAN_KUTU = ["#fiyat-deg", "#manset", "#gun-baslik", ".ag", ".grafik-deger"]
 GORIL_DENETIM_ANLARI = tuple(i / 10 for i in range(131))   # en uzun videonun (13 sn) her 0,1 sn'si
 GORIL_OGE_ADI = {"#fiyat": "fiyat", ".kahraman-birim": "₺ işareti", ".kahraman-baslik": "GRAM GÜMÜŞ başlığı",
                  ".kahraman > .soluk": "fiyatın altındaki satır", ".alt": "en alttaki satır", ".etiket": "üst etiket",
                  ".tarih": "tarih", ".ozel-manset": "özel gün manşeti", "h1": "Gümüş başlığı",
                  ".satir": "parite / dolar satırı", "#fiyat-deg": "yüzde rozeti", "#manset": "manşet",
                  "#gun-baslik": "günün başlığı", ".ag": "Ag rozeti", ".grafik-deger": "grafik değeri",
-                 ".gun-ici-oge": "gün içi en düşük / en yüksek", "#not-karti": "hesap / neden kartı"}
+                 ".gun-ici-oge": "gün içi en düşük / en yüksek", "#not-karti": "hesap / neden kartı",
+                 "#not-karti > span": "kartın yazısı"}
 
 
 def goril_alanlari(veri, tur, ornek=False):
