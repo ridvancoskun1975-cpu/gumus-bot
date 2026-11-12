@@ -106,6 +106,14 @@
   modelle balon yazma. **Gümüş düştüğü gün balon yok** (Rıdvan, 14:18: "morali bozuk bir insana espiri yapamayız. !!! dalga geçiyor
   gibi anlaşılabilir"); bu kuralı zorlama ayarları da aşmaz, kaldırma. Neden kartının her hatası kartsız paylaşıma düşer; bu yedek
   yol kaldırılmaz. Metin, gün ya da sıklık değişecekse önce önizleme ve onay.
+- **Deneme Reels'i (vitrin; #40; Rıdvan, 12 Kasım 2026 18:57: "takipçiler görmeyecekse uygula"):** `bot/vitrin.py`,
+  `.github/workflows/vitrin.yml` (paylas.yml'den ayrı, aynı concurrency grubu `gumus-paylasim`). Yayımlanmış rehber
+  bölümlerinden kısa sesli Reels (templates/kisa.html: soru → kısa cevap → tek cümle → "Rehberin tamamı profilde"; ses Sulafat,
+  `ses.kisa_seslendir`; yapay zekâ etiketiyle), Instagram'ın deneme ayarıyla (`trial_params` graduation_strategy **MANUAL**):
+  yalnız takip etmeyenlere gösterilir, takipçinin akışına, Reels sekmesine ve profile düşmez; bu yüzden günlük 4 sınırına
+  sayılmaz. SS_PERFORMANCE (iyi giderse takipçilere kendiliğinden açılır) kullanılmaz; "herkesle paylaş" yalnız Rıdvan'ın
+  kararıdır. Deneme dönemi `vitrin.BASLANGIC`–`BITIS` (17 Kasım – 3 Aralık 2026, salı/perşembe, yalnız 10:45–12:10); sonra
+  devam kararı Rıdvan'ın. Raporda "Deneme Reels'i" adıyla görünür (açıklamadaki `vitrin.ACIKLAMA_ISARETI`).
 - Rehber hikâyesi kareler tek tek değil, tek müzikli video olarak gider (kapak 3 sn, kare 6 sn), rehber gönderisiyle
   aynı çalıştırmada (`bot/main.py` → `REHBER_HIKAYE_OTOMATIK = True`); hikâye kalabalık olmamalı.
 - Takvimi azaltma kararı (Rıdvan, 19 Ekim 2026: "takipçileri bıktırmamak ve kaçırmamak için … paylaşım sayısını

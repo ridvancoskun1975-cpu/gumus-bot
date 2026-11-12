@@ -1,0 +1,203 @@
+# Deneme Reels'i ("vitrin"; Instagram trial reels): rehber bölümlerinden kısa sesli Reels, YALNIZ takip etmeyenlere
+# (bot/vitrin.py; Rıdvan, 12 Kasım 2026 18:57: "takipçiler görmeyecekse uygula"). paylas.yml'ye dokunmaz; aynı
+# concurrency grubunu kullanır, böylece hiçbir paylaşımla aynı anda siteyi yayınlamaz. Takipçinin günlük 4 sınırına
+# sayılmaz (takipçilere gösterilmez). Zamanlı: salı ve perşembe 11:07 TR; bot yalnız 10:45–12:10 arasında ve deneme
+# döneminde (vitrin.BASLANGIC–BITIS) paylaşır, GitHub geç başlatırsa o gün atlanır. Elle: konu ver; deneme işaretiyle
+# yalnız önizleme üretir (paylaşmaz, ses yedek modelle).
+name: Deneme Reels'i (vitrin)
+
+on:
+  schedule:
+    - cron: '7 8 * * 2,4'
+  workflow_dispatch:
+    inputs:
+      konu:
+        description: "Rehber bölüm no (boş = bugünün sırası)"
+        required: false
+      deneme:
+        description: "Yalnız önizleme (paylaşmaz)"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gumus-paylasim
+  cancel-in-progress: false
+
+jobs:
+  uret:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    outputs:
+      calis: ${{ steps.konu.outputs.calis }}
+      deneme: ${{ steps.konu.outputs.deneme }}
+      site: ${{ steps.site.outputs.hazir }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Bugünün bölümü
+        id: konu
+        env:
+          KONU: ${{ inputs.konu }}
+          DENEME: ${{ github.event_name == 'workflow_dispatch' && inputs.deneme || false }}
+        run: |
+          pip install -q requests
+          if [ -n "$KONU" ]; then konu="$KONU"; else konu=$(python bot/vitrin.py bugun); fi
+          echo "konu=$konu" >> "$GITHUB_OUTPUT"
+          echo "deneme=$DENEME" >> "$GITHUB_OUTPUT"
+          if [ -n "$konu" ]; then echo "calis=true" >> "$GITHUB_OUTPUT"; echo "Deneme Reels'i: bölüm $konu (önizleme: $DENEME)";
+          else echo "calis=false" >> "$GITHUB_OUTPUT"; echo "Bugün deneme Reels'i yok."; fi
+
+      - name: Gerekenleri kur
+        if: steps.konu.outputs.calis == 'true'
+        timeout-minutes: 6
+        run: |
+          pip install -q -r requirements.txt
+          python -m playwright install chromium
+
+      - name: Müziği aç
+        if: steps.konu.outputs.calis == 'true'
+        env:
+          MUZIK_ANAHTAR: ${{ secrets.MUZIK_ANAHTAR }}
+        run: |
+          if [ -z "$MUZIK_ANAHTAR" ]; then
+            echo "::warning::MUZIK_ANAHTAR tanımlı değil; video müziksiz üretilecek."
+          else
+            openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 \
+              -in assets/muzik.mp3.enc -out assets/muzik.mp3 -pass env:MUZIK_ANAHTAR
+          fi
+
+      - name: Seslendirme anahtarı
+        if: steps.konu.outputs.calis == 'true'
+        continue-on-error: true
+        timeout-minutes: 1
+        env:
+          GEMINI_SIRRI: ${{ secrets.GEMINI_API_KEY }}
+          KAYIT_PAT: ${{ secrets.KAYIT_PAT }}
+        run: |
+          a=$(printf '%s' "$GEMINI_SIRRI" | tr -d '[:space:]')
+          if [ -z "$a" ]; then
+            a=$(curl -fsS -H "Authorization: Bearer $KAYIT_PAT" -H "Accept: application/vnd.github.raw" \
+                  "https://api.github.com/repos/ridvancoskun1975-cpu/gumus-kayit/contents/anahtarlar/gemini.txt" \
+                  2>/dev/null | tr -d '[:space:]') || a=""
+          fi
+          if [ -n "$a" ]; then
+            echo "::add-mask::$a"
+            echo "GEMINI_API_KEY=$a" >> "$GITHUB_ENV"
+          else
+            echo "::warning::Seslendirme anahtarı yok; deneme Reels'i yalnızca müzikle üretilecek."
+          fi
+
+      - name: Deneme Reels'ini üret
+        if: steps.konu.outputs.calis == 'true'
+        timeout-minutes: 12
+        env:
+          DENEME: ${{ steps.konu.outputs.deneme }}
+        run: python bot/vitrin.py hazirla --cikti vitrin_cikti --konu "${{ steps.konu.outputs.konu }}"
+
+      - name: Önizlemeyi sakla
+        if: steps.konu.outputs.calis == 'true'
+        uses: actions/upload-artifact@v6
+        with:
+          name: vitrin-onizleme
+          path: vitrin_cikti
+          retention-days: 7
+
+      # Site her yayında baştan kurulur: video sitenin yanında yayınlanmalı (sayfa.yml ile aynı adımlar).
+      - name: Günlük kayıtları getir
+        if: steps.konu.outputs.calis == 'true' && steps.konu.outputs.deneme != 'true'
+        uses: actions/cache/restore@v5
+        with:
+          path: veri/gecmis.json
+          key: gecmis-vitrin-${{ github.run_id }}
+          restore-keys: gecmis-
+
+      - name: Gün içi kayıtları getir
+        if: steps.konu.outputs.calis == 'true' && steps.konu.outputs.deneme != 'true'
+        uses: actions/cache/restore@v5
+        with:
+          path: veri/gun_ici.json
+          key: gunici-vitrin-${{ github.run_id }}
+          restore-keys: gunici-
+
+      - name: Günlük kayıtları yedekle tamamla
+        if: steps.konu.outputs.calis == 'true' && steps.konu.outputs.deneme != 'true'
+        continue-on-error: true
+        timeout-minutes: 1
+        env:
+          KAYIT_PAT: ${{ secrets.KAYIT_PAT }}
+        run: python bot/yedek.py birlestir
+
+      - name: Geçmiş fiyat arşivini indir
+        if: steps.konu.outputs.calis == 'true' && steps.konu.outputs.deneme != 'true'
+        continue-on-error: true
+        timeout-minutes: 2
+        env:
+          KAYIT_PAT: ${{ secrets.KAYIT_PAT }}
+        run: python bot/arsiv.py indir
+
+      - name: Bilgi sayfası
+        id: sayfa
+        if: steps.konu.outputs.calis == 'true' && steps.konu.outputs.deneme != 'true'
+        continue-on-error: true
+        timeout-minutes: 6
+        env:
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+        run: bash bot/sayfa_uret.sh site
+
+      # Site üretilemezse yayınlanmaz (canlı site bozulmasın); deneme Reels'i o gün atlanır.
+      - name: Siteye videoyu ekle
+        id: site
+        if: steps.sayfa.outputs.sonuc == 'yeni'
+        run: |
+          cp vitrin_cikti/*.mp4 vitrin_cikti/*.jpg site/
+          echo "hazir=true" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-pages-artifact@v5
+        if: steps.site.outputs.hazir == 'true'
+        with:
+          path: site
+
+  yayinla:
+    needs: uret
+    if: needs.uret.outputs.calis == 'true' && needs.uret.outputs.deneme != 'true' && needs.uret.outputs.site == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.yayin.outputs.page_url }}
+    steps:
+      - name: Siteyi yayınla (video ile)
+        id: yayin
+        uses: actions/deploy-pages@v5
+
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - run: pip install -q -r requirements.txt
+
+      - uses: actions/download-artifact@v7
+        with:
+          name: vitrin-onizleme
+          path: vitrin_cikti
+
+      - name: Deneme Reels'ini paylaş (yalnız takip etmeyenler)
+        timeout-minutes: 20
+        env:
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+        run: python bot/vitrin.py yayinla --cikti vitrin_cikti --url "${{ steps.yayin.outputs.page_url }}"

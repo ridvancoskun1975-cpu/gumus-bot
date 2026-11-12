@@ -227,6 +227,8 @@ def aciklamadan_ad(m):
     # Pazar yorumunun Reels'i kaydırmalıyla aynı çalıştırmada gider; tek takipçi kaydı kaydırmalıya eşlenir.
     if "profildeki kaydırmalı gönderide" in a:
         return "Pazar yorumu Reels"
+    if "gümüş rehberinden kısa bir bilgi" in a:      # bot/vitrin.py → ACIKLAMA_ISARETI (yalnız takip etmeyenlere)
+        return "Deneme Reels'i"
     for anahtar, ad in (("haftalık gümüş özeti", "Haftalık özet"), ("aylık gümüş özeti", "Aylık özet"),
                         ("günün gümüş özeti", "Günlük özet"), ("güncel gümüş fiyatları", "Fiyat Reels'i"),
                         ("yasal bilgilendirme", "Yasal bilgilendirme"),
