@@ -6,3 +6,6 @@ assets/muzik.mp3
 # Günlük fiyat kayıtları GitHub önbelleğinde saklanır, depoya girmez
 veri/
 assets/muzik-tanitim.mp3
+# Üretim sırasında yazılan geçici şablonlar (bot/main.py siler)
+templates/_hareket_*.html
+templates/_goril_denetim_*.html
