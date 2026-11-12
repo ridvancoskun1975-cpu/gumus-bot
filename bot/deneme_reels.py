@@ -11,6 +11,7 @@ Günlüğe anahtar ve sayı yazılmaz; yalnız kabul / ret ve Instagram'ın hata
 import json
 import os
 import sys
+import time
 
 import requests
 
@@ -48,16 +49,21 @@ def uygunluk():
     if kod >= 400 or "user_id" not in ben:
         print(f"::error::Hesap okunamadı ({kod}): {_hata_metni(ben)}")
         return 2
-    kod, kap = _istek("POST", f"{ben['user_id']}/media", media_type="REELS", upload_type="resumable",
+    # Instagram Login API'si yüklemesiz kabı kabul etmiyor ("video_url is required"); kısa boş bir deneme videosunun
+    # adresi iş akışı girdisiyle verilir. Video yalnız işlenir, paylaşılmaz.
+    kod, kap = _istek("POST", f"{ben['user_id']}/media", media_type="REELS", video_url=os.environ["DENEME_VIDEO_URL"],
                       caption="deneme reels uygunluk sınaması (paylaşılmaz)", trial_params=json.dumps(DENEME_AYARI))
     if kod >= 400 or "id" not in kap:
         print(f"::warning::DENEME REELS'İ KABUL EDİLMEDİ ({kod}): {_hata_metni(kap)}")
         return 1
     print("DENEME REELS'İ KABUL EDİLDİ: trial_params ile Reels kabı kuruldu (video yüklenmedi, paylaşılmadı; "
           "kap 24 saatte kendiliğinden düşer).")
-    kod, durum = _istek("GET", kap["id"], fields="status_code,status")
-    if kod < 400:
-        print(f"Kap durumu: {durum.get('status_code')} ({durum.get('status')})")
+    for _ in range(18):                     # en çok ~3 dk: Instagram videoyu işledi mi
+        kod, durum = _istek("GET", kap["id"], fields="status_code,status")
+        if kod >= 400 or durum.get("status_code") in ("FINISHED", "ERROR", "EXPIRED"):
+            break
+        time.sleep(10)
+    print(f"Kap durumu: {durum.get('status_code')} ({durum.get('status') or _hata_metni(durum)})")
     return 0
 
 
@@ -65,7 +71,7 @@ if __name__ == "__main__":
     if len(sys.argv) != 2 or sys.argv[1] != "uygunluk":
         print("Kullanım: python bot/deneme_reels.py uygunluk")
         sys.exit(2)
-    if not os.environ.get("IG_TOKEN"):
-        print("::error::IG_TOKEN tanımlı değil.")
+    if not os.environ.get("IG_TOKEN") or not os.environ.get("DENEME_VIDEO_URL"):
+        print("::error::IG_TOKEN ya da DENEME_VIDEO_URL tanımlı değil.")
         sys.exit(2)
     sys.exit(uygunluk())

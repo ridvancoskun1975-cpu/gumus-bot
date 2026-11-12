@@ -5,6 +5,10 @@
 name: Deneme Reels'i uygunluğu
 on:
   workflow_dispatch:
+    inputs:
+      video_url:
+        description: 'Kısa boş deneme videosunun herkese açık adresi (yalnız işlenir, paylaşılmaz)'
+        required: true
 permissions:
   contents: read
 jobs:
@@ -20,4 +24,5 @@ jobs:
       - name: Deneme Reels'i ayarını sına (paylaşmaz)
         env:
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
+          DENEME_VIDEO_URL: ${{ inputs.video_url }}
         run: python bot/deneme_reels.py uygunluk
