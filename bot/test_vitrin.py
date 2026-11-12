@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """bot/vitrin.py sınaması: deneme Reels'i takvimi, bölüm seçimi, saat penceresi, açıklama."""
 import sys
 from datetime import date, datetime

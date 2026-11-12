@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Deneme Reels'i ("vitrin"; Instagram "trial reels"): rehber bölümlerinden 15–20 sn'lik kısa sesli Reels, YALNIZ takip
 etmeyenlere gösterilir (büyüme incelemesi #40).
 
