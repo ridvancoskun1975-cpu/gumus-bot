@@ -1644,13 +1644,19 @@ def goril_alanlari(veri, tur, ornek=False):
 INSAN_YOK = {"gunun_notu": None, "goril_balon": None}
 
 
+def bugunku_ons(f):
+    """Bugünkü ons gümüş ($): gram ve kurdan geri hesap (gram = ons × dolar ÷ ONS_GRAM). Geçmiş kartının alt satırı."""
+    f = f or {}
+    return f["gram"] * ONS_GRAM / f["dolar"] if f.get("gram") and f.get("dolar") else None
+
+
 def insan_alanlari(veri, fiyat, tur, ornek=False):
     """İnsan dokunuşu alanları (bot/insan.py): gunun_notu (hesap, geçmiş ya da neden kartı) ve goril_balon. Modülde ya da kuralda
     herhangi bir hata "ekleme yok" sayılır; fiyat paylaşımı hiç etkilenmez."""
     try:
         import insan
         return insan.sablon_verisi(veri, (fiyat or {}).get("gecmis_gram"), tur, datetime.now(TR_SAAT).date(),
-                                   ornek=ornek, kalan_sn=butce.kalan(), ons=(fiyat or {}).get("ons"))
+                                   ornek=ornek, kalan_sn=butce.kalan(), ons=bugunku_ons(fiyat))
     except Exception as e:
         print(f"::warning::İnsan dokunuşu belirlenemedi, eklemesiz devam ediliyor: {type(e).__name__}: {e}")
         return dict(INSAN_YOK)
