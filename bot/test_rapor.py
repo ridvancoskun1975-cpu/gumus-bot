@@ -176,4 +176,44 @@ icinde("| Reklam 1 |", metin, "reklam günü işareti")
 esit("Reklam etkisi" in rapor.rapor_yaz(ms[:0], {}, satirlar, date(2026, 10, 5), date(2026, 10, 11), "", [], False,
                                         datetime(2026, 10, 12, 9, 5, tzinfo=TR)), False, "reklamsız haftada bölüm yok")
 
+# ---- insan dokunuşu (#33; 12 Kasım 2026): kart açıklamadaki satırdan, balon günleri, erişime oranlar
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import insan  # noqa: E402
+esit(rapor.INSAN_BASLANGIC, insan.BASLANGIC, "rapordaki başlangıç insan.BASLANGIC ile aynı")
+
+
+def kas(gun, saat, ad, aciklama="", **ist):
+    m = {"id": f"k{gun}{saat}", "media_product_type": "REELS", "_zaman": datetime(2026, 11, gun, *saat, tzinfo=TR),
+         "caption": aciklama, "permalink": f"https://www.instagram.com/reel/k{gun}/", "_ad": ad, "_goril": None,
+         "_ist": ist}
+    return m
+
+
+ms = [kas(9, (10, 0), "Fiyat Reels'i", reach=200, likes=2, shares=0, saved=0),
+      kas(10, (20, 0), "Günlük özet", "Günün gümüş özeti", reach=300, likes=3, shares=1, saved=0,
+          ig_reels_avg_watch_time=5000),
+      kas(11, (10, 0), "Fiyat Reels'i", reach=250, likes=1, shares=0, saved=0),
+      kas(12, (20, 0), "Günlük özet", "Günün gümüş özeti\n🕰️ 5 yıl önce: 2021'de 1 gram gümüş …", reach=400, likes=8,
+          shares=2, saved=1, ig_reels_avg_watch_time=6000),
+      kas(13, (20, 0), "Günlük özet", "Günün gümüş özeti\n📰 Neden: ABD'de faiz … (kaynak: x)", reach=500, likes=5,
+          shares=5, saved=0, ig_reels_avg_watch_time=7000)]
+esit([rapor.kart_turu(m) for m in ms], [None, None, None, "gecmis", "neden"], "kart açıklamadan")
+esit(rapor.kart_turu({"caption": "💡 1.000 ₺ ile bugün 11,9 gram gümüş alınır"}), "hesap", "hesap kartı")
+metin = rapor.rapor_yaz(ms, {}, [], date(2026, 11, 9), date(2026, 11, 15), "@gunlukgumus", [], False,
+                        datetime(2026, 11, 16, 9, 5, tzinfo=TR))
+icinde("## İnsan dokunuşu", metin, "insan bölümü")
+icinde("| kartsız | 1 | 300 | 5,0 sn | 10,0 | 3,3 | 0 |", metin, "kartsız akşam")
+icinde('| "N yıl önce" kartı | 1 | 400 | 6,0 sn | 20,0 | 5,0 | 1 |', metin, "geçmiş kartı")
+icinde("| neden kartı | 1 | 500 | 7,0 sn | 10,0 | 10,0 | 0 |", metin, "neden kartı")
+icinde("| kartlı (hepsi) | 2 | 450 | 6,5 sn | 14,4 | 7,8 | 1 |", metin, "kartlı toplam")
+icinde("| Cum 13.11 20:00 Günlük özet | 1 | 500 |", metin, "cuma akşam balon günü")
+icinde("| diğer sabahlar (ortalama) | 1 | 250 |", metin, "diğer sabahlar (pazartesi hariç)")
+esit("Pzt 09.11 10:00 Fiyat" in metin, False, "başlangıçtan önceki pazartesi balon günü sayılmaz")
+icinde("**1.000 erişim başına:** 11,5 beğeni · 4,8 paylaşma · 0,6 kaydetme", metin, "özette erişime oranlar")
+m = medya(20, (10, 0), "REELS", reach=100)
+rapor.paylasim_adlari([m], [])
+esit("## İnsan dokunuşu" in rapor.rapor_yaz([m], {}, [], date(2026, 10, 19), date(2026, 10, 25), "", [], False,
+                                           datetime(2026, 10, 26, 9, 5, tzinfo=TR)), False,
+     "başlangıçtan önceki haftada insan bölümü yok")
+
 print(f"test_rapor: {gecen} sınama geçti")

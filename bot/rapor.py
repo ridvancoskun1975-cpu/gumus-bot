@@ -430,6 +430,71 @@ def gunluk_takipci(satirlar, bas, bit):
     return sonuc
 
 
+# İnsan dokunuşu (#33; Rıdvan, 11 Kasım 2026): akşam özetinde kart, pazartesi sabah / cuma akşam goril balonu.
+# Rapor iş akışı yalnız requests kurar; bot/insan.py içe alınmaz, başlangıç tarihi burada tutulur ve
+# test_rapor insan.BASLANGIC ile aynı olduğunu sınar. Kart, açıklamadaki kart satırından anlaşılır (bot/insan.py → aciklama).
+INSAN_BASLANGIC = date(2026, 11, 12)
+KART_ISARETI = (("💡", "hesap"), ("🕰️", "gecmis"), ("📰 neden", "neden"))
+KART_ADI = {None: "kartsız", "hesap": "1.000 ₺ hesap kartı", "gecmis": "\"N yıl önce\" kartı", "neden": "neden kartı"}
+
+
+def kart_turu(m):
+    a = (m.get("caption") or "").lower()
+    return next((tur for isaret, tur in KART_ISARETI if isaret in a), None)
+
+
+def _binde(liste, olcu):
+    """Listedeki paylaşımların toplam ölçüsü ÷ toplam erişim × 1.000 (Instagram'ın 'erişime oranla' ölçüleri)."""
+    erisim = sum(m["_ist"].get("reach") or 0 for m in liste)
+    pay = sum(m["_ist"].get(olcu) or 0 for m in liste)
+    return "—" if not erisim else f"{pay * 1000 / erisim:.1f}".replace(".", ",")
+
+
+def _insan_satiri(ad, liste):
+    return (f"| {ad} | {len(liste)} | {sayi(_ort(liste, 'reach'))} | {saniye(_ort(liste, 'ig_reels_avg_watch_time'))} | "
+            f"{_binde(liste, 'likes')} | {_binde(liste, 'shares')} | {sayi(_top(liste, 'saved'))} |")
+
+
+def insan_bolumu(medyalar):
+    """Kartlı / kartsız akşam özetleri ve balon günleri. Dönemde insan dokunuşu başlamadıysa boş liste."""
+    if not any(m["_zaman"].date() >= INSAN_BASLANGIC for m in medyalar):
+        return []
+    aksam = [m for m in medyalar if m.get("_ad") == "Günlük özet"]
+    sabah = [m for m in medyalar if m.get("_ad") == "Fiyat Reels'i"]
+    sat = ["## İnsan dokunuşu", "",
+           "12 Kasım'dan beri akşam özetinde haftada en çok 2 kart (salı 1.000 ₺ hesabı, perşembe \"N yıl önce\", gümüş "
+           "%2'den çok oynadığı gün neden kartı) ve pazartesi sabah / cuma akşam goril balonu var (Rıdvan, 11 Kasım; "
+           "gümüş düştüğü gün balon çıkmaz). Instagram'ın en çok tarttığı ölçüler izlenme süresi ile beğeni ve paylaşmanın "
+           "(DM'den gönderme dahil) erişime oranıdır; oranlar 1.000 erişim başına. Sayılar küçükken tek tek günler gürültülüdür.",
+           ""]
+    tablo_basi = ["| {} | Gün | Ort. ulaşılan | Ort. izlenme | Beğeni / 1.000 erişim | Paylaşma / 1.000 erişim | Kaydetme |",
+                  "|---|---|---|---|---|---|---|"]
+    if aksam:
+        sat += ["**Akşam özeti: kartlı ve kartsız**", "", tablo_basi[0].format("Kart"), tablo_basi[1]]
+        gruplar = {}
+        for m in aksam:
+            gruplar.setdefault(kart_turu(m), []).append(m)
+        for tur in (None, "hesap", "gecmis", "neden"):
+            if tur in gruplar:
+                sat.append(_insan_satiri(KART_ADI[tur], gruplar[tur]))
+        kartli = [m for m in aksam if kart_turu(m)]
+        if kartli and len([t for t in gruplar if t]) > 1:
+            sat.append(_insan_satiri("kartlı (hepsi)", kartli))
+        sat.append("")
+    balon = [m for m in sabah if m["_zaman"].weekday() == 0] + [m for m in aksam if m["_zaman"].weekday() == 4]
+    balon = [m for m in balon if m["_zaman"].date() >= INSAN_BASLANGIC]
+    if balon:
+        sat += ["**Balon günleri** (pazartesi sabah Reels'i, cuma akşam özeti; gümüş düştüyse o gün balon yoktu)", "",
+                tablo_basi[0].format("Paylaşım"), tablo_basi[1]]
+        for m in sorted(balon, key=lambda x: x["_zaman"]):
+            sat.append(_insan_satiri(f"{_kisa_zaman(m['_zaman'])} {m['_ad']}", [m]))
+        diger_sabah = [m for m in sabah if m["_zaman"].weekday() != 0]
+        if diger_sabah:
+            sat.append(_insan_satiri("diğer sabahlar (ortalama)", diger_sabah))
+        sat.append("")
+    return sat
+
+
 def rapor_yaz(medyalar, hesap, satirlar, bas, bit, hesap_adi, uyarilar, deneme, simdi):
     sat = []
     gun_sayisi = (bit - bas).days + 1
@@ -480,6 +545,10 @@ def rapor_yaz(medyalar, hesap, satirlar, bas, bit, hesap_adi, uyarilar, deneme, 
     toplam = {o: _top(medyalar, o) for o in ("likes", "comments", "saved", "shares")}
     ozet.append(f"**Gönderilerde:** {sayi(toplam['likes'])} beğeni · {sayi(toplam['comments'])} yorum · "
                 f"{sayi(toplam['saved'])} kaydetme · {sayi(toplam['shares'])} paylaşma")
+    if any(m["_ist"].get("reach") for m in medyalar):
+        # Instagram'ın en çok tarttığı ölçüler erişime oranla (12 Kasım 2026, büyüme incelemesi #40)
+        ozet.append(f"**1.000 erişim başına:** {_binde(medyalar, 'likes')} beğeni · {_binde(medyalar, 'shares')} paylaşma · "
+                    f"{_binde(medyalar, 'saved')} kaydetme")
     sat += ["## Özet", ""] + [f"- {o}" for o in ozet] + [""]
 
     # --- öne çıkanlar
@@ -538,6 +607,7 @@ def rapor_yaz(medyalar, hesap, satirlar, bas, bit, hesap_adi, uyarilar, deneme, 
     # --- reklam ve goril
     sat += reklam_bolumu(medyalar, gunler, bas, bit)
     sat += goril_bolumu(medyalar, rg)
+    sat += insan_bolumu(medyalar)
 
     # --- tek tek
     if medyalar:
