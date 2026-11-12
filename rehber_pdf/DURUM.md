@@ -58,6 +58,10 @@ durumla karşılaştırır; uyuşmazlık hatadır. Yazım kuralları: `YAZIM.md`
 | 36 | 1980'de gümüş piyasasında ne oldu? | 9 Haziran 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
 | 37 | Gümüş haberlerini okurken nelere dikkat etmeli? | 16 Haziran 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
 | 38 | Gümüş sözlüğü: hangi terim ne demek? | 23 Haziran 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
+| 39 | Gümüş bir zamanlar altından değerli miydi? | 30 Haziran 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
+| 40 | İlk sikkeler: Lidya'da altın ile gümüş nasıl ayrıldı? | 7 Temmuz 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
+| 41 | Roma'da gümüş para nasıl değer kaybetti? | 14 Temmuz 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
+| 42 | Vikingler gümüşle nasıl ödeme yaptı? | 21 Temmuz 2027 | onaylandı | kaynak ✓ · denetle ✓ | 2028 |
 
 ## Ekler
 

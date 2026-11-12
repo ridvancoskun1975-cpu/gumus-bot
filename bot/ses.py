@@ -176,6 +176,18 @@ OKUMA = {
     38: ("Gümüş sözlüğü: hangi terim ne demek?",
          "Kısa cevap: troy ons, milyem, parite, makas, prim ve spot gibi terimlerin kısa tanımları; her birinin yanında ayrıntılı anlatıldığı bölümün numarası var.",
          "Örneğin makas, alış ile satış fiyatı arasındaki farktır."),
+    39: ("Gümüş bir zamanlar altından değerli miydi?",
+         "Kısa cevap: Eski Mısır'da belki. Önemli gümüş yatağı olmayan Mısır'da eski metinler gümüşü altından önce sayar; ama bu kesin değil, bir yorumdur.",
+         "Yeni Krallık'ta ise bir altın, iki gümüş ediyordu."),
+    40: ("İlk sikkeler: Lidya'da altın ile gümüş nasıl ayrıldı?",
+         "Kısa cevap: ilk sikkeler, altınla gümüşün doğal karışımı elektrumdandı. Altın tuzla ısıtılarak gümüşten ayrıldı; kaynakların çoğu ayrı altın ve gümüş sikkeleri Kroisos dönemine bağlar.",
+         "Bu işin yapıldığı tesis, bin dokuz yüz altmış sekizde Sardes'te, Sart Çayı kıyısında bulundu."),
+    41: ("Roma'da gümüş para nasıl değer kaybetti?",
+         "Kısa cevap: içindeki gümüş adım adım azaldı. İlk denarius neredeyse saf gümüştü; milattan sonra iki yüz altmışların sonunda paralarda yüzde iki ile beş arası gümüş kalmıştı.",
+         "Paranın üstündeki değer aynı kalırken içindeki gümüşü azaltmaya tağşiş denir."),
+    42: ("Vikingler gümüşle nasıl ödeme yaptı?",
+         "Kısa cevap: gümüşü tartarak. Sikke, kırık gümüş ve külçe teraziye konur, gerekirse kesilirdi.",
+         "Gümüşün başlıca kaynağı İslam dünyasından gelen dirhemlerdi. İngiltere'deki Cuerdale definesinden yaklaşık kırk kilo gümüş çıktı."),
 }
 
 

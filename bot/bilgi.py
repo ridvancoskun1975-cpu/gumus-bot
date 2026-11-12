@@ -1942,6 +1942,223 @@ BOLUMLER = [
             }
         ]
     },
+    # #39 — rehber paketi P7 (Rıdvan, 12 Kasım 2026 "sen kontrol et … uygula"; iki kontrol Claude'da)
+    {
+        "baslik": "Gümüş bir zamanlar altından değerli miydi?",
+        "alt": "Eski Mısır'da gümüş, altın ve zamanla değişen oran.",
+        "buyuk": "Beyaz altın",
+        "buyuk_alt": "Eski Mısırlılar gümüşe böyle dedi: nub hedj",
+        "hashtag": "#gümüş #gümüşrehberi #değerlimetaller #gumus #silver",
+        "soru": "Eski Mısır'daki “beyaz altın” adını daha önce duymuş muydunuz? Yorumlara yazın.",
+        "sayfalar": [
+            {
+                "baslik": "Altın bol, gümüş dışarıdan",
+                "maddeler": [
+                    "Mısır'ın Doğu Çölü'nde ve güneydeki Nubya'da zengin altın madenleri vardı; bilinen önemli bir gümüş yatağı ise yoktu.",
+                    "Keops'un annesi Hetepheres'in gümüş bilezikleri incelendi: gümüş büyük olasılıkla Ege'den, Byblos üzerinden gelmişti."
+                ],
+                "kaynak": "Kaynak: Metropolitan Sanat Müzesi; UCLA Mısırbilim Ansiklopedisi; Sowada vd. (2023)"
+            },
+            {
+                "baslik": "Altından değerli miydi?",
+                "tablo": [
+                    [
+                        "Eski Krallık",
+                        "gümüş listede altından önce"
+                    ],
+                    [
+                        "Yeni Krallık",
+                        "1 altın = 2 gümüş"
+                    ],
+                    [
+                        "Persler",
+                        "1 altın = 13 gümüş"
+                    ]
+                ],
+                "maddeler": [
+                    "Eski metinler iki metali sayarken gümüşü altından önce yazar. İlk dönemlerde gümüşün daha değerli olduğu yorumu buna dayanır.",
+                    "Bu bir fiyat kaydı değil, sıralamadan çıkan bir yorumdur; tartışmalıdır. Yeni Krallık'ta altın, gümüşün iki katı ediyordu."
+                ],
+                "kaynak": "Kaynak: UCLA Mısırbilim Ansiklopedisi; Ross ve Bettenay (2023); Herodotos"
+            },
+            {
+                "baslik": "Adı: “beyaz altın”",
+                "maddeler": [
+                    "Gümüşün eski Mısırca adı “beyaz altın” anlamına gelen nub hedj idi; sonra yalnız hedj (“beyaz”) kaldı.",
+                    "Hedj kelimesi zamanla “para”ya yakın bir anlam da kazandı; Fransızcadaki argent gibi.",
+                    "Ptolemaios döneminde (MÖ 305–30) gümüş yaygınlaştı; altına göre değeri komşu ülkelerdekine yaklaştı."
+                ],
+                "kaynak": "Kaynak: UCLA Mısırbilim Ansiklopedisi; British Museum; Metropolitan Sanat Müzesi"
+            }
+        ]
+    },
+    # #40 — rehber paketi P7 (Rıdvan, 12 Kasım 2026 "sen kontrol et … uygula"; iki kontrol Claude'da)
+    {
+        "baslik": "İlk sikkeler: Lidya'da altın ile gümüş nasıl ayrıldı?",
+        "alt": "Elektrum sikkelerden ayrı altın ve gümüş sikkelere.",
+        "buyuk": "Tuz ve ısı",
+        "buyuk_alt": "Sardes'te altını gümüşten ayıran yöntemin özü",
+        "hashtag": "#gümüş #gümüşrehberi #değerlimetaller #gumus #silver",
+        "soru": "Lidya'nın başkenti Sardes'i (Salihli, Sart) hiç gezdiniz mi? Yorumlara yazın.",
+        "sayfalar": [
+            {
+                "baslik": "Elektrum: ilk sikkelerin metali",
+                "maddeler": [
+                    "Lidya'nın başkenti Sardes bugün Salihli'deki Sart'tadır. Elektrum, altınla gümüşün doğal karışımıdır.",
+                    "Bilinen en eski sikkeler yaklaşık MÖ 630–600'de Batı Anadolu'da elektrumdan basıldı. Kesin tarih tartışmalıdır.",
+                    "Lidya elektrum sikkelerinde altın yaklaşık %55'ti. Altın oranı değişen metalin değerini dışından anlamak zordu."
+                ],
+                "kaynak": "Kaynak: Sardes kazısı (2010); LBMA; Britannica"
+            },
+            {
+                "baslik": "Kroisos: ayrı altın ve gümüş",
+                "tablo": [
+                    [
+                        "Elektrum sikke",
+                        "yak. MÖ 630–600"
+                    ],
+                    [
+                        "Kroisos dönemi",
+                        "yak. MÖ 560–546"
+                    ],
+                    [
+                        "1 altın sikke",
+                        "20 gümüş siglos"
+                    ]
+                ],
+                "maddeler": [
+                    "Kroisos (halk arasında Karun) dönemine saf altın ve saf gümüş sikkeler bağlanır; üzerlerinde aslan ile boğa var.",
+                    "Bu sikkeler Pers fethinden sonra da basıldı; hangisinin Kroisos dönemine ait olduğu tartışmalıdır."
+                ],
+                "kaynak": "Kaynak: Sardes kazısı (2010); Britannica; LBMA"
+            },
+            {
+                "baslik": "Sardes'teki arıtma tesisi",
+                "maddeler": [
+                    "Arkeologlar 1968'de Sart Çayı (Paktolos) kıyısında yaklaşık MÖ 575–550'den kalma bir altın arıtma tesisi buldu.",
+                    "Elektrum tuzla kaplarda saatlerce ısıtıldı; gümüş klorla birleşip kabın çeperine geçti, sonra geri kazanıldı.",
+                    "Uşak'taki “Karun hazinesi” Lidya dönemi altın ve gümüş eserlerdir; 1993'te ABD'den Türkiye'ye geri getirildi."
+                ],
+                "kaynak": "Kaynak: Ramage ve Craddock (2000); Sardes kazısı; Cenevre Üniversitesi"
+            }
+        ]
+    },
+    # #41 — rehber paketi P7 (Rıdvan, 12 Kasım 2026 "sen kontrol et … uygula"; iki kontrol Claude'da)
+    {
+        "baslik": "Roma'da gümüş para nasıl değer kaybetti?",
+        "alt": "Denarius'tan antoninianus'a: paradaki gümüş adım adım azaldı.",
+        "buyuk": "%2–5",
+        "buyuk_alt": "260'ların sonunda Roma'nın “gümüş” parasındaki gümüş",
+        "hashtag": "#gümüş #gümüşrehberi #değerlimetaller #gumus #silver",
+        "soru": "Tağşiş kelimesini daha önce duymuş muydunuz? Yorumlara yazın.",
+        "sayfalar": [
+            {
+                "baslik": "Denarius: gümüşle doğdu",
+                "maddeler": [
+                    "Roma'nın gümüş parası denarius, yaklaşık MÖ 211'de, Kartaca'yla savaş yıllarında çıktı.",
+                    "İlk denarius'lar ~4,5 gramdı ve %95–98 gümüştü. Üstündeki X işareti, 10 bronz as değerini gösterirdi.",
+                    "Arapça ve Farsçadaki dinar kelimesi de denarius'tan gelir."
+                ],
+                "kaynak": "Kaynak: Britannica; CoinWeek; Dictionary.com"
+            },
+            {
+                "baslik": "Gümüş nasıl azaldı?",
+                "tablo": [
+                    [
+                        "MÖ 211 dolayı",
+                        "%95–98 · denarius"
+                    ],
+                    [
+                        "MS 64 (Nero)",
+                        "%80–93 · denarius"
+                    ],
+                    [
+                        "MS 200 dolayı",
+                        "%50–60 · denarius"
+                    ],
+                    [
+                        "260'ların sonu",
+                        "%2–5 · antoninianus"
+                    ]
+                ],
+                "maddeler": [
+                    "Nero MS 64'te denarius'u %12,5 hafifletti, ayarını da düşürdü. Ne kadar düştüğü ölçüm yöntemine göre tartışmalı.",
+                    "Caracalla 215'te iki denarius değerinde antoninianus'u çıkardı; ağırlığı bir buçuk denarius kadardı.",
+                    "235–284 krizinde gümüş hızla azaldı; 260'ların sonunda para ince gümüş kaplı bakırdı."
+                ],
+                "kaynak": "Kaynak: Britannica; NGC (2018); TheCollector; Butcher ve Ponting"
+            },
+            {
+                "baslik": "Diocletianus ve fiyat fermanı",
+                "maddeler": [
+                    "Diocletianus 293–294 dolayında %90'ın üstünde gümüş içeren yeni bir para bastırdı.",
+                    "301 Fiyat Fermanı binden fazla mal, hizmet ve ücrete tavan fiyat koydu; aşmanın cezası ölümdü. Pek uygulanamadı.",
+                    "Bir kopyası Aydın'daki Afrodisias'ta bulundu. Paradaki gümüşü azaltmaya tağşiş denir (Bölüm 13)."
+                ],
+                "kaynak": "Kaynak: Britannica; NGC; Kansas Üniversitesi; Hürriyet Daily News"
+            }
+        ]
+    },
+    # #42 — rehber paketi P7 (Rıdvan, 12 Kasım 2026 "sen kontrol et … uygula"; iki kontrol Claude'da)
+    {
+        "baslik": "Vikingler gümüşle nasıl ödeme yaptı?",
+        "alt": "Terazi, kırık gümüş ve doğudan gelen dirhemler.",
+        "buyuk": "Tartıyla",
+        "buyuk_alt": "Viking çağında gümüşün değeri ağırlığındaydı",
+        "hashtag": "#gümüş #gümüşrehberi #değerlimetaller #gumus #silver",
+        "soru": "Viking definelerini daha önce duymuş muydunuz? Yorumlara yazın.",
+        "sayfalar": [
+            {
+                "baslik": "Gümüş tartıyla ödenirdi",
+                "maddeler": [
+                    "Viking çağında (yaklaşık 793–1066) değer, sikkenin üzerindeki yazıda değil gümüşün ağırlığındaydı.",
+                    "Sikke, bilezik ve takılar gerektiği kadar kesilirdi: bu parçalara kırık gümüş (hacksilver) denir. Parçalar eritilip külçe de yapılırdı.",
+                    "Tüccar küçük, taşınabilir bir terazi ve ağırlık takımı taşırdı. Gümüşün sahiciliği bıçakla açılan küçük çentiklerle sınanırdı."
+                ],
+                "kaynak": "Kaynak: Danimarka Ulusal Müzesi; İsveç Tarih Müzesi; Kershaw (Antiquity, 2017)"
+            },
+            {
+                "baslik": "Doğudan gelen dirhemler",
+                "tablo": [
+                    [
+                        "Gotland",
+                        "700+ define, ~180.000 sikke"
+                    ],
+                    [
+                        "Spillings (1999)",
+                        "~67 kg gümüş"
+                    ]
+                ],
+                "maddeler": [
+                    "Gümüşün başlıca kaynağı İslam dünyasında basılan dirhemlerdi: Abbasi ve Samani dirhemleri.",
+                    "Dirhemler Rus nehirleri ve Volga yoluyla kuzeye geldi; karşılığında kürk, kehribar ve köle satıldı. Akış 10. yüzyılın sonuna doğru kesildi."
+                ],
+                "kaynak": "Kaynak: İsveç Tarih Müzesi; Danimarka Ulusal Müzesi; Archaeology (2017)"
+            },
+            {
+                "baslik": "Cuerdale definesi",
+                "tablo": [
+                    [
+                        "Bulunduğu yıl",
+                        "1840, Ribble Nehri kıyısı"
+                    ],
+                    [
+                        "İçindekiler",
+                        "8.500'den fazla gümüş parça"
+                    ],
+                    [
+                        "Ağırlık",
+                        "yaklaşık 40 kg"
+                    ]
+                ],
+                "maddeler": [
+                    "İngiltere'de nehir setini onaran işçiler kurşun bir sandık buldu: içinde sikke, külçe ve kırık gümüş vardı.",
+                    "En geç sikkelere göre define yaklaşık 905–910'da gömüldü. İçinde İslam dünyasından gelen sikkeler de var."
+                ],
+                "kaynak": "Kaynak: British Museum; Ashmolean Müzesi"
+            }
+        ]
+    },
 ]
 
 
