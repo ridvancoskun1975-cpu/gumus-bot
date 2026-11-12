@@ -17,13 +17,17 @@
     Instagram'ın hesap adı satırına hafifçe yaklaşır (Rıdvan önizlemede gördü). -#}
 <div class="sahne" style="position: relative; width: 1080px; height: 1920px; padding: 0">
   <div class="isik" aria-hidden="true"></div>
-  {#- Kartlı günde (bot/insan.py: hesap / neden kartı) içerik 1280 px'e sığmayabilir (gün içi satırı varken): çerçeve
-      doğal yüksekliğini alır ve aşağıdaki betik onu bütünüyle küçülterek aynı alana sığdırır (oranlar aynı kalır).
-      Kartsız günde hiçbir şey değişmez. -#}
+  {#- Kartlı günde (bot/insan.py: hesap / geçmiş / neden kartı) içerik 1280 px'e sığmaz (gün içi satırı varken
+      ~1.380–1.450 px). Rıdvan, 12 Kasım 2026 21:51: "birşeyi kaldırma veya silme. şablonu düzelt." (o akşam neden kartlı
+      özet ~%11 küçük çıkmıştı). Bu yüzden kartlı günde: (1) çerçeve aşağı doğru uzar, en çok haftalık ve aylık özetin
+      onaylı alt sınırına kadar (y 1628; `kart_yuk` = 1367 × 1,03); (2) boşluklar biraz daralır (`k_*`; yazı boyları
+      ve oranlar aynı); (3) alt notlar tek satırda kalır. Ancak bunlardan sonra da sığmazsa aşağıdaki betik çerçeveyi
+      bütünüyle küçültür (yalnız son güvenlik; gerçek kartlarla gerekmiyor). Kartsız günde hiçbir şey değişmez. -#}
+  {% set k = gunun_notu %}{% set kart_yuk = 1367 %}
   <div class="cerceve" style="position: absolute; left: 96px; top: 220px; width: 814px; {{ 'min-height' if gunun_notu else 'height' }}: 1280px; display: flex;
        flex-direction: column; justify-content: space-between; transform: scale(1.03); transform-origin: 0 0">
   <div class="ust">
-    <div class="ust-sol" style="gap: 21px">
+    <div class="ust-sol" style="gap: {{ 16 if k else 21 }}px">
       <h1 style="font-size: {{ 133 if gun_ici_gorsel else 152 }}px; letter-spacing: -3.5px">Gümüş</h1>
       <div class="etiket" style="gap: 14px; font-size: 39px"><span id="nokta" class="nokta" style="width: 14px; height: 14px"></span><span>GÜNLÜK ÖZET</span></div>
       <div class="tarih mono" style="font-size: 44px">{{ tarih }} · {{ saat }}</div>
@@ -32,7 +36,7 @@
   </div>
 
   {#- Gün içi satırı varken üst boşluk, "Gümüş" ve fiyat biraz küçülür: satır sığsın, bölümler arası nefes kalsın -#}
-  <div class="kahraman" style="gap: {{ 9 if gun_ici_gorsel else 14 }}px; padding-top: {{ 35 if gun_ici_gorsel else 51 }}px; position: relative">
+  <div class="kahraman" style="gap: {{ (6 if k else 9) if gun_ici_gorsel else (10 if k else 14) }}px; padding-top: {{ (22 if k else 35) if gun_ici_gorsel else (36 if k else 51) }}px; position: relative">
     {#- Goril maskotu (bot/goril.py): hafta içi sabah Reels'i ve akşam özeti, cumartesi haftalık özet -#}
     {#- Gün içi satırı varken goril yukarı alınır: ayakları parite / dolar başlığına inmesin -#}
     {% if maskot %}<div class="maskot" aria-hidden="true" style="position: absolute; right: -14px; bottom: {{ '96px' if gun_ici_gorsel else '-20px' }}; width: 226px; height: 247px">{% include maskot %}</div>{% endif %}
@@ -55,7 +59,7 @@
         Değerler 48, adları 32 (Rıdvan, 23 Ekim 2026: "Sadece gün içi en yüksek en düşük az büyüyebilir mi"; önce 42 / 30;
         diğer yazıları büyütme denemesi oranları bozduğu için geri alındı). -#}
     {% if gun_ici_gorsel %}
-    <div id="gun-ici" style="display: flex; gap: 46px; margin-top: 9px">
+    <div id="gun-ici" style="display: flex; gap: 46px; margin-top: {{ 5 if k else 9 }}px">
       {% if gun_ici_gorsel.esit %}
       <div class="gun-ici-oge" style="display: flex; flex-direction: column; gap: 2px">
         <span class="soluk" style="font-size: 37px">Gün içi</span>
@@ -75,7 +79,7 @@
 
   <div style="display: flex; flex-direction: column">
     {% if gunun_notu %}{{ not_karti(gunun_notu, 35, 23) }}{% endif %}
-    <div class="satir" style="display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: {{ 18 if gunun_notu else 28 }}px 0; border-top: 2px solid var(--cizgi)">
+    <div class="satir" style="display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: {{ 15 if gunun_notu else 28 }}px 0; border-top: 2px solid var(--cizgi)">
       <div style="display: flex; flex-direction: column; gap: 7px">
         <b style="font-size: 41px; white-space: nowrap">Altın / Gümüş paritesi</b>
         <span class="soluk" style="font-size: 37px; line-height: 1.2; text-wrap: balance">{{ parite_cumle or "1 ons altın = ? ons gümüş" }}</span>
@@ -85,7 +89,7 @@
         {{ degisim(parite_deg, 39, 28) }}
       </div>
     </div>
-    <div class="satir" style="display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: {{ 18 if gunun_notu else 28 }}px 0; border-top: 2px solid var(--cizgi)">
+    <div class="satir" style="display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: {{ 15 if gunun_notu else 28 }}px 0; border-top: 2px solid var(--cizgi)">
       <div style="display: flex; flex-direction: column; gap: 7px">
         <b style="font-size: 41px; white-space: nowrap">Dolar / TL</b>
         <span class="soluk" style="font-size: 37px; line-height: 1.2">ECB kuru · {{ kur_tarihi }}</span>
@@ -98,9 +102,12 @@
     </div>
   </div>
 
-  <div class="alt" style="border-top: 2px solid var(--cizgi); padding-top: 32px">
+  <div class="alt" style="border-top: 2px solid var(--cizgi); padding-top: {{ 22 if k else 32 }}px">
     <b style="font-size: 39px"><span style="position: relative"><span style="position: absolute; right: 100%; top: .3em; margin-right: .2em; font-size: .62em; line-height: 1">©</span>{{ hesap }}</span></b>
-    <div class="alt-sag soluk" style="font-size: 22px">
+    {#- Kartlı günde alt notlar kırılmaz (neden notu 12 Kasım 2026'da iki satıra inip görseli küçültüyordu): sütun daralabilir
+        (min-width: 0), uzun satır sola, hesap adının üstündeki boşluğa taşar. Hesap adı yalnız son iki satırın hizasında
+        olduğu için çakışmaz (kart notu son üçüncü satırda). -#}
+    <div class="alt-sag soluk" style="font-size: 22px{% if k %}; min-width: 0; white-space: nowrap{% endif %}">
       {% if gun_ici_gorsel %}<span>Gün içi: yaklaşık 2 saatte bir alınan fiyatlara göre.</span>{% endif %}
       {% if gunun_notu and gunun_notu.alt %}<span>{{ gunun_notu.alt }}</span>{% endif %}
       <span>Bilgi amaçlıdır, yatırım tavsiyesi değildir.</span>
@@ -111,7 +118,7 @@
 </div>
 {% if gunun_notu %}<script>
 (function () {
-  const c = document.querySelector('.cerceve'), H = 1280, S = 1.03;
+  const c = document.querySelector('.cerceve'), H = {{ kart_yuk }}, S = 1.03;   // H: kartlı günün en çok yüksekliği (yukarıdaki not)
   const sigdir = () => { c.style.transform = 'scale(' + Math.min(S, S * H / c.scrollHeight) + ')'; };
   sigdir();
   if (document.fonts) document.fonts.ready.then(sigdir);
