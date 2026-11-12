@@ -115,8 +115,8 @@
   `ses.kisa_seslendir`; yapay zekâ etiketiyle; sesliyse "Sesi açın" rozeti + "Seslendirme: yapay zekâ" satırı, ilk 2,5 sn
   ortada büyük rozet; küçük rozet şablonun başlık satırına bindiği için alt başlığın altında, `vitrin.ROZET_Y`), Instagram'ın deneme ayarıyla (`trial_params` graduation_strategy **MANUAL**):
   yalnız takip etmeyenlere gösterilir, takipçinin akışına, Reels sekmesine ve profile düşmez; bu yüzden günlük 4 sınırına
-  sayılmaz. SS_PERFORMANCE (iyi giderse takipçilere kendiliğinden açılır) kullanılmaz; "herkesle paylaş" yalnız Rıdvan'ın
-  kararıdır. Deneme dönemi `vitrin.BASLANGIC`–`BITIS` (17 Kasım – 3 Aralık 2026, salı/perşembe, yalnız 10:45–12:10); sonra
+  sayılmaz. SS_PERFORMANCE (iyi giderse takipçilere kendiliğinden açılır) kullanılmaz ve "herkesle paylaş" yapılmaz (Rıdvan, 12 Kasım
+  2026 22:50: "ben takipçilerin görmesini istemiyorum!"). Deneme dönemi `vitrin.BASLANGIC`–`BITIS` (17 Kasım – 3 Aralık 2026, salı/perşembe, yalnız 10:45–12:10); sonra
   devam kararı Rıdvan'ın. Raporda "Deneme Reels'i" adıyla görünür (açıklamadaki `vitrin.ACIKLAMA_ISARETI`).
 - Rehber hikâyesi kareler tek tek değil, tek müzikli video olarak gider (kapak 3 sn, kare 6 sn), rehber gönderisiyle
   aynı çalıştırmada (`bot/main.py` → `REHBER_HIKAYE_OTOMATIK = True`); hikâye kalabalık olmamalı.
