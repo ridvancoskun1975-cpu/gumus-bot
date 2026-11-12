@@ -268,8 +268,11 @@ def kapak_olc(v, tur, gun=None):
         gecici.unlink(missing_ok=True)
 
 
-for tur, senaryo, hafta_, d, gun, en_az in (("post", "goril-istif", None, "istif", None, 280),
-                                            ("reels", "goril-sevinen", None, "sevinen", None, 280),
+# Goril boyu tarih yazısının genişliğine bağlı (kısa ay adında büyük): 280 px beklentisi kısa ay adıyla sabitlenir,
+# yoksa sınama günün ayına göre düşer (ör. Kasım'da 229 px). Uzun ay adı aşağıda 150 px ile ayrıca sınanıyor.
+for tur, senaryo, hafta_, d, gun, en_az in (("post", "goril-istif", None, "istif", "13 Ekim", 280),
+                                            ("reels", "goril-sevinen", None, "sevinen", "13 Ekim", 280),
+                                            ("post", "goril-istif", None, "istif", None, 150),
                                             ("hafta", None, None, "gezinen", None, 150),
                                             ("post", "goril-istif", None, "istif", "29 Temmuz", 150),
                                             ("post", "esik", None, "ozel", None, 150)):
