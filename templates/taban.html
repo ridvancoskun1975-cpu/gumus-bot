@@ -38,6 +38,21 @@ header.ust { position: sticky; top: 0; z-index: 2; background: rgba(18, 20, 24, 
    yan yana sığmazsa düğme alt satıra iner; üst üste binmez (14 Ekim 2026). */
 header .kap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px;
   padding-top: 10px; padding-bottom: 10px; }
+/* Site menüsü (Rıdvan, 16 Kasım 2026 19:12: "istediğim sayfalara istediğim zaman ulaşabilmeliyim"): üst çubukla birlikte
+   her sayfada ekranın üstünde sabit; sığmayan sekmeler yana kayar. Bulunulan bölüm koyu (aşağıdaki betik). */
+header .menu-kap { display: block; padding-top: 0; padding-bottom: 0; }
+.menu ul { position: relative; display: flex; gap: 6px; margin: 0; padding: 0 0 10px; list-style: none; overflow-x: auto;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.menu ul::-webkit-scrollbar { display: none; }
+/* Sağda sekme kaldıysa kenar solar: yana kaydırılabildiği görünsün */
+.menu ul.tasma { -webkit-mask-image: linear-gradient(to right, #000 80%, transparent);
+  mask-image: linear-gradient(to right, #000 80%, transparent); }
+.menu a { display: flex; align-items: center; min-height: 40px; box-sizing: border-box; padding: 0 12px; border-radius: 999px;
+  border: 1px solid var(--cizgi); color: var(--yazi); text-decoration: none; font-size: 15px; font-weight: 600;
+  white-space: nowrap; flex: none; }
+.menu a[aria-current="page"] { background: var(--yazi); color: var(--zemin); border-color: var(--yazi); }
+.alt-menu { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 14px; padding: 0; list-style: none; }
+.alt-menu a { display: inline-block; padding: 6px 0; }
 .marka { display: flex; align-items: center; gap: 10px; color: var(--yazi); text-decoration: none; min-width: 0; }
 .marka > span { min-width: 0; }
 .ag { width: 2.25em; height: 2.5em; border: 2px solid var(--vurgu); border-radius: 6px; display: grid; place-items: center;
@@ -171,12 +186,21 @@ footer .iletisim a { color: var(--yazi); }
 <body>
 <header class="ust">
   <div class="kap">
-    <a class="marka" href="{{ instagram }}" aria-label="{{ hesap }} Instagram profili">
+    <a class="marka" href="{{ kok }}" aria-label="Gram gümüş fiyatı · ana sayfa">
       <span class="ag" aria-hidden="true">Ag</span>
       <span><b>Gümüş</b><small>{{ hesap }}</small></span>
     </a>
     <a class="dugme" href="{{ instagram }}" aria-label="Instagram'da {{ hesap }} hesabını takip et">Takip et</a>
   </div>
+  <nav class="menu" aria-label="Site menüsü">
+    <div class="kap menu-kap"><ul>
+      <li><a href="{{ kok }}">Fiyat</a></li>
+      {% if pazar_menu %}<li><a href="{{ kok }}pazar/">Pazar analizi</a></li>{% endif %}
+      <li><a href="{{ kok }}hesap/">Hesapla</a></li>
+      <li><a href="{{ kok }}gecmis/">Geçmiş</a></li>
+      <li><a href="{{ kok }}rehber/">Rehber</a></li>
+    </ul></div>
+  </nav>
 </header>
 
 <main class="kap">
@@ -195,11 +219,34 @@ footer .iletisim a { color: var(--yazi); }
     </section>
     {% endif %}
     <p><b style="color: var(--yazi)">{{ hesap }}</b> · Gram gümüş fiyatı{% if program %}, {{ program.fiyat_ozet }}{% endif %}.</p>
-    <p><a href="{{ kok }}">Gram gümüş fiyatı</a> · <a href="{{ kok }}hesap/">Hesap makinesi</a> · <a href="{{ kok }}gecmis/">Geçmiş fiyatlar</a> · <a href="{{ kok }}rehber/">Gümüş rehberi</a></p>
+    <nav aria-label="Sayfalar"><ul class="alt-menu">
+      <li><a href="{{ kok }}">Gram gümüş fiyatı</a></li>
+      {% if pazar_menu %}<li><a href="{{ kok }}pazar/">Pazar analizi</a></li>{% endif %}
+      <li><a href="{{ kok }}hesap/">Hesap makinesi</a></li>
+      <li><a href="{{ kok }}gecmis/">Geçmiş fiyatlar</a></li>
+      <li><a href="{{ kok }}rehber/">Gümüş rehberi</a></li>
+      <li><a href="{{ instagram }}">Instagram</a></li>
+    </ul></nav>
     <p>Bilgi amaçlıdır, yatırım tavsiyesi değildir. Yazı tipleri: Archivo ve JetBrains Mono (SIL Open Font License).</p>
     <p class="telif"><b>© {{ telif_yili | default("2026") }} Günlük Gümüş · Tüm hakları saklıdır.</b> Sitedeki metinler, tasarım ve görseller izinsiz kopyalanamaz ve kullanılamaz.</p>
   </div>
 </footer>
 {% block betik %}{% endblock %}
+<script>
+/* Menüde bulunulan bölüm: adresi en uzun eşleşen sekme koyu olur; ekran dışındaysa görünene kadar kaydırılır (sayfa
+   kaymaz). Sağda sekme kaldıkça kenar solar. */
+(function () {
+  var ul = document.querySelector('.menu ul'); if (!ul) return;
+  var adres = location.href.split('#')[0].split('?')[0], en = null, uz = -1;
+  ul.querySelectorAll('a').forEach(function (a) {
+    var h = a.href;
+    if ((adres === h || adres.indexOf(h) === 0 || adres === h + 'index.html') && h.length > uz) { en = a; uz = h.length; }
+  });
+  if (en) { en.setAttribute('aria-current', 'page');
+    var sag = en.offsetLeft + en.offsetWidth - ul.clientWidth + 28; if (sag > 0) ul.scrollLeft = sag; }
+  function kenar() { ul.classList.toggle('tasma', ul.scrollLeft + ul.clientWidth < ul.scrollWidth - 4); }
+  kenar(); ul.addEventListener('scroll', kenar, { passive: true }); window.addEventListener('resize', kenar);
+})();
+</script>
 </body>
 </html>

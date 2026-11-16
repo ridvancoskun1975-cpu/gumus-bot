@@ -380,6 +380,7 @@ def uret(cikti, gecmis, simdi=None, euro=None, pazar=None, kati=False, arsiv=Non
     # Ayrıntılı pazar analizi (pazar/ ve pazar/YYYY-AA-GG/). Hata verirse düğme eskisi gibi Instagram'a döner,
     # site yine yayınlanır (paylaşım ve fiyat sayfası bu yüzden hiçbir zaman durmaz).
     pazar_harita = []
+    v["pazar_menu"] = bool(pazar_kayitlar)   # site menüsünde "Pazar analizi" sekmesi (templates/taban.html)
     if pazar_kayitlar:
         try:
             son = max(pazar_kayitlar)
@@ -387,6 +388,7 @@ def uret(cikti, gecmis, simdi=None, euro=None, pazar=None, kati=False, arsiv=Non
             pazar_harita = pazar_sayfa.uret(cikti, env, v, pazar_kayitlar, ig)
         except Exception as e:
             print(f"::warning::Pazar analizi sayfası üretilemedi, düğme Instagram'a gidiyor: {type(e).__name__}: {e}")
+            v["pazar_menu"] = False
             if v["tanitim"].get("pazar"):
                 v["tanitim"]["pazar"] = ig_pazar
     (cikti / "index.html").write_text(env.get_template("sayfa.html").render(**v, kok=""), encoding="utf-8")
