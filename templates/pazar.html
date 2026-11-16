@@ -1,0 +1,135 @@
+{#- Ayrıntılı pazar analizi (bot/pazar_sayfa.py → site/pazar/). Rıdvan, 16 Kasım 2026 15:50: "Web sitesine girenler
+    son pazarın yorumunu daha detaylı bir şekilde görmelerini istiyorum". Instagram'daki yorumun tamamı + dönem
+    rakamları, hareketin kaynağı (kuralla), haber kaynakları, nasıl hazırlandı ve SPK uyarısı. Model ya da şirket adı yok. -#}
+{% extends "taban.html" %}
+{% block bas %}
+<title>Haftalık gümüş analizi · {{ p.tarih }} | Günlük Gümüş</title>
+<meta name="description" content="Gram gümüş için kısa ve orta vadeli görünüm ({{ p.tarih }}): ağır basan yön, gerekçesi, dönem rakamları ve haftanın gelişmeleri. Yatırım tavsiyesi değildir.">
+<link rel="canonical" href="{{ url }}pazar/">
+<meta property="og:type" content="article">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:site_name" content="Gümüş · {{ hesap }}">
+<meta property="og:title" content="Haftalık gümüş analizi · {{ p.tarih }}">
+<meta property="og:url" content="{{ url }}pazar/">
+<meta property="og:image" content="{{ url }}og.png?v={{ surum }}">
+<meta name="twitter:card" content="summary_large_image">
+{% endblock %}
+{% block stil %}
+.yol { margin-top: 16px; font-size: 14px; color: var(--soluk); }
+.yol a { color: var(--soluk); }
+.ust-ozet { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin: 12px 0 0; }
+.ust-ozet .sayi { font-size: 40px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; }
+.ust-ozet .birim { font-size: 22px; font-weight: 700; color: var(--vurgu); }
+.vade { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 14px; padding: 16px; margin: 16px 0 0;
+  border-left: 5px solid var(--cizgi); }
+.vade.dusus { border-left-color: var(--dusus); }
+.vade.artis { border-left-color: var(--artis); }
+.vade-bas { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.yon { display: inline-flex; align-items: center; gap: 8px; margin: 10px 0 2px; padding: 6px 12px; border-radius: 999px;
+  font-weight: 800; font-size: 17px; }
+.yon.dusus { color: var(--dusus); background: rgba(240, 122, 106, 0.12); }
+.yon.artis { color: var(--artis); background: rgba(91, 201, 140, 0.12); }
+.guc { display: flex; align-items: center; gap: 8px; color: var(--soluk); font-size: 14px; margin: 6px 0 0; }
+.guc i { display: inline-block; width: 22px; height: 7px; border-radius: 4px; background: var(--cizgi); }
+.vade.dusus .guc i.dolu { background: var(--dusus); }
+.vade.artis .guc i.dolu { background: var(--artis); }
+.vade h3 { font-size: 22px; margin: 12px 0 4px; text-wrap: balance; }
+.vade h4 { margin: 14px 0 2px; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; color: var(--soluk); }
+.vade p { margin: 2px 0 0; }
+.cipler { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 0; padding: 0; list-style: none; }
+.cipler li { padding: 4px 10px; border: 1px solid var(--cizgi); border-radius: 999px; font-size: 14px; }
+.degisti { margin: 12px 0 0; padding: 10px 12px; border-radius: 10px; background: rgba(201, 209, 218, 0.08); font-size: 15px; }
+.rakam { width: 100%; margin-top: 6px; font-size: 15px; }
+.rakam td { padding: 7px 4px; }
+.cubuklar { margin: 8px 0 0; }
+.cubuk-satir { display: grid; grid-template-columns: 84px 1fr 64px; gap: 8px; align-items: center; font-size: 14px; margin: 5px 0; }
+.cubuk-yol { height: 10px; background: var(--zemin); border-radius: 5px; overflow: hidden; }
+.cubuk-yol i { display: block; height: 100%; border-radius: 5px; }
+.cubuk-yol i.dusus { background: var(--dusus); }
+.cubuk-yol i.artis { background: var(--artis); }
+.cubuk-satir .deg { text-align: right; }
+.haber { list-style: none; padding: 0; margin: 8px 0 0; }
+.haber li { padding: 12px 0; border-bottom: 1px solid var(--cizgi); }
+.haber .konu { display: block; font-size: 12px; letter-spacing: 2px; font-weight: 800; color: var(--soluk); }
+.haber .kaynak { display: block; color: var(--soluk); font-size: 13px; margin-top: 2px; }
+.kaynak-liste { margin: 0; padding: 0 16px 14px 34px; font-size: 14px; }
+.kaynak-liste li { margin: 6px 0; }
+.kaynak-liste small { color: var(--soluk); }
+.yasal-kutu p { color: var(--soluk); font-size: 14px; margin: 8px 0 0; }
+{% endblock %}
+{% block icerik %}
+{% from "tanitim.html" import kart with context %}
+{%- macro deg(d) -%}{%- if d -%}<span class="deg {{ d.yon }}"><span aria-hidden="true">{{ d.isaret }}</span> {{ d.metin }}</span>{%- endif -%}{%- endmacro -%}
+  <nav class="yol" aria-label="Konum"><a href="{{ kok }}">Gram gümüş fiyatı</a> › Pazar analizi</nav>
+  <section aria-labelledby="baslik" style="padding-top: 12px">
+    <p class="etiket">Haftalık gümüş görünümü</p>
+    <h1 id="baslik" style="font-size: 28px; margin-top: 4px">Pazar analizi · {{ p.tarih }}</h1>
+    <p class="soluk" style="margin: 6px 0 0">Üst düzey yapay zekâ yorumu · veriler {{ p.veri_ani }}</p>
+    {% if p.gram %}<div class="ust-ozet"><span class="sayi">{{ p.gram }}</span><span class="birim">₺</span>
+      <span>{{ deg(p.gram_hafta) }} <span class="soluk">haftalık</span></span></div>
+    <p class="soluk" style="margin: 4px 0 0; font-size: 15px">Ons {{ p.ons }} $ · Dolar/TL {{ p.dolar }} · Altın/gümüş paritesi {{ p.parite }}</p>{% endif %}
+  </section>
+
+  {% for v in p.vadeler %}
+  <article class="vade {{ v.yon_sinif }}" aria-labelledby="v-{{ v.anahtar }}">
+    <div class="vade-bas"><span class="etiket">{{ v.ad }}</span><span class="soluk" style="font-size: 14px">{{ v.ufuk }}</span></div>
+    <div class="yon {{ v.yon_sinif }}"><span aria-hidden="true">{{ v.ok }}</span> {{ v.yon|capitalize }} ağır basıyor</div>
+    <div class="guc" aria-label="Güç: {{ v.guc }}">{% for i in range(3) %}<i class="{{ 'dolu' if i < v.guc_dolu }}"></i>{% endfor %} {{ v.guc }}</div>
+    <h3 id="v-{{ v.anahtar }}">{{ v.ozet }}</h3>
+    <h4>Ne görülüyor</h4>
+    <p>{{ v.durum }}</p>
+    <h4>Olası seyir</h4>
+    <p>{{ v.seyir }}</p>
+    {% if v.izlenecek %}<h4>İzlenecekler</h4>
+    <ul class="cipler">{% for x in v.izlenecek %}<li>{{ x }}</li>{% endfor %}</ul>{% endif %}
+    {% if v.degisim %}<p class="degisti"><b>Yön değişti:</b> {{ v.degisim }}</p>{% endif %}
+    {% if v.rakamlar %}
+    <h4>{{ v.donem }}{% if v.aralik_tarih %} <span style="letter-spacing: 0; text-transform: none">· {{ v.aralik_tarih }}</span>{% endif %}</h4>
+    {% if v.hareket %}
+    <div class="cubuklar" role="img" aria-label="Dönem değişimi: gram, ons ve dolar/TL">
+      {% for c in v.hareket.cubuk %}<div class="cubuk-satir"><span>{{ c.ad }}</span><span class="cubuk-yol"><i class="{{ c.deg.yon }}" style="width: {{ c.oran }}%"></i></span>{{ deg(c.deg) }}</div>{% endfor %}
+    </div>
+    <p style="font-size: 15px; margin-top: 8px">{{ v.hareket.cumle }}</p>
+    {% endif %}
+    <table class="rakam">
+      <tbody>{% if not v.hareket %}{% for r in v.rakamlar %}<tr><td>{{ r.ad }}</td><td class="s">{{ deg(r.deg) }}</td></tr>{% endfor %}
+      {% elif v.parite %}<tr><td>Altın/gümüş paritesi</td><td class="s">{{ deg(v.parite) }}</td></tr>{% endif %}
+      {% if v.aralik %}<tr><td>Gram en düşük – en yüksek</td><td class="s">{{ v.aralik }}</td></tr>{% endif %}</tbody>
+    </table>
+    {% if not v.veri_yeterli %}<p class="not">Bu vade için fiyat kayıtları kısa; yorum daha temkinli yazıldı.</p>{% endif %}
+    {% endif %}
+  </article>
+  {% endfor %}
+
+  {% if p.haberler %}
+  <section aria-labelledby="h-haber">
+    <h2 id="h-haber">Haftanın gelişmeleri</h2>
+    <ul class="haber">{% for h in p.haberler %}
+      <li><span class="konu">{{ h.baslik }}</span>{{ h.metin }}
+        <span class="kaynak">Kaynak: {% if h.url %}<a href="{{ h.url }}" rel="nofollow noopener">{{ h.kaynak }}</a>{% else %}{{ h.kaynak }}{% endif %}</span></li>{% endfor %}
+    </ul>
+    {% if p.kaynaklar %}
+    <details>
+      <summary><span><b>Haber kaynakları ({{ p.kaynaklar|length }})</b><small>Yorumun dayandığı haberlerin bağlantıları</small></span></summary>
+      <ol class="kaynak-liste">{% for k in p.kaynaklar %}<li><a href="{{ k.url }}" rel="nofollow noopener">{{ k.baslik or k.alan }}</a> <small>· {{ k.alan }}</small></li>{% endfor %}</ol>
+    </details>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  {% if p.instagram %}
+  <section aria-label="Instagram">
+    <div class="dugmeler" style="margin-top: 0"><a class="dugme" href="{{ p.instagram }}">Instagram'da sesli analiz</a></div>
+  </section>
+  {% endif %}
+
+  <section class="yasal-kutu" aria-labelledby="h-nasil">
+    <h2 id="h-nasil">Nasıl hazırlandı</h2>
+    <p>{{ p.nasil }}</p>
+    {% if p.secim_notu %}<p>{{ p.secim_notu }}</p>{% endif %}
+    <p><b>Uyarı:</b> {{ p.uyari }}</p>
+    <p>{{ p.yz_notu }}</p>
+    <p>Gram fiyatı ons gümüş × dolar/TL ÷ 31,1035 ile hesaplanır; kuyumcu ve banka fiyatlarından farklı olabilir. Metal fiyatları: <a href="{{ kaynak.metal_url }}">{{ kaynak.metal_ad }}</a>; dolar/TL: ECB referans kuru (<a href="{{ kaynak.kur_url }}">{{ kaynak.kur_ad }}</a>).</p>
+  </section>
+  {{ kart() }}
+{% endblock %}
