@@ -1,3 +1,4 @@
+# © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
 """Sitede ayrıntılı pazar analizi sayfası (gunlukgumus.com/pazar/).
 
 Rıdvan, 16 Kasım 2026 15:50: "Web sitesine girenler son pazarın yorumunu daha detaylı bir şekilde görmelerini
