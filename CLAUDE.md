@@ -62,6 +62,7 @@
   değişecekse önce önizleme ve onay. **Reels 4 sayfa** (Rıdvan, 9 Kasım 2026: "Pazar yorumları Sesli olan bölümde 4 sayfa
   olsun"): kaydırmalının "Haftanın gelişmeleri" sayfası Reels'te de sahne olarak var ve tamamı okunur (konu + cümle; kaynak alan
   adları okunmaz, ekranda yazılı; `yorum.haber_okuma`, `main.YORUM_REELS_HABER_SN`). Haber sayfası yoksa Reels 3 sayfa. Kaldırma.
+- **Sitede ayrıntılı pazar sayfası** (Rıdvan, 16 Kasım 2026 16:06 "1 uygun", "2- uygun"; README → "Ayrıntılı pazar analizi sayfası", `bot/pazar_sayfa.py`): gunlukgumus.com/pazar/ ve her hafta pazar/YYYY-AA-GG/; kayıtlar özel gumus-kayit/pazar/analizler.json. Ayrıntılı açıklama paylaşımdan sonra ayrı istekle yazılır; paylaşımdan önceye alma. Haber özetinin kendisini sayfaya koyma (doğrulanmamış rakamlar). Sayfa ya da kayıt hatası paylaşımı ve fiyat sayfasını hiçbir zaman durdurmaz; düğme Instagram'a döner. Metin, bölüm ya da açıklama kuralı değişecekse önce önizleme ve onay.
 - Pazar yorumunun orta vade geçmişini MetalCharts Starter verir (17 Ekim 2026); Ocak 2027'de iptal (11 Ocak
   hatırlatması), sonra kendi kayıtlarımız. Pazar yorumu önizlemesini Rıdvan'a gerçek veriyle üret (deneme, ornek
   işaretsiz): örnek veride orta vade boş görünür. (Yalnız kısa ve orta vade kuralı aşağıda.)
