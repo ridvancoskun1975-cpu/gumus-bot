@@ -51,8 +51,13 @@ header .menu-kap { display: block; padding-top: 0; padding-bottom: 0; }
   border: 1px solid var(--cizgi); color: var(--yazi); text-decoration: none; font-size: 15px; font-weight: 600;
   white-space: nowrap; flex: none; }
 .menu a[aria-current="page"] { background: var(--yazi); color: var(--zemin); border-color: var(--yazi); }
-.alt-menu { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 14px; padding: 0; list-style: none; }
-.alt-menu a { display: inline-block; padding: 6px 0; }
+/* Alttaki menü (Rıdvan, 16 Kasım 2026 19:18: "en altta da olsun"): üstteki sekmelerin aynısı, hepsi görünür (satır kırılır) */
+.alt-menu-kutu { margin: 0 0 22px; padding: 14px; border: 1px solid var(--cizgi); border-radius: 14px; background: var(--kart); }
+.alt-menu-kutu h2 { margin: 0 0 10px; font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: var(--soluk); }
+.alt-menu { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.alt-menu a { display: flex; align-items: center; min-height: 44px; box-sizing: border-box; padding: 0 16px; border-radius: 999px;
+  border: 1px solid var(--cizgi); color: var(--yazi); text-decoration: none; font-size: 16px; font-weight: 600; }
+.alt-menu a[aria-current="page"] { background: var(--yazi); color: var(--zemin); border-color: var(--yazi); }
 .marka { display: flex; align-items: center; gap: 10px; color: var(--yazi); text-decoration: none; min-width: 0; }
 .marka > span { min-width: 0; }
 .ag { width: 2.25em; height: 2.5em; border: 2px solid var(--vurgu); border-radius: 6px; display: grid; place-items: center;
@@ -209,6 +214,14 @@ footer .iletisim a { color: var(--yazi); }
 
 <footer>
   <div class="kap">
+    <nav class="alt-menu-kutu" aria-labelledby="h-sayfalar"><h2 id="h-sayfalar">Sayfalar</h2><ul class="alt-menu">
+      <li><a href="{{ kok }}">Gram gümüş fiyatı</a></li>
+      {% if pazar_menu %}<li><a href="{{ kok }}pazar/">Pazar analizi</a></li>{% endif %}
+      <li><a href="{{ kok }}hesap/">Hesap makinesi</a></li>
+      <li><a href="{{ kok }}gecmis/">Geçmiş fiyatlar</a></li>
+      <li><a href="{{ kok }}rehber/">Gümüş rehberi</a></li>
+      <li><a href="{{ instagram }}">Instagram</a></li>
+    </ul></nav>
     {% if kunye %}
     <section class="iletisim" id="iletisim" aria-labelledby="h-iletisim">
       <h2 id="h-iletisim">İletişim</h2>
@@ -219,14 +232,6 @@ footer .iletisim a { color: var(--yazi); }
     </section>
     {% endif %}
     <p><b style="color: var(--yazi)">{{ hesap }}</b> · Gram gümüş fiyatı{% if program %}, {{ program.fiyat_ozet }}{% endif %}.</p>
-    <nav aria-label="Sayfalar"><ul class="alt-menu">
-      <li><a href="{{ kok }}">Gram gümüş fiyatı</a></li>
-      {% if pazar_menu %}<li><a href="{{ kok }}pazar/">Pazar analizi</a></li>{% endif %}
-      <li><a href="{{ kok }}hesap/">Hesap makinesi</a></li>
-      <li><a href="{{ kok }}gecmis/">Geçmiş fiyatlar</a></li>
-      <li><a href="{{ kok }}rehber/">Gümüş rehberi</a></li>
-      <li><a href="{{ instagram }}">Instagram</a></li>
-    </ul></nav>
     <p>Bilgi amaçlıdır, yatırım tavsiyesi değildir. Yazı tipleri: Archivo ve JetBrains Mono (SIL Open Font License).</p>
     <p class="telif"><b>© {{ telif_yili | default("2026") }} Günlük Gümüş · Tüm hakları saklıdır.</b> Sitedeki metinler, tasarım ve görseller izinsiz kopyalanamaz ve kullanılamaz.</p>
   </div>
@@ -243,6 +248,7 @@ footer .iletisim a { color: var(--yazi); }
     if ((adres === h || adres.indexOf(h) === 0 || adres === h + 'index.html') && h.length > uz) { en = a; uz = h.length; }
   });
   if (en) { en.setAttribute('aria-current', 'page');
+    document.querySelectorAll('.alt-menu a').forEach(function (a) { if (a.href === en.href) a.setAttribute('aria-current', 'page'); });
     var sag = en.offsetLeft + en.offsetWidth - ul.clientWidth + 28; if (sag > 0) ul.scrollLeft = sag; }
   function kenar() { ul.classList.toggle('tasma', ul.scrollLeft + ul.clientWidth < ul.scrollWidth - 4); }
   kenar(); ul.addEventListener('scroll', kenar, { passive: true }); window.addEventListener('resize', kenar);
