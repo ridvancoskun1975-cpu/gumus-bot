@@ -19,6 +19,14 @@ on:
         description: 'Bakım denemesi: aynı işte siteyi ikinci kez yayınla (#27, paylas.yml yedek yolunun sınaması; paylaşım yapmaz)'
         type: boolean
         default: false
+      deneme:
+        description: 'Önizleme: siteyi yayınlama, "sayfa-deneme" eseri olarak sakla'
+        type: boolean
+        default: false
+      pazar_uzun:
+        description: 'Son pazar analizine ayrıntılı açıklamayı şimdi yaz (Claude API; denemede yalnız önizleme, kayda yazılmaz)'
+        type: boolean
+        default: false
   # PDF Gümüş Rehberi baskı günü (bot/rehber_pdf.py → BASKI_AYLARI; Rıdvan, 19 Ekim 2026: yılda bir): 1 Ocak 00:07 TR.
   # Sitedeki PDF kartı o gün "Yakında"dan indirmeye (ya da yeni yılın baskısına) döner; yılbaşı tatilinde paylaşım
   # olmasa da site o gün güncellensin. Paylaşım saatlerine denk gelmez.
@@ -87,6 +95,29 @@ jobs:
           KAYIT_PAT: ${{ secrets.KAYIT_PAT }}
         run: python bot/arsiv.py indir
 
+      # Ayrıntılı pazar analizi sayfası (bot/pazar_sayfa.py; Rıdvan, 16 Kasım 2026 "1 uygun"): özel depodan iner.
+      # Hata verirse düğme eskisi gibi Instagram'a gider.
+      - name: Pazar analizlerini indir
+        continue-on-error: true
+        timeout-minutes: 2
+        env:
+          KAYIT_PAT: ${{ secrets.KAYIT_PAT }}
+        run: python bot/pazar_sayfa.py indir
+
+      - name: Pazar sayfası · ayrıntılı açıklama (yalnız elle)
+        if: github.event_name == 'workflow_dispatch' && inputs.pazar_uzun == true
+        continue-on-error: true
+        timeout-minutes: 8
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          KAYIT_PAT: ${{ secrets.KAYIT_PAT }}
+          YZ_MODEL: ${{ vars.YZ_MODEL }}
+          API_HARCAMA_DOSYA: ${{ runner.temp }}/api-harcama-sayfa.jsonl
+          DENEME: ${{ inputs.deneme }}
+        run: |
+          python bot/pazar_sayfa.py uzun
+          python bot/bakiye.py kaydet --tur pazar-sayfa
+
       - name: Bilgi sayfasını üret
         id: sayfa
         continue-on-error: true
@@ -101,7 +132,7 @@ jobs:
           echo "::warning::BİLGİ SAYFASI YEDEK YOL: sayfa üretilemedi; yayınlanmadı, canlı site önceki hâliyle kaldı."
 
       - name: Son başarılı hâli sakla
-        if: steps.sayfa.outputs.sonuc == 'yeni'
+        if: steps.sayfa.outputs.sonuc == 'yeni' && inputs.deneme != true
         continue-on-error: true
         uses: actions/cache/save@v5
         with:
@@ -109,13 +140,24 @@ jobs:
           key: sayfa-${{ github.run_id }}-${{ github.run_attempt }}
 
       - uses: actions/upload-pages-artifact@v5
-        if: steps.sayfa.outputs.sonuc == 'yeni'
+        if: steps.sayfa.outputs.sonuc == 'yeni' && inputs.deneme != true
         with:
           path: site
 
+      # Önizleme (deneme): site ve pazar kayıtları eser olarak; yayınlanmaz
+      - name: Önizleme olarak sakla
+        if: steps.sayfa.outputs.sonuc == 'yeni' && inputs.deneme == true
+        uses: actions/upload-artifact@v6
+        with:
+          name: sayfa-deneme
+          path: |
+            site
+            veri/pazar.json
+          retention-days: 3
+
   yayinla:
     needs: uret
-    if: needs.uret.outputs.sonuc == 'yeni'
+    if: needs.uret.outputs.sonuc == 'yeni' && inputs.deneme != true
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:

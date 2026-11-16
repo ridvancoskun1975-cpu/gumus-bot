@@ -393,6 +393,23 @@ jobs:
             echo "devam=false" >> "$GITHUB_OUTPUT"
           fi
 
+      # Ayrıntılı pazar analizi sayfası (bot/pazar_sayfa.py; Rıdvan, 16 Kasım 2026 "1 uygun"): siteyi kuran her
+      # çalıştırma özel gumus-kayit'teki pazar analizlerini indirir; pazar yorumu çalıştırmasında yeni yorum da kaydedilir
+      # (deneme: yalnız yerel, örnek veri hiç). Hata verirse sitede düğme eskisi gibi Instagram'a gider; paylaşım etkilenmez.
+      - name: Pazar analizleri
+        if: steps.uret.outputs.devam == 'true'
+        continue-on-error: true
+        timeout-minutes: 2
+        env:
+          KAYIT_PAT: ${{ secrets.KAYIT_PAT }}
+          DENEME: ${{ github.event_name == 'workflow_dispatch' && inputs.deneme }}
+          ORNEK: ${{ github.event_name == 'workflow_dispatch' && inputs.deneme && inputs.ornek && 'true' || '' }}
+        run: |
+          python bot/pazar_sayfa.py indir
+          if [ "${{ needs.kontrol.outputs.tur }}" = "yorum" ] && [ "$ORNEK" != "true" ]; then
+            python bot/pazar_sayfa.py kaydet --meta site/meta.json
+          fi
+
       # Bilgi sayfası (Instagram biyografisindeki bağlantı): site/index.html'i son kayıtlarla yeniden
       # üretir (fiyat, hesap makinesi, son günler, rehber, kaynaklar, son pazar analizi düğmesi) ve bağlantı
       # önizlemesi og.png'yi çizer. Paylaşım hiçbir durumda etkilenmez.
@@ -608,6 +625,24 @@ jobs:
           name: gorunen-${{ github.run_attempt }}-${{ steps.gorunen.outputs.n }}
           path: ${{ runner.temp }}/gorunen.txt
           retention-days: 3
+
+      # Ayrıntılı pazar sayfası (Rıdvan, 16 Kasım 2026 "2- uygun"): paylaşım bittikten sonra her vadeye ayrıntılı
+      # açıklama ayrı küçük bir istekle yazılır (bot/yorum.py → uzun_yaz, orta çaba, arama yok) ve özel gumus-kayit'e
+      # eklenir; hemen ardından site yeniden kurulur (aşağıdaki adım). Paylaşımı hiçbir zaman geciktirmez; hata verirse
+      # sayfa açıklamasız kalır. Harcama api-bakiye.md'ye "pazar-sayfa" olarak yazılır.
+      - name: Pazar sayfası · ayrıntılı açıklama
+        if: needs.uret.outputs.tur == 'yorum'
+        continue-on-error: true
+        timeout-minutes: 8
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          KAYIT_PAT: ${{ secrets.KAYIT_PAT }}
+          YZ_MODEL: ${{ vars.YZ_MODEL }}
+          API_HARCAMA_DOSYA: ${{ runner.temp }}/api-harcama-sayfa.jsonl
+        run: |
+          pip install -q anthropic
+          python bot/pazar_sayfa.py uzun
+          python bot/bakiye.py kaydet --tur pazar-sayfa
 
       # Pazar yorumu paylaşılınca bilgi sayfası yeniden kurulur: "Son pazar analizi" düğmesi aynı gün yeni yoruma
       # gitsin (Rıdvan, 18 Ekim 2026 "2 uygun"). Paylaşım bitmiş olduğu için Instagram dosyaları almıştır.

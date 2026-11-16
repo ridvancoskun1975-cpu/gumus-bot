@@ -27,6 +27,7 @@ from urllib.parse import quote
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import bilgi  # noqa: E402
+import pazar_sayfa  # noqa: E402
 import main as bot  # noqa: E402
 import ayrintili  # noqa: E402
 import program as prg  # noqa: E402
@@ -352,13 +353,18 @@ def veri_hazirla(gecmis, simdi=None, pazar=None):
     }
 
 
-def uret(cikti, gecmis, simdi=None, euro=None, pazar=None, kati=False, arsiv=None):
+def uret(cikti, gecmis, simdi=None, euro=None, pazar=None, kati=False, arsiv=None, pazar_kayitlar=None):
     """kati=True (iş akışı): dar arama sayfaları da hatasız üretilmeli, yoksa hata verir; iş akışı yeniden dener,
     olmazsa sitenin önceki hâlini yayınlar (Rıdvan, 18 Ekim 2026: "2 kere belirli aralıklarda tekrar denesin.
     başarısız olursa önceki hali kalsın bana haber gelsin").
-    arsiv: geçmiş sayfaları için botun kayıtlarından önceki günler (bot/arsiv.py → oku(); yalnız gecmis/ kullanır)."""
+    arsiv: geçmiş sayfaları için botun kayıtlarından önceki günler (bot/arsiv.py → oku(); yalnız gecmis/ kullanır).
+    pazar_kayitlar: ayrıntılı pazar analizleri (bot/pazar_sayfa.py → oku()); varsa "Son pazar analizi" düğmesi
+    Instagram yerine sitedeki pazar/ sayfasına gider (Rıdvan, 16 Kasım 2026 "1 uygun")."""
     from jinja2 import Environment, FileSystemLoader
 
+    ig_pazar = pazar   # Instagram'daki son yorum: pazar sayfasındaki "Instagram'da sesli analiz" düğmesi
+    if pazar_kayitlar:
+        pazar = pazar_sayfa.dugme(pazar_kayitlar, site_adresi()) or pazar
     v = veri_hazirla(gecmis, simdi, pazar)
     # Yayınlanmış PDF baskısı sitenin köküne (gunlukgumus.com/rehber.pdf); kopyalanamazsa indirme kartı çıkmaz
     if v["rehber_pdf"] and v["rehber_pdf"]["durum"] == "hazir":
@@ -371,6 +377,18 @@ def uret(cikti, gecmis, simdi=None, euro=None, pazar=None, kati=False, arsiv=Non
     # Telif satırı (Rıdvan, 5 Kasım 2026 "Üçü de uygun"): her sayfanın altında; yıl kendiliğinden ilerler
     import telif
     env.globals["telif_yili"] = telif.yil_metni(simdi)
+    # Ayrıntılı pazar analizi (pazar/ ve pazar/YYYY-AA-GG/). Hata verirse düğme eskisi gibi Instagram'a döner,
+    # site yine yayınlanır (paylaşım ve fiyat sayfası bu yüzden hiçbir zaman durmaz).
+    pazar_harita = []
+    if pazar_kayitlar:
+        try:
+            son = max(pazar_kayitlar)
+            ig = ig_pazar["url"] if ig_pazar and ig_pazar.get("tarih") == pazar_sayfa._kisa(son) else None
+            pazar_harita = pazar_sayfa.uret(cikti, env, v, pazar_kayitlar, ig)
+        except Exception as e:
+            print(f"::warning::Pazar analizi sayfası üretilemedi, düğme Instagram'a gidiyor: {type(e).__name__}: {e}")
+            if v["tanitim"].get("pazar"):
+                v["tanitim"]["pazar"] = ig_pazar
     (cikti / "index.html").write_text(env.get_template("sayfa.html").render(**v, kok=""), encoding="utf-8")
     (cikti / "rehber").mkdir(exist_ok=True)
     (cikti / "rehber" / "index.html").write_text(env.get_template("rehber.html").render(**v, kok="../"),
@@ -399,6 +417,8 @@ def uret(cikti, gecmis, simdi=None, euro=None, pazar=None, kati=False, arsiv=Non
         satirlar.append((v["url"] + rehber_pdf.SITE_ADRES, gun, "monthly"))
     satirlar += [(adres, son, "daily" if "/hesap/" in adres or adres.endswith("/gecmis/") else "weekly")
                  for adres, son in harita]
+    satirlar += [(adres, son, "weekly" if adres.endswith("/" + pazar_sayfa.SAYFA_YOLU) else "monthly")
+                 for adres, son in pazar_harita]
     (cikti / "sitemap.xml").write_text(
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
@@ -435,7 +455,7 @@ def main():
                      pazar=pazar, kati=a.kati, arsiv=arsiv_mod.ornek(gecmis))
         else:
             v = uret(cikti, gun_ici_ile(bot.gecmis_oku()), pazar=son_pazar_analizi(), kati=a.kati,
-                     arsiv=arsiv_mod.oku())
+                     arsiv=arsiv_mod.oku(), pazar_kayitlar=pazar_sayfa.oku())
     except bot.VeriYok as e:
         print(f"::warning::{e}")
         if a.kati:

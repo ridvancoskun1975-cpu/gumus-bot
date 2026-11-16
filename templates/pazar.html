@@ -6,12 +6,12 @@
 {% block bas %}
 <title>Haftalık gümüş analizi · {{ p.tarih }} | Günlük Gümüş</title>
 <meta name="description" content="Gram gümüş için kısa ve orta vadeli görünüm ({{ p.tarih }}): ağır basan yön, gerekçesi, dönem rakamları ve haftanın gelişmeleri. Yatırım tavsiyesi değildir.">
-<link rel="canonical" href="{{ url }}pazar/">
+<link rel="canonical" href="{{ url }}{{ adres }}">
 <meta property="og:type" content="article">
 <meta property="og:locale" content="tr_TR">
 <meta property="og:site_name" content="Gümüş · {{ hesap }}">
 <meta property="og:title" content="Haftalık gümüş analizi · {{ p.tarih }}">
-<meta property="og:url" content="{{ url }}pazar/">
+<meta property="og:url" content="{{ url }}{{ adres }}">
 <meta property="og:image" content="{{ url }}og.png?v={{ surum }}">
 <meta name="twitter:card" content="summary_large_image">
 {% endblock %}
@@ -57,6 +57,15 @@
 .kaynak-liste li { margin: 6px 0; }
 .kaynak-liste small { color: var(--soluk); }
 .yasal-kutu p { color: var(--soluk); font-size: 14px; margin: 8px 0 0; }
+.ayrinti { margin: 14px 0 0; padding: 12px 14px; border-radius: 10px; background: rgba(201, 209, 218, 0.06);
+  border: 1px solid var(--cizgi); }
+.ayrinti h4:first-child { margin-top: 0; }
+.ayrinti .kucuk { font-size: 12px; color: var(--soluk); margin-top: 10px; }
+.hafta-sonu { margin: 8px 0 0; font-size: 14px; color: var(--soluk); }
+.arsiv { list-style: none; padding: 0; margin: 8px 0 0; }
+.arsiv li { display: flex; justify-content: space-between; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--cizgi); }
+.arsiv .yonler { color: var(--soluk); font-size: 14px; white-space: nowrap; }
+.arsiv .bu { font-weight: 800; }
 {% endblock %}
 {% block icerik %}
 {% from "tanitim.html" import kart with context %}
@@ -69,6 +78,8 @@
     {% if p.gram %}<div class="ust-ozet"><span class="sayi">{{ p.gram }}</span><span class="birim">₺</span>
       <span>{{ deg(p.gram_hafta) }} <span class="soluk">haftalık</span></span></div>
     <p class="soluk" style="margin: 4px 0 0; font-size: 15px">Ons {{ p.ons }} $ · Dolar/TL {{ p.dolar }} · Altın/gümüş paritesi {{ p.parite }}</p>{% endif %}
+    {% if p.hafta_sonu %}<p class="hafta-sonu">{{ p.hafta_sonu }}</p>{% endif %}
+    {% if not son_mu %}<p class="not" style="margin-top: 10px">Bu, geçmiş bir haftanın analizidir. <a href="{{ kok }}pazar/">Son analize git</a></p>{% endif %}
   </section>
 
   {% for v in p.vadeler %}
@@ -83,7 +94,17 @@
     <p>{{ v.seyir }}</p>
     {% if v.izlenecek %}<h4>İzlenecekler</h4>
     <ul class="cipler">{% for x in v.izlenecek %}<li>{{ x }}</li>{% endfor %}</ul>{% endif %}
-    {% if v.degisim %}<p class="degisti"><b>Yön değişti:</b> {{ v.degisim }}</p>{% endif %}
+    {% if v.degisim %}<p class="degisti"><b>Yön değişti{% if v.onceki %} ({{ v.onceki.tarih_metni }} yorumunda {{ v.onceki.yon }}){% endif %}:</b> {{ v.degisim }}</p>{% endif %}
+    {% if v.uzun %}
+    <div class="ayrinti">
+      <h4>Neden bu yön</h4>
+      <p>{{ v.uzun.gerekce }}</p>
+      <h4>Görünüm ne zaman değişebilir</h4>
+      <p>{{ v.uzun.donus }}</p>
+      <h4>İzlenecekler neden önemli</h4>
+      <p>{{ v.uzun.izleme }}</p>
+    </div>
+    {% endif %}
     {% if v.rakamlar %}
     <h4>{{ v.donem }}{% if v.aralik_tarih %} <span style="letter-spacing: 0; text-transform: none">· {{ v.aralik_tarih }}</span>{% endif %}</h4>
     {% if v.hareket %}
@@ -115,6 +136,16 @@
       <ol class="kaynak-liste">{% for k in p.kaynaklar %}<li><a href="{{ k.url }}" rel="nofollow noopener">{{ k.baslik or k.alan }}</a> <small>· {{ k.alan }}</small></li>{% endfor %}</ol>
     </details>
     {% endif %}
+  </section>
+  {% endif %}
+
+  {% if p.liste|length > 1 %}
+  <section aria-labelledby="h-arsiv">
+    <h2 id="h-arsiv">Geçmiş analizler</h2>
+    <ul class="arsiv">{% for x in p.liste %}
+      <li><a href="{{ kok }}{{ x.yol }}"{% if x.tarih_iso == p.tarih_iso %} class="bu" aria-current="page"{% endif %}>{{ x.tarih }}</a>
+        <span class="yonler">Kısa {{ '▼' if x.kisa == 'düşüş' else '▲' }} · Orta {{ '▼' if x.orta == 'düşüş' else '▲' }}</span></li>{% endfor %}
+    </ul>
   </section>
   {% endif %}
 

@@ -3015,7 +3015,12 @@ def yorum_hazirla(cikti, ornek):
                                                  "reels": reels,
                                                  "yorum": yz, "haberler": haberler, "istatistik": ist,
                                                  "gelismeler": gelismeler,
-                                                 "son_veri": {"tarih": son_gun, **son}},
+                                                 "son_veri": {"tarih": son_gun, **son},
+                                                 # Sitedeki ayrıntılı pazar sayfası (bot/pazar_sayfa.py; 16 Kasım 2026)
+                                                 "sayfa": {"tarih": bugun, "veri_ani": veri_ani, "gram": veri["gram"],
+                                                           "gram_deg": veri["gram_deg"],
+                                                           "onceki": {v["anahtar"]: v["onceki"] for v in vadeler
+                                                                      if v["onceki"]}}},
                                                 ensure_ascii=False, indent=2, default=str), encoding="utf-8")
     if gelismeler:
         print("Haftanın gelişmeleri (yapay zekâ özeti, web araması):\n" + gelismeler["metin"] + "\n")

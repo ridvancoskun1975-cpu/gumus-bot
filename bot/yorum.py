@@ -839,6 +839,139 @@ def yz_yorum(girdi, gelismeler=None, vadeler=None, onceki=None):
     raise RuntimeError(f"Yapay zekâ yorumu 3 denemede kurallara uymadı: {hatalar}")
 
 
+# ---------------------------------------------------------------- site için ayrıntılı açıklama (bot/pazar_sayfa.py)
+# Rıdvan, 16 Kasım 2026 15:50: "Web sitesine girenler son pazarın yorumunu daha detaylı bir şekilde görmelerini
+# istiyorum"; 16:06 "2- uygun": her vadeye ayrıntılı açıklama, pazar yorumundan sonra ayrı küçük bir istekle.
+# Instagram'daki yorum değişmez; bu istek paylaşımdan sonra çalışır (paylas.yml → yayinla) ve yayımlanmış yorumun
+# yönünü, gücünü ve içeriğini veri olarak alır, yalnızca ayrıntılandırır. Kurallar yorumla aynı (YASAK, rakam yok,
+# kurum/olay adı yalnız haber özetinde geçiyorsa, kişi/parti adı yok). Denetimden geçmezse bir kez yeniden istenir;
+# yine olmazsa sayfa açıklamasız çıkar. Haftalık ek maliyet birkaç sent (orta çaba, arama yok).
+UZUN_SINIR = {"gerekce": 70, "donus": 50, "izleme": 50}
+UZUN_PAY = 8
+UZUN_CABA = os.environ.get("YZ_UZUN_CABA", "").strip() or "medium"
+UZUN_YANIT_SINIRI = 16000
+UZUN_ALAN_ADI = {"gerekce": "Neden bu yön", "donus": "Görünüm ne zaman değişebilir", "izleme": "İzlenecekler neden önemli"}
+
+
+def uzun_sistem(oy_gunu=False):
+    vade_satiri = "; ".join(f"{v['anahtar']} = {v['ad'].lower()} ({v['ufuk']})" for v in VADELER)
+    return f"""Günlük Gümüş sitesinin "Pazar analizi" sayfası için Türkçe ayrıntılı açıklama yazıyorsun.
+Girdi: bu haftanın Instagram'da yayımlanmış kısa ve orta vade gram gümüş yorumu, dönem istatistikleri (yüzde değişimler),
+"Haftanın gelişmeleri" maddeleri ve web aramasıyla derlenmiş haftanın haber özeti. Vadeler: {vade_satiri}.
+
+Görev: yayımlanmış yorumu AYRINTILANDIR. Ağır basan yönü, gücü ve yorumdaki görüşleri değiştirme, onlarla çelişme,
+yeni bir tahmin ekleme. Her vade için üç alan:
+- gerekce (en fazla {UZUN_SINIR['gerekce']} kelime): ağır basan yönün gerekçesi. Verilerde ne görülüyor (ons, dolar/TL,
+  altın/gümüş paritesi hareketlerinin yönü ve büyüklüğü SÖZLE) ve haftanın gelişmelerindeki hangi etkenler bu yönü
+  destekliyor.
+- donus (en fazla {UZUN_SINIR['donus']} kelime): hangi gelişme ya da veri değişirse görünüm tersine dönebilir; karşı
+  yönün de mümkün olduğunu temkinli dille anlat.
+- izleme (en fazla {UZUN_SINIR['izleme']} kelime): yorumdaki "izlenecekler"in gram gümüşü hangi kanaldan (ons fiyatı mı,
+  dolar/TL kuru mu) ve nasıl etkileyebileceği.
+
+Kurallar (SPK III-37.1 md. 78–80; yönlendirici olmayan genel yorum):
+1. Al, sat, tut, ekle, azalt gibi okura yönelik çağrı ve emir kipi yok. Hedef, destek, direnç, seviye, stop yok.
+   "Fırsat", "kesin", "garanti", "mutlaka", "tavsiye", "öneri", "portföy", "pozisyon", "kazanç" sözleri yok. Abartı yok.
+2. Hiç rakam yazma: sayı, yüzde, yıl, tarih rakamı yok (rakamlar sayfada ayrıca gösteriliyor). Büyüklüğü sözle anlat
+   ("belirgin", "sınırlı", "sert").
+3. Koşullu ve temkinli dil: "olabilir", "işaret ediyor", "baskı yaratmış olabilir". Kesinlik bildirme.
+4. Kurum ve olay adları (Fed, TCMB, ECB, ABD yönetimi, seçim, gümrük vergisi, savaş, yaptırım…) yalnızca haftanın haber
+   özetinde geçiyorsa kullanılabilir; özet yoksa hiç kullanma. Kişi ve parti adı hiçbir alanda yazılmaz (kurum adıyla).
+5. Siyasi gelişmeler yalnızca ons, dolar ya da dolar/TL üzerindeki olası etkisiyle anlatılır; görüş, övgü, eleştiri,
+   seçim tahmini yok. Haber özetinde olmayan olay uydurma.
+6. Yalnız kısa ve orta vade; uzun vadeden söz etme. Model, şirket ya da "yapay zekâ" adı yazma.
+7. Sade Türkçe, kısa cümleler; her alan tek paragraf.{chr(10) + "8. Bugün Türkiye'de oy verme günü: seçimle ilgili hiçbir şey yazma." if oy_gunu else ""}
+Yanıt yalnızca istenen JSON."""
+
+
+def uzun_sema():
+    alanlar = {a: {"type": "string"} for a in UZUN_SINIR}
+    vade = {"type": "object", "properties": alanlar, "required": list(UZUN_SINIR), "additionalProperties": False}
+    return {"type": "object", "properties": {v["anahtar"]: vade for v in VADELER},
+            "required": [v["anahtar"] for v in VADELER], "additionalProperties": False}
+
+
+def uzun_denetle(uzun, gelismeler=None, oy_gunu=False):
+    """Ayrıntılı açıklamada kurala uymayanlar (boşsa yayımlanabilir). Yorumla aynı yasaklar."""
+    ozet = _kucuk((gelismeler or {}).get("metin") or "")
+    hatalar = []
+    for v in VADELER:
+        alanlar = (uzun or {}).get(v["anahtar"]) or {}
+        for alan, sinir in UZUN_SINIR.items():
+            metin = (alanlar.get(alan) or "").strip()
+            yer = f"{v['anahtar']}.{alan}"
+            if not metin:
+                hatalar.append(f"{yer}: boş")
+                continue
+            kelime = len(metin.split())
+            if kelime > sinir + UZUN_PAY:
+                hatalar.append(f"{yer}: {kelime} kelime (en fazla {sinir})")
+            kucuk = _kucuk(metin)
+            for desen, ad in YASAK:
+                if re.search(desen, kucuk):
+                    hatalar.append(f"{yer}: yasak ifade ({ad}): {metin!r}")
+                    break
+            if re.search(r"uzun vade", kucuk):
+                hatalar.append(f"{yer}: uzun vade yazılmaz")
+            siyasi = _siyasi_sorun(kucuk, oy_gunu)
+            if siyasi:
+                hatalar.append(f"{yer}: {siyasi}")
+            for grup, desenler in OLAY_GRUPLARI.items():
+                bulunan = next((m.group(0) for d in desenler for m in [re.search(d, kucuk)] if m), None)
+                if bulunan and not any(re.search(d, ozet) for d in desenler):
+                    hatalar.append(f"{yer}: güncel olay/kurum ({grup}: {bulunan!r}) haber özetinde geçmiyor, kullanma")
+    return hatalar
+
+
+def uzun_yaz(kayit):
+    """Pazar kaydına (bot/pazar_sayfa.py) ayrıntılı açıklama: {"kisa": {gerekce, donus, izleme}, "orta": {…}} ya da None."""
+    anahtar = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+    if not anahtar:
+        print("::warning::Ayrıntılı açıklama: ANTHROPIC_API_KEY yok.")
+        return None
+    gel = kayit.get("gelismeler") or {}
+    oy_gunu = bool(gel.get("oy_gunu"))
+    girdi = {
+        "yorum_tarihi": kayit["tarih"],
+        "veri_ani": kayit.get("veri_ani"),
+        "yayimlanan_yorum": {v["anahtar"]: {k: kayit["yorum"][v["anahtar"]].get(k)
+                                            for k in ("yon", "guc", "ozet", "durum", "seyir", "izlenecek", "degisim")}
+                             for v in VADELER},
+        "donem_istatistikleri": {v["anahtar"]: kayit.get("istatistik", {}).get(v["anahtar"]) for v in VADELER},
+        "haftanin_gelismeleri_maddeleri": kayit.get("haberler") or [],
+        "haftanin_haber_ozeti": gel.get("metin") or "Bu hafta haber özeti yok.",
+    }
+    mesajlar = [{"role": "user", "content": "Bu haftanın yayımlanmış yorumu ve verileri aşağıda (JSON). Her vade için "
+                 "ayrıntılı açıklamayı yaz.\n\n" + json.dumps(girdi, ensure_ascii=False, indent=1, default=str)}]
+    hatalar = []
+    for tur in range(2):
+        try:
+            cevap = _api(anahtar, {
+                "model": MODEL, "max_tokens": UZUN_YANIT_SINIRI, "system": uzun_sistem(oy_gunu), "messages": mesajlar,
+                "output_config": {"effort": UZUN_CABA, "format": {"type": "json_schema", "schema": uzun_sema()}},
+            }, zaman_asimi=300)
+        except RuntimeError as e:
+            print(f"::warning::Ayrıntılı açıklama isteği başarısız: {e}")
+            return None
+        metin = "".join(b.get("text", "") for b in cevap.get("content", []) if b.get("type") == "text")
+        try:
+            uzun = json.loads(metin)
+        except ValueError:
+            uzun, hatalar = None, ["yanıt geçerli JSON değil"]
+        else:
+            hatalar = uzun_denetle(uzun, gel, oy_gunu)
+        if not hatalar and cevap.get("stop_reason") in ("end_turn", "stop_sequence"):
+            k = cevap.get("usage", {})
+            print(f"Ayrıntılı açıklama alındı ({MODEL}, {UZUN_CABA}; {k.get('input_tokens')} girdi / "
+                  f"{k.get('output_tokens')} çıktı token, {tur + 1}. deneme)")
+            return {v["anahtar"]: {a: uzun[v["anahtar"]][a].strip() for a in UZUN_SINIR} for v in VADELER}
+        print(f"Uyarı: ayrıntılı açıklama kurallara uymadı ({tur + 1}. deneme): {hatalar}", file=sys.stderr)
+        mesajlar += [{"role": "assistant", "content": metin or "{}"},
+                     {"role": "user", "content": "Şu sorunlar var, kurallara uyarak yeniden yaz:\n- " + "\n- ".join(hatalar)}]
+    print(f"::warning::Ayrıntılı açıklama 2 denemede kurallara uymadı ({hatalar}); sayfa açıklamasız çıkar.")
+    return None
+
+
 # ---------------------------------------------------------------- örnek (yerel önizleme)
 # Örnekteki haberler uydurmadır; yalnızca görsel ve açıklama düzenini denemek içindir.
 
