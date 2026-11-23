@@ -27,6 +27,7 @@ from urllib.parse import quote
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import bilgi  # noqa: E402
+import ozet_sayfa  # noqa: E402
 import pazar_sayfa  # noqa: E402
 import main as bot  # noqa: E402
 import ayrintili  # noqa: E402
@@ -353,7 +354,8 @@ def veri_hazirla(gecmis, simdi=None, pazar=None):
     }
 
 
-def uret(cikti, gecmis, simdi=None, euro=None, pazar=None, kati=False, arsiv=None, pazar_kayitlar=None):
+def uret(cikti, gecmis, simdi=None, euro=None, pazar=None, kati=False, arsiv=None, pazar_kayitlar=None,
+         ozet_kayitlar=None):
     """kati=True (iş akışı): dar arama sayfaları da hatasız üretilmeli, yoksa hata verir; iş akışı yeniden dener,
     olmazsa sitenin önceki hâlini yayınlar (Rıdvan, 18 Ekim 2026: "2 kere belirli aralıklarda tekrar denesin.
     başarısız olursa önceki hali kalsın bana haber gelsin").
@@ -391,6 +393,15 @@ def uret(cikti, gecmis, simdi=None, euro=None, pazar=None, kati=False, arsiv=Non
             v["pazar_menu"] = False
             if v["tanitim"].get("pazar"):
                 v["tanitim"]["pazar"] = ig_pazar
+    # Güncel haftalık ve aylık özet (ozet/; #50, Rıdvan 23 Kasım 2026). Hata verirse sekme görünmez, site yine yayınlanır.
+    ozet_harita = []
+    v["ozet_menu"] = bool(ozet_kayitlar)   # site menüsünde "Özetler" sekmesi (templates/taban.html)
+    if ozet_kayitlar:
+        try:
+            ozet_harita = ozet_sayfa.uret(cikti, env, v, ozet_kayitlar)
+        except Exception as e:
+            print(f"::warning::Özet sayfası üretilemedi, sekme gizlendi: {type(e).__name__}: {e}")
+            v["ozet_menu"] = False
     (cikti / "index.html").write_text(env.get_template("sayfa.html").render(**v, kok=""), encoding="utf-8")
     (cikti / "rehber").mkdir(exist_ok=True)
     (cikti / "rehber" / "index.html").write_text(env.get_template("rehber.html").render(**v, kok="../"),
@@ -421,6 +432,7 @@ def uret(cikti, gecmis, simdi=None, euro=None, pazar=None, kati=False, arsiv=Non
                  for adres, son in harita]
     satirlar += [(adres, son, "weekly" if adres.endswith("/" + pazar_sayfa.SAYFA_YOLU) else "monthly")
                  for adres, son in pazar_harita]
+    satirlar += [(adres, son, "weekly") for adres, son in ozet_harita]
     (cikti / "sitemap.xml").write_text(
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
@@ -457,7 +469,7 @@ def main():
                      pazar=pazar, kati=a.kati, arsiv=arsiv_mod.ornek(gecmis))
         else:
             v = uret(cikti, gun_ici_ile(bot.gecmis_oku()), pazar=son_pazar_analizi(), kati=a.kati,
-                     arsiv=arsiv_mod.oku(), pazar_kayitlar=pazar_sayfa.oku())
+                     arsiv=arsiv_mod.oku(), pazar_kayitlar=pazar_sayfa.oku(), ozet_kayitlar=ozet_sayfa.oku())
     except bot.VeriYok as e:
         print(f"::warning::{e}")
         if a.kati:

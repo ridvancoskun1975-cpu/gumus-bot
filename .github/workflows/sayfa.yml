@@ -104,6 +104,14 @@ jobs:
           KAYIT_PAT: ${{ secrets.KAYIT_PAT }}
         run: python bot/pazar_sayfa.py indir
 
+      # Güncel haftalık ve aylık özet (bot/ozet_sayfa.py; #50): özel depodan iner. Hata verirse "Özetler" sekmesi görünmez.
+      - name: Haftalık ve aylık özetleri indir
+        continue-on-error: true
+        timeout-minutes: 2
+        env:
+          KAYIT_PAT: ${{ secrets.KAYIT_PAT }}
+        run: python bot/ozet_sayfa.py indir
+
       - name: Pazar sayfası · ayrıntılı açıklama (yalnız elle)
         if: github.event_name == 'workflow_dispatch' && inputs.pazar_uzun == true
         continue-on-error: true

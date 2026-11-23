@@ -410,6 +410,23 @@ jobs:
             python bot/pazar_sayfa.py kaydet --meta site/meta.json
           fi
 
+      # Güncel haftalık ve aylık özet sayfası (bot/ozet_sayfa.py; #50, Rıdvan 23 Kasım 2026 "Özetler" sekmesi): siteyi
+      # kuran her çalıştırma son özetleri özel gumus-kayit'ten indirir; cumartesi ve aylık özet çalıştırmasında yeni özet
+      # (rakamlar + paylaşılan görsel) kaydedilir (deneme: yalnız yerel, örnek veri hiç). Hata verirse sekme görünmez.
+      - name: Haftalık ve aylık özetler
+        if: steps.uret.outputs.devam == 'true'
+        continue-on-error: true
+        timeout-minutes: 2
+        env:
+          KAYIT_PAT: ${{ secrets.KAYIT_PAT }}
+          DENEME: ${{ github.event_name == 'workflow_dispatch' && inputs.deneme }}
+          ORNEK: ${{ github.event_name == 'workflow_dispatch' && inputs.deneme && inputs.ornek && 'true' || '' }}
+        run: |
+          python bot/ozet_sayfa.py indir
+          case "${{ needs.kontrol.outputs.tur }}" in
+            hafta|ay) if [ "$ORNEK" != "true" ]; then python bot/ozet_sayfa.py kaydet --cikti site; fi ;;
+          esac
+
       # Bilgi sayfası (Instagram biyografisindeki bağlantı): site/index.html'i son kayıtlarla yeniden
       # üretir (fiyat, hesap makinesi, son günler, rehber, kaynaklar, son pazar analizi düğmesi) ve bağlantı
       # önizlemesi og.png'yi çizer. Paylaşım hiçbir durumda etkilenmez.
