@@ -7,3 +7,4 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
 | 12 Kas 2026 18:12 | Rehber kuyruğunu uzatma #39–#62 (6 parti, 2028 kitabı) | bot/bilgi.py, bot/ses.py, rehber_pdf/bolum-39…62, rehber_pdf/DURUM.md | konu listesi onaylandı (Rıdvan 12 Kas 18:57: "sen kontrol et … bilgiler doğru ise uygula"); **ertelendi** (Rıdvan 12 Kas 22:24 "bu işi ertele"); #39–#42 denetimli, dal rehber-p7-p8'de (main'e alınmadı); kalanlar yarım |
+| 23 Kas 2026 15:45 | #50 sitede "Özetler" sayfası (haftalık + aylık) | bot/ozet_sayfa.py (yeni), bot/sayfa.py, templates/ozet.html (yeni), templates/taban.html, .github/workflows/paylas.yml, sayfa.yml, vitrin.yml | dal ozet-sayfasi-50; önizleme Rıdvan'da |
