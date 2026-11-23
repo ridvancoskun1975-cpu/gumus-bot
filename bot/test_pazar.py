@@ -12,6 +12,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 import main  # noqa: E402
+import yorum as yorum_  # noqa: E402
 
 gecen = 0
 
@@ -83,11 +84,18 @@ v["pazar_hatirlatma"] = main.PAZAR_HATIRLATMA
 metin = main.aciklama_yaz(v, "hafta")
 kontrol("Yarın ~11:00 · Pazar derin analizi: kısa ve orta vade. Kaçırmayın." in metin, "açıklamada hatırlatma")
 kontrol(len(metin) <= 2200, "açıklama 2200 sınırında")
+# #48 (Rıdvan, 19 Kasım 2026 20:30): cumartesi yalnız açıklamada site satırı; görsel değişmez
+kontrol(main.PAZAR_SITE_SATIRI in metin and main.PAZAR_SITE_SATIRI in main.aciklama_yaz({**v, "pazar_hatirlatma": None}, "hafta"),
+        "haftalık açıklamada pazar site satırı")
+kontrol("ayrıntılısı" not in (main.PAZAR_SITE_SATIRI + yorum_.SITE_SATIRI + yorum_.SITE_GORSEL + yorum_.SITE_OKUMA).lower()
+        and "kısa süre" not in (main.PAZAR_SITE_SATIRI + yorum_.SITE_SATIRI + yorum_.SITE_OKUMA).lower(), "#48 yasak ifadeler yok")
+kontrol(yorum_.SITE_OKUMA in yorum_.kapanis_okuma(), "kapanış okumasında site cümlesi")
 
-# Görselde (Reels ve hikâyesi aynı şablondan) şerit
+# Görselde (Reels ve hikâyesi aynı şablondan) şerit; site satırı görselde yok (#48)
 from jinja2 import Environment, FileSystemLoader  # noqa: E402
 html = Environment(loader=FileSystemLoader(str(main.SABLONLAR)), autoescape=True).get_template("hafta.html").render(**v)
 kontrol('id="hatirlatma"' in html and "Pazar derin analizi" in html and "Yarın ~11:00" in html, "görselde hatırlatma")
+kontrol("gunlukgumus.com/pazar" not in html and "Daha ayrıntılı" not in html, "cumartesi görseline site satırı eklenmedi")
 
 # 3) Pazar yorumu yasal metinleri (25 Ekim 2026 yasal denetimi)
 import copy  # noqa: E402

@@ -1290,7 +1290,7 @@ def site_satiri():
     varsa onun) hemen altında durur: "devamı"na basan kaydırmadan görür (Rıdvan, 4 Kasım 2026: "Aşağı doğru
     kaydırmadan okuması lazım", "goril den sonra gelmeli", "Onaylıyorum. Haftalık ve aylık özetlerde de uygula").
     19 Ekim 2026'dan 4 Kasım 2026'ya kadar yalnız haftalık/aylıkta, uyarının üstünde "Son 30 günün grafiği ve hesap
-    makinesi" diye yazıyordu. Pazar analizine eklenmez."""
+    makinesi" diye yazıyordu. Pazar analizine eklenmez (pazarın kendi site satırı: yorum.SITE_SATIRI, #48)."""
     import bilgi
     return f"📊 Grafik ve geçmiş fiyatlar: {bilgi.SITE} ({bilgi.LINK_BIO})"
 
@@ -1314,6 +1314,9 @@ def aciklama_yaz(v, tur):
                if v["kismi"] else "değişimler önceki haftanın son değerine göredir.\n")
             # Haftalık soru kalktı (Rıdvan, 19 Ekim 2026: 'evet zaten anket iptal ettik').
             + (f"{v['pazar_hatirlatma']['kalin']} · {v['pazar_hatirlatma']['metin']}\n" if v.get("pazar_hatirlatma") else "")
+            # #48 (Rıdvan, 19 Kasım 2026 20:30: "Cumartesi görsel zaten aşırı dolu. Orada ekstra yazıya yer yok."):
+            # yalnız açıklamada; görsel ve Reels değişmez.
+            + f"{PAZAR_SITE_SATIRI}\n"
             + f"{PAYLASIM_SATIRI + chr(10) if v.get('buyuk_hareket') else ''}\n"
             "Bilgi amaçlıdır, yatırım tavsiyesi değildir.\n\n"
             f"{_kaynak_satirlari(v)}\n\n"
@@ -2999,6 +3002,7 @@ def yorum_hazirla(cikti, ornek):
         "baslik": yorum.vade_basligi(aktif),   # "Kısa ve orta vade"
         "haberler": haberler,
         "hafta_araligi": hafta_araligi(bugun),
+        "site_satiri": yorum.SITE_GORSEL,   # #48: kaydırmalının son sayfası ve sesli Reels'in kapanışı
     }
     veri["sayfa_sayisi"] = len(vadeler) + 1 + (1 if haberler else 0)
 
@@ -3133,6 +3137,11 @@ def aciklama_sigdir(metin, sinir=IG_HEDEF):
             break
         alanlar.pop()
         metin = metin[:m.start(1)] + ", ".join(alanlar) + f" ve {fazla + 1} kaynak daha" + metin[m.end(1):]
+    if ig_uzunluk(metin) > sinir:   # #48: pazar site satırı telif satırından ve seslendirme notundan önce düşer
+        import yorum
+        if yorum.SITE_SATIRI in metin:
+            metin = metin.replace(yorum.SITE_SATIRI + "\n\n", "").replace("\n\n" + yorum.SITE_SATIRI, "")
+            print("::warning::Pazar açıklamasına site satırı sığmadı; satırsız gidiyor.")
     return metin
 
 
@@ -3390,6 +3399,8 @@ def _baslik_ozeti(veri):
 # takvime ya da kayıtlara bakılmaz, hata yüzünden düşmez. Pazar yorumu her pazar zamanlı olduğu için söz boş
 # kalmaz; bot/test_pazar.py ikisini birlikte denetler (pazar yorumu takvimden çıkarsa sınama kırılır).
 PAZAR_HATIRLATMA = {"kalin": "Yarın ~11:00", "metin": "Pazar derin analizi: kısa ve orta vade. Kaçırmayın."}
+# Cumartesi haftalık özet açıklamasında geçen pazarın ayrıntılı analizine yönlendirme (#48; Rıdvan, 19 Kasım 2026).
+PAZAR_SITE_SATIRI = "📊 Geçen haftanın daha ayrıntılı analizi sitemizde: gunlukgumus.com/pazar · Link bio'da"
 
 
 def pazar_yorumu_yarin(bugun=None):

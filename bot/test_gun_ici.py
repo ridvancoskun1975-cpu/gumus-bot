@@ -158,7 +158,8 @@ site_ = main.site_satiri()
 kontrol(site_ == "📊 Grafik ve geçmiş fiyatlar: gunlukgumus.com (link bio'da)", site_)
 for ad_, metin_ in (("sabah", eski_reels), ("akşam", sade), ("haftalık", hafta), ("aylık", ay)):
     kontrol(metin_.split("\n")[1] == site_, f"{ad_}: site satırı 2. satırda")
-    kontrol(metin_.count("gunlukgumus.com") == 1, f"{ad_}: site satırı bir kez")
+    # haftalıkta ikinci kez: geçen pazarın ayrıntılı analizine yönlendirme (#48, Rıdvan 19 Kasım 2026)
+    kontrol(metin_.count("gunlukgumus.com") == (2 if ad_ == "haftalık" else 1), f"{ad_}: site satırı bir kez")
     kontrol("Son 30 günün grafiği" not in metin_, f"{ad_}: eski alttaki site satırı yok")
     if ad_ in ("haftalık", "aylık"):   # günlükte uyarı zaten "Değişimler …" satırının hemen altında
         kontrol("\n\nBilgi amaçlıdır, yatırım tavsiyesi değildir." in metin_, f"{ad_}: uyarının üstü boş satır")

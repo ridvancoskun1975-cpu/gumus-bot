@@ -140,6 +140,7 @@ h2 { margin: 4px 0 0; font-size: 88px; line-height: 1; font-weight: 800; letter-
     <div class="alt-sag soluk" style="font-size: 23px">
       <span>Üst düzey yapay zekâ ile üretilmiştir, yatırım tavsiyesi değildir.</span>
       <span>Bütün haber kaynakları açıklamada</span>
+      {% if site_satiri and sayfa == toplam - 1 %}<span class="vurgu" style="font-weight: 700">{{ site_satiri }}</span>{% endif %}
     </div>
   </div>
 {% else %}
@@ -177,6 +178,7 @@ h2 { margin: 4px 0 0; font-size: 88px; line-height: 1; font-weight: 800; letter-
       <span>Üst düzey yapay zekâ ile üretilmiştir, yatırım tavsiyesi değildir.</span>
       {% if kaynak_metal %}<span>Metal fiyatları: {{ kaynak_metal }}</span>
       <span>Veriler {{ veri_tarihi }} · diğer kaynaklar açıklamada</span>{% else %}<span>Veriler {{ veri_tarihi }} · kaynaklar açıklamada</span>{% endif %}
+      {% if site_satiri and sayfa == toplam - 1 %}<span class="vurgu" style="font-weight: 700">{{ site_satiri }}</span>{% endif %}
     </div>
   </div>
 {% endif %}

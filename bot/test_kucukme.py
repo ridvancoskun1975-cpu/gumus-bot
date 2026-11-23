@@ -139,7 +139,7 @@ def pazar_verisi(ornek):
          "veri_ani": "9 Kasım Pazartesi 19:55", "veri_tarihi": "09.11.2026", "kur_tarihi_tam": "09.11.2026",
          "vadeler": vadeler, "hesap": "@gunlukgumus", "dayanak": "Fiyat ve kur verileri + haftanın haberleri",
          "kaynak_metal": main.KAYNAK_METAL, "baslik": yorum.vade_basligi(yorum.VADELER), "haberler": haberler,
-         "hafta_araligi": "9–13 Kasım"}
+         "hafta_araligi": "9–13 Kasım", "site_satiri": yorum.SITE_GORSEL}
     v["sayfa_sayisi"] = len(vadeler) + 2
     return v
 

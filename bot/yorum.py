@@ -1108,9 +1108,19 @@ def haber_okuma(v):
     return sahne
 
 
+# Siteye yönlendirme (#48; Rıdvan, 19 Kasım 2026 20:01: "web sitesinde daha detaylı analiz olduğunu kısa bir cümle ile
+# söylememiz gerekir"; 20:09 "Üçünü de uygulayalım"; 20:16 "kısa süre içinde" ifadesi olmasın; 20:23 "Ayrıntılısı diye bir
+# kalıp normalde kullanılmıyor. Daha ayrıntılı analiz sitemizde: Link bio da."). Açıklamanın sonunda (etiketlerin üstünde),
+# kaydırmalının son sayfasında, sesli Reels'in kapanış sahnesinde ve okumasında. Gecikme ifadesi eklenmez.
+SITE_SATIRI = "📊 Daha ayrıntılı analiz sitemizde: gunlukgumus.com/pazar · Link bio'da"
+SITE_GORSEL = "Daha ayrıntılı analiz sitemizde · Link bio'da"
+SITE_OKUMA = "Daha ayrıntılı analiz sitemizde, bağlantı profilde."
+
+
 def kapanis_okuma(vadeler=None):
     return ("Bu yorum üst düzey yapay zekâ ile üretilmiştir; bir değerlendirmedir, yatırım tavsiyesi değildir. "
-            f"{vade_basligi(vadeler or VADELER)} gümüş görünümü her pazar saat on birde. Takip edin, kaçırmayın.")
+            f"{vade_basligi(vadeler or VADELER)} gümüş görünümü her pazar saat on birde. {SITE_OKUMA} "
+            "Takip edin, kaçırmayın.")
 
 
 KAPANIS_OKUMA = kapanis_okuma()
@@ -1195,13 +1205,19 @@ def aciklama(v, yorum, kaynak_satirlari, gelismeler=None, oy_gunu=False):
             "Uyarı: " + UYARI,
             YZ_NOTU,
             f"Veriler: {v['veri_ani']} itibarıyla.\n{satirlar}",
+            SITE_SATIRI,   # #48: etiketlerin (ve telif satırının) hemen üstünde
             HASHTAG,
         ]
         return "\n\n".join(p for p in parcalar if p)
 
-    # Instagram sınırı 2200 karakter: haber kaynakları kısaltılır.
+    # Instagram sınırı 2200 karakter: haber kaynakları kısaltılır. Site satırı (#48) sığmazsa satırsız gider; paylaşım bu
+    # yüzden hiçbir zaman durmaz (paylaşım katmanında da telif satırından önce o düşer: main.aciklama_sigdir).
     for soru, sayi in [(False, None), (False, 6), (False, 4), (False, 3)]:
         metin = kur(soru, sayi)
         if len(metin) <= 2200:
             return metin
+    metin = kur(False, 3).replace(SITE_SATIRI + "\n\n", "")
+    if len(metin) <= 2200:
+        print("::warning::Pazar açıklamasına site satırı sığmadı; satırsız gidiyor.")
+        return metin
     raise RuntimeError(f"Açıklama Instagram sınırını aşıyor ({len(metin)} > 2200 karakter)")
