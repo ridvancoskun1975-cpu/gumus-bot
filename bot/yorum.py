@@ -1079,8 +1079,9 @@ def _nasil_kisa(gelismeler):
     else:
         dayanak = ("Fiyat ve kur verilerinden üst düzey yapay zekâ ile otomatik üretilir; uzman incelemesi yoktur. "
                    "Bu hafta haber taraması yapılamadı.")
-    return (f"Nasıl hazırlandı: {dayanak} Ağır basan yön bir tahmindir, alım-satım önerisi değildir; geçmiş hareketler "
-            "gelecek için güvence değildir. Her pazar güncellenir. Hiçbir kurumdan ücret ya da menfaat alınmamıştır.")
+    return (f"Nasıl hazırlandı: {dayanak} Ağır basan yön kesin değil, bir tahmindir; alım-satım önerisi değildir, geçmiş "
+            "hareketler gelecek için güvence değildir. Her pazar güncellenir. Bu yorum için hiçbir kurumdan ücret ya da "
+            "menfaat alınmamıştır.")
 
 
 def _nasil_hazirlandi(gelismeler):

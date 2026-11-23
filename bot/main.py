@@ -1175,9 +1175,9 @@ def _kaynak_satirlari(v):
     satirlar = [
         # #49 (Rıdvan, 23 Kasım 2026 12:49: "açıklama gerekli şeyler dışında kısalmalı"): aynı bilgi, kısa cümle.
         # Kaynak (MetalCharts bağlantısı, ECB ve "EUR çaprazı" değişiklik notu, kur tarihi) aynen kalır.
-        "Gram = ons gümüş × dolar/TL ÷ 31,1035; kuyumcu ve banka fiyatından farklı olabilir.",
+        "Gram fiyatı = ons gümüş × dolar/TL ÷ 31,1035; kuyumcu ve banka fiyatından farklı olabilir.",
         "Metal fiyatları: MetalCharts (metalcharts.org)",
-        f"Dolar/TL: ECB referans kuru (EUR çaprazı), {KUR_ARACI[0]} ({v['kur_tarihi_tam']} kuru)",
+        f"Dolar/TL: ECB referans kurlarından EUR çaprazıyla hesaplandı, {KUR_ARACI[0]} ({v['kur_tarihi_tam']} kuru)",
     ]
     kunye = muzik_kunyesi()
     if kunye:
@@ -1311,7 +1311,7 @@ def aciklama_yaz(v, tur):
             f"Haftanın en yükseği: {v['en_yuksek']} ₺ · en düşüğü: {v['en_dusuk']} ₺\n"
             f"Altın/Gümüş paritesi: {v['parite']} ({p['isaret']} {p['metin']})\n"
             f"Dolar/TL: {v['dolar']} ₺ ({d['isaret']} {d['metin']})\n\n"
-            "Günlük değerler iş günlerinin ~20:00 değeridir; "
+            "Günlük değerler iş günlerinin ~20:00 değerleridir; "
             + (f"değişimler {v['baz_metin']}dır (kayıtlar o gün başladı).\n"
                if v["kismi"] else "değişimler önceki haftanın son değerine göredir.\n")
             # Haftalık soru kalktı (Rıdvan, 19 Ekim 2026: 'evet zaten anket iptal ettik').
@@ -1331,7 +1331,7 @@ def aciklama_yaz(v, tur):
             ilk = f"{v['buyuk_hareket']['metin']}: gram gümüş {ay.lower()} sonunda {v['gram']} ₺"
         else:
             ilk = f"Gram gümüş fiyatı {ay.lower()} sonunda: {v['gram']} ₺ ({g['isaret']} {g['metin']})"
-        not_ = ("Günlük değerler iş günlerinin ~20:00 değeridir; "
+        not_ = ("Günlük değerler iş günlerinin ~20:00 değerleridir; "
                 + (f"kayıtlar {v['aralik'].split('–')[0]} {ay} tarihinde başladığı için değişimler o güne göredir."
                    if v["kismi"] else "değişimler önceki ayın son değerine göredir."))
         return (
@@ -3397,7 +3397,7 @@ def _baslik_ozeti(veri):
 # kalmaz; bot/test_pazar.py ikisini birlikte denetler (pazar yorumu takvimden çıkarsa sınama kırılır).
 PAZAR_HATIRLATMA = {"kalin": "Yarın ~11:00", "metin": "Pazar derin analizi: kısa ve orta vade. Kaçırmayın."}
 # Cumartesi haftalık özet açıklamasında geçen pazarın ayrıntılı analizine yönlendirme (#48; Rıdvan, 19 Kasım 2026).
-PAZAR_SITE_SATIRI = "📊 Geçen haftanın daha ayrıntılı analizi sitemizde: gunlukgumus.com/pazar · Link bio'da"
+PAZAR_SITE_SATIRI = "📊 Geçen haftanın daha ayrıntılı analizi sitemizde: gunlukgumus.com/pazar (link bio'da)"
 
 
 def pazar_yorumu_yarin(bugun=None):
