@@ -87,8 +87,8 @@ kontrol(len(metin) <= 2200, "açıklama 2200 sınırında")
 # #48 (Rıdvan, 19 Kasım 2026 20:30): cumartesi yalnız açıklamada site satırı; görsel değişmez
 kontrol(main.PAZAR_SITE_SATIRI in metin and main.PAZAR_SITE_SATIRI in main.aciklama_yaz({**v, "pazar_hatirlatma": None}, "hafta"),
         "haftalık açıklamada pazar site satırı")
-kontrol("ayrıntılısı" not in (main.PAZAR_SITE_SATIRI + yorum_.SITE_SATIRI + yorum_.SITE_GORSEL + yorum_.SITE_OKUMA).lower()
-        and "kısa süre" not in (main.PAZAR_SITE_SATIRI + yorum_.SITE_SATIRI + yorum_.SITE_OKUMA).lower(), "#48 yasak ifadeler yok")
+kontrol("ayrıntılısı" not in (main.PAZAR_SITE_SATIRI + yorum_.SITE_GORSEL + yorum_.SITE_OKUMA).lower()
+        and "kısa süre" not in (main.PAZAR_SITE_SATIRI + yorum_.SITE_GORSEL + yorum_.SITE_OKUMA).lower(), "#48 yasak ifadeler yok")
 kontrol(yorum_.SITE_OKUMA in yorum_.kapanis_okuma(), "kapanış okumasında site cümlesi")
 
 # Görselde (Reels ve hikâyesi aynı şablondan) şerit; site satırı görselde yok (#48)

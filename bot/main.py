@@ -1290,7 +1290,7 @@ def site_satiri():
     varsa onun) hemen altında durur: "devamı"na basan kaydırmadan görür (Rıdvan, 4 Kasım 2026: "Aşağı doğru
     kaydırmadan okuması lazım", "goril den sonra gelmeli", "Onaylıyorum. Haftalık ve aylık özetlerde de uygula").
     19 Ekim 2026'dan 4 Kasım 2026'ya kadar yalnız haftalık/aylıkta, uyarının üstünde "Son 30 günün grafiği ve hesap
-    makinesi" diye yazıyordu. Pazar analizine eklenmez (pazarın kendi site satırı: yorum.SITE_SATIRI, #48)."""
+    makinesi" diye yazıyordu. Pazar analizine eklenmez."""
     import bilgi
     return f"📊 Grafik ve geçmiş fiyatlar: {bilgi.SITE} ({bilgi.LINK_BIO})"
 
@@ -3137,11 +3137,6 @@ def aciklama_sigdir(metin, sinir=IG_HEDEF):
             break
         alanlar.pop()
         metin = metin[:m.start(1)] + ", ".join(alanlar) + f" ve {fazla + 1} kaynak daha" + metin[m.end(1):]
-    if ig_uzunluk(metin) > sinir:   # #48: pazar site satırı telif satırından ve seslendirme notundan önce düşer
-        import yorum
-        if yorum.SITE_SATIRI in metin:
-            metin = metin.replace(yorum.SITE_SATIRI + "\n\n", "").replace("\n\n" + yorum.SITE_SATIRI, "")
-            print("::warning::Pazar açıklamasına site satırı sığmadı; satırsız gidiyor.")
     return metin
 
 
