@@ -1,5 +1,11 @@
 # Claude için kurallar (gumus-bot)
 
+- **Ekip düzeni yok** (Rıdvan, 23 Kasım 2026 18:12: "Gümüşü ekip mimarisine almıyoruz."; 18:35 "ekle"): proje-calisma-duzeni becerisinin 13. bölümü (ekip düzeni, dal ve kapı) bu projede uygulanmaz.
+  Yönetici–yazılımcı–testçi–kıdemli düzeni kurulmaz; yazilimci, testci, kidemli-yazilimci ajanları çağrılmaz. Bu depoya
+  `.claude/agents`, `.claude/kapi.*`, `.githooks` ya da ekip ayarı eklenmez. İş tek sohbette yapılır; rehber yazarı ve
+  denetçi alt görevleri eskisi gibi sürer. "Yönetici olağan kararları kendisi alır" yetkisi burada yoktur: içerik, takvim,
+  ses ve metin değişikliği bu dosyadaki önizleme ve onay kurallarına bağlıdır. Model: varsayılan Opus; Claude önerir,
+  Rıdvan seçer. Başka projede alınan karar buraya kendiliğinden uygulanmaz.
 - **Galeri (Rıdvan, 17 Ekim 2026: "Bana gönderdiğin her görsel ve videoyu aynı anda proje galerisine ekle."):**
   Rıdvan'a gönderilen her görsel ve video (önizleme, önce/sonra, deneme çıktısı dahil) aynı turda proje galerisine
   de eklenir: https://claude.ai/artifact/CFKCZroCrWfYDG8b1BgDzm (proje-galerisi becerisi; veri `ogeler`
