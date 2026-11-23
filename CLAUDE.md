@@ -47,6 +47,17 @@
   zamanlanmış görevi her pazartesi fork/ziyaret/dış kaynağa, ayın ilk pazartesisi kopyalara bakar (kayıt özel
   gumus-kayit/izleme/depo-izleme.md). Hazır bildirim metinleri Projedeki claude/telif-ihlal-kiti.md'de. Telif
   bildirimi Rıdvan adına yeminli beyandır: Rıdvan sohbette onaylamadan gönderme.
+- **Geçmiş paylaşımlar ve önizleme** (#51; Rıdvan, 23 Kasım 2026 19:55–19:56 "tamam"; o gün Ekim aylığı yerelde
+  yeniden çizilince "Son 1 yıl" satırı eksik çıktı):
+  1. **Paylaşılanı sakla, yeniden üretme.** Geçmiş bir paylaşım gerekiyorsa kayıttan alınır (gumus-kayit/ozet, iş
+     akışı eserleri, günlük). Kayıtta yoksa yeniden çizmeden önce Rıdvan'a söylenir. Yalnız sitede gösterilenler
+     saklanır (yer sorunu yok).
+  2. **Yerel önizlemede eksikleri söyle.** Önizleme yerelde üretilebilir; GitHub deneme çalıştırması zorunlu değil.
+     Yerelde anahtar olmadığı için canlı veriye bağlı parçalar (Son 1 yıl, pazar orta vadesi, seslendirme, neden kartı
+     vb.) eksik çıkabilir: mesajda "bu önizlemede eksik, gerçek paylaşımda olacak" diye açıkça yazılır.
+  3. **Yeniden üretileni karşılaştır.** Geçmiş bir paylaşım yeniden üretilirse Rıdvan'a göndermeden önce
+     `python bot/karsilastir.py <çalıştırma_no> <yerel meta.json>` çalışır (o günün `uret` günlüğündeki açıklamayla
+     etiketli veri satırlarını karşılaştırır); "Uyumsuz" çıkarsa gönderilmez, önce düzeltilir.
 - Bakım güncellemeleri (eylem ve kütüphane sürümleri) ayrı dalda yapılır. Deneme başarılıysa ve paylaşım çıktısı
   değişmiyorsa main'e alınır, sonra bildirilir. Paylaşım içeriğini ya da takvimi değiştiren her şey önce önizleme ve
   onay ister. (Rıdvan'ın 15 Ekim 2026 tarihli açık isteği; metni kendisi verdi.)
