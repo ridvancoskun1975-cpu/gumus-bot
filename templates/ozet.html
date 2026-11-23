@@ -1,0 +1,75 @@
+{#- © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE -#}
+{#- Güncel haftalık ve aylık özet (bot/ozet_sayfa.py → site/ozet/; #50). Rıdvan, 23 Kasım 2026 12:49: "web sitemizde en
+    güncel haftalık ve aylık özetleri de görmek istiyorum. ama karışık olmamalı. bir başlık altında olabilir." Seçim: ayrı
+    "Özetler" sekmesi; "Bu hafta" ve "Bu ay" iki kart, her kartta dört ana rakam ve Instagram'da paylaşılan görsel. -#}
+{% extends "taban.html" %}
+{% block bas %}
+<title>Haftalık ve aylık gümüş özeti | Günlük Gümüş</title>
+<meta name="description" content="Gram gümüşün son haftalık ve aylık özeti: fiyat ve değişimi, dönemin en yükseği ve en düşüğü, altın/gümüş paritesi, dolar/TL. Bilgi amaçlıdır.">
+<link rel="canonical" href="{{ url }}{{ adres }}">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:site_name" content="Gümüş · {{ hesap }}">
+<meta property="og:title" content="Haftalık ve aylık gümüş özeti">
+<meta property="og:url" content="{{ url }}{{ adres }}">
+<meta property="og:image" content="{{ url }}og.png?v={{ surum }}">
+<meta name="twitter:card" content="summary_large_image">
+{% endblock %}
+{% block stil %}
+.ozet { background: var(--kart); border: 1px solid var(--cizgi); border-radius: 14px; padding: 16px; margin: 16px 0 0; }
+.ozet-bas { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.ozet-bas h2 { margin: 0; }
+.ozet .baslik-not { margin: 8px 0 0; font-weight: 700; }
+.ozet .baslik-not.dusus { color: var(--dusus); }
+.ozet .baslik-not.artis { color: var(--artis); }
+.dortlu { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+.dortlu .kutu:last-child { grid-column: auto; }   /* taban.html'deki dar ekran kuralı (.kutu:last-child span 2) burada geçerli değil */
+.dortlu .kutu b { font-size: 22px; }
+.dortlu .kutu.buyuk b { font-size: 28px; }
+.ozet figure { margin: 16px auto 0; max-width: 340px; }
+/* Instagram görseli 1080×1920; üstteki ve alttaki boş şerit (Instagram arayüzü payı) gösterilmez */
+.ozet figure img { display: block; width: 100%; height: auto; aspect-ratio: 1080 / 1480; object-fit: cover; object-position: 50% 41%;
+  border-radius: 12px; border: 1px solid var(--cizgi); background: var(--zemin); }
+.ozet figcaption { margin-top: 6px; font-size: 13px; color: var(--soluk); text-align: center; }
+.bos { color: var(--soluk); margin: 10px 0 0; }
+{% endblock %}
+{% macro deg(d) %}{% if d %}<span class="deg {{ 'dusus' if d.yon == 'dusus' else 'artis' }}">{{ d.isaret }} {{ d.metin }}</span>{% endif %}{% endmacro %}
+{% macro ozet_karti(c, id) %}
+<section class="ozet" aria-labelledby="h-{{ id }}">
+  <div class="ozet-bas">
+    <h2 id="h-{{ id }}">{{ c.etiket }}</h2>
+    <span class="soluk">{{ c.donem }}</span>
+  </div>
+  {% if c.baslik %}<p class="baslik-not {{ c.gram_deg.yon if c.gram_deg else '' }}">{{ c.baslik }}</p>{% endif %}
+  <div class="dortlu">
+    <div class="kutu buyuk"><span>Gram gümüş</span><b class="sayi">{{ c.gram }} ₺</b><small>{{ deg(c.gram_deg) }}</small></div>
+    <div class="kutu"><span>{{ c.uc.ad }}</span><b class="sayi">{{ c.uc.deger }}</b>{% if c.uc.alt %}<small>{{ c.uc.alt }}</small>{% endif %}</div>
+    <div class="kutu"><span>Altın / Gümüş paritesi</span><b class="sayi">{{ c.parite }}</b><small>{{ deg(c.parite_deg) }}</small></div>
+    <div class="kutu"><span>Dolar / TL</span><b class="sayi">{{ c.dolar }} ₺</b><small>{{ deg(c.dolar_deg) }}{% if c.kur_tarihi %}ECB kuru {{ c.kur_tarihi }}{% endif %}</small></div>
+  </div>
+  {% if c.yil_satiri %}<p class="not">{{ c.yil_satiri }}</p>{% endif %}
+  {% if c.not %}<p class="not">{{ c.not }}</p>{% endif %}
+  {% if c.gorsel %}
+  <figure>
+    <img src="{{ c.gorsel }}" alt="{{ c.etiket }} gümüş özeti görseli, {{ c.donem }}" loading="lazy" width="1080" height="1480">
+    <figcaption>Instagram'da {{ c.paylasim }} paylaşılan görsel</figcaption>
+  </figure>
+  {% endif %}
+</section>
+{% endmacro %}
+{% block icerik %}
+<section class="kahraman">
+  <h1>Haftalık ve aylık özet</h1>
+  <p class="zaman">Instagram'da paylaşılan son haftalık ve aylık gümüş özeti, rakamlarıyla.</p>
+</section>
+{% if hafta %}{{ ozet_karti(hafta, 'hafta') }}{% else %}
+<section class="ozet" aria-labelledby="h-hafta"><h2 id="h-hafta">Bu hafta</h2><p class="bos">Haftalık özet her cumartesi ~10:00'da burada.</p></section>
+{% endif %}
+{% if ay %}{{ ozet_karti(ay, 'ay') }}{% else %}
+<section class="ozet" aria-labelledby="h-ay"><h2 id="h-ay">Bu ay</h2><p class="bos">Aylık özet her ayın ilk iş günü burada.</p></section>
+{% endif %}
+<section>
+  <p class="not">Günlük değerler iş günlerinin ~20:00 değerleridir. Gram fiyatı = ons gümüş × dolar/TL ÷ 31,1035; kuyumcu ve banka fiyatından farklı olabilir. Metal fiyatları: <a href="https://metalcharts.org">MetalCharts</a> · Dolar/TL: ECB referans kurlarından EUR çaprazıyla hesaplanır. Bilgi amaçlıdır, yatırım tavsiyesi değildir.</p>
+  <div class="dugmeler"><a class="dugme ikincil" href="{{ instagram }}">Instagram'da takip et</a></div>
+</section>
+{% endblock %}

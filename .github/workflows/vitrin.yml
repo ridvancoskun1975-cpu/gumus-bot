@@ -144,6 +144,18 @@ jobs:
           KAYIT_PAT: ${{ secrets.KAYIT_PAT }}
         run: python bot/arsiv.py indir
 
+      # Site burada da yeniden kurulduğu için pazar analizleri ve özetler de iner (23 Kasım 2026: önce inmiyordu, deneme
+      # Reels'i günlerinde sitede "Pazar analizi" sekmesi akşama kadar kayboluyordu). Hata verirse ilgili sekme görünmez.
+      - name: Pazar analizleri ve özetleri indir
+        if: steps.konu.outputs.calis == 'true' && steps.konu.outputs.deneme != 'true'
+        continue-on-error: true
+        timeout-minutes: 2
+        env:
+          KAYIT_PAT: ${{ secrets.KAYIT_PAT }}
+        run: |
+          python bot/pazar_sayfa.py indir || true
+          python bot/ozet_sayfa.py indir
+
       - name: Bilgi sayfası
         id: sayfa
         if: steps.konu.outputs.calis == 'true' && steps.konu.outputs.deneme != 'true'

@@ -201,6 +201,7 @@ footer .iletisim a { color: var(--yazi); }
     <div class="kap menu-kap"><ul>
       <li><a href="{{ kok }}">Fiyat</a></li>
       {% if pazar_menu %}<li><a href="{{ kok }}pazar/">Pazar analizi</a></li>{% endif %}
+      {% if ozet_menu %}<li><a href="{{ kok }}ozet/">Özetler</a></li>{% endif %}
       <li><a href="{{ kok }}hesap/">Hesapla</a></li>
       <li><a href="{{ kok }}gecmis/">Geçmiş</a></li>
       <li><a href="{{ kok }}rehber/">Rehber</a></li>
@@ -217,6 +218,7 @@ footer .iletisim a { color: var(--yazi); }
     <nav class="alt-menu-kutu" aria-labelledby="h-sayfalar"><h2 id="h-sayfalar">Sayfalar</h2><ul class="alt-menu">
       <li><a href="{{ kok }}">Gram gümüş fiyatı</a></li>
       {% if pazar_menu %}<li><a href="{{ kok }}pazar/">Pazar analizi</a></li>{% endif %}
+      {% if ozet_menu %}<li><a href="{{ kok }}ozet/">Haftalık ve aylık özet</a></li>{% endif %}
       <li><a href="{{ kok }}hesap/">Hesap makinesi</a></li>
       <li><a href="{{ kok }}gecmis/">Geçmiş fiyatlar</a></li>
       <li><a href="{{ kok }}rehber/">Gümüş rehberi</a></li>
