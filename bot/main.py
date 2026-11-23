@@ -1173,9 +1173,11 @@ def aylik_veri_hazirla(f, hesap):
 
 def _kaynak_satirlari(v):
     satirlar = [
-        "Gram fiyatı ons gümüş × dolar/TL ÷ 31,1035 ile hesaplanmıştır; kuyumcu ve banka fiyatlarından farklı olabilir.",
+        # #49 (Rıdvan, 23 Kasım 2026 12:49: "açıklama gerekli şeyler dışında kısalmalı"): aynı bilgi, kısa cümle.
+        # Kaynak (MetalCharts bağlantısı, ECB ve "EUR çaprazı" değişiklik notu, kur tarihi) aynen kalır.
+        "Gram = ons gümüş × dolar/TL ÷ 31,1035; kuyumcu ve banka fiyatından farklı olabilir.",
         "Metal fiyatları: MetalCharts (metalcharts.org)",
-        f"Dolar/TL: Avrupa Merkez Bankası (ECB) referans kurlarından EUR çaprazıyla hesaplanmıştır, {KUR_ARACI[0]} ({v['kur_tarihi_tam']} kuru)",
+        f"Dolar/TL: ECB referans kuru (EUR çaprazı), {KUR_ARACI[0]} ({v['kur_tarihi_tam']} kuru)",
     ]
     kunye = muzik_kunyesi()
     if kunye:
@@ -1309,8 +1311,8 @@ def aciklama_yaz(v, tur):
             f"Haftanın en yükseği: {v['en_yuksek']} ₺ · en düşüğü: {v['en_dusuk']} ₺\n"
             f"Altın/Gümüş paritesi: {v['parite']} ({p['isaret']} {p['metin']})\n"
             f"Dolar/TL: {v['dolar']} ₺ ({d['isaret']} {d['metin']})\n\n"
-            "Günlük değerler iş günlerinin son paylaşımına (yaklaşık 20:00) aittir; "
-            + (f"değişimler {v['baz_metin']}dır (günlük kayıtlar o gün başladı; önceki haftaya ait kayıt yok).\n"
+            "Günlük değerler iş günlerinin ~20:00 değeridir; "
+            + (f"değişimler {v['baz_metin']}dır (kayıtlar o gün başladı).\n"
                if v["kismi"] else "değişimler önceki haftanın son değerine göredir.\n")
             # Haftalık soru kalktı (Rıdvan, 19 Ekim 2026: 'evet zaten anket iptal ettik').
             + (f"{v['pazar_hatirlatma']['kalin']} · {v['pazar_hatirlatma']['metin']}\n" if v.get("pazar_hatirlatma") else "")
@@ -1329,7 +1331,7 @@ def aciklama_yaz(v, tur):
             ilk = f"{v['buyuk_hareket']['metin']}: gram gümüş {ay.lower()} sonunda {v['gram']} ₺"
         else:
             ilk = f"Gram gümüş fiyatı {ay.lower()} sonunda: {v['gram']} ₺ ({g['isaret']} {g['metin']})"
-        not_ = ("Günlük değerler iş günlerinin son paylaşımına (yaklaşık 20:00) aittir; "
+        not_ = ("Günlük değerler iş günlerinin ~20:00 değeridir; "
                 + (f"kayıtlar {v['aralik'].split('–')[0]} {ay} tarihinde başladığı için değişimler o güne göredir."
                    if v["kismi"] else "değişimler önceki ayın son değerine göredir."))
         return (

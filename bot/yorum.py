@@ -1068,6 +1068,21 @@ UYARI = UYARI_EK3
 YZ_NOTU = "Buradaki yorumlar üst düzey yapay zekâ ile üretilmiştir. Hata içerebilir."
 
 
+def _nasil_kisa(gelismeler):
+    """Açıklamadaki kısa hâli (#49; Rıdvan, 23 Kasım 2026 12:49: "açıklama gerekli şeyler dışında kısalmalı",
+    "kimse okumaz gereksiz şeyler kalkmalı"). SPK III-37.1 md. 78'in istediği öğeler aynen: dayanak/varsayım (veri,
+    haber, doğrulanmaz, uzman incelemesi yok), tahmin etiketi, güvence olmadığı, yenilenme sıklığı, çıkar beyanı.
+    Uzun hâli sitedeki pazar sayfasında (_nasil_hazirlandi)."""
+    if gelismeler:
+        dayanak = ("Fiyat, kur ve pazar sabahı web aramasıyla derlenen haberlerden üst düzey yapay zekâ ile otomatik "
+                   "üretilir; haberler doğrulanmaz, uzman incelemesi yoktur.")
+    else:
+        dayanak = ("Fiyat ve kur verilerinden üst düzey yapay zekâ ile otomatik üretilir; uzman incelemesi yoktur. "
+                   "Bu hafta haber taraması yapılamadı.")
+    return (f"Nasıl hazırlandı: {dayanak} Ağır basan yön bir tahmindir, alım-satım önerisi değildir; geçmiş hareketler "
+            "gelecek için güvence değildir. Her pazar güncellenir. Hiçbir kurumdan ücret ya da menfaat alınmamıştır.")
+
+
 def _nasil_hazirlandi(gelismeler):
     # Model ve şirket adı yazılmaz (Rıdvan, 15 Ekim 2026 20:31: "Kaldır"); "yapay zekâ ile" yeterli.
     if gelismeler:
@@ -1201,7 +1216,7 @@ def aciklama(v, yorum, kaynak_satirlari, gelismeler=None, oy_gunu=False):
             "\n".join(degisim_satirlari) if degisim_satirlari else None,
             SECIM_NOTU if oy_gunu else None,   # Rıdvan, 6 Kasım 2026: "1 ama nedeni yazmalı"
             # Yorum sorusu kaldırıldı (Rıdvan, 25 Ekim 2026 09:19: "Soruyu kaldır").
-            _nasil_hazirlandi(gelismeler),
+            _nasil_kisa(gelismeler),
             "Uyarı: " + UYARI,
             YZ_NOTU,
             f"Veriler: {v['veri_ani']} itibarıyla.\n{satirlar}",
