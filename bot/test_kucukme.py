@@ -11,7 +11,8 @@ Pazar yorumu (12 Kasım 2026, Rıdvan 22:58 "şimdi bakalım"): yayımlanmış 8
 gönderi ve Reels'te yazı en az şu boyda kalmalı: olağan hafta kaydırmalıda 42 px (tam boy), Reels'te 46 px; "Yön değişti"
 notlu uzun hafta kaydırmalı kısa vadede 36, Reels kısa vadede 38 px (öncesi 30 / 34). Hiçbir sayfa taşmamalı; Reels'te
 sahne başlığı üst şeride (hesap satırı, Ag rozeti) binmemeli.
-Çalıştırma: python bot/test_kucukme.py (Chromium; CHROME_YOLU varsa o kullanılır)."""
+Çalıştırma: python bot/test_kucukme.py (Chromium; CHROME_YOLU varsa o kullanılır). Kozmetik seçeneklerle (bot/kozmetik.py):
+KOZMETIK_ZORLA=ton,mevsim,zemin python bot/test_kucukme.py"""
 import os
 import sys
 from datetime import datetime
@@ -181,6 +182,7 @@ def aksam_verisi(gram, once, gun_ici, kart):
         v["gunun_notu"] = insan.gecmis_karti(v, seri, "post", GUN, zorla="gecmis", ons=main.bugunku_ons(f))
     elif kart == "hesap":
         v["gunun_notu"] = insan.hesap_karti(v, seri, "post", GUN, zorla="hesap")
+    v.update(main.kozmetik_alanlari(v, "post", True))   # KOZMETIK_ZORLA ile açık seçeneklerle de sınanır
     return v
 
 
@@ -216,6 +218,7 @@ with sync_playwright() as p:
         v["parite_cumle"] = main.gorsel_parite_cumlesi(v, tur)
         v.update(main.goril_alanlari(v, tur, True))
         v.update({"gunun_notu": None, "goril_balon": None})
+        v.update(main.kozmetik_alanlari(v, tur, True))
         sablon = "ozel" if v.get("ozel") else tur
         o = olc(sayfa, sablon, v)
         esit(f"{sablon} {senaryo or 'düz'}: taşma yok", o["sh"] <= o["ch"] + 1, str(o))

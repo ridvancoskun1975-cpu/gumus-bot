@@ -1685,6 +1685,16 @@ def insan_alanlari(veri, fiyat, tur, ornek=False):
         return dict(INSAN_YOK)
 
 
+def kozmetik_alanlari(veri, tur, ornek=False):
+    """Kozmetik dokunuşlar (bot/kozmetik.py; hepsi varsayılan kapalı). Her hata "kozmetik yok" sayılır."""
+    try:
+        import kozmetik
+        return kozmetik.sablon_verisi(veri, tur, datetime.now(TR_SAAT).date(), ornek)
+    except Exception as e:
+        print(f"::warning::Kozmetik dokunuş belirlenemedi, bugünkü görünümle devam ediliyor: {type(e).__name__}: {e}")
+        return {}
+
+
 # Goril balonunun üstüne binmemesi gereken öğeler (bot/insan.py). Binerse balon düşer, paylaşım balonsuz gider.
 BALON_KORUNAN_METIN = ["#fiyat", ".kahraman-birim", ".kahraman-baslik", ".kahraman > .soluk", ".etiket", ".tarih",
                        "h1", ".satir", ".gun-ici-oge"]
@@ -3470,6 +3480,7 @@ def hazirla(tur, cikti, ornek, konu=None):
     veri.update(goril_alanlari(veri, tur, ornek))
     # İnsan dokunuşu (#33; bot/insan.py): hesap / neden kartı ve goril balonu. Her hatada eklemesiz devam.
     veri.update(insan_alanlari(veri, fiyat, tur, ornek))
+    veri.update(kozmetik_alanlari(veri, tur, ornek))   # bot/kozmetik.py; hepsi kapalıyken hiçbir şey eklemez
     damga = datetime.now(TR_SAAT).strftime("%Y%m%d-%H%M")
     # Özel günde (eşik aşıldı / en az bir aylık en yüksek) aynı paylaşım özel görselle gider.
     # Özel görsel üretilemezse paylaşım olağan görselle yapılır.
