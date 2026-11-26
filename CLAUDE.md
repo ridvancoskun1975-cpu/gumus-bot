@@ -1,11 +1,18 @@
 # Claude için kurallar (gumus-bot)
 
-- **Ekip düzeni yok** (Rıdvan, 23 Kasım 2026 18:12: "Gümüşü ekip mimarisine almıyoruz."; 18:35 "ekle"): proje-calisma-duzeni becerisinin 13. bölümü (ekip düzeni, dal ve kapı) bu projede uygulanmaz.
+- **Ekip düzeni yok** (Rıdvan, 23 Kasım 2026 18:12: "Gümüşü ekip mimarisine almıyoruz."; 18:35 "ekle"): proje-ekip-duzeni becerisi (ekip düzeni, dal ve kapı) bu projede uygulanmaz.
   Yönetici–yazılımcı–testçi–kıdemli düzeni kurulmaz; yazilimci, testci, kidemli-yazilimci ajanları çağrılmaz. Bu depoya
-  `.claude/agents`, `.claude/kapi.*`, `.githooks` ya da ekip ayarı eklenmez. İş tek sohbette yapılır; rehber yazarı ve
-  denetçi alt görevleri eskisi gibi sürer. "Yönetici olağan kararları kendisi alır" yetkisi burada yoktur: içerik, takvim,
-  ses ve metin değişikliği bu dosyadaki önizleme ve onay kurallarına bağlıdır. Model: varsayılan Opus; Claude önerir,
-  Rıdvan seçer. Başka projede alınan karar buraya kendiliğinden uygulanmaz.
+  `.claude/agents`, `.claude/kapi.*`, `.githooks` ya da ekip ayarı eklenmez. İşler aşağıdaki "Hafif
+  müdür" kuralıyla ajanlara dağıtılır; rehber yazarı ve denetçi alt görevleri eskisi gibi sürer. "Yönetici olağan
+  kararları kendisi alır" yetkisi burada yoktur: içerik, takvim, ses ve metin değişikliği bu dosyadaki önizleme ve onay
+  kurallarına bağlıdır. Başka projede alınan karar buraya kendiliğinden uygulanmaz.
+- **Hafif müdür (kalıcı)** (Rıdvan, 25 Kasım 2026 23:28: "sen müdürsün ve temsilci ol. işleri dağıt. model ve çaba seç.
+  işleri sen yapma dağıt."; kurallar sohbetinde 26 Kasım 2026 15:22 "uygun"; proje-calisma-duzeni 2. bölüm): Rıdvan'ın muhatabı Gümüş ana sohbetidir; işleri
+  ajanlara dağıtır; kendisi yalnız iş bölme, denetim, önizleme, main'e alma ve rapor yapar. Ajanların model ve çabasını
+  ana sohbet seçer (varsayılan Opus · Yüksek; çok zor ya da çok önemli işte Ekstra yüksek; gerekirse Fable modelli genel ajan, kidemli-yazilimci tanımı değil); Rıdvan'a model ya da
+  çaba önerilmez. Main'e yalnız ana sohbet alır, işi yapandan ayrı ikinci denetimden sonra. İçerik değişikliği önizleme
+  ve Rıdvan'ın onayı olmadan yapılmaz; bir paylaşım çalışırken ve hedef saatten önceki 45 dakikada main'e alma yok (Öncelik kuralı); çalışan düzen (iş akışları, dış
+  tetik, yedek GitHub zamanlayıcıları, nöbetçiler) bozulmaz.
 - **Galeri (Rıdvan, 17 Ekim 2026: "Bana gönderdiğin her görsel ve videoyu aynı anda proje galerisine ekle."):**
   Rıdvan'a gönderilen her görsel ve video (önizleme, önce/sonra, deneme çıktısı dahil) aynı turda proje galerisine
   de eklenir: https://claude.ai/artifact/CFKCZroCrWfYDG8b1BgDzm (proje-galerisi becerisi; veri `ogeler`
@@ -13,7 +20,7 @@
 - **Web araştırması (Rıdvan, 20 Ekim 2026: "Bunu kural olarak kabul et. Bütün sohbetler böyle başlasın … bütün
   projeler"):** WebFetch yalnızca WebSearch sonuçlarında çıkan adreslerle; hafızadan ya da adresi elle değiştirerek URL
   üretilmez (her yeni site onay sorusu açıp işi yavaşlatıyor). Mümkünse arama sonuçlarının kendisinden doğrula; kaynak
-  yeterince toplanınca yazmaya geç. Alt görevlere (yazar, denetçi) verilen her tarife bu kural yazılır.
+  yeterince toplanınca yazmaya geç. Ajanlara (yazar, denetçi ve öbürleri) verilen her tarife bu kural yazılır.
 - **Günlük sınır: günde en fazla 4** (14 Ekim 2026 21:23'ten beri; önce 3). **19 Ekim 2026'dan beri takipçinin gördüğü
   her şey sayılır: akış gönderisi, Reels ve hikâye ayrı ayrı** (Rıdvan: "takipçiler bizden gelecek, bizle ilgili
   görecekleri post, bildirim, reels, hikâye sayısından bahsediyorum"). Gün aşılacaksa önce hikâye kopyası düşer
