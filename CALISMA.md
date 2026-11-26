@@ -7,4 +7,3 @@ paylaşım türünde başka bir iş yazılıysa Rıdvan'a sorar (CLAUDE.md → "
 | Başladı | Konu | Dokunduğu dosyalar | Dal / durum |
 |---|---|---|---|
 | 12 Kas 2026 18:12 | Rehber kuyruğunu uzatma #39–#62 (6 parti, 2028 kitabı) | bot/bilgi.py, bot/ses.py, rehber_pdf/bolum-39…62, rehber_pdf/DURUM.md | konu listesi onaylandı (Rıdvan 12 Kas 18:57: "sen kontrol et … bilgiler doğru ise uygula"); **ertelendi** (Rıdvan 12 Kas 22:24 "bu işi ertele"); #39–#42 denetimli, dal rehber-p7-p8'de (main'e alınmadı); kalanlar yarım |
-| 26 Kas 2026 05:42 | Kozmetik: haftanın tonu ve günün zemini (yol haritası #54) | bot/kozmetik.py, bot/test_kozmetik.py, bot/main.py, bot/test_kucukme.py, templates/post.html, reels.html, ortak.css, makrolar.html | dal kozmetik-2026-11 (yerel; yaması Projede arsiv/kozmetik-2026-11.patch); önizleme aşamasında, Rıdvan'ın seçimi bekleniyor; main'e alınmadı |
