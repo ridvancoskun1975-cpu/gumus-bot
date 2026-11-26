@@ -2,38 +2,35 @@
 """Kozmetik dokunuşlar (Rıdvan, 25 Kasım 2026 23:28: "mevcut kullanıcılar sıkılmaması terk etmemesi için paylaşımlarda
 arayüzde ufak kozmetik değişimler yapalım"). Yalnız sabah Reels'i ve akşam özeti (görsel, video, kapak).
 
-Üç seçenek, her biri tek ayarla açılır, HEPSİ VARSAYILAN KAPALI (kapalıyken görseller bugünküyle piksel piksel aynı;
-`python bot/test_kozmetik.py`). Hiçbir yazı, rakam, öğe ya da goril çizimi değişmez, küçülmez, yer değiştirmez; yazı ile
-zemin arasındaki kontrast bugünkünden düşmez (sınamada ölçülür).
-  A  HAFTA_TONU     vurgu rengi (tarih, ₺, parite sayısı, Ag rozeti, nokta) haftaya göre 4 açık ton arasında döner
-  B  MEVSIM_AYRACI  fiyatın üstündeki ayraç çizgisinin sağ ucunda küçük mevsim işareti (kış, ilkbahar, yaz,
-                    sonbahar); goril balonlu paylaşımda çıkmaz
-  C  YON_ZEMINI     zemin ve ayraç çizgileri günün yönüne göre çok hafif yeşilimsi (artış) / mavimsi (düşüş); sakin
-                    günde bugünkü gibi
-Önizleme (yalnız --ornek ile): KOZMETIK_ZORLA=ton,mevsim,zemin python bot/main.py hazirla --tur post --ornek --cikti <klasör>
-(KOZMETIK_GUN=YYYY-AA-GG başka bir haftanın / mevsimin hâlini gösterir). Her hata "kozmetik yok" sayılır."""
+İki seçenek, her biri tek ayarla açılır, İKİSİ DE VARSAYILAN KAPALI (kapalıyken görseller bugünküyle bayt bayt aynı;
+`python bot/test_kozmetik.py`). Hiçbir yazı, rakam, öğe ya da goril çizimi değişmez, küçülmez, yer değiştirmez.
+  A  HAFTA_TONU   vurgu rengi (tarih, ₺, parite sayısı, Ag rozeti, nokta) ISO haftasına göre 4 ton arasında döner
+                  (26 Kasım 2026 05:45 Rıdvan: "her hafta dört ton arasında dönsün").
+  C  YON_ZEMINI   zemin, ayraç çizgileri ve üstte/altta yumuşak ışıma günün yönünde: yükselişte yeşil, düşüşte mavi
+                  (kırmızı zemin yok); %0,5'in altındaki sakin günde bugünkü gibi. ZEMIN_DUZEYI 2 belirgin, 3 çok belirgin.
+(Mevsim ayracı önizlendi, 26 Kasım 2026 Rıdvan: "mevsim işareti olmaz farklı anlaşılabilir"; kaldırıldı.)
+Önizleme (yalnız --ornek ile): KOZMETIK_ZORLA=ton,zemin2 (ya da zemin3) python bot/main.py hazirla --tur post --ornek
+--cikti <klasör>. Her hata "kozmetik yok" sayılır."""
 import os
-from datetime import date
 
 HAFTA_TONU = False
-MEVSIM_AYRACI = False
 YON_ZEMINI = False
+ZEMIN_DUZEYI = 2
 
 ZEMIN = "#121418"        # templates/ortak.css → --zemin (bugünkü)
 VURGU = "#C9D1DA"        # templates/ortak.css → --vurgu (bugünkü)
 
-# A: ISO hafta numarası % 4. Hepsi bugünkü gümüş vurgudan en az onun kadar açık (zeminle kontrast düşmez);
-# yeşil ve kırmızıya kaçmaz (artış / düşüş renkleriyle karışmasın).
+# A: hepsi bugünkü gümüş vurgudan en az onun kadar açık; yeşil ve kırmızıya kaçmaz (artış / düşüşle karışmasın).
 TONLAR = [("buz mavisi", "#BCD8EE"), ("inci", "#E2D6BE"), ("lavanta", "#D4CDF0"), ("gümüş", VURGU)]
 
-# B: ay → mevsim (makrolar.html → mevsim_motifi)
-MEVSIMLER = {12: "kis", 1: "kis", 2: "kis", 3: "ilkbahar", 4: "ilkbahar", 5: "ilkbahar",
-             6: "yaz", 7: "yaz", 8: "yaz", 9: "sonbahar", 10: "sonbahar", 11: "sonbahar"}
-
-# C: günün yönü (gram değişimi) → (zemin, çizgi). Zeminin her kanalı bugünkünden (18, 20, 24) büyük değil: yazının
-# altındaki hiçbir yarı saydam kutuda da zemin açılmaz, kontrast düşmez.
+# C: düzey → yön → (zemin, çizgi, ışıma). Işıma sahnenin üstünde ve altında yön renginde yarı saydam elips.
 SAKIN_ESIK = 0.5         # %: altında zemin bugünkü gibi (goril.SAKIN_ESIK ile aynı)
-ZEMINLER = {"artis": ("#0A1410", "#28392F"), "dusus": ("#0A0E18", "#2A3247")}
+ZEMINLER = {
+    2: {"artis": ("#0F1D16", "#2F5A45", "rgba(91, 201, 140, 0.13)"),
+        "dusus": ("#10172A", "#33466E", "rgba(110, 150, 235, 0.15)")},
+    3: {"artis": ("#12261C", "#3C7A5B", "rgba(91, 201, 140, 0.22)"),
+        "dusus": ("#141E38", "#45609A", "rgba(110, 150, 235, 0.25)")},
+}
 
 
 def _parlaklik(renk):
@@ -49,26 +46,22 @@ def kontrast(a, b):
 
 
 def _acik(ornek):
+    """(ton açık mı, zemin düzeyi ya da 0)."""
     z = {s.strip() for s in os.environ.get("KOZMETIK_ZORLA", "").split(",")} if ornek else set()
-    return HAFTA_TONU or "ton" in z, MEVSIM_AYRACI or "mevsim" in z, YON_ZEMINI or "zemin" in z
+    duzey = 3 if "zemin3" in z else 2 if "zemin2" in z else ZEMIN_DUZEYI if (YON_ZEMINI or "zemin" in z) else 0
+    return HAFTA_TONU or "ton" in z, duzey
 
 
 def sablon_verisi(veri, tur, gun, ornek=False):
-    """Şablon alanı {"kozmetik": {"css": …, "motif": …}}; hepsi kapalıysa {} (veri ve görsel bugünküyle aynı)."""
+    """Şablon alanı {"kozmetik": {"css": {değişken: renk}}}; hepsi kapalıysa {} (veri ve görsel bugünküyle aynı)."""
     if tur not in ("reels", "post"):
         return {}
-    if ornek and os.environ.get("KOZMETIK_GUN", "").strip():
-        gun = date.fromisoformat(os.environ["KOZMETIK_GUN"].strip())
-    ton, mevsim, zemin = _acik(ornek)
-    css, motif = {}, None
+    ton, duzey = _acik(ornek)
+    css = {}
     if ton:
         css["vurgu"] = TONLAR[gun.isocalendar()[1] % len(TONLAR)][1]
-    if mevsim:
-        motif = MEVSIMLER[gun.month]
-    if zemin:
+    if duzey:
         d = veri["gram_deg"]
-        if abs(d["yuzde"]) >= SAKIN_ESIK and d["yon"] in ZEMINLER:
-            css["zemin"], css["cizgi"] = ZEMINLER[d["yon"]]
-    if not css and not motif:
-        return {}
-    return {"kozmetik": {"css": css, "motif": motif}}
+        if abs(d["yuzde"]) >= SAKIN_ESIK and d["yon"] in ZEMINLER[duzey]:
+            css["zemin"], css["cizgi"], css["isima"] = ZEMINLER[duzey][d["yon"]]
+    return {"kozmetik": {"css": css}} if css else {}

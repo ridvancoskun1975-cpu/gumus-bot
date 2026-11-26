@@ -12,7 +12,7 @@ gönderi ve Reels'te yazı en az şu boyda kalmalı: olağan hafta kaydırmalıd
 notlu uzun hafta kaydırmalı kısa vadede 36, Reels kısa vadede 38 px (öncesi 30 / 34). Hiçbir sayfa taşmamalı; Reels'te
 sahne başlığı üst şeride (hesap satırı, Ag rozeti) binmemeli.
 Çalıştırma: python bot/test_kucukme.py (Chromium; CHROME_YOLU varsa o kullanılır). Kozmetik seçeneklerle (bot/kozmetik.py):
-KOZMETIK_ZORLA=ton,mevsim,zemin python bot/test_kucukme.py"""
+KOZMETIK_ZORLA=ton,zemin3 python bot/test_kucukme.py"""
 import os
 import sys
 from datetime import datetime

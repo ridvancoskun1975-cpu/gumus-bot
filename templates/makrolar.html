@@ -83,16 +83,3 @@ window.sesRozeti = function (t) {
     <polygon id="goril-balon-ok" points="0,0 0,0 0,0" style="fill: var(--yazi)"></polygon></svg>
 </div>
 {%- endmacro %}
-
-{#- Mevsim ayracı (bot/kozmetik.py → MEVSIM_AYRACI): fiyatın üstündeki ayraç çizgisinin sağ ucunda küçük işaret. Konumu
-    mutlak (yerleşimi kaydırmaz); arkasındaki zemin rengi çizgiyi işaretin solunda keser. Ortada tarihe (kartlı akşam),
-    sağ uçta goril balonuna değerdi: balonlu paylaşımda şablon işareti koymaz. -#}
-{% macro mevsim_motifi(ad, boy=46) -%}
-<span class="mevsim" aria-hidden="true" style="position: absolute; right: 0; top: {{ -1 - boy // 2 }}px;
-      padding: 0 0 0 14px; background: var(--zemin); color: var(--vurgu); line-height: 0">
-<svg width="{{ boy }}" height="{{ boy }}" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-{%- if ad == "kis" %}{% for a in (0, 60, 120) %}<path transform="rotate({{ a }} 16 16)" d="M16 3V29M12.5 5.5L16 9L19.5 5.5M12.5 26.5L16 23L19.5 26.5"/>{% endfor %}
-{%- elif ad == "ilkbahar" %}<path d="M16 28V17M10 6V11.5Q10 17 16 17Q22 17 22 11.5V6L19 9L16 5L13 9Z"/><path d="M16 25Q11 24.5 9 20.5Q14 20.5 16 23"/>
-{%- elif ad == "yaz" %}<circle cx="16" cy="16" r="5.5"/>{% for a in range(0, 360, 45) %}<path transform="rotate({{ a }} 16 16)" d="M16 3.5V7"/>{% endfor %}
-{%- else %}<path d="M5 27Q5 9 26 5Q23 26 5 27Z"/><path d="M5 27L20 12M10.5 21.5L16 21M14.5 17.5L15 12.5"/>{% endif %}</svg></span>
-{%- endmacro %}

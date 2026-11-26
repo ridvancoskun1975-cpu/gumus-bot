@@ -8,7 +8,7 @@
 @font-face { font-family: 'JetBrains Mono'; font-weight: 100 800; src: url('../assets/fonts/jetbrains-mono-latin-ext-wght-normal.woff2') format('woff2');
   unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
 
-:root { --zemin: #121418; --yazi: #EDEFF2; --soluk: #9AA3AE; --cizgi: #2C313A; --vurgu: #C9D1DA; --artis: #5BC98C; --dusus: #F07A6A; }{% if kozmetik %}{# kozmetik: bot/kozmetik.py; kapalıyken çıktı aynı #} :root { {% for ad, renk in kozmetik.css.items() %}--{{ ad }}: {{ renk }}; {% endfor %}}{% endif %}
+:root { --zemin: #121418; --yazi: #EDEFF2; --soluk: #9AA3AE; --cizgi: #2C313A; --vurgu: #C9D1DA; --artis: #5BC98C; --dusus: #F07A6A; }{% if kozmetik %}{# kozmetik: bot/kozmetik.py; kapalıyken çıktı aynı #} :root { {% for ad, renk in kozmetik.css.items() %}--{{ ad }}: {{ renk }}; {% endfor %}}{% if kozmetik.css.isima %} html .sahne, html .kapak { background-image: radial-gradient(ellipse 85% 24% at 50% 0%, var(--isima), transparent), radial-gradient(ellipse 85% 24% at 50% 100%, var(--isima), transparent); }{% endif %}{% endif %}
 html, body { margin: 0; background: var(--zemin); }
 .sahne { box-sizing: border-box; background: var(--zemin); color: var(--yazi); font-family: 'Archivo', sans-serif;
   display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
