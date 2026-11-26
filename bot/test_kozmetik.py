@@ -1,12 +1,12 @@
 # © 2026 Günlük Gümüş (gunlukgumus.com) · Tüm hakları saklıdır / All rights reserved. İzinsiz kopyalanamaz ve kullanılamaz; ayrıntı: LICENSE
-"""Kozmetik dokunuşların sınaması (bot/kozmetik.py; Rıdvan, 25–26 Kasım 2026).
+"""Kozmetik dokunuşların sınaması (bot/kozmetik.py; Rıdvan, 25–26 Kasım 2026: haftanın tonu + yön zemini C2 açık).
 
-1) Ayarlar varsayılan kapalı; kapalıyken veriye hiçbir alan eklenmez (görsel bugünküyle aynı). KOZMETIK_ZORLA yalnız
-   --ornek ile işler. Ton haftaya göre 4 ton arasında döner. 2) Her seçenek ve birlikte açıkken sabah
-   Reels'i, akşam özeti (gün içi, kart, balon, manşet) ve kapakta: hiçbir yazı yer değiştirmez ya da küçülmez, çerçeve
+1) Varsayılan açık; ayarlar False yapılınca veriye hiçbir alan eklenmez (görsel eski hâliyle aynı). Ton haftaya göre 4
+   ton arasında döner; sakin günde zemin eski hâlinde. 2) Açıkken sabah Reels'i, akşam özeti (gün içi, kart, balon,
+   manşet; yükseliş / düşüş / sakin), kapak ve video karelerinde: hiçbir yazı yer değiştirmez ya da küçülmez, çerçeve
    taşmaz; her yazının kontrastı gerçek piksellerden (ışıma dahil, yazının kutusundaki en kötü zemin pikseline karşı)
-   ölçülür: gövde yazısı en az 7:1, küçük (< 28 px), soluk ve renkli (artış / düşüş) yazı en az 4,5:1. Yalnız ton
-   açıkken hiçbir yazının kontrastı bugünkünden düşmez.
+   ölçülür: gövde yazısı en az 7:1, küçük (< 28 px), soluk ve renkli (artış / düşüş) yazı en az 4,5:1 (ya da eskisinden
+   düşük değil). Yalnız ton açıkken hiçbir yazının kontrastı düşmez.
 Çalıştırma: python bot/test_kozmetik.py (Chromium; CHROME_YOLU varsa o kullanılır). `olc` ve `veriler` önizleme ve
 kontrast raporunda da kullanılır."""
 import base64
@@ -34,7 +34,8 @@ YAZILAR = """() => {
     const rg = document.createRange(); rg.selectNodeContents(n); const r = rg.getBoundingClientRect();
     if (!r.width) continue;
     const s = getComputedStyle(el);
-    sonuc.push({t: n.textContent.trim().slice(0, 34), r: kutu(r), renk: s.color, px: parseFloat(s.fontSize)});
+    let op = 1; for (let e = el; e; e = e.parentElement) op *= parseFloat(getComputedStyle(e).opacity);
+    sonuc.push({t: n.textContent.trim().slice(0, 34), r: kutu(r), renk: s.color, px: parseFloat(s.fontSize), tam: op > 0.99});
   }
   const c = document.querySelector('.cerceve');
   return {yazilar: sonuc, tasma: c ? c.scrollHeight > c.clientHeight + 1 : false, cerceve: c ? kutu(c.getBoundingClientRect()) : null};
@@ -61,14 +62,16 @@ PIKSEL = """async ([resim, yazilar]) => {
 }"""
 
 
-def olc(sayfa, sablon, veri):
-    """Yazıların kutuları, renkleri ve gerçek piksel zeminine karşı en kötü kontrastı (k)."""
+def olc(sayfa, sablon, veri, kare=None):
+    """Yazıların kutuları, renkleri ve gerçek piksel zeminine karşı en kötü kontrastı (k); kare: video anı (sn)."""
     gecici = main.SABLONLAR / f"_kozmetik_{sablon}.html"
     gecici.write_text(ENV.get_template(f"{sablon}.html").render(**veri), encoding="utf-8")
     try:
         sayfa.goto(gecici.as_uri())
         sayfa.evaluate("document.fonts.ready")
         sayfa.wait_for_timeout(120)
+        if kare is not None:
+            sayfa.evaluate(f"window.kare && window.kare({kare})")
         o = sayfa.evaluate(YAZILAR)
         sayfa.add_style_tag(content=GIZLE)
         sayfa.wait_for_timeout(30)
@@ -124,7 +127,12 @@ def veriler():
         yield f"post kart={kart}", "post", v
 
 
-AYARLAR = {"A ton": "ton", "C2": "zemin2", "C3": "zemin3", "A+C2": "ton,zemin2", "A+C3": "ton,zemin3"}
+AYARLAR = {"A+C2": (True, True), "A": (True, False), "C2": (False, True)}
+
+
+def ayarla(ton, zemin):
+    kozmetik.HAFTA_TONU, kozmetik.YON_ZEMINI = ton, zemin
+
 
 if __name__ == "__main__":
     from playwright.sync_api import sync_playwright
@@ -136,52 +144,52 @@ if __name__ == "__main__":
         if not kosul:
             hatalar.append(ad)
 
-    # 1) Varsayılan kapalı, kapalıyken alan yok, ton seçimi
-    bak(not (kozmetik.HAFTA_TONU or kozmetik.YON_ZEMINI), "ayarlar varsayılan kapalı olmalı")
-    bak(not hasattr(kozmetik, "MEVSIM_AYRACI"), "mevsim ayracı kaldırıldı (Rıdvan, 26 Kasım 2026)")
-    D = {"gram_deg": main.degisim(1.03, 1)}
-    os.environ.pop("KOZMETIK_ZORLA", None)
-    for tur in ("reels", "post", "hafta", "ay"):
-        bak(kozmetik.sablon_verisi(D, tur, date(2026, 12, 1), True) == {}, f"{tur}: kapalıyken alan eklendi")
-    os.environ["KOZMETIK_ZORLA"] = "ton,zemin3"
-    bak(kozmetik.sablon_verisi(D, "post", date(2026, 12, 1), False) == {}, "KOZMETIK_ZORLA --ornek olmadan işledi")
-    bak(kozmetik.sablon_verisi(D, "hafta", date(2026, 12, 1), True) == {}, "haftalık özete kozmetik geldi")
-    sakin = kozmetik.sablon_verisi({"gram_deg": main.degisim(1.003, 1)}, "post", date(2026, 12, 1), True)["kozmetik"]
-    bak("zemin" not in sakin["css"] and "vurgu" in sakin["css"], "sakin günde zemin bugünkü gibi")
-    os.environ["KOZMETIK_ZORLA"] = "ton"
-    donen = [kozmetik.sablon_verisi(D, "post", date(2026, 11, 2 + 7 * i), True)["kozmetik"]["css"]["vurgu"]
-             for i in range(4)]
+    # 1) Ayarlar
+    bak(kozmetik.HAFTA_TONU and kozmetik.YON_ZEMINI, "varsayılan: haftanın tonu ve yön zemini açık (Rıdvan, 26 Kasım 2026)")
+    bak(not hasattr(kozmetik, "MEVSIM_AYRACI") and not hasattr(kozmetik, "ZEMIN_DUZEYI"), "B ve C3 kaldırıldı")
+    D, G = {"gram_deg": main.degisim(1.03, 1)}, date(2026, 12, 1)
+    for tur in ("hafta", "ay"):
+        bak(kozmetik.sablon_verisi(D, tur, G) == {}, f"{tur}: kozmetik gelmemeli")
+    sakin = kozmetik.sablon_verisi({"gram_deg": main.degisim(1.003, 1)}, "post", G)["kozmetik"]["css"]
+    bak("zemin" not in sakin and "vurgu" in sakin, "sakin günde zemin eski hâlinde")
+    donen = [kozmetik.sablon_verisi(D, "post", date(2026, 11, 2 + 7 * i))["kozmetik"]["css"]["vurgu"] for i in range(4)]
     bak(sorted(donen) == sorted(r for _, r in kozmetik.TONLAR), "art arda 4 hafta 4 farklı ton")
-    os.environ.pop("KOZMETIK_ZORLA")
+    ayarla(False, False)
+    for tur in ("reels", "post"):
+        bak(kozmetik.sablon_verisi(D, tur, G) == {}, f"{tur}: kapalıyken alan eklendi")
+    ayarla(True, True)
     for ad, renk in kozmetik.TONLAR:
         bak(kozmetik.kontrast(renk, kozmetik.ZEMIN) >= kozmetik.kontrast(kozmetik.VURGU, kozmetik.ZEMIN), f"ton {ad}")
-    for duzey, yonler in kozmetik.ZEMINLER.items():
-        bak(set(yonler) == {"artis", "dusus"}, f"C{duzey}: yalnız artış / düşüş (kırmızı zemin yok)")
+    bak(set(kozmetik.ZEMINLER) == {"artis", "dusus"}, "yalnız artış / düşüş zemini (kırmızı zemin yok)")
 
-    # 2) Görsel
+    # 2) Görsel (kapalı = eski hâl ile karşılaştırılır)
     with sync_playwright() as p:
         tarayici = p.chromium.launch(**({"executable_path": os.environ["CHROME_YOLU"]}
                                         if os.environ.get("CHROME_YOLU") else {}))
         sayfa = tarayici.new_page(viewport={"width": 1080, "height": 1920})
         for ad, sablon, v in veriler():
             kapak_v = {**v, **main.kapak_verisi(sablon, v)}
-            kapali = {s: olc(sayfa, s, x) for s, x in ((sablon, v), ("kapak", kapak_v))}
-            for ayar_ad, ayar in AYARLAR.items():
-                os.environ["KOZMETIK_ZORLA"] = ayar
-                ek = main.kozmetik_alanlari(v, sablon, True)
+            kareler = [(sablon, v, None), ("kapak", kapak_v, None)] + [(sablon, v, t) for t in (1.0, 6.5)]
+            kapali = [olc(sayfa, s_, x, t) for s_, x, t in kareler]
+            for ayar_ad, (ton, zemin) in AYARLAR.items():
+                ayarla(ton, zemin)
+                ek = main.kozmetik_alanlari(v, sablon)
                 sakin_gun = abs(v["gram_deg"]["yuzde"]) < kozmetik.SAKIN_ESIK
-                bak(bool(ek) != (sakin_gun and "ton" not in ayar), f"{ad} {ayar_ad}: alan")
-                for s, x in ((sablon, v), ("kapak", kapak_v)):
-                    eski_o, yeni = kapali[s], olc(sayfa, s, {**x, **ek})
-                    yer = f"{ad} [{s}] {ayar_ad}"
+                bak(bool(ek) != (sakin_gun and not ton), f"{ad} {ayar_ad}: alan")
+                bak(not sakin_gun or "zemin" not in (ek.get("kozmetik") or {}).get("css", {}), f"{ad}: sakin günde zemin")
+                for (s_, x, t), eski_o in zip(kareler, kapali):
+                    yeni = olc(sayfa, s_, {**x, **ek}, t)
+                    yer = f"{ad} [{s_}{'' if t is None else f' kare {t}'}] {ayar_ad}"
                     bak([y["r"] for y in yeni["yazilar"]] == [y["r"] for y in eski_o["yazilar"]], f"{yer}: yazı yer değiştirdi")
                     bak(yeni["cerceve"] == eski_o["cerceve"] and not yeni["tasma"], f"{yer}: çerçeve değişti / taştı")
                     for a, b in zip(eski_o["yazilar"], yeni["yazilar"]):
+                        if not b["tam"]:      # videoda henüz belirmekte olan (yarı saydam) yazı: kontrastı son karede ölçülür
+                            continue
                         bak(b["k"] >= min(sinir(b), a["k"]) - 0.01, f"{yer}: '{b['t']}' {a['k']:.2f} → {b['k']:.2f} < {sinir(b)}")
-                        if ayar == "ton":
+                        if not zemin:
                             bak(b["k"] >= a["k"] - 0.01, f"{yer}: '{b['t']}' kontrast düştü {a['k']:.2f} → {b['k']:.2f}")
+            ayarla(True, True)
         tarayici.close()
-    os.environ.pop("KOZMETIK_ZORLA", None)
 
     if hatalar:
         print("\n".join(hatalar[:40]))
