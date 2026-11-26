@@ -444,13 +444,13 @@ BOLUMLER = [
                 "maddeler": [
                     "Gümüş havadaki kükürtlü gazlarla tepkimeye girer; yüzeyde ince bir gümüş "
                     "sülfür tabakası oluşur.",
-                    "Nem, lastik ve kauçuk, yumurta ve soğan gibi kükürtlü maddeler kararmayı hızlandırır.",
+                    "Nem de, lastik, kauçuk, yumurta ve soğan gibi kükürtlü maddeler de kararmayı hızlandırır.",
                 ],
             },
             {
                 "baslik": "Değeri değişir mi?",
                 "maddeler": [
-                    "Kararma yalnızca yüzeydedir; külçenin saflığı ve ağırlığı değişmez.",
+                    "Kararma yalnızca yüzeydedir; külçenin saflığı ve ağırlığı fiilen değişmez.",
                     "Koleksiyon paralarında sert parlatma çizik bırakıp koleksiyon değerini düşürebilir.",
                 ],
             },
